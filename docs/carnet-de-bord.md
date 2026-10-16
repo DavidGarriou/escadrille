@@ -55,6 +55,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Création de ce carnet (`docs/carnet-de-bord.md`) et ajout de la règle correspondante dans `CLAUDE.md`, section « Façon de travailler ».
 - **A** Session 1 reconstituée à partir du résumé de session : le détail des échanges de cette session n'est plus disponible.
 
+### Contrôle automatique du carnet
+- **Q** Le joueur demande que la tenue du carnet soit vérifiée automatiquement.
+- **A** Deux hooks Claude Code, déclarés dans `.claude/settings.json` :
+  - `.claude/hooks/logbook-turn-start.sh` (`UserPromptSubmit`) note l'heure de début de chaque échange dans `.claude/.state/`, un dossier ignoré par git ;
+  - `.claude/hooks/logbook-check.sh` (`Stop`) empêche Claude de clore l'échange si le carnet n'a pas été modifié depuis ce début, s'il reste des modifications non commitées ou si son commit n'est pas poussé.
+- **D** Le contrôle bloque au plus une fois par échange (`stop_hook_active`), pour éviter une boucle sans fin. Il ne s'active qu'une fois qu'un premier message a été envoyé dans une session qui le charge.
+- **A** Les cinq cas ont été testés à la main : pas de marqueur, carnet inchangé, second passage, modifications non commitées, carnet à jour.
+- **A** `.gitignore` complété (`.claude/.state/`, `.claude/settings.local.json`).
+
 ### En attente
 - Questions ouvertes 1, 3, 4, 6, 7 et 8 de `docs/vision.md` ; la 5 (manette) sera vérifiée au M0 avec le labo manette.
 - Démarrage du M0 en mode plan : version de Bevy et ADR.

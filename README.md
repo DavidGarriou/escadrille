@@ -15,6 +15,7 @@ docs/
 .claude/
   settings.json                   permissions (cargo, just, git en lecture) et hook de formatage
   hooks/format-rust.sh            rustfmt sur chaque fichier .rs modifié par Claude
+  hooks/logbook-*.sh              vérifie que docs/carnet-de-bord.md est tenu, commité et poussé à chaque échange
   skills/                         connaissances chargées à la demande
     simulation-vol/               modèle de vol (+ modele-aero.md, format-avion.md)
     bevy/                         discipline de version, ECS, pas fixe, origine flottante, mode capture
@@ -46,7 +47,7 @@ sudo dnf install gcc-c++ clang mold jq just git git-lfs \
   vulkan-tools mesa-vulkan-drivers gdal
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install --locked cargo-nextest cargo-deny
-chmod +x .claude/hooks/format-rust.sh
+chmod +x .claude/hooks/*.sh
 ```
 
 Outils de contenu (paquets Fedora ou Flathub) : Blender, Krita, GIMP, Inkscape, QGIS, Audacity, Ardour. Profilage : Tracy, RenderDoc.
