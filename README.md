@@ -43,7 +43,7 @@ Principe : `CLAUDE.md` reste court (il est chargé à chaque fois) ; le détail 
 ```bash
 sudo dnf install gcc-c++ clang mold jq just git git-lfs \
   libX11-devel libxkbcommon-devel wayland-devel alsa-lib-devel systemd-devel \
-  vulkan-tools gdal
+  vulkan-tools mesa-vulkan-drivers gdal
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 cargo install --locked cargo-nextest cargo-deny
 chmod +x .claude/hooks/format-rust.sh

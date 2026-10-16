@@ -114,7 +114,8 @@ Le son porte la moitié de l'immersion : moteur rotatif coupé par le coupe-cont
 ## Plateformes et performances
 
 - Linux (Fedora) d'abord, Windows ensuite (Bevy est multiplateforme).
-- Cible : 60 images/s minimum en 1440p sur le GPU de référence (à définir, voir questions ouvertes) ; préréglages de qualité de « bas » à « ultra ».
+- Cible : 60 images/s minimum en 1440p sur le GPU de référence, en préréglage de qualité « haut » ; préréglages de qualité de « bas » à « ultra ».
+- **GPU de référence** : AMD Radeon RX 7800 XT 16 Go GDDR6 (RDNA 3 ; modèle XFX Speedster MERC319, RX-78TMERCB9), sous Fedora avec le pilote Vulkan libre Mesa RADV. Budget d'image : 16,6 ms à 60 images/s. Mémoire vidéo : viser au plus 12 Go en « haut », pour laisser de la marge au système et au compositeur Wayland.
 
 ## Hors périmètre initial
 
@@ -123,7 +124,7 @@ Multijoueur ; réalité virtuelle (OpenXR plus tard) ; biplaces jouables (mitrai
 ## Questions ouvertes
 
 1. Nom définitif du jeu.
-2. GPU de référence, qui fixe le budget de performances.
+2. ~~GPU de référence~~ — **tranché le 16/10/2026** : AMD Radeon RX 7800 XT 16 Go (voir « Plateformes et performances »).
 3. Nation et secteur du premier jalon jouable (proposition : France, SPA 3, Flandres, été 1917).
 4. Licence du code du jeu (proposition : MIT OR Apache-2.0, comme Bevy) et des assets (proposition : CC-BY-SA 4.0).
 5. SN30 Pro : gâchettes L2/R2 analogiques ou tout-ou-rien ? Vibrations sous Linux ? (vérification au M0 avec le labo manette).

@@ -77,7 +77,7 @@ Flou de mouvement discret ; profondeur de champ dans le cockpit ; reflets d'obje
 
 ## Performances
 
-- Cible : 60 images/s minimum en 1440p sur le GPU de référence (à définir dans `docs/vision.md`). Budgets indicatifs à ajuster : nuages ≤ 3 ms, terrain ≤ 3 ms, ombres ≤ 2 ms, post-traitement ≤ 1,5 ms.
+- Cible : 60 images/s minimum en 1440p, qualité « haut », sur le GPU de référence : **AMD Radeon RX 7800 XT 16 Go** (RDNA 3, Vulkan via Mesa RADV ; voir `docs/vision.md`). Mémoire vidéo ≤ 12 Go en « haut ». Mesurer sur ce pilote : RADV et le pilote propriétaire n'ont pas les mêmes performances. Budgets indicatifs à ajuster : nuages ≤ 3 ms, terrain ≤ 3 ms, ombres ≤ 2 ms, post-traitement ≤ 1,5 ms.
 - Préréglages de qualité (`QualitySettings`) : bas, moyen, haut, ultra ; chaque fonctionnalité coûteuse a un réglage.
 - Mesurer avec Tracy et RenderDoc ; le `.json` de `/capture` sert de suivi de régression.
 
