@@ -121,6 +121,7 @@ Règles :
 - **Décisions structurantes** : ADR via `/adr`.
 - **Demander avant** d'ajouter une dépendance, de changer la version de Bevy, de modifier une convention de ce fichier ou de supprimer des assets.
 - **Le fun ne se valide pas par des tests** : chaque jalon se termine par un essai du joueur, manette en main. Proposer ce qu'il faut tester et consigner ses retours dans `docs/gdd/retours.md`.
+- **Carnet de bord** : chaque question du joueur, réponse, action, décision et incident est consigné dans `docs/carnet-de-bord.md` (entrées datées, par session), puis commité et poussé avant de clore l'échange.
 - **Langue** : discussions et docs en français ; identifiants, commentaires de code et messages de commit en anglais ; textes du jeu dans les fichiers Fluent.
 
 ## Skills
