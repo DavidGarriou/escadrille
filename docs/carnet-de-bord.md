@@ -100,3 +100,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Question 8 : le Raid silencieux d'octobre 1917.
 - **A** Mise à jour de `docs/vision.md` (questions tranchées, nom du jeu) et de `CLAUDE.md` (nom du jeu, licence).
 - **⚠** Restent en attente : la licence des assets, la question 5 (manette, au M0) et les suggestions (pull request vers `main`, hook de démarrage cloud, ADR sur la version de Bevy, recherches de l'historien).
+
+### Nouveau nom : le soldat solitaire du ciel
+- **Q** Le joueur veut un nom qui évoque le soldat solitaire dans le ciel, aventurier, avec du panache.
+- **A** Recherches web rapides sur les jeux homonymes (pas de recherche de marques déposées) :
+  - « Panache » : nom du studio Panache Digital Games (Montréal) ;
+  - « Cyrano » : un jeu Steam de 2025 porte déjà ce nom ;
+  - « Cavalier seul », « Haut Vol » et « Panache blanc » : aucun jeu trouvé.
+- **R** Claude propose : *Cavalier seul* (recommandé), *Panache blanc*, *Haut Vol*, *Seul là-haut*, *Chevalier errant*. Il déconseille *Panache* et *Cyrano*, déjà pris.
+- **⚠** Le nom *Ricin* reste en place dans les documents jusqu'au choix du joueur.
