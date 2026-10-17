@@ -69,3 +69,22 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - Démarrage du M0 en mode plan : version de Bevy et ADR.
 - Sources de la mission dirigeables (subagent `historien`).
 - Pull request de `main-tcd0yw` vers `main`, si le joueur le souhaite.
+
+---
+
+## 2026-10-17 — Session 3 (cloud)
+
+### Commande /adr sans titre
+- **Q** Le joueur lance `/adr` sans préciser de sujet.
+- **A** Claude propose trois sujets (version de Bevy, GPU de référence, carnet de bord). Le joueur refuse le questionnaire.
+- **A** Claude commence l'ADR sur la version de Bevy. Le joueur l'interrompt avant toute recherche : aucun ADR n'a été créé.
+
+### Questions ouvertes et suggestions
+- **Q** Le joueur demande de reprendre les questions ouvertes, avec quelques suggestions.
+- **R** Claude présente les questions 1, 3, 4, 6, 7 et 8 de `docs/vision.md` avec une recommandation pour chacune, plus des suggestions de suite :
+  - fusionner la branche `main-tcd0yw` dans `main` ;
+  - ajouter un hook de démarrage pour les sessions cloud ;
+  - lancer l'ADR sur la version de Bevy ;
+  - faire sourcer le Raid silencieux par le subagent `historien`.
+- **D** Recommandation pour l'hébergement (question 6) : rester sur GitHub, car les sessions cloud de Claude Code en dépendent, avec un miroir Codeberg facultatif. Cela revient sur la proposition initiale (Codeberg ou Forgejo).
+- **⚠** En attente des réponses du joueur.
