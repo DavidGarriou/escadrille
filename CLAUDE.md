@@ -1,7 +1,7 @@
-# CLAUDE.md — Escadrille
+# CLAUDE.md — Ricin
 
 Simulateur de combat aérien de la Première Guerre mondiale, en Rust, sur le moteur open source Bevy.
-*« Escadrille » est un nom de code provisoire.*
+*Le jeu s'appelle « Ricin ». « Escadrille » reste le nom de code technique : dépôt, crates (`escadrille_fdm`…), identifiants.* Code sous licence MIT.
 
 Ce fichier est lu à chaque session : il ne contient que l'essentiel. Le détail est dans `docs/` et dans les skills (`.claude/skills/`), à charger selon la tâche.
 

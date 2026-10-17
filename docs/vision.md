@@ -1,4 +1,6 @@
-# Vision — Escadrille
+# Vision — Ricin
+
+*Ricin* : l'huile de ricin qui lubrifiait les moteurs rotatifs et imprégnait les pilotes. « Escadrille » reste le nom de code technique (dépôt, crates).
 
 Document de référence du design. Les questions ouvertes sont en fin de document : les trancher avec le joueur-auteur, puis mettre à jour ce fichier.
 
@@ -91,7 +93,7 @@ Lot visé (à confirmer par la recherche, dates de service approximatives) :
 | Sopwith Camel (1917-1918, rotatif Clerget) | Fokker D.VII (1918) |
 | S.E.5a (1917-1918) | |
 
-**Premier couple jouable (proposition)** : SPAD VII de l'escadrille SPA 3 « Cigognes » contre Albatros D.V, Flandres, été 1917. Deux moteurs en ligne (FDM plus simple à valider d'abord), deux avions bien documentés qui se sont affrontés. Les rotatifs (Camel, Dr.I) arrivent au M6.
+**Premier couple jouable (validé le 17/10/2026)** : SPAD VII de l'escadrille SPA 3 « Cigognes » contre Albatros D.V, Flandres, été 1917. Deux moteurs en ligne (FDM plus simple à valider d'abord), deux avions bien documentés qui se sont affrontés. Les rotatifs (Camel, Dr.I) arrivent au M6.
 
 ## Théâtre
 
@@ -123,11 +125,11 @@ Multijoueur ; réalité virtuelle (OpenXR plus tard) ; biplaces jouables (mitrai
 
 ## Questions ouvertes
 
-1. Nom définitif du jeu.
+1. ~~Nom définitif du jeu~~ — **tranché le 17/10/2026** : *Ricin*. Point de vigilance : en anglais, *ricin* désigne la toxine (la plante se dit *castor*) ; prévoir un sous-titre ou un nom localisé pour la version anglaise.
 2. ~~GPU de référence~~ — **tranché le 16/10/2026** : AMD Radeon RX 7800 XT 16 Go (voir « Plateformes et performances »).
-3. Nation et secteur du premier jalon jouable (proposition : France, SPA 3, Flandres, été 1917).
-4. Licence du code du jeu (proposition : MIT OR Apache-2.0, comme Bevy) et des assets (proposition : CC-BY-SA 4.0).
+3. ~~Nation et secteur du premier jalon jouable~~ — **tranché le 17/10/2026** : France, SPA 3, Flandres, été 1917 ; SPAD VII contre Albatros D.V. Dates et dotations à faire vérifier par l'historien.
+4. Licences — **code tranché le 17/10/2026** : MIT (fichier `LICENSE`). Assets : proposition CC-BY-SA 4.0, **à confirmer**.
 5. SN30 Pro : gâchettes L2/R2 analogiques ou tout-ou-rien ? Vibrations sous Linux ? (vérification au M0 avec le labo manette).
-6. Hébergement du dépôt (proposition : Codeberg ou une forge Forgejo, pour rester dans l'esprit open source).
-7. Ton du récit : sobre et réaliste (proposition) ou plus héroïque.
-8. Théâtre de la première mission historique de chasse aux dirigeables (proposition : le « Raid silencieux », France, octobre 1917 ; voir `docs/gdd/mission-dirigeables.md`).
+6. ~~Hébergement du dépôt~~ — **tranché le 17/10/2026** : GitHub (`DavidGarriou/escadrille`), parce que les sessions cloud de Claude Code et le suivi des pull requests en dépendent ; miroir Codeberg possible plus tard.
+7. ~~Ton du récit~~ — **tranché le 17/10/2026** : sobre et réaliste (esprit des *Croix de bois*, de *La Grande Illusion*).
+8. ~~Théâtre de la première mission de chasse aux dirigeables~~ — **tranché le 17/10/2026** : le « Raid silencieux », France, octobre 1917 (voir `docs/gdd/mission-dirigeables.md`). Faits à sourcer par l'historien dans `docs/recherche/dirigeables.md`.
