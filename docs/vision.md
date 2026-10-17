@@ -128,7 +128,7 @@ Multijoueur ; réalité virtuelle (OpenXR plus tard) ; biplaces jouables (mitrai
 1. ~~Nom définitif du jeu~~ — **tranché le 17/10/2026** : *Panache blanc* (remplace *Ricin*, retenu puis abandonné le même jour). Aucun jeu homonyme trouvé ; recherche de marque (INPI, EUIPO) à faire avant toute publication. Titre anglais à décider (garder le français ou traduire).
 2. ~~GPU de référence~~ — **tranché le 16/10/2026** : AMD Radeon RX 7800 XT 16 Go (voir « Plateformes et performances »).
 3. ~~Nation et secteur du premier jalon jouable~~ — **tranché le 17/10/2026** : France, SPA 3, Flandres, été 1917 ; SPAD VII contre Albatros D.V. Dates et dotations à faire vérifier par l'historien.
-4. Licences — **code tranché le 17/10/2026** : MIT (fichier `LICENSE`). Assets : proposition CC-BY-SA 4.0, **à confirmer**.
+4. ~~Licences~~ — **tranché le 17/10/2026** : code et fichiers de données (`.ron`, `.ftl`) sous MIT (`LICENSE`) ; assets (`assets/`), sources artistiques (`art/`) et documentation (`docs/`) sous CC-BY-SA 4.0 (`LICENSE-ASSETS`). Les fichiers tiers gardent leur licence, inscrite dans `assets/LICENCES.md`.
 5. SN30 Pro : gâchettes L2/R2 analogiques ou tout-ou-rien ? Vibrations sous Linux ? (vérification au M0 avec le labo manette).
 6. ~~Hébergement du dépôt~~ — **tranché le 17/10/2026** : GitHub (`DavidGarriou/escadrille`), parce que les sessions cloud de Claude Code et le suivi des pull requests en dépendent ; miroir Codeberg possible plus tard.
 7. ~~Ton du récit~~ — **tranché le 17/10/2026** : sobre et réaliste (esprit des *Croix de bois*, de *La Grande Illusion*).

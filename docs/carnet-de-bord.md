@@ -124,3 +124,9 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur demande pourquoi avoir plusieurs licences.
 - **R** Les licences de logiciel (MIT) sont écrites pour du code, les licences Creative Commons pour des œuvres (images, sons, modèles). Creative Commons déconseille ses licences pour le code, et MIT convient mal aux œuvres. Les assets tiers récupérés seront de toute façon sous Creative Commons ou dans le domaine public, et `cargo deny` attend des licences de logiciel. C'est l'usage dans les jeux libres : 0 A.D. met son code sous GPL et ses graphismes sous CC-BY-SA. Une licence unique (tout sous MIT) reste possible, mais protège moins les assets.
 - **⚠** La licence des assets reste à décider.
+
+### Licence des assets
+- **D** Le joueur retient la recommandation de Claude : **CC-BY-SA 4.0** pour les assets (`assets/`), les sources artistiques (`art/`) et la documentation (`docs/`).
+- **D** Les fichiers de données (`.ron`, `.ftl`) restent sous MIT avec le code, comme Claude l'avait proposé. Les shaders WGSL sont du code, donc sous MIT.
+- **A** Création de `LICENSE-ASSETS`. C'est une notice qui renvoie au texte officiel sur creativecommons.org, sans le recopier. Mise à jour de `CLAUDE.md` et de `docs/vision.md` (question 4 tranchée).
+- **⚠** Les questions ouvertes de la vision sont toutes tranchées, sauf la 5 (manette), qui sera vérifiée au M0.

@@ -1,7 +1,7 @@
 # CLAUDE.md — Panache blanc
 
 Simulateur de combat aérien de la Première Guerre mondiale, en Rust, sur le moteur open source Bevy.
-*Le jeu s'appelle « Panache blanc ». « Escadrille » reste le nom de code technique : dépôt, crates (`escadrille_fdm`…), identifiants.* Code sous licence MIT.
+*Le jeu s'appelle « Panache blanc ». « Escadrille » reste le nom de code technique : dépôt, crates (`escadrille_fdm`…), identifiants.* Licences : code et fichiers de données (`.ron`, `.ftl`) sous MIT (`LICENSE`) ; assets, sources artistiques et docs sous CC-BY-SA 4.0 (`LICENSE-ASSETS`).
 
 Ce fichier est lu à chaque session : il ne contient que l'essentiel. Le détail est dans `docs/` et dans les skills (`.claude/skills/`), à charger selon la tâche.
 
