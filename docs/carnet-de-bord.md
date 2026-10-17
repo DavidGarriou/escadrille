@@ -119,3 +119,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur demande ce qu'est la licence CC-BY-SA.
 - **R** Claude explique CC-BY-SA 4.0 : ce qu'elle permet, ses deux conditions (citer l'auteur, partager à l'identique), sa portée dans un jeu (elle s'applique à l'asset modifié, pas au code ni au reste du jeu), ses conséquences, et les autres choix possibles (CC-BY 4.0, CC0).
 - **⚠** La licence des assets reste à décider.
+
+### Pourquoi plusieurs licences
+- **Q** Le joueur demande pourquoi avoir plusieurs licences.
+- **R** Les licences de logiciel (MIT) sont écrites pour du code, les licences Creative Commons pour des œuvres (images, sons, modèles). Creative Commons déconseille ses licences pour le code, et MIT convient mal aux œuvres. Les assets tiers récupérés seront de toute façon sous Creative Commons ou dans le domaine public, et `cargo deny` attend des licences de logiciel. C'est l'usage dans les jeux libres : 0 A.D. met son code sous GPL et ses graphismes sous CC-BY-SA. Une licence unique (tout sous MIT) reste possible, mais protège moins les assets.
+- **⚠** La licence des assets reste à décider.
