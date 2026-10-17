@@ -114,3 +114,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Le joueur retient **Panache blanc**, qui remplace *Ricin*.
 - **A** Nom mis à jour dans `CLAUDE.md`, `docs/vision.md` et `LICENSE` (« The Panache blanc contributors »). « Escadrille » reste le nom de code technique.
 - **⚠** À faire avant toute publication : une recherche de marque à l'INPI et à l'EUIPO. Le titre anglais reste à décider : garder le titre français ou le traduire.
+
+### Explication de la licence CC-BY-SA
+- **Q** Le joueur demande ce qu'est la licence CC-BY-SA.
+- **R** Claude explique CC-BY-SA 4.0 : ce qu'elle permet, ses deux conditions (citer l'auteur, partager à l'identique), sa portée dans un jeu (elle s'applique à l'asset modifié, pas au code ni au reste du jeu), ses conséquences, et les autres choix possibles (CC-BY 4.0, CC0).
+- **⚠** La licence des assets reste à décider.
