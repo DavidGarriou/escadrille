@@ -109,3 +109,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - « Cavalier seul », « Haut Vol » et « Panache blanc » : aucun jeu trouvé.
 - **R** Claude propose : *Cavalier seul* (recommandé), *Panache blanc*, *Haut Vol*, *Seul là-haut*, *Chevalier errant*. Il déconseille *Panache* et *Cyrano*, déjà pris.
 - **⚠** Le nom *Ricin* reste en place dans les documents jusqu'au choix du joueur.
+
+### Choix du nom : Panache blanc
+- **D** Le joueur retient **Panache blanc**, qui remplace *Ricin*.
+- **A** Nom mis à jour dans `CLAUDE.md`, `docs/vision.md` et `LICENSE` (« The Panache blanc contributors »). « Escadrille » reste le nom de code technique.
+- **⚠** À faire avant toute publication : une recherche de marque à l'INPI et à l'EUIPO. Le titre anglais reste à décider : garder le titre français ou le traduire.

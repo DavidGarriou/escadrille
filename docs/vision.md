@@ -1,6 +1,6 @@
-# Vision — Ricin
+# Vision — Panache blanc
 
-*Ricin* : l'huile de ricin qui lubrifiait les moteurs rotatifs et imprégnait les pilotes. « Escadrille » reste le nom de code technique (dépôt, crates).
+*Panache blanc* : d'après la phrase attribuée à Henri IV à Ivry (1590), « Ralliez-vous à mon panache blanc ». Le pilote seul là-haut, qui charge en tête et se fait remarquer. « Escadrille » reste le nom de code technique (dépôt, crates).
 
 Document de référence du design. Les questions ouvertes sont en fin de document : les trancher avec le joueur-auteur, puis mettre à jour ce fichier.
 
@@ -125,7 +125,7 @@ Multijoueur ; réalité virtuelle (OpenXR plus tard) ; biplaces jouables (mitrai
 
 ## Questions ouvertes
 
-1. ~~Nom définitif du jeu~~ — **tranché le 17/10/2026** : *Ricin*. Point de vigilance : en anglais, *ricin* désigne la toxine (la plante se dit *castor*) ; prévoir un sous-titre ou un nom localisé pour la version anglaise.
+1. ~~Nom définitif du jeu~~ — **tranché le 17/10/2026** : *Panache blanc* (remplace *Ricin*, retenu puis abandonné le même jour). Aucun jeu homonyme trouvé ; recherche de marque (INPI, EUIPO) à faire avant toute publication. Titre anglais à décider (garder le français ou traduire).
 2. ~~GPU de référence~~ — **tranché le 16/10/2026** : AMD Radeon RX 7800 XT 16 Go (voir « Plateformes et performances »).
 3. ~~Nation et secteur du premier jalon jouable~~ — **tranché le 17/10/2026** : France, SPA 3, Flandres, été 1917 ; SPAD VII contre Albatros D.V. Dates et dotations à faire vérifier par l'historien.
 4. Licences — **code tranché le 17/10/2026** : MIT (fichier `LICENSE`). Assets : proposition CC-BY-SA 4.0, **à confirmer**.
