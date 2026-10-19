@@ -164,3 +164,16 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur demande ce qu'est l'ADR sur la version de Bevy.
 - **R** Claude explique ce qu'est un ADR, pourquoi il faut choisir la version de Bevy avant d'écrire du code, les options (Bevy 0.20 ou 0.19), ce qu'il vérifiera (compatibilité de `bevy_egui` et `bevy_hanabi`, licences, maintenance) et comment l'ADR sera rédigé.
 - **⚠** En attente du feu vert du joueur pour lancer la recherche et rédiger l'ADR 0004.
+
+### Recherche et ADR 0004 : version de Bevy
+- **D** Le joueur donne son feu vert pour la recherche.
+- **A** Relevé sur l'index et l'API de crates.io, et sur la branche `main` de bevy_hanabi (GitHub) :
+  - Bevy 0.20.0 (8 octobre 2026, Rust ≥ 1.97.1) et 0.19.1 ;
+  - `bevy_egui` 0.43.1 (10 octobre 2026), déjà compatible avec Bevy 0.20 ;
+  - `bevy_hanabi` 0.19.0 (27 juin 2026), qui ne supporte que Bevy 0.19 ; sa branche `main` est en `0.20.0-dev`, le portage est en cours ;
+  - par le passé, bevy_hanabi a suivi chaque version de Bevy en 5 à 37 jours.
+  - Licences : MIT ou MIT OR Apache-2.0, toutes conformes.
+- **⚠** Bevy 0.20 exige Rust ≥ 1.97.1, mais le conteneur cloud fournit 1.97.0. La version stable actuelle est 1.99.1.
+- **A** Rédaction de `docs/adr/0004-version-bevy.md`, en statut « Proposé », et ajout à l'index.
+- **R** Recommandation : Bevy 0.20.0 et bevy_egui 0.43.1 ; bevy_hanabi sera ajouté plus tard, au premier effet de particules (le M0 n'en a pas besoin). La version de Rust sera fixée dans `rust-toolchain.toml`, et le hook cloud devra l'installer.
+- **⚠** En attente de la validation du joueur.
