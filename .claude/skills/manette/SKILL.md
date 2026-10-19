@@ -10,11 +10,11 @@ description: Entrées du jeu et manette 8BitDo SN30 Pro — couche d'actions, pr
 Sûr :
 - Disposition de type Super Nintendo : **B en bas, A à droite, Y à gauche, X en haut**.
 - Deux sticks cliquables (L3, R3), croix, L1/R1, L2/R2, Select, Start, Home, bouton étoile.
-- Connexion : câble USB branché sur un **port USB-A** du PC (précision du joueur, 2026-10-19). Modèle exact à confirmer : SN30 Pro sans fil (port USB-C sur la manette, Bluetooth possible) ou version filaire « SN30 Pro USB » (câble fixe USB-A, pas de Bluetooth). Le labo manette relève le nom et les identifiants USB.
+- **Modèle : 8BitDo SN30 Pro USB** (confirmé par le joueur, 2026-10-19) : version **filaire**, câble fixe d'environ 1,8 m terminé en USB-A, **sans Bluetooth**, donc pas de déconnexion sans fil à gérer. Selon 8BitDo, pas de détection de mouvement, pas de NFC, pas de « HD rumble ».
 
 **À vérifier au M0 avec le labo manette** (consigner les résultats ici même) :
-- **Gâchettes L2/R2** : en mode X-input, elles remontent comme des axes, mais rien ne garantit une course réellement progressive sur ce modèle (les tests publiés portent surtout sur la SN30 Pro+). Le jeu **ne doit jamais exiger** de gâchettes analogiques.
-- Vibrations sous Linux.
+- **Gâchettes L2/R2** : en mode X-input, elles remontent comme des axes, mais rien ne garantit une course réellement progressive. Les gâchettes analogiques sont présentées comme une nouveauté de la SN30 Pro+ : celles de la SN30 Pro USB sont donc **probablement tout-ou-rien** (à confirmer). Le jeu **ne doit jamais exiger** de gâchettes analogiques.
+- **Vibrations sous Linux** : 8BitDo annonce une vibration classique. En USB, Linux pilote ces manettes comme une manette Xbox 360 (module `xpad`), et des utilisateurs de modèles proches rapportent que la vibration y fonctionne. À confirmer sur la SN30 Pro USB.
 - Mode le plus fiable sous Linux (X-input à priori) et combinaison de démarrage correspondante (manuel 8BitDo).
 - Correspondance des boutons : en mode X-input, le bouton du bas (B) devrait remonter comme le bouton « sud » (le A d'une manette Xbox).
 
@@ -82,7 +82,7 @@ Valeurs brutes et traitées de chaque axe, état des boutons, histogramme des va
 
 ## Robustesse
 
-- Branchement à chaud ; déconnexion (Bluetooth) en vol → pause automatique et message.
+- Branchement à chaud ; débranchement du câble en vol → pause automatique et message.
 - Plusieurs manettes : la dernière utilisée devient active.
 - Test unitaire de la chaîne de traitement (zones mortes, courbes, rampes) sans matériel.
 

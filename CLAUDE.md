@@ -145,7 +145,7 @@ Subagents (`.claude/agents/`) : `aerodynamicien`, `historien`, `directeur-artist
 
 ## Environnement
 
-Fedora Linux (Wayland), manette branchée en USB sur un port USB-A du PC (Bluetooth : à confirmer). GPU de référence : AMD Radeon RX 7800 XT 16 Go (RDNA 3, pilote Mesa RADV). Dépendances système et outils : voir `README.md`. Éditeur de liens : mold.
+Fedora Linux (Wayland), manette 8BitDo SN30 Pro USB (filaire, câble USB-A, sans Bluetooth). GPU de référence : AMD Radeon RX 7800 XT 16 Go (RDNA 3, pilote Mesa RADV). Dépendances système et outils : voir `README.md`. Éditeur de liens : mold.
 
 ## Jalon en cours
 

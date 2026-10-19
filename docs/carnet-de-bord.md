@@ -265,3 +265,11 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur précise que la manette se branche sur un port USB-A.
 - **A** Mise à jour de `CLAUDE.md` (Environnement), de la skill `manette`, du plan du M0 (étape 3) et du message du labo manette : on ne parle plus d'« USB-C ou Bluetooth », mais d'un câble USB sur un port USB-A du PC.
 - **⚠** Modèle exact à confirmer : SN30 Pro sans fil branchée par câble (Bluetooth possible) ou version filaire « SN30 Pro USB » (câble fixe, sans Bluetooth). Cela change les tests de l'étape 3 ; le labo affichera le nom et les identifiants USB.
+- **D** Le joueur précise le modèle : **8BitDo SN30 Pro USB**, la version filaire.
+- **A** Recherche web (pages commerciales et forums, non consultables en direct depuis le conteneur, donc lues par résumés de recherche) :
+  - câble fixe d'environ 1,8 m, sans Bluetooth ;
+  - ni détection de mouvement, ni NFC, ni « HD rumble » selon 8BitDo ;
+  - les gâchettes analogiques sont présentées comme une nouveauté de la SN30 Pro+ : L2 et R2 sont donc probablement tout-ou-rien sur notre modèle ;
+  - en USB, Linux utilise le module `xpad` (pilote des manettes Xbox), et la vibration y fonctionne sur des modèles proches.
+- **A** Mise à jour de la skill `manette` (modèle, attentes, débranchement du câble au lieu de la déconnexion Bluetooth), de `CLAUDE.md` (Environnement), de la question 5 de la vision et de l'étape 3 du plan (plus de test Bluetooth).
+- **⚠** Gâchettes et vibrations restent « probables » tant que le labo manette ne les a pas mesurées. La conception (gaz incrémentaux, rien n'exige de gâchettes analogiques) ne change pas.
