@@ -1,0 +1,17 @@
+[package]
+name = "escadrille_data"
+description = "Data file schemas (.ron), loading, unit conversion and validation for Panache blanc."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+ron.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

@@ -188,3 +188,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Claude demande au joueur de valider le plan et les dépendances : `bevy`, `bevy_egui`, `glam`, `serde`, `ron`, `clap`, `thiserror`.
 - **R** Claude propose aussi une expérience : faire les captures dans le cloud avec un rendu logiciel (Mesa lavapipe et un écran virtuel).
 - **⚠** En attente de la validation du plan.
+
+### Validation du plan du M0 et étape 1
+- **D** Le joueur valide le plan du M0 et les dépendances (`bevy`, `bevy_egui`, `glam`, `serde`, `ron`, `clap`, `thiserror`).
+- **Q** Le joueur demande de lui rappeler l'architecture du jeu retenue et le moteur choisi.
+- **R** Claude rappelle :
+  - le moteur Bevy 0.20.0 (ADR 0001 et 0004) ;
+  - le modèle de vol `escadrille_fdm`, sans Bevy, en f64 (ADR 0002) ;
+  - le jeu Bevy organisé en un plugin par domaine, simulé à pas fixe de 120 Hz ;
+  - le réalisme réglé par couches (ADR 0003) ;
+  - les outils sans rendu (`fdm_lab`).
+- **A** Étape 1 du M0 réalisée :
+  - `rust-toolchain.toml` (Rust 1.99.1, avec `rustfmt` et `clippy`) ; le hook de démarrage installe désormais cette version ;
+  - workspace Cargo (édition 2024, Rust ≥ 1.97.1, licence MIT) avec trois crates : `escadrille_fdm` (constantes de l'atmosphère standard ISO 2533, testées), `escadrille_data` (chargeur de fichiers RON avec erreurs situées), `fdm_lab` (interface en ligne de commande ; les commandes `trim`, `essai` et `modes` arrivent au M1) ;
+  - réglages de compilation (dépendances optimisées en développement), édition de liens avec clang et mold ;
+  - `deny.toml` (licences de `CLAUDE.md`, sources inconnues refusées), `rustfmt.toml`, `justfile`, et le registre `assets/LICENCES.md`.
+- **A** Résultats : `just check` vert (formatage, clippy sans avertissement, cargo-deny : advisories, bans, licences et sources ok) ; `just test` : 7 tests sur 7 réussis.
+- **⚠** `glam` est déclaré dans le workspace (même version mineure que Bevy, 0.33) mais n'est pas encore utilisé ; il le sera au M1. Les recettes `run`, `labo-manette` et `capture` affichent « arrive à l'étape 2 ».
+- **⚠** Les valeurs d'exemple des tests de `escadrille_data` sont neutres : Claude a retiré une surface alaire du SPAD VII qu'il avait d'abord écrite sans source.

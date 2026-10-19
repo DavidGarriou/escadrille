@@ -1,6 +1,6 @@
 # Plan du M0 — Fondations
 
-- Statut : **Proposé**, en attente de validation du joueur
+- Statut : **Validé** par le joueur le 2026-10-19 (plan et dépendances) ; étape 1 faite
 - Date : 2026-10-19
 - Références : `docs/roadmap.md` (M0), ADR 0004 (versions), skills `bevy` et `manette`
 

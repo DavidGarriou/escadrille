@@ -55,8 +55,10 @@ install_release cargo-nextest "$NEXTEST_VERSION" \
 install_release cargo-deny "$DENY_VERSION" \
   "https://github.com/EmbarkStudios/cargo-deny/releases/download/${DENY_VERSION}/cargo-deny-${DENY_VERSION}-x86_64-unknown-linux-musl.tar.gz"
 
+# Toolchain pinned by rust-toolchain.toml (ADR 0004); the container ships an older one.
 if command -v rustup >/dev/null 2>&1; then
-  rustup component add rustfmt clippy >/dev/null 2>&1 || log "rustup component add failed"
+  (cd "${CLAUDE_PROJECT_DIR:-.}" && rustup toolchain install >/dev/null 2>&1) ||
+    log "rustup toolchain install failed"
 fi
 
 log "ready: $(just --version), $(cargo nextest --version | head -1), $(cargo deny --version)"
