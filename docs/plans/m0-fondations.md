@@ -1,6 +1,6 @@
 # Plan du M0 — Fondations
 
-- Statut : **Validé** par le joueur le 2026-10-19 (plan et dépendances) ; étape 1 faite
+- Statut : **Validé** par le joueur le 2026-10-19 (plan et dépendances) ; étapes 1 et 2 faites (2026-10-19) ; étape 3 à faire sur la machine du joueur
 - Date : 2026-10-19
 - Références : `docs/roadmap.md` (M0), ADR 0004 (versions), skills `bevy` et `manette`
 
@@ -46,6 +46,15 @@ Vérification : compilation et tests verts dans le cloud ; tests unitaires de la
 **Expérience proposée** : tenter le mode capture dans le cloud avec un rendu logiciel (Mesa lavapipe et un écran virtuel). Si cela marche, Claude pourra produire et regarder des captures sans votre machine, pour les scènes simples. Si cela ne marche pas, on abandonne sans regret : les captures se feront chez vous.
 
 ## Étape 3 — Sur votre machine (Fedora, RX 7800 XT, SN30 Pro)
+
+Mode d'emploi :
+```bash
+git fetch origin && git checkout main-tcd0yw && git pull   # ou main, une fois fusionnée
+just labo-manette        # première compilation : ~20 min ; rustup installe Rust 1.99.1 seul
+just capture m0-sol      # écrit target/captures/m0-sol.png et .json
+```
+Dans le labo : tirer lentement L2 et R2 plusieurs fois, essayer chaque bouton de vibration, puis « Save report ». Envoyer à Claude `target/labo-manette/rapport.txt`, ce que vous avez ressenti pour chaque vibration, et `target/captures/m0-sol.png` et `.json`.
+
 
 1. `just labo-manette` avec la manette en USB-C, puis en Bluetooth : relever le comportement des gâchettes L2 et R2 (progressives ou tout-ou-rien) et des vibrations.
 2. `just capture m0-sol` : Claude lit l'image et le `.json`, et les commente.

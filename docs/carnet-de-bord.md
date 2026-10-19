@@ -249,3 +249,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Le champ `frames` du JSON compte toutes les images jusqu'à l'écriture du fichier : 33 pour 30 demandées, car la capture prend quelques images.
 - **A** `just capture m0-sol --size 1280x720` validé de bout en bout dans le cloud : compilation release en 12 min, capture sous `xvfb-run` avec lavapipe, 70 ms par image. Claude a regardé l'image : le poteau de 10 m est maintenant entier dans le cadre, le cube et les ombres sont cohérents avec un soleil à droite.
 - **⚠** Défaut visible, à traiter avec le terrain (M2-M3) : le bord du plan de sol de 400 m fait office d'horizon, avec un angle léger au coin du plan.
+
+### Décisions sur cargo-deny et fin de l'étape 2
+- **D** Le joueur valide les quatre recommandations :
+  1. licence MIT-0 ajoutée à la liste de `CLAUDE.md` et de `deny.toml` (crates `encase`, requises par Bevy) ;
+  2. exception limitée à `epaint_default_fonts` (polices d'egui) pour OFL-1.1 et Ubuntu-font-1.0, à retirer quand l'interface du jeu aura ses propres polices ;
+  3. alerte RUSTSEC-2026-0344 (`ruzstd`) ignorée, avec justification : le jeu ne décompresse que ses propres fichiers ;
+  4. alerte RUSTSEC-2026-0192 (`ttf-parser` non maintenu) ignorée, avec justification : il ne lit que les polices du système.
+- **A** `deny.toml` mis à jour avec les justifications, à revoir à chaque montée de version de Bevy. Dans `CLAUDE.md` : MIT-0 ajoutée, et règle « exceptions uniquement dans `deny.toml`, justifiées, avec l'accord du joueur ».
+- **A** `just check` **vert** (formatage, clippy, cargo-deny : advisories, bans, licences et sources ok) ; `just test` : 19 tests sur 19 réussis. **Étape 2 du M0 terminée.**
+- **A** Plan du M0 mis à jour, avec le mode d'emploi de l'étape 3 pour le joueur.
+- **⚠** Étape 3 en attente sur la machine du joueur : labo manette (question 5 de la vision) et capture sur la RX 7800 XT.

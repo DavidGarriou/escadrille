@@ -25,7 +25,7 @@ Vision complète : `docs/vision.md` · Jalons : `docs/roadmap.md` · Décisions 
 
 - **Rust uniquement** (édition 2024, toolchain stable). Shaders en WGSL. Pas de code C/C++ maison ; les bibliothèques système (Vulkan, ALSA, udev, Wayland) sont acceptées.
 - **100 % open source** : moteur, crates, outils, données et assets.
-  - Licences de code acceptées : MIT, Apache-2.0, BSD-2/3-Clause, Zlib, ISC, MPL-2.0, BSL-1.0, CC0-1.0, Unicode-3.0. Contrôle automatique : `cargo deny check licenses`.
+  - Licences de code acceptées : MIT, MIT-0, Apache-2.0, BSD-2/3-Clause, Zlib, ISC, MPL-2.0, BSL-1.0, CC0-1.0, Unicode-3.0. Contrôle automatique : `cargo deny check licenses`. Exceptions et alertes de sécurité ignorées : uniquement dans `deny.toml`, avec leur justification et l'accord du joueur.
   - Assets et données : CC0, CC-BY, CC-BY-SA, domaine public, ou création maison. Chaque fichier tiers est inscrit dans `assets/LICENCES.md`.
   - Aucun outil propriétaire dans la chaîne (ni Substance, ni Houdini, ni World Machine, ni Gaea…).
 - **Moteur : Bevy.** Voir la discipline de version ci-dessous.
