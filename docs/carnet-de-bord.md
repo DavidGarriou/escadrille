@@ -236,3 +236,5 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - chaque trait confirmé devient un essai qualitatif dans `essais.ron`.
 - **A** Modèle `fiche-avion.md` : section 6 refondue (6.1 témoignages, 6.2 tableau des traits, 6.3 réputation). Subagent `historien` : requêtes dans chaque langue, au minimum en français, anglais, allemand et italien. Skills `nouvel-avion` et `simulation-vol` reliées à cette section.
 - **⚠** Les titres de mémoires cités comme pistes (Lewis, McCudden, Rickenbacker, Richthofen, Udet, Coppens) viennent de la mémoire de Claude : édition, date et page sont à vérifier avant tout usage.
+- **A** Première compilation complète de Bevy 0.20.0 dans le cloud : 20 min 21 s, en profil dev avec les dépendances optimisées. Les compilations suivantes seront incrémentales.
+- **⚠** Le contrôle du carnet se déclenche aussi sur les notifications de tâches de fond, qui ne sont pas des messages du joueur : chaque notification exige donc une ligne de carnet.
