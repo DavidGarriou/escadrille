@@ -159,3 +159,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Le projet n'a pas encore de code ni de `justfile` : `just check` et `just test` ne pourront être validés qu'au M0.
 - **⚠** `just` vient d'apt (version 1.21, ancienne). À remplacer par le binaire GitHub si une recette a besoin d'une version plus récente.
 - **⚠** Le hook ne s'appliquera à toutes les sessions qu'une fois fusionné dans `main`.
+
+### Qu'est-ce que l'ADR sur la version de Bevy ?
+- **Q** Le joueur demande ce qu'est l'ADR sur la version de Bevy.
+- **R** Claude explique ce qu'est un ADR, pourquoi il faut choisir la version de Bevy avant d'écrire du code, les options (Bevy 0.20 ou 0.19), ce qu'il vérifiera (compatibilité de `bevy_egui` et `bevy_hanabi`, licences, maintenance) et comment l'ADR sera rédigé.
+- **⚠** En attente du feu vert du joueur pour lancer la recherche et rédiger l'ADR 0004.
