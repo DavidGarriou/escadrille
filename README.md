@@ -15,6 +15,7 @@ docs/
 .claude/
   settings.json                   permissions (cargo, just, git en lecture) et hook de formatage
   hooks/format-rust.sh            rustfmt sur chaque fichier .rs modifié par Claude
+  hooks/session-start.sh          sessions cloud (Ubuntu) uniquement : installe libs système, just, mold, nextest, deny
   hooks/logbook-*.sh              vérifie que docs/carnet-de-bord.md est tenu, commité et poussé à chaque échange
   skills/                         connaissances chargées à la demande
     simulation-vol/               modèle de vol (+ modele-aero.md, format-avion.md)

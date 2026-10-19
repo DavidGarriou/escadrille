@@ -136,3 +136,26 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Inventaire du conteneur cloud : Ubuntu 24.04 ; Rust 1.97, clang et jq sont présents ; `just`, `cargo-nextest`, `cargo-deny` et `mold` sont absents, ainsi que les bibliothèques système dont Bevy a besoin (ALSA, udev, Wayland, xkbcommon).
 - **R** Claude explique le rôle du hook, son contenu proposé, ses limites (pas de GPU ni de manette dans le cloud, durée ajoutée au démarrage de chaque session) et l'autre solution : le script d'installation de l'environnement cloud, réglé dans claude.ai.
 - **⚠** En attente de la décision du joueur.
+
+---
+
+## 2026-10-19 — Session 3, suite (cloud)
+
+### Hook de démarrage pour les sessions cloud
+- **D** Le joueur demande d'ajouter le hook dans le dépôt.
+- **A** Création de `.claude/hooks/session-start.sh`, déclaré dans `.claude/settings.json` (`SessionStart`) :
+  - il ne s'exécute que si `CLAUDE_CODE_REMOTE=true` ; sur le poste Fedora, il ne fait rien ;
+  - il installe avec apt : `pkg-config`, `clang`, `mold`, `just`, et les bibliothèques de développement d'ALSA, udev, Wayland, xkbcommon et X11 ;
+  - il installe `cargo-nextest` 0.9.148 et `cargo-deny` 0.20.2 à partir des binaires publiés sur GitHub (versions épinglées dans le script) ;
+  - il ajoute `rustfmt` et `clippy` ;
+  - il ne réinstalle rien de ce qui est déjà présent ; il s'exécute de façon synchrone.
+- **A** Réseau du conteneur vérifié : l'index et les téléchargements de crates.io, les binaires publiés sur GitHub et les dépôts Ubuntu sont accessibles ; l'API GitHub et get.nexte.st sont bloqués, d'où des versions épinglées.
+- **A** Validation :
+  - sur poste local, le hook ne fait rien (sortie 0) ;
+  - dans le cloud, première exécution en 17 s, deuxième en 0,5 s ;
+  - `pkg-config` trouve les bibliothèques ;
+  - sur une crate de test jetable : `cargo fmt --check`, `clippy -D warnings` et `nextest` (1 test) passent, ainsi que `just`.
+  - `cargo deny check licenses` a d'abord échoué, comme attendu, car la crate de test n'avait pas de champ `license` ; il passe après ajout de `license = "MIT"`.
+- **⚠** Le projet n'a pas encore de code ni de `justfile` : `just check` et `just test` ne pourront être validés qu'au M0.
+- **⚠** `just` vient d'apt (version 1.21, ancienne). À remplacer par le binaire GitHub si une recette a besoin d'une version plus récente.
+- **⚠** Le hook ne s'appliquera à toutes les sessions qu'une fois fusionné dans `main`.
