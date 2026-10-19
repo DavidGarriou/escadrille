@@ -1,6 +1,6 @@
 # Escadrille — kit de démarrage pour Claude Code
 
-Ce dossier ne contient pas encore de code. C'est le « prompt » du projet : il prépare Claude Code à concevoir et à développer avec vous un simulateur de chasse 1914-1918 en Rust, sur le moteur open source Bevy.
+*Panache blanc* : un simulateur de chasse 1914-1918 en Rust, sur le moteur open source Bevy, développé avec Claude Code. Le dépôt contient le kit de conception (règles, skills, documents) et le code du jalon M0 (workspace Cargo, labo manette, mode capture).
 
 ## Contenu
 
@@ -53,19 +53,23 @@ chmod +x .claude/hooks/*.sh
 
 Outils de contenu (paquets Fedora ou Flathub) : Blender, Krita, GIMP, Inkscape, QGIS, Audacity, Ardour. Profilage : Tracy, RenderDoc.
 
-## Démarrer
+## Premier essai sur votre machine (M0, étape 3)
 
-1. Placer ce dossier là où vivra le projet et lancer `git init`.
-2. Relire `docs/vision.md`, surtout les **questions ouvertes** en fin de fichier, et corriger ce qui ne vous convient pas.
-3. Ouvrir Claude Code dans le dossier, passer en **mode plan**, et envoyer :
-
-> Lis CLAUDE.md, docs/vision.md et docs/roadmap.md. Nous commençons le jalon M0.
-> Avant tout code :
-> 1. Vérifie sur crates.io la dernière version de Bevy et sa compatibilité avec bevy_egui et bevy_hanabi, puis propose la version à épingler dans un ADR.
-> 2. Vérifie les licences et l'état de maintenance des autres crates de la stack.
-> 3. Propose le plan détaillé du M0 (fichiers, crates, recettes du justfile, labo manette, mode capture) et attends ma validation.
-
-4. À la fin du M0, branchez la SN30 Pro et lancez `just labo-manette` : Claude complète la skill `manette` avec ce que le labo montre (gâchettes progressives ou non, vibrations).
+1. **Prérequis** : la section ci-dessus, une seule fois (paquets Fedora, `rustup`). Rust 1.99.1 s'installe ensuite tout seul grâce à `rust-toolchain.toml`. `cargo-nextest` et `cargo-deny` ne servent qu'à `just test` et `just check`.
+2. **Récupérer le code** (la première fois : `git clone git@github.com:DavidGarriou/escadrille.git && cd escadrille`) :
+   ```bash
+   git fetch origin && git checkout main-tcd0yw && git pull   # ou main, une fois la branche fusionnée
+   ```
+3. **Brancher la SN30 Pro USB**, puis :
+   ```bash
+   just labo-manette     # la première compilation de Bevy prend de longues minutes
+   ```
+   Tirer lentement L2 et R2 plusieurs fois, essayer chaque bouton de vibration, noter ce que vous sentez, puis « Save report » (écrit `target/labo-manette/rapport.txt`). Échap pour quitter.
+4. **Capture de référence** :
+   ```bash
+   just capture m0-sol   # écrit target/captures/m0-sol.png et .json, puis quitte
+   ```
+5. **Donner à Claude** : `target/labo-manette/rapport.txt`, vos impressions sur les vibrations, `target/captures/m0-sol.png` et `.json` (les coller dans la conversation ou les copier dans le dépôt).
 
 ## Adapter le kit
 

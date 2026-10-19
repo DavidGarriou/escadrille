@@ -274,3 +274,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Mise à jour de la skill `manette` (modèle, attentes, débranchement du câble au lieu de la déconnexion Bluetooth), de `CLAUDE.md` (Environnement), de la question 5 de la vision et de l'étape 3 du plan (plus de test Bluetooth).
 - **⚠** Gâchettes et vibrations restent « probables » tant que le labo manette ne les a pas mesurées. La conception (gaz incrémentaux, rien n'exige de gâchettes analogiques) ne change pas.
 - **A** Message du labo manette sans mention du Bluetooth (« plug in the SN30 Pro USB »).
+
+### Reste-t-il une étape avant le premier test ?
+- **Q** Le joueur demande s'il reste une étape avant le premier test.
+- **R** Côté code, non : l'étape 2 est terminée et validée dans le cloud. Côté machine du joueur, une préparation unique : paquets Fedora et `rustup` (README), récupération de la branche `main-tcd0yw`, puis une première compilation de Bevy, longue. La fusion dans `main` est facultative pour tester.
+- **A** `README.md` mis à jour : présentation actuelle du dépôt, et la section « Démarrer », devenue obsolète (« git init », message de démarrage du M0), remplacée par « Premier essai sur votre machine (M0, étape 3) » avec les commandes et ce qu'il faut renvoyer à Claude.
