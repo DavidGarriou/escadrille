@@ -1,6 +1,6 @@
 # 0004 — Version de Bevy : 0.20.0, sans bevy_hanabi pour l'instant
 
-- Statut : Proposé
+- Statut : Accepté (validé par le joueur le 2026-10-19)
 - Date : 2026-10-19
 
 ## Contexte

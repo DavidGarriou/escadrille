@@ -37,6 +37,7 @@ Vision complète : `docs/vision.md` · Jalons : `docs/roadmap.md` · Décisions 
 L'API de Bevy change à chaque version mineure, et ta mémoire d'entraînement a probablement du retard sur la version utilisée.
 
 - Version **exacte** épinglée dans le `Cargo.toml` du workspace (`bevy = "=0.X.Y"`) : la plus récente que supportent toutes les dépendances couplées à Bevy. Repère au 16/10/2026 : Bevy 0.20 est sorti le 08/10/2026 et 0.19 en juin 2026. Vérifier la compatibilité de l'écosystème avant de choisir, et consigner le choix dans un ADR.
+- **Versions en vigueur** (ADR 0004) : `bevy` 0.20.0, `bevy_egui` 0.43.1, Rust 1.99.1 (`rust-toolchain.toml`) ; `bevy_hanabi` pas encore ajouté.
 - **Ne jamais deviner une API.** Vérifier dans les sources locales de la version épinglée (`~/.cargo/registry/src/*/bevy_*-<version>/`), dans les exemples officiels du tag correspondant et dans les guides de migration.
 - **Limiter les dépendances couplées à Bevy**, car chacune freine les montées de version. Préférer des crates indépendantes du moteur (kira, parry3d-f64, glam…) appelées depuis nos plugins.
 - Une montée de version est une tâche dédiée, sur une branche, avec un ADR. Détails : skill `bevy`.

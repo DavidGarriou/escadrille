@@ -4,7 +4,7 @@ Chaque jalon livre un jeu qui se lance et se termine par un **essai du joueur à
 
 ## M0 — Fondations
 - Workspace Cargo (`crates/fdm`, `crates/data`, `crates/game`, `tools/fdm_lab`), versions épinglées, profils de compilation, mold.
-- ADR de version de Bevy (compatibilité vérifiée de `bevy_egui` et `bevy_hanabi`).
+- ~~ADR de version de Bevy~~ : fait, ADR 0004 (Bevy 0.20.0, bevy_egui 0.43.1, bevy_hanabi reporté).
 - `justfile`, `deny.toml` (liste des licences de `CLAUDE.md`), `rustfmt.toml`, `assets/LICENCES.md`.
 - Fenêtre Bevy, états de jeu, plugin `dev`.
 - **Labo manette** : axes bruts et traités, boutons, histogramme des valeurs de gâchettes, test des vibrations.

@@ -177,3 +177,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Rédaction de `docs/adr/0004-version-bevy.md`, en statut « Proposé », et ajout à l'index.
 - **R** Recommandation : Bevy 0.20.0 et bevy_egui 0.43.1 ; bevy_hanabi sera ajouté plus tard, au premier effet de particules (le M0 n'en a pas besoin). La version de Rust sera fixée dans `rust-toolchain.toml`, et le hook cloud devra l'installer.
 - **⚠** En attente de la validation du joueur.
+
+### Validation de l'ADR 0004 et plan du M0
+- **D** Le joueur valide l'ADR 0004 : Bevy 0.20.0, bevy_egui 0.43.1, bevy_hanabi reporté, Rust 1.99.1.
+- **A** ADR 0004 passé en « Accepté » (fichier et index). Versions en vigueur notées dans `CLAUDE.md` (section Bevy). Feuille de route : l'ADR de version est coché.
+- **A** Rédaction du plan du M0 dans `docs/plans/m0-fondations.md`, en statut « Proposé », en trois étapes :
+  1. outillage et workspace, dans le cloud ;
+  2. le jeu compilé dans le cloud : états de jeu, labo manette, mode capture, scène `m0-sol` ;
+  3. essais sur la machine du joueur.
+- **R** Claude demande au joueur de valider le plan et les dépendances : `bevy`, `bevy_egui`, `glam`, `serde`, `ron`, `clap`, `thiserror`.
+- **R** Claude propose aussi une expérience : faire les captures dans le cloud avec un rendu logiciel (Mesa lavapipe et un écran virtuel).
+- **⚠** En attente de la validation du plan.
