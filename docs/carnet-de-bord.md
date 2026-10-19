@@ -273,3 +273,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - en USB, Linux utilise le module `xpad` (pilote des manettes Xbox), et la vibration y fonctionne sur des modèles proches.
 - **A** Mise à jour de la skill `manette` (modèle, attentes, débranchement du câble au lieu de la déconnexion Bluetooth), de `CLAUDE.md` (Environnement), de la question 5 de la vision et de l'étape 3 du plan (plus de test Bluetooth).
 - **⚠** Gâchettes et vibrations restent « probables » tant que le labo manette ne les a pas mesurées. La conception (gaz incrémentaux, rien n'exige de gâchettes analogiques) ne change pas.
+- **A** Message du labo manette sans mention du Bluetooth (« plug in the SN30 Pro USB »).
