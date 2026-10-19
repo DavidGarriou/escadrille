@@ -206,3 +206,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Résultats : `just check` vert (formatage, clippy sans avertissement, cargo-deny : advisories, bans, licences et sources ok) ; `just test` : 7 tests sur 7 réussis.
 - **⚠** `glam` est déclaré dans le workspace (même version mineure que Bevy, 0.33) mais n'est pas encore utilisé ; il le sera au M1. Les recettes `run`, `labo-manette` et `capture` affichent « arrive à l'étape 2 ».
 - **⚠** Les valeurs d'exemple des tests de `escadrille_data` sont neutres : Claude a retiré une surface alaire du SPAD VII qu'il avait d'abord écrite sans source.
+
+### Étape 2 du M0 (en cours) et surface alaire du SPAD
+- **D** Le joueur lance l'étape 2 du M0.
+- **Q** Le joueur demande comment Claude connaîtra la surface alaire du SPAD VII.
+- **R** Claude ne la connaîtra pas de mémoire. La méthode (skill `recherche-historique`) :
+  - recherche par le subagent `historien`, des sources primaires vers les sources secondaires (forums et wikis : simples pistes) ;
+  - fiche `docs/recherche/spad_vii.md`, avec sources numérotées et fourchette justifiée si elles divergent ;
+  - niveau de confiance A, B, C ou D pour chaque valeur ;
+  - contrôle de cohérence par le calcul (envergure, corde, charge alaire), puis essais en vol de `fdm_lab` au M1 ;
+  - relecture par le subagent `aerodynamicien` avant l'entrée de la valeur dans `aircraft.ron`.
+- **A** Lecture des sources de Bevy 0.20.0 et de bevy_egui 0.43.1, avec les exemples du tag `v0.20.0` : manettes (événements bruts `RawGamepad*`, vibrations `GamepadRumbleRequest`), captures d'écran (`Screenshot` et `save_to_disk`), états, et panneaux egui (`egui::Window`, puisque `CentralPanel` exige désormais un `Ui`).
+- **A** Code écrit (non encore compilé au moment de ce commit) : crate `escadrille` dans `crates/game`, avec les états de jeu (`Vol`, `LaboManette`, `Capture`), le plugin `world` (scène `m0-sol`) et le plugin `dev` :
+  - labo manette : axes et boutons bruts et traités, histogrammes de L2 et R2 avec verdict progressif ou tout-ou-rien, tests de vibration, rapport texte ;
+  - mode capture : PNG et JSON, avec délai maximal.
+- **A** Recettes `just run`, `just labo-manette` et `just capture` branchées.
+- **D** La scène `m0-sol` utilise des repères de 1 m et de 10 m au lieu d'un « avion factice à l'échelle du SPAD VII » : on n'utilise pas de dimensions historiques non sourcées. Le plan est corrigé en conséquence.
+- **A** Expérience du rendu logiciel : Mesa lavapipe installé ; sous Xvfb, `vulkaninfo` voit le périphérique « llvmpipe ». Le test de capture se fera après compilation.
+- **⚠** Travail en cours : la première compilation de Bevy n'est pas terminée. `just check` et `just test` restent à valider pour l'étape 2.

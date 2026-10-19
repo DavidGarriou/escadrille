@@ -38,7 +38,7 @@ Crate `escadrille_game` (binaire Bevy 0.20.0) :
     - un **histogramme des valeurs prises par L2 et R2**, pour voir si les gâchettes sont progressives ou tout-ou-rien ;
     - des boutons de **test des vibrations** (moteur faible, moteur fort, durée).
   - **Mode capture** : `just capture <scène>` lance le jeu, charge la scène, laisse passer quelques images pour stabiliser, enregistre `target/captures/<scène>.png` et un `.json` (temps par image, version, GPU), puis quitte.
-- **Scène de référence `m0-sol`** : un sol, un repère de taille (un avion factice en boîtes à l'échelle d'un SPAD VII), un soleil, un ciel uni. Elle sert à vérifier la chaîne de capture, pas la beauté.
+- **Scène de référence `m0-sol`** : un sol, deux repères de taille (un cube de 1 m, un poteau de 10 m), un soleil, un ciel uni. Elle sert à vérifier la chaîne de capture, pas la beauté. (Première version du plan : « un avion factice à l'échelle d'un SPAD VII », abandonnée tant que les dimensions ne sont pas sourcées.)
 - Toute l'API Bevy utilisée est vérifiée dans les sources 0.20.0 et ses exemples (skill `bevy`).
 
 Vérification : compilation et tests verts dans le cloud ; tests unitaires de la logique sans fenêtre (zones mortes, histogramme, nommage des captures).

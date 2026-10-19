@@ -28,14 +28,14 @@ release:
 essai avion:
     cargo run -p fdm_lab -- essai {{avion}}
 
-# Run the game in development mode (milestone M0, step 2).
+# Run the game in development mode (dynamic linking for faster rebuilds).
 run:
-    @echo "the game crate arrives in M0 step 2" && exit 1
+    cargo run -p escadrille --features dev
 
-# Gamepad diagnostic screen (milestone M0, step 2).
+# Gamepad diagnostic screen; writes target/labo-manette/rapport.txt on request.
 labo-manette:
-    @echo "the gamepad lab arrives in M0 step 2" && exit 1
+    cargo run -p escadrille --features dev -- --labo-manette
 
-# Render a reference scene to target/captures/<scene>.png (milestone M0, step 2).
-capture scene:
-    @echo "capture mode arrives in M0 step 2 (scene: {{scene}})" && exit 1
+# Render a reference scene to target/captures/<scene>.png (+ .json), then quit.
+capture scene *args:
+    cargo run -p escadrille --release -- --capture {{scene}} {{args}}
