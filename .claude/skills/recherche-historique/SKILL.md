@@ -1,6 +1,6 @@
 ---
 name: recherche-historique
-description: Recherche et exactitude historique sur la guerre aérienne 1914-1918 — hiérarchie des sources, niveaux de confiance, fiches avion sourcées dans docs/recherche, chronologie (quel avion, quelle unité, quel secteur, quelle date), livrées, grades, décorations, personnages réels, droits d'auteur des sources. À charger pour toute donnée chiffrée sur un avion, un moteur ou une arme, et pour tout contenu historique (missions, escadrilles, as, textes du carnet).
+description: Recherche et exactitude historique sur la guerre aérienne 1914-1918 — hiérarchie des sources, niveaux de confiance, fiches avion sourcées dans docs/recherche, témoignages de pilotes d'époque en plusieurs langues et réputation des avions, chronologie (quel avion, quelle unité, quel secteur, quelle date), livrées, grades, décorations, personnages réels, droits d'auteur des sources. À charger pour toute donnée chiffrée sur un avion, un moteur ou une arme, et pour tout contenu historique (missions, escadrilles, as, textes du carnet).
 ---
 
 # Recherche historique
@@ -15,6 +15,27 @@ description: Recherche et exactitude historique sur la guerre aérienne 1914-191
 2. **Secondaires reconnues** : ouvrages de référence (J. M. Bruce pour les avions britanniques, Gray et Thetford pour les avions allemands, les *Windsock Datafiles*), revues spécialisées (*Cross & Cockade International*, *Over the Front*).
 3. **Modernes** : essais et témoignages de pilotes de répliques volantes (The Vintage Aviator, Shuttleworth Collection, Old Rhinebeck), analyses aérodynamiques publiées.
 4. **Forums et wikis** : pistes uniquement, jamais seule source d'un chiffre.
+
+## Témoignages de pilotes et réputation des avions
+
+Le comportement d'un avion ne se résume pas à ses chiffres : il faut savoir comment il se pilotait et comment on le jugeait. Pour chaque avion, chercher **systématiquement** des témoignages de pilotes d'époque, **dans plusieurs langues** :
+
+| Langue | Où chercher (pistes, à vérifier) |
+|---|---|
+| Français | carnets de vol et lettres de pilotes, rapports d'escadrille et comptes rendus de combat (Service historique de la Défense), mémoires, presse aéronautique d'époque (*La Guerre aérienne illustrée*, *L'Aérophile*) |
+| Anglais | combat reports et rapports d'essais du RFC/RNAS/RAF (National Archives), mémoires (Cecil Lewis, *Sagittarius Rising* ; James McCudden, *Five Years in the Royal Flying Corps*), pilotes américains (Eddie Rickenbacker, *Fighting the Flying Circus*) |
+| Allemand | rapports de Jasta et évaluations de l'Idflieg, mémoires (Manfred von Richthofen, *Der rote Kampfflieger* ; Ernst Udet, *Mein Fliegerleben*), rapports d'essais d'avions alliés capturés |
+| Italien | lettres et mémoires des pilotes de la Squadriglia 91 et d'autres unités équipées de SPAD, Nieuport, Hanriot |
+| Autres | belges (Willy Coppens, *Jours envolés*), russes (Service aérien impérial, Nieuport et SPAD), austro-hongrois |
+
+Ces titres sont des **pistes** : vérifier l'édition, la date et la page avant de les citer.
+
+Méthode :
+- **Situer chaque témoignage** : qui (novice ou as, quel camp), quand (sur le moment ou dans des mémoires écrits des années plus tard), sur quelle sous-version exacte, en comparaison de quel avion précédent. Noter les biais possibles : propagande, nostalgie, vantardise, traduction.
+- **Croiser** : un trait de comportement n'est retenu que s'il apparaît dans au moins deux témoignages indépendants, idéalement de camps différents. Les **essais d'avions capturés** par l'adversaire sont précieux : regard technique, sans affection pour la machine.
+- **Paraphraser en français**, en indiquant la langue d'origine. Une citation originale de quelques mots est permise quand la nuance compte, avec sa référence complète.
+- **Distinguer la réputation des faits** : ce que les pilotes disaient d'un avion (surnoms, rumeurs, peurs, comme une aile réputée fragile) est noté séparément de ce qui est confirmé. La réputation est un matériau précieux même quand elle est fausse : dialogues au mess, carnet de vol, choix du joueur.
+- **Traduire chaque trait confirmé en attente vérifiable** dans `essais.ron` (scénario qualitatif, skill `simulation-vol`). Exemple : « tend à engager la vrille en virage serré à droite » devient un essai scénarisé.
 
 ## Niveaux de confiance
 

@@ -224,3 +224,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** La scène `m0-sol` utilise des repères de 1 m et de 10 m au lieu d'un « avion factice à l'échelle du SPAD VII » : on n'utilise pas de dimensions historiques non sourcées. Le plan est corrigé en conséquence.
 - **A** Expérience du rendu logiciel : Mesa lavapipe installé ; sous Xvfb, `vulkaninfo` voit le périphérique « llvmpipe ». Le test de capture se fera après compilation.
 - **⚠** Travail en cours : la première compilation de Bevy n'est pas terminée. `just check` et `just test` restent à valider pour l'étape 2.
+
+### Témoignages de pilotes et réputation des avions
+- **D** Le joueur demande que la recherche sur le comportement des avions inclue des témoignages de pilotes d'époque, en plusieurs langues, ainsi que la réputation de chaque avion.
+- **A** Skill `recherche-historique` complétée par une section « Témoignages de pilotes et réputation des avions » :
+  - pistes par langue (français, anglais, allemand, italien, belge, russe, austro-hongrois), à vérifier avant citation ;
+  - chaque témoignage est situé (auteur, camp, date, sous-version, biais) ;
+  - un trait n'est retenu qu'avec au moins deux témoignages indépendants, de préférence de camps différents ; les essais d'avions capturés sont privilégiés ;
+  - paraphrase en français, avec la langue d'origine indiquée ;
+  - la réputation est distinguée des faits (confirmé, contesté, légende), et sert aussi au récit ;
+  - chaque trait confirmé devient un essai qualitatif dans `essais.ron`.
+- **A** Modèle `fiche-avion.md` : section 6 refondue (6.1 témoignages, 6.2 tableau des traits, 6.3 réputation). Subagent `historien` : requêtes dans chaque langue, au minimum en français, anglais, allemand et italien. Skills `nouvel-avion` et `simulation-vol` reliées à cette section.
+- **⚠** Les titres de mémoires cités comme pistes (Lewis, McCudden, Rickenbacker, Richthofen, Udet, Coppens) viennent de la mémoire de Claude : édition, date et page sont à vérifier avant tout usage.

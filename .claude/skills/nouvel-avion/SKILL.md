@@ -12,7 +12,7 @@ Charger d'abord les skills `recherche-historique` et `simulation-vol`.
 ## Étapes
 
 1. **Cadrage** : confirmer avec le joueur la sous-version exacte (moteur, armement, période) et l'identifiant (`<id>`, minuscules, sans espace).
-2. **Recherche** : confier au subagent `historien` la création de `docs/recherche/<id>.md` d'après `.claude/skills/recherche-historique/fiche-avion.md`. Exiger les sources, les fourchettes et les niveaux de confiance.
+2. **Recherche** : confier au subagent `historien` la création de `docs/recherche/<id>.md` d'après `.claude/skills/recherche-historique/fiche-avion.md`. Exiger les sources, les fourchettes et les niveaux de confiance, ainsi que les témoignages de pilotes d'époque en plusieurs langues et la réputation de l'avion (section 6 de la fiche).
 3. **Profils et hélice** : retrouver les polaires du profil (rapports NACA ou d'époque) et les données d'hélice ; sinon, les calculer (`fdm_lab`, BEMT) et marquer `C:`.
 4. **Données** : écrire `assets/aircraft/<id>/aircraft.ron` (skill `simulation-vol`, `format-avion.md`) ; chaque valeur avec son origine.
 5. **Cibles d'essais** : écrire `assets/aircraft/<id>/essais.ron` à partir des sections « Performances » et « Qualités de vol » de la fiche.

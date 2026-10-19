@@ -57,7 +57,7 @@ Références de ce dossier, à lire selon le besoin :
 Un avion est validé quand :
 - les **essais quantitatifs** de `essais.ron` passent dans leurs tolérances (Vmax à l'altitude, temps de montée, plafond, vitesse de décrochage, virage et roulis s'ils sont sourcés) ;
 - les **modes propres** (oscillation d'incidence, phugoïde, roulis hollandais, spirale, roulis), calculés par linéarisation autour du trim, sont cohérents avec les qualités de vol décrites dans la fiche ;
-- les **essais qualitatifs** scénarisés passent (par exemple, le comportement en virage à droite et à gauche d'un Camel, tel que décrit par les sources) ;
+- les **essais qualitatifs** scénarisés passent (par exemple, le comportement en virage à droite et à gauche d'un Camel, tel que décrit par les sources) ; ils viennent des traits confirmés par les témoignages de pilotes (section 6 de la fiche de recherche) ;
 - les **tests de robustesse** passent sans NaN ni divergence : vitesse nulle, glissade sur la queue, vrille, vol sur le dos, piqué à vitesse maximale, posé brutal ;
 - la **convergence en pas de temps** est vérifiée : diviser `dt` par deux change les résultats d'essai de moins de 1 %.
 

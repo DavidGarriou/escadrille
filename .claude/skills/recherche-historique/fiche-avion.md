@@ -29,8 +29,21 @@ Moteur exact selon la sous-version, puissance nominale et régime, comportement 
 | Endurance | | | | |
 | Vitesse de décrochage | | | | |
 
-## 6. Qualités de vol
-Témoignages paraphrasés (époque et répliques) : stabilité, efforts aux commandes, roulis, virage, décrochage, vrille, défauts connus, limites structurelles, comportement au sol. Chaque point traduit en attente vérifiable pour `essais.ron`.
+## 6. Qualités de vol, témoignages et réputation
+
+### 6.1 Témoignages
+Témoignages paraphrasés en français, de pilotes d'époque dans **plusieurs langues** (français, anglais, allemand, italien, autres), puis de pilotes de répliques. Pour chacun : auteur, camp, rôle (novice, as, pilote d'essai, adversaire qui a testé un avion capturé), date du témoignage, sous-version, langue d'origine.
+
+### 6.2 Traits de comportement
+Stabilité, efforts aux commandes, roulis, virage (à gauche et à droite), décrochage, vrille, piqué, montée, visibilité, défauts connus, limites structurelles, comportement au sol.
+
+| Trait | Témoignages (sources, langues, camps) | Concordance | Attente vérifiable pour `essais.ron` | Confiance |
+|---|---|---|---|---|
+
+Un trait n'est retenu qu'avec au moins deux témoignages indépendants ; sinon il reste « à confirmer ».
+
+### 6.3 Réputation
+Ce que les pilotes amis et ennemis disaient de l'avion : surnoms, éloges, peurs, rumeurs, évolution de la réputation dans le temps. Indiquer si chaque élément est **confirmé**, **contesté** ou **légende**. Les éléments utiles au récit (mess, carnet de vol) sont signalés.
 
 ## 7. Armement
 Armes, munitions, synchronisation, position, évolutions.
