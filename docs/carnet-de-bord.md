@@ -238,3 +238,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Les titres de mémoires cités comme pistes (Lewis, McCudden, Rickenbacker, Richthofen, Udet, Coppens) viennent de la mémoire de Claude : édition, date et page sont à vérifier avant tout usage.
 - **A** Première compilation complète de Bevy 0.20.0 dans le cloud : 20 min 21 s, en profil dev avec les dépendances optimisées. Les compilations suivantes seront incrémentales.
 - **⚠** Le contrôle du carnet se déclenche aussi sur les notifications de tâches de fond, qui ne sont pas des messages du joueur : chaque notification exige donc une ligne de carnet.
+- **A** Étape 2, compilation et tests : `cargo check` sans erreur ; une seule remarque de clippy, corrigée (`if` imbriqués) ; `just test` : 19 tests sur 19 réussis (fdm 2, data 3, fdm_lab 2, jeu 12).
+- **A** Expérience du rendu logiciel **réussie** : sous Xvfb avec lavapipe (Mesa 25.2.8, LLVM 20), `escadrille --capture m0-sol` produit `target/captures/m0-sol.png` (1280×720) et son JSON, avec 75 ms par image en moyenne sur le processeur. Il a fallu ajouter `libxkbcommon-x11-0`. Claude a regardé l'image : sol, ciel, cube, poteau et ombres sont corrects, mais le haut du poteau de 10 m était coupé ; cadrage de la caméra corrigé.
+- **A** Hook de démarrage : ajout de lavapipe, Xvfb et des bibliothèques X11. Recette `just capture` : compilation release, puis lancement sous `xvfb-run` s'il n'y a pas d'écran.
+- **⚠** `cargo deny check` échoue pour l'arbre de Bevy et d'egui (décision du joueur requise) :
+  - licence MIT-0 (crates `encase`, requises par Bevy) ;
+  - licences OFL-1.1 et Ubuntu Font Licence (polices par défaut d'egui, `epaint_default_fonts`) ;
+  - faille RUSTSEC-2026-0344 dans `ruzstd` 0.8.3 (via `bevy_image`, pas de mise à jour compatible) ;
+  - `ttf-parser` non maintenu (RUSTSEC-2026-0192, via les décorations de fenêtre Wayland).
+- **⚠** Le champ `frames` du JSON compte toutes les images jusqu'à l'écriture du fichier : 33 pour 30 demandées, car la capture prend quelques images.

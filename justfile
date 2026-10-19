@@ -37,5 +37,11 @@ labo-manette:
     cargo run -p escadrille --features dev -- --labo-manette
 
 # Render a reference scene to target/captures/<scene>.png (+ .json), then quit.
+# Without a display (cloud sessions), runs under Xvfb with software rendering (lavapipe).
 capture scene *args:
-    cargo run -p escadrille --release -- --capture {{scene}} {{args}}
+    cargo build -p escadrille --release
+    if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then \
+        xvfb-run -a -s "-screen 0 2560x1440x24" target/release/escadrille --capture {{scene}} {{args}}; \
+    else \
+        target/release/escadrille --capture {{scene}} {{args}}; \
+    fi

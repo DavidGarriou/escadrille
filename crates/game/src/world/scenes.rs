@@ -54,7 +54,7 @@ pub fn spawn_m0_sol(
     commands.spawn((
         Name::new("Camera"),
         Camera3d::default(),
-        Transform::from_xyz(-8.0, 4.0, 12.0).looking_at(Vec3::new(2.0, 2.0, -2.0), Vec3::Y),
+        Transform::from_xyz(-14.0, 5.0, 20.0).looking_at(Vec3::new(2.0, 4.0, -2.0), Vec3::Y),
     ));
 }
 

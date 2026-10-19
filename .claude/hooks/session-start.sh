@@ -14,6 +14,8 @@ DENY_VERSION="0.20.2"
 APT_PACKAGES=(
   pkg-config clang mold just
   libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev libx11-dev
+  # Software rendering for `just capture` without a GPU: Mesa lavapipe + virtual X server.
+  mesa-vulkan-drivers xvfb xauth libxkbcommon-x11-0 libxcursor1 libxi6 libxrandr2
 )
 
 log() { echo "[session-start] $*" >&2; }

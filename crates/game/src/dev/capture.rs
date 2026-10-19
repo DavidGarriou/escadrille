@@ -95,12 +95,12 @@ fn drive_capture(
     stats.total_secs += f64::from(time.delta_secs());
 
     if !stats.requested && stats.frames >= request.frames {
-        if let Some(dir) = request.png.parent() {
-            if let Err(err) = std::fs::create_dir_all(dir) {
-                error!("cannot create {}: {err}", dir.display());
-                exit.write(AppExit::error());
-                return;
-            }
+        if let Some(dir) = request.png.parent()
+            && let Err(err) = std::fs::create_dir_all(dir)
+        {
+            error!("cannot create {}: {err}", dir.display());
+            exit.write(AppExit::error());
+            return;
         }
         stats.requested = true;
         commands
