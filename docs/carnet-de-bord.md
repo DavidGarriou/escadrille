@@ -279,3 +279,7 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur demande s'il reste une étape avant le premier test.
 - **R** Côté code, non : l'étape 2 est terminée et validée dans le cloud. Côté machine du joueur, une préparation unique : paquets Fedora et `rustup` (README), récupération de la branche `main-tcd0yw`, puis une première compilation de Bevy, longue. La fusion dans `main` est facultative pour tester.
 - **A** `README.md` mis à jour : présentation actuelle du dépôt, et la section « Démarrer », devenue obsolète (« git init », message de démarrage du M0), remplacée par « Premier essai sur votre machine (M0, étape 3) » avec les commandes et ce qu'il faut renvoyer à Claude.
+
+### Qu'est-ce que « just » ?
+- **Q** Le joueur demande ce qu'est `just`.
+- **R** Claude explique : un lanceur de commandes libre (licence CC0, écrit en Rust, paquet Fedora `just`) qui lit le fichier `justfile` à la racine du dépôt. Chaque « recette » donne un nom court à une suite de commandes longues (par exemple, `just capture m0-sol` compile le jeu en version optimisée, puis le lance en mode capture). `just` sans argument liste les recettes. C'est un raccourci, pas une dépendance du jeu.
