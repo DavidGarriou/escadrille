@@ -113,7 +113,7 @@ fn lab_ui(
             ui.separator();
 
             if gamepads.is_empty() {
-                ui.heading("No gamepad detected: connect the SN30 Pro (USB-C or Bluetooth).");
+                ui.heading("No gamepad detected: connect the SN30 Pro (USB cable, or Bluetooth if supported).");
                 return;
             }
 

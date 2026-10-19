@@ -260,3 +260,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** `just check` **vert** (formatage, clippy, cargo-deny : advisories, bans, licences et sources ok) ; `just test` : 19 tests sur 19 réussis. **Étape 2 du M0 terminée.**
 - **A** Plan du M0 mis à jour, avec le mode d'emploi de l'étape 3 pour le joueur.
 - **⚠** Étape 3 en attente sur la machine du joueur : labo manette (question 5 de la vision) et capture sur la RX 7800 XT.
+
+### Connexion de la manette
+- **Q** Le joueur précise que la manette se branche sur un port USB-A.
+- **A** Mise à jour de `CLAUDE.md` (Environnement), de la skill `manette`, du plan du M0 (étape 3) et du message du labo manette : on ne parle plus d'« USB-C ou Bluetooth », mais d'un câble USB sur un port USB-A du PC.
+- **⚠** Modèle exact à confirmer : SN30 Pro sans fil branchée par câble (Bluetooth possible) ou version filaire « SN30 Pro USB » (câble fixe, sans Bluetooth). Cela change les tests de l'étape 3 ; le labo affichera le nom et les identifiants USB.

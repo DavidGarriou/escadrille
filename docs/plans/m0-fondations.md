@@ -56,7 +56,7 @@ just capture m0-sol      # écrit target/captures/m0-sol.png et .json
 Dans le labo : tirer lentement L2 et R2 plusieurs fois, essayer chaque bouton de vibration, puis « Save report ». Envoyer à Claude `target/labo-manette/rapport.txt`, ce que vous avez ressenti pour chaque vibration, et `target/captures/m0-sol.png` et `.json`.
 
 
-1. `just labo-manette` avec la manette en USB-C, puis en Bluetooth : relever le comportement des gâchettes L2 et R2 (progressives ou tout-ou-rien) et des vibrations.
+1. `just labo-manette` avec la manette branchée en USB (port USB-A du PC), puis en Bluetooth si le modèle le permet : relever le comportement des gâchettes L2 et R2 (progressives ou tout-ou-rien) et des vibrations.
 2. `just capture m0-sol` : Claude lit l'image et le `.json`, et les commente.
 3. Claude consigne les résultats : question ouverte 5 tranchée dans `docs/vision.md`, skill `manette` complétée, retours dans `docs/gdd/retours.md`.
 
