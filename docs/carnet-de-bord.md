@@ -247,3 +247,5 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - faille RUSTSEC-2026-0344 dans `ruzstd` 0.8.3 (via `bevy_image`, pas de mise à jour compatible) ;
   - `ttf-parser` non maintenu (RUSTSEC-2026-0192, via les décorations de fenêtre Wayland).
 - **⚠** Le champ `frames` du JSON compte toutes les images jusqu'à l'écriture du fichier : 33 pour 30 demandées, car la capture prend quelques images.
+- **A** `just capture m0-sol --size 1280x720` validé de bout en bout dans le cloud : compilation release en 12 min, capture sous `xvfb-run` avec lavapipe, 70 ms par image. Claude a regardé l'image : le poteau de 10 m est maintenant entier dans le cadre, le cube et les ombres sont cohérents avec un soleil à droite.
+- **⚠** Défaut visible, à traiter avec le terrain (M2-M3) : le bord du plan de sol de 400 m fait office d'horizon, avec un angle léger au coin du plan.
