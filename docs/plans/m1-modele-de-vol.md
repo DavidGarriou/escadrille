@@ -1,6 +1,6 @@
 # Plan du M1 — Le modèle de vol, sans rendu
 
-- Statut : **Proposé**, en attente de validation du joueur
+- Statut : **Validé** par le joueur le 2026-10-20 (plan, dépendances `plotters` et `nalgebra` dans `fdm_lab`, ADR 0005, lancement de l'historien)
 - Date : 2026-10-20
 - Références : `docs/roadmap.md` (M1), ADR 0002 (FDM indépendant, f64), skills `simulation-vol`, `recherche-historique`, `essai-en-vol` ; `.claude/skills/simulation-vol/modele-aero.md` et `format-avion.md`
 

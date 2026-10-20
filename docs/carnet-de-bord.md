@@ -341,3 +341,28 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - dépendances `plotters` et `nalgebra`, dans `fdm_lab` seulement ;
   - ADR 0005 sur l'intégration numérique ;
   - lancement immédiat du subagent `historien`.
+
+### Lancement du M1
+- **D** Le joueur valide le plan du M1 et ses trois points : dépendances `plotters` et `nalgebra` (dans `fdm_lab`), ADR 0005, lancement immédiat de l'historien.
+- **A** Subagent `historien` lancé en arrière-plan. Il doit produire trois fiches : `docs/recherche/spad7.md`, `hispano-suiza-8a.md` et `profil-spad7.md`. Consignes :
+  - établir la sous-version de la SPA 3 à l'été 1917 (150 ou 180 ch) et la date d'arrivée des SPAD XIII ;
+  - réunir géométrie, masses et performances avec leurs conditions ;
+  - recueillir des témoignages en au moins quatre langues et la réputation de l'avion ;
+  - trouver des données de soufflerie pour le profil ;
+  - aucun chiffre sans source, « non trouvé » plutôt qu'un chiffre de mémoire.
+- **A** ADR 0005 « Intégration numérique » rédigé et accepté : RK4 à pas fixe en f64 ; le jeu appelle le modèle à 120 Hz, qui fait 2 sous-pas (240 Hz) ; quaternion renormalisé en fin de pas ; commandes constantes pendant un pas. Plan du M1 marqué « Validé ».
+- **A** Étape 2 du M1 codée dans `escadrille_fdm`, avec `glam` en dépendance :
+  - `atmosphere.rs` : ISA de 0 à 20 km, altitude géopotentielle ;
+  - `environment.rs` : trait `Environment` et `StandardEnvironment` (ISA, vent uniforme, sol plat) ;
+  - `rigid_body.rs` : `Inertia` (convention aéronautique pour ixz), `MassProperties` validées, `Wrench`, `RigidBodyState` et `step_rk4`.
+- **A** Tests : 19 sur 19 réussis dans `escadrille_fdm`, dont :
+  - chute libre exacte quelle que soit l'attitude ;
+  - rotation stationnaire ;
+  - conservation de l'énergie et du moment cinétique pendant un basculement autour de l'axe intermédiaire ;
+  - précession analytique d'une toupie symétrique ;
+  - couplage roulis-lacet par ixz ;
+  - ordre 4 mesuré (rapport d'erreur entre 10 et 24 quand le pas est divisé par 2) ;
+  - déterminisme au bit près ;
+  - valeurs ISA à la tropopause.
+- **⚠** Un premier test comparait deux quaternions avec `angle_between`, qui passe par `acos` et ne distingue pas un angle inférieur à environ 1e-8 : tolérance irréaliste. Remplacé par une comparaison des composantes. La physique n'était pas en cause.
+- **A** Subagent `aerodynamicien` lancé en arrière-plan pour relire l'étape 2, comme l'exige `CLAUDE.md` pour toute modification du modèle de vol.
