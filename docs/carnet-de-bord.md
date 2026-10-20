@@ -453,3 +453,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - la continuité des polaires sur le tour complet, et l'absence de NaN au repos et en vol inversé.
   Données de test synthétiques (profil mince de manuel), pas de chiffres historiques.
 - **⚠** Tests corrigés en cours de route : une comparaison exacte de flottants après l'ajout de 2π (arrondi). Le code n'était pas en cause.
+
+### Ajout de `*.archive.org`
+- **A** Le joueur ajoute `*.archive.org` aux domaines autorisés. Vérification :
+  - les serveurs de fichiers (`ia…us.archive.org`, `dn….ca.archive.org`) passent ;
+  - le domaine nu `archive.org` est désormais **refusé** (il passait avant) : un joker ne couvre pas le domaine nu. Le moteur de recherche et l'API de métadonnées d'archive.org sont donc inaccessibles, et `www.archive.org` redirige vers le domaine nu.
+- **A** Contournement : un serveur `ia…us.archive.org` redirige vers le bon serveur de stockage pour n'importe quel identifiant. Téléchargés ainsi :
+  - le rapport technique britannique de 1917-1918 (`technicalreport1917aero_2`, 1,1 Mo de texte) ;
+  - la bibliographie aéronautique 1917-1921 du Smithsonian (3,1 Mo).
+- **A** Repérage dans la bibliographie, en particulier : « The Spad scout, Type S-VII », *Aerial Age Weekly*, vol. 5, n° 17, 2 juillet 1917, p. 569. Le numéro correspondant sur archive.org (`AerialAge19170702`) ne contient qu'une image de couverture, sans texte. D'autres articles sur le SPAD sont signalés dans *Scientific American*, *Aviation*, *Flight* et *L'Aéronautique*.
+- **A** Téléchargement en cours, en arrière-plan, des numéros de *Flight* de 1916 à 1919 : identifiants générés pour chaque jeudi, puisque la recherche est inaccessible.
+- **⚠** Demande au joueur : ajouter aussi le domaine nu `archive.org`, en plus de `*.archive.org`, pour retrouver la recherche et les métadonnées (noms de fichiers des volumes de revues).
