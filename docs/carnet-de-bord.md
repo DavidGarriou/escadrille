@@ -432,3 +432,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - l'interférence entre les plans d'un biplan et la stabilité.
 - **⚠** archive.org : seul son moteur de recherche passe. Ses serveurs de fichiers (`*.us.archive.org`, `*.ca.archive.org`, `*.eu.archive.org`) sont refusés par la passerelle réseau, si bien que *Flight* 1917-1918, les rapports techniques britanniques et l'annuaire Jane's restent inaccessibles. Il faut que le joueur autorise `*.archive.org`.
 - **A** Historien relancé (troisième passe) pour lire ces fichiers locaux : polaires du RAF 15 et du RAF 6, loi de puissance en altitude, tables d'hélice, interférence biplan.
+- **⚠** Téléchargement en arrière-plan de *Flight* 1917-1918 (104 numéros trouvés par la recherche d'archive.org) terminé **sans aucun fichier** : les serveurs de fichiers d'archive.org sont refusés. Cela confirme le blocage signalé au joueur.
