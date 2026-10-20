@@ -25,6 +25,11 @@ Sûr :
 - **Sticks au repos** : 3·10⁻⁵ en X, soit un pas de quantification sur 16 bits, et 0 en Y. Pas de dérive mesurable.
 - Restent à confirmer : vibrations ressenties, course maximale des sticks, correspondance réelle des étiquettes (B physique = `South` ?).
 
+**Conclusions (2026-10-20, validées par le joueur)** :
+- **L2/R2 = tout-ou-rien.** Ce sont des boutons. Les gaz restent incrémentaux ; L2/R2 servent à des actions discrètes.
+- **Vibrations : aucune ressentie**, quel que soit le bouton du labo. La cause n'est pas établie (moteurs absents sur ce modèle, pilote `xpad`, ou chaîne gilrs ; diagnostic possible avec `fftest` du paquet `linuxconsoletools`). En attendant, le jeu **ne compte jamais sur la vibration** : c'est un retour optionnel, doublé par le son et l'image.
+- **B physique = `South`** (confirmé) : le mapping par position fonctionne comme prévu.
+
 Conséquences :
 - **Toujours mapper par position** (sud, est, ouest, nord), jamais par étiquette.
 - **Afficher les étiquettes 8BitDo** (disposition Nintendo) dans l'interface : jeu de pictogrammes « SN30 » sélectionné automatiquement ou dans les options.

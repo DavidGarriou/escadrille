@@ -1,0 +1,9 @@
+{
+  "scene": "m0-sol",
+  "width": 1920,
+  "height": 1080,
+  "frames": 124,
+  "mean_frame_ms": 16.498,
+  "adapter": "AMD Radeon RX 7800 XT (RADV NAVI32)",
+  "game_version": "0.1.0"
+}

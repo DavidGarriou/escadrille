@@ -309,3 +309,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - vibrations non renseignées.
 - **A** Skill `manette` complétée par ces résultats ; question 5 de la vision mise à jour (premier relevé).
 - **⚠** Reste à obtenir du joueur : ce qu'il a ressenti pour chaque vibration, une dizaine d'appuis lents sur L2 et R2 (ou son accord pour conclure au tout-ou-rien), la correspondance entre B physique et `South`, et la capture `m0-sol` faite sur la RX 7800 XT.
+
+### Réponses du joueur et capture sur la RX 7800 XT
+- **R** Réponses du joueur :
+  1. aucune vibration ressentie ;
+  2. on conclut au tout-ou-rien pour L2 et R2 ;
+  3. B physique = `South` ;
+  4. capture `m0-sol` transmise (image et JSON).
+- **D** Question 5 de la vision **tranchée** : L2/R2 tout-ou-rien, aucune vibration ressentie, B = `South`. Le jeu ne s'appuie pas sur la vibration (retour optionnel, doublé par le son et l'image).
+- **A** Skill `manette` (conclusions), `docs/vision.md` (question 5) et `docs/gdd/retours.md` (créé : premiers retours du M0) mis à jour. Capture et JSON archivés dans `docs/essais/captures/2026-10-20-m0-sol-rx7800xt.*`.
+- **R** Analyse de la capture par Claude :
+  - même cadrage et même éclairage que la capture du cloud (lavapipe), avec un rendu plus fin en 1920×1080 : les captures du cloud sont donc représentatives pour juger une scène ;
+  - même défaut d'horizon (bord du plan de sol).
+- **⚠** Le temps moyen de 16,498 ms par image correspond exactement à 60 Hz : il mesure la synchronisation verticale de l'écran, pas le coût du rendu.
+- **A** Correction : le mode capture désactive la synchronisation verticale (`PresentMode::AutoNoVsync`), et les autres modes la gardent. Vérifiée dans le cloud. `just check` vert et `just test` à 19 tests sur 19.
+- **⚠** Vibration : cause inconnue (moteurs absents sur ce modèle, pilote `xpad`, ou gilrs). Diagnostic proposé avec `fftest` (paquet `linuxconsoletools`).
+- **⚠** Toutes les conditions de fin du M0 sont remplies : en attente de l'accord du joueur pour clore le jalon et passer au M1.

@@ -10,7 +10,7 @@ mod world;
 use std::path::PathBuf;
 
 use bevy::prelude::*;
-use bevy::window::WindowResolution;
+use bevy::window::{PresentMode, WindowResolution};
 use bevy_egui::EguiPlugin;
 use clap::Parser;
 
@@ -73,6 +73,12 @@ fn main() -> AppExit {
             title: "Panache blanc".into(),
             resolution,
             resizable: capture.is_none(),
+            // Captures measure frame cost: vsync would cap them at the monitor rate.
+            present_mode: if capture.is_some() {
+                PresentMode::AutoNoVsync
+            } else {
+                PresentMode::AutoVsync
+            },
             ..default()
         }),
         ..default()
