@@ -578,3 +578,23 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - constante nommée pour la marge de 15° ;
   - `max_abs_cl`, devenu inutile, est supprimé.
 - **A** Ses **cinq tests** sont intégrés, avec une section cambrée, courbe et asymétrique : solveur exact, continuité sur 360°, induction nulle en écoulement décollé ou inversé, force égale aux coefficients tournés de l'angle induit, traînée parasite dans le souffle. S'y ajoute un test de refus des surfaces mal formées. Résultat : **90 tests sur 90**, `just check` vert.
+
+### Fin de l'étape 3 : interférence entre les plans du biplan
+- **A** L'aérodynamicien relit l'étape 4 et la vérification des corrections de sa contre-revue (relance de la même relecture).
+- **A** Le plan du M1 prévoyait, à l'étape 3, l'interférence entre les plans du biplan ; elle manquait encore. Nouveau `LiftingSystem` (`aero/system.rs`), qui rassemble toutes les surfaces portantes :
+  - induction mutuelle selon la théorie des multiplans de Prandtl (NACA TN 182, 1924), avec k_ij = σ S_j / (π b_i b_j). Le facteur σ dépend du rapport écartement / envergure, et sera calculé dans les données (C:) ;
+  - chaque bande garde sa propre induction et reçoit en plus l'angle induit par le C_L moyen de l'autre plan. Le système couplé est résolu par itération plafonnée, déterministe ; le couplage est faible, environ 0,1 ;
+  - au-delà du décrochage, l'induction mutuelle s'efface avec l'induction propre.
+- **A** Tests :
+  - formule fermée de Prandtl pour deux plans égaux, à 1e-12 près ;
+  - traînée induite de deux plans inégaux comparée à la formule de Prandtl, à 0,1 % près (approximation des petits angles) ;
+  - surfaces indépendantes sans couplage ;
+  - continuité sur 360° avec décrochage ;
+  - symétrie miroir ;
+  - refus des paires incohérentes.
+- **A** Résultat : 96 tests sur 96.
+- **⚠** Restent dans les données, en C: ou E: :
+  - la différence de portance entre les plans due à l'interférence bidimensionnelle (Millikan, rapport 362) ;
+  - l'effet du décalage horizontal sur le partage de la charge (Munk, rapport 151).
+
+  La déflexion de l'aile sur l'empennage, qui demande un retard, va dans l'assemblage de l'avion : c'est la prochaine tâche.
