@@ -292,3 +292,9 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur écrit « github », compris dans la suite de la question précédente comme « précise ce qu'est GitHub ».
 - **R** Claude explique GitHub (hébergement du dépôt Git, historique, branches, pull requests) et son rôle dans le projet : dépôt `DavidGarriou/escadrille`, sauvegarde du travail, passerelle entre les sessions cloud et le poste Fedora. Il précise l'état actuel : `main` est resté au premier commit, tout le travail depuis est sur la branche `main-tcd0yw`.
 - **⚠** Le joueur précise que le message « github » était une erreur d'envoi. L'explication reste dans le carnet ; aucune action n'en découle.
+
+### Sticks ou gâchettes dans le labo manette ?
+- **Q** Le joueur demande s'il ne faut pas plutôt « tirer lentement les joysticks » dans le labo manette.
+- **R** Les deux, mais pour deux raisons différentes. Pour L2 et R2, on les enfonce lentement pour savoir si elles sont progressives (question 5). Les sticks sont analogiques à coup sûr : on les teste pour leur course (butées, cercles) et pour la valeur au repos, qui sert à régler les zones mortes et la dérive. Le labo affiche les sticks en direct, mais son rapport ne garde que la dernière valeur brute.
+- **A** README : consignes du labo complétées pour les sticks (butées, cercles, valeur au repos).
+- **⚠** Proposition en attente : enregistrer dans le rapport des statistiques sur les sticks (minimum et maximum par axe, bruit au repos), utiles pour régler les zones mortes au M2.

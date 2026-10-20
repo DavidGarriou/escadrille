@@ -64,7 +64,10 @@ Outils de contenu (paquets Fedora ou Flathub) : Blender, Krita, GIMP, Inkscape, 
    ```bash
    just labo-manette     # la première compilation de Bevy prend de longues minutes
    ```
-   Tirer lentement L2 et R2 plusieurs fois, essayer chaque bouton de vibration, noter ce que vous sentez, puis « Save report » (écrit `target/labo-manette/rapport.txt`). Échap pour quitter.
+   - **Gâchettes** : enfoncer lentement L2 et R2 plusieurs fois (le labo dit si elles sont progressives ou tout-ou-rien).
+   - **Sticks** : les pousser lentement jusqu'en butée dans chaque direction, faire quelques grands cercles, puis les lâcher et regarder la valeur au repos (elle devrait revenir près de 0).
+   - **Vibrations** : essayer chaque bouton, noter ce que vous sentez.
+   - Puis « Save report » (écrit `target/labo-manette/rapport.txt`). Échap pour quitter.
 4. **Capture de référence** :
    ```bash
    just capture m0-sol   # écrit target/captures/m0-sol.png et .json, puis quitte
