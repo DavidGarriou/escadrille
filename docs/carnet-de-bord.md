@@ -325,3 +325,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Correction : le mode capture désactive la synchronisation verticale (`PresentMode::AutoNoVsync`), et les autres modes la gardent. Vérifiée dans le cloud. `just check` vert et `just test` à 19 tests sur 19.
 - **⚠** Vibration : cause inconnue (moteurs absents sur ce modèle, pilote `xpad`, ou gilrs). Diagnostic proposé avec `fftest` (paquet `linuxconsoletools`).
 - **⚠** Toutes les conditions de fin du M0 sont remplies : en attente de l'accord du joueur pour clore le jalon et passer au M1.
+
+### Clôture du M0, passage au M1
+- **D** Le joueur clôt le M0 et lance le M1.
+- **A** Feuille de route (M0 ✅, M1 en cours), ligne « Jalon en cours » de `CLAUDE.md` et statut du plan du M0 mis à jour.
+- **A** Rédaction du plan du M1, `docs/plans/m1-modele-de-vol.md`, en statut « Proposé », en sept étapes :
+  1. recherche sur le SPAD VII et l'Hispano-Suiza 8A par l'historien, en parallèle ;
+  2. atmosphère ISA et corps rigide à 6 degrés de liberté, intégrateur RK4 ;
+  3. aérodynamique par bandes (biplan, empennage, traînées parasites) ;
+  4. hélice et moteur en ligne ;
+  5. schémas `aircraft.ron` et `essais.ron`, avec validation de l'origine de chaque valeur ;
+  6. `fdm_lab` : trim, essais, modes propres, tracés PNG ;
+  7. robustesse, `/essai-en-vol`, revue `aerodynamicien`, lecture par le joueur.
+- **⚠** À valider par le joueur :
+  - dépendances `plotters` et `nalgebra`, dans `fdm_lab` seulement ;
+  - ADR 0005 sur l'intégration numérique ;
+  - lancement immédiat du subagent `historien`.

@@ -149,4 +149,4 @@ Fedora Linux (Wayland), manette 8BitDo SN30 Pro USB (filaire, câble USB-A, sans
 
 ## Jalon en cours
 
-**M0 — Fondations** (voir `docs/roadmap.md`). Mettre à jour cette ligne à chaque changement de jalon.
+**M1 — Le modèle de vol, sans rendu** (voir `docs/roadmap.md` et `docs/plans/m1-modele-de-vol.md`). M0 clos le 2026-10-20. Mettre à jour cette ligne à chaque changement de jalon.

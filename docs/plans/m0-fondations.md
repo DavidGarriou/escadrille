@@ -1,6 +1,6 @@
 # Plan du M0 — Fondations
 
-- Statut : **Validé** par le joueur le 2026-10-19 (plan et dépendances) ; étapes 1 et 2 faites (2026-10-19) ; étape 3 à faire sur la machine du joueur
+- Statut : **Validé** par le joueur le 2026-10-19 (plan et dépendances) ; **terminé** (2026-10-20) : étapes 1 à 3 faites, jalon clos par le joueur
 - Date : 2026-10-19
 - Références : `docs/roadmap.md` (M0), ADR 0004 (versions), skills `bevy` et `manette`
 

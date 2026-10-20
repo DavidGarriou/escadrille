@@ -2,7 +2,7 @@
 
 Chaque jalon livre un jeu qui se lance et se termine par un **essai du joueur à la manette**. Claude prépare la liste de ce qu'il faut tester et consigne les retours dans `docs/gdd/retours.md`. Un jalon n'est terminé que si sa définition de « terminé » (DdT) est remplie.
 
-## M0 — Fondations
+## M0 — Fondations ✅ (clos le 2026-10-20)
 - Workspace Cargo (`crates/fdm`, `crates/data`, `crates/game`, `tools/fdm_lab`), versions épinglées, profils de compilation, mold.
 - ~~ADR de version de Bevy~~ : fait, ADR 0004 (Bevy 0.20.0, bevy_egui 0.43.1, bevy_hanabi reporté).
 - `justfile`, `deny.toml` (liste des licences de `CLAUDE.md`), `rustfmt.toml`, `assets/LICENCES.md`.
@@ -12,7 +12,7 @@ Chaque jalon livre un jeu qui se lance et se termine par un **essai du joueur à
 
 DdT : `just check` et `just test` verts ; le labo manette affiche toutes les commandes de la SN30 Pro ; questions ouvertes 5 (gâchettes, vibrations) tranchées ; une capture lue et commentée par Claude.
 
-## M1 — Le modèle de vol, sans rendu
+## M1 — Le modèle de vol, sans rendu (en cours ; plan : `docs/plans/m1-modele-de-vol.md`)
 - `escadrille_fdm` : ISA, corps rigide, surfaces par bandes, traînées parasites, hélice, moteur en ligne.
 - Fiche de recherche et `aircraft.ron` du premier avion (proposition : SPAD VII).
 - `fdm_lab` : trim, essais, modes propres, tracés PNG.
