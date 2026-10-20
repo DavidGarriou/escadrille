@@ -60,6 +60,11 @@ Cette étape avance **en parallèle** des étapes 2 à 4, qui se testent sans do
 - Revue du subagent `aerodynamicien`, puis corrections **justifiées** (jamais un coefficient ajusté pour faire passer un essai).
 - Essai du joueur : lecture du rapport et des tracés ; retours dans `docs/gdd/retours.md`.
 
+## Décisions du joueur en cours de jalon (2026-10-20)
+
+- **Version validée en premier : SPAD VII 150 ch** (Hispano-Suiza 8Aa), la seule mesurée en essais officiels d'époque (STAé, rapport britannique n° 96). Le 180 ch (8Ab) viendra ensuite : seul le moteur change.
+- **M1 validé avec une confiance C** : les cibles de `essais.ron` peuvent être de confiance C, étiquetées comme telles. La confiance sera relevée quand les sources primaires seront accessibles (archive.org : *Flight* 1917-1918, rapports ACA), avec une revalidation.
+
 ## Hors M1 (reporté)
 
 Train d'atterrissage et sol (M2, nécessaires au décollage), structure et dégâts (M4), moteurs rotatifs (M6), turbulence et sillage, dirigeables.

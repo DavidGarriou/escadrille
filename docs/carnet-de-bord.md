@@ -433,3 +433,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** archive.org : seul son moteur de recherche passe. Ses serveurs de fichiers (`*.us.archive.org`, `*.ca.archive.org`, `*.eu.archive.org`) sont refusés par la passerelle réseau, si bien que *Flight* 1917-1918, les rapports techniques britanniques et l'annuaire Jane's restent inaccessibles. Il faut que le joueur autorise `*.archive.org`.
 - **A** Historien relancé (troisième passe) pour lire ces fichiers locaux : polaires du RAF 15 et du RAF 6, loi de puissance en altitude, tables d'hélice, interférence biplan.
 - **⚠** Téléchargement en arrière-plan de *Flight* 1917-1918 (104 numéros trouvés par la recherche d'archive.org) terminé **sans aucun fichier** : les serveurs de fichiers d'archive.org sont refusés. Cela confirme le blocage signalé au joueur.
+
+### Décisions : 150 ch d'abord, M1 validé en confiance C
+- **D** Le joueur décide de commencer par le **SPAD VII 150 ch** (Hispano-Suiza 8Aa).
+- **D** Le joueur valide un **M1 en confiance C** : les cibles d'essai peuvent être de confiance C, étiquetées comme telles ; la confiance sera relevée plus tard, avec une revalidation.
+- **A** Amendement noté dans la définition de « terminé » du M1 (`docs/roadmap.md`) et dans le plan du M1 (section « Décisions du joueur en cours de jalon »).

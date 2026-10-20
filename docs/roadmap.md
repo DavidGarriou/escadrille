@@ -18,6 +18,7 @@ DdT : `just check` et `just test` verts ; le labo manette affiche toutes les com
 - `fdm_lab` : trim, essais, modes propres, tracés PNG.
 
 DdT : essais quantitatifs de confiance A et B dans leurs tolérances ; tests de robustesse verts ; revue `aerodynamicien` sans point bloquant.
+**Amendement du 2026-10-20 (décision du joueur)** : faute d'accès aux sources primaires, le M1 est validé avec des cibles de **confiance C**, étiquetées comme telles dans `essais.ron` et le rapport d'essais ; la confiance sera relevée plus tard (revalidation à prévoir). Premier avion validé : **SPAD VII 150 ch** (Hispano-Suiza 8Aa), le 180 ch ensuite.
 
 ## M2 — Premier vol
 - Pont FDM ↔ ECS, pas fixe, interpolation, origine flottante.
