@@ -2,9 +2,9 @@
 
 - Identifiant : `hispano-suiza-8a`
 - Dernière mise à jour : 2026-10-20
-- État : **en cours** (première passe ; aucune courbe puissance/régime trouvée)
+- État : **en cours** (troisième passe : courbe puissance/régime, loi d'altitude et consommation du 180 hp sourcées par des rapports NACA lus ; hélice d'époque comparable mesurée (VE-7) ; 150 ch et hélice réelle du SPAD toujours sans mesure)
 - Avion concerné : [`spad7.md`](spad7.md) (SPAD S.VII C.1)
-- Méthode et statuts des sources (**[LU]**, **[RÉSUMÉ]**, **[PISTE]**) : voir `spad7.md` § 0. En bref, seules des pages GitHub ont pu être lues ; tout le reste n'a été vu qu'en résumé de moteur de recherche.
+- Méthode et statuts des sources (**[LU]**, **[RÉSUMÉ]**, **[PISTE]**) : voir `spad7.md` § 0. Première et deuxième passes : seules des pages GitHub ont pu être lues, le reste n'a été vu qu'en résumé de moteur de recherche. Troisième passe : rapports NACA téléchargés par le coordinateur (PDF et texte extrait) et **lus** (§ 3.1, 4.1, 5, 7.4), chiffres douteux de l'OCR vérifiés sur l'image des pages.
 
 ## 1. Identification et variantes
 
@@ -154,7 +154,7 @@ La relation du projet, g(σ) = σ − (1 − σ)/7,55 (`.claude/skills/simulatio
 | Levasseur série 586 | **SPAD XIII** (pour comparaison) | 2,55 m | 2,30 m | — | H11 [RÉSUMÉ] | C (XIII) |
 | « Les trois meilleures hélices » pour le SPAD VII 180 ch | document de 1917 cité par un forum | non détaillé | — | — | H10 [RÉSUMÉ] | — |
 
-Bilan : pour le 150 ch, le **diamètre de 2,45 m** revient dans trois documents sur quatre, et le **pas** varie de 1,75 à 2,10 m selon le fabricant. Pour le 180 ch : **non trouvé**.
+Bilan : pour le 150 ch, le **diamètre de 2,45 m** revient dans trois documents sur quatre, et le **pas** varie de 1,75 à 2,10 m selon le fabricant. Pour le 180 ch : **non trouvé**. Aucune de ces hélices n'a de mesure aérodynamique connue ; la seule mesure d'époque d'hélices en bois comparables trouvée est celle du VE-7 (§ 7.4).
 
 Témoignage d'époque : le 28 décembre 1916, Guynemer réclame à Béchereau « une meilleure hélice » pour le SPAD de 150 ch (`spad7.md` S1 [LU]). Il trouvait donc les hélices du début de série insuffisantes.
 
@@ -168,10 +168,87 @@ Bipale en bois à pas fixe, d'après les fiches de collectionneurs (H8, H11 [RÉ
 2. L'hélice du SPAD XIII (8Be à réducteur) est « à gauche » et **tourne en sens inverse** de celle du S.VII à entraînement direct (H12 [RÉSUMÉ]).
 3. Sur le S.E.5a, le Hispano à réducteur tourne dans le sens **antihoraire vu du pilote**, et le Viper à entraînement direct dans le sens **horaire vu du pilote** (H13 [RÉSUMÉ], revues de maquettes concordantes ; la formulation de Wikipedia diverge, sans doute par confusion du point de vue).
 4. Recoupement physique : le pilote de McCook doit mettre « beaucoup de pied à gauche » à cause du couple sur le SPAD XIII (`spad7.md` S15 [RÉSUMÉ]). C'est cohérent avec une hélice antihoraire vue du pilote sur le XIII (C), donc avec une hélice horaire sur le VII.
+5. **Troisième passe, indice d'époque [LU]** : les trois hélices de série de la Navy dessinées pour le Vought VE-7 à moteur **Wright 180 hp E-2** portent toutes la mention « *Rotation: Right hand* » (NACA Report 301, p. 5, légendes des figures 3, 4 et 5 ; vérifié sur l'image de la page). Deux maillons manquent pour en tirer le sens d'un S.VII :
+   - le rapport **ne définit pas** la convention « right hand ». La lecture usuelle américaine (hélice tractive « à droite » = horaire vue de l'arrière, donc du pilote) est une connaissance générale que je n'ai pas retrouvée dans les documents lus ;
+   - le rapport ne dit **ni** que le E-2 est un Hispano sous licence, **ni** qu'il est à entraînement direct. L'identification « Wright-Hispano E » repose sur S31 de `spad7.md` [RÉSUMÉ].
+
+   Si ces deux maillons se confirment, l'indice concorde avec les points 1 à 4.
+
+**Bilan** : la déduction reste de confiance **C**, mais elle est renforcée (cinq indices concordants, dont un document d'époque). Pour passer en B ou A, il faut :
+- une définition écrite de « right hand » dans une publication NACA ou SAE des années 1920 ;
+- ou, mieux, une notice ou une photographie d'un S.VII.
 
 **Attention aux conventions** : selon un forum de collectionneurs, les sources britanniques et françaises décrivent la rotation vue du pilote, les sources allemandes vue de face (H8 [RÉSUMÉ]). Pour confirmer, il faudrait une photographie d'époque d'un S.VII dont le bord d'attaque des pales est lisible, ou la notice d'un S.VII. Seule une notice du **XIII** a été repérée (S38 de `spad7.md`).
 
 **Effets attendus en vol** (C, physique élémentaire, à faire émerger du modèle et non à scripter) : à pleine puissance et à basse vitesse, tendance à partir à gauche, contrée au pied droit ; réaction de couple en roulis vers la gauche.
+
+### 7.4 Mesure d'époque d'hélices en bois comparables : NACA Report 301 (VE-7) [LU]
+
+**Ce n'est pas l'hélice du SPAD.** Ce sont trois hélices bipales en bois de série de la Navy (« standard Navy wood type »), dessinées pour le biplace d'entraînement Vought VE-7 à moteur Wright 180 hp E-2. Elles sont essayées en vraie grandeur, montées sur l'avion complet, dans la soufflerie de 20 ft (6,1 m) de Langley. **Confiance A pour la mesure, C pour l'usage sur le SPAD.**
+
+**Conditions** (p. 3, 6-7, 10) :
+- veine ouverte de 20 ft de diamètre, jusqu'à 110 mph ; le VE-7 (34 ft d'envergure) dépasse d'environ 7 ft de chaque côté de la veine ;
+- axe de l'hélice toujours horizontal ;
+- couple lu sur un bâti dynamométrique, régime au tachymètre (lecture à ±5 tr/min près) ;
+- rapport daté du 18 juin 1928, publié en 1929.
+
+**Définitions** (p. 7) :
+- C_T = poussée effective / (ρ n² D⁴), où la poussée effective est la poussée moins l'augmentation de traînée de l'avion due au souffle ;
+- C_P = puissance / (ρ n³ D⁵) ;
+- J = V/(nD) ;
+- η est un **rendement propulsif**, interférence hélice-cellule comprise.
+
+**Les trois hélices** (p. 5, figures 3 à 5, cotes lues sur l'image ; conversions C) :
+
+| Hélice | Diamètre | Pas | P/D | η max (tableau III, avion complet) | Source |
+|---|---|---|---|---|---|
+| B' | 8 ft 6 in (2,59 m) | 5 ft 1,2 in (1,55 m) | 0,6 | 0,715 à J = 0,60-0,65 | p. 5, p. 18 |
+| I (3714) | 8 ft 2 in (2,49 m) | 5 ft 8,6 in (1,74 m) | 0,7 | 0,773 à J = 0,75 | p. 5, p. 19 |
+| **D'** | **7 ft 10 in (2,39 m)** | **6 ft 3,2 in (1,91 m)** | **0,8** | **0,775 à J = 0,85** | p. 5, p. 20 |
+
+Contrôle de cohérence (C) : C_T = 0,1215 au point quasi statique de D' (tableau II, p. 15 : 19,7 mph, 1 655 tr/min, 801 lb, ρ = 0,00230 slug/ft³) se retrouve avec D = 7,83 ft. Le diamètre dessiné est donc bien celui de l'hélice essayée.
+
+**Tableau III, hélice D', VE-7 complet, coefficients finaux ajustés** (p. 20, vérifié sur l'image) :
+
+| J | C_T | C_P | η |
+|---|---|---|---|
+| 0,10 | 0,1243 | 0,0668 | 0,186 |
+| 0,15 | 0,1197 | 0,0677 | 0,265 |
+| 0,20 | 0,1149 | 0,0683 | 0,336 |
+| 0,25 | 0,110 | 0,0689 | 0,399 |
+| 0,30 | 0,1051 | 0,0690 | 0,457 |
+| 0,35 | 0,1002 | 0,0690 | 0,508 |
+| 0,40 | 0,0951 | 0,0689 | 0,554 |
+| 0,45 | 0,0900 | 0,0682 | 0,594 |
+| 0,50 | 0,0847 | 0,0671 | 0,631 |
+| 0,55 | 0,0789 | 0,0654 | 0,664 |
+| 0,60 | 0,0730 | 0,0631 | 0,694 |
+| 0,65 | 0,0671 | 0,0603 | 0,724 |
+| 0,70 | 0,0608 | 0,0570 | 0,745 |
+| 0,75 | 0,0544 | 0,0534 | 0,765 |
+| 0,80 | 0,0478 | 0,0497 | 0,770 |
+| 0,85 | 0,0418 | 0,0457 | 0,775 |
+| 0,90 | 0,0351 | 0,0416 | 0,759 |
+| 0,95 | 0,0288 | 0,0372 | 0,735 |
+| 1,00 | 0,0224 | 0,0325 | 0,689 |
+| 1,05 | 0,0160 | 0,0272 | 0,618 |
+| 1,10 | 0,0096 | 0,0216 | 0,489 |
+
+Les tableaux III de B' (p. 18) et de I (p. 19) sont lus et vérifiés sur l'image. Ils ne sont pas recopiés ici. Ils serviront si l'aérodynamicien veut encadrer le pas.
+
+**Autres résultats utiles** :
+- **Ailes** : sur l'hélice I, la présence des ailes **réduit le rendement propulsif maximal d'environ 5 %** et augmente un peu la puissance absorbée. L'empennage n'a **pas d'effet sensible** (p. 3, 10 ; tableaux III p. 19, 21 et 22 : η max 0,773 avec l'avion complet contre environ 0,81 sans ailes ni empennage).
+- **Vol et soufflerie** : dans trois essais sur quatre, les coefficients de puissance mesurés en vol (rapports NACA 220 et 292) sont **3 à 5 % plus élevés** qu'en soufflerie. L'auteur en conclut que les moteurs délivraient en vol un peu moins que leur puissance au banc (p. 10). Pour le jeu, c'est un ordre de grandeur de l'écart possible entre puissance au banc et puissance installée (C).
+- **Vrillage** : la déformation des pales en fonctionnement est faible, de 0,2 à 0,5° (p. 7).
+- **Puissance absorbée** (calcul C sur le tableau II, p. 15) : vers 99,5 mph et 1 740 tr/min, couple de 552 lb·ft, soit environ **183 hp**. Au point quasi statique (19,7 mph, 1 655 tr/min, 556 lb·ft), environ **175 hp** pour **801 lb** de poussée effective (≈ 3,56 kN). Ces valeurs donnent un ordre de grandeur pour la poussée statique d'un « 180 » à entraînement direct, **pas une valeur SPAD**.
+
+**Usage proposé pour le modèle** (C, à valider par l'aérodynamicien) :
+- **D'** est la plus proche des cotes relevées pour le SPAD (§ 7.1) : diamètre 2,39 m contre 2,35-2,45 m, pas 1,91 m contre 1,75-2,10 m, P/D 0,8 contre environ 0,71 à 0,86 (calcul C). Le pas de D' coïncide avec celui du plan britannique AB 759 (1,91 m, H8 [RÉSUMÉ]), ce qui est probablement une coïncidence.
+- Deux options :
+  - **calibrer le calcul BEMT** de l'hélice Gallia ou Levasseur pour qu'il retrouve la table de D' quand on lui donne la géométrie de D' (forme en plan et calages lisibles sur la figure 5, ordonnées des profils au tableau I, p. 12) ;
+  - ou **reprendre directement la table de D'** comme hélice de secours, mise à l'échelle par le diamètre (les coefficients sont sans dimension), avec une étiquette `C:` dans les données.
+- **Domaine couvert** (calcul C) : en palier à 208 km/h et 2 000 tr/min avec D = 2,45 m, J ≈ 0,71. La table (J de 0,10 à 1,10) couvre le palier, la montée et un piqué modéré.
+- **Ce que la table ne donne pas** : J = 0 (point fixe au sol), l'effet de l'incidence de l'axe (toujours horizontal ici) et l'effet du nombre de Mach en bout de pale. Pour ce dernier, le Report 319 (profils d'hélice à grande vitesse, téléchargé, non exploité) est une piste.
 
 ## 8. Fiabilité et défauts connus (pour les pannes et l'ambiance, pas pour le M1)
 - Surchauffe par temps chaud, mise en température difficile par temps froid, bâti moteur à renforcer sur les premiers S.VII (`spad7.md` S5 [RÉSUMÉ]).

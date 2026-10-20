@@ -481,3 +481,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - *Flight* 1916-1919 en cours de téléchargement (80 numéros sur environ 200 à ce stade, dont 4 avec des mentions du SPAD).
 - **⚠** FranceArchives oppose un mécanisme anti-robots : une redirection JavaScript en boucle avec cookie. Claude **ne le contourne pas**, puisqu'il sert justement à bloquer l'accès automatique. Pistes : une recherche manuelle du joueur, ou une interface officielle si FranceArchives en propose une.
 - **A** E-médiathèque du Musée de l'Air et de l'Espace : en ligne (logiciel Opsis/Skopus, photos, films, sons), avec une interface entièrement en JavaScript. Elle servira surtout de référence visuelle (livrées, cockpits) pour le M3 et les fiches, plutôt que pour des chiffres de performance.
+- **A** Nouvel instantané intermédiaire des fiches de recherche modifiées par l'historien (troisième passe en cours).
