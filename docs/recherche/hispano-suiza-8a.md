@@ -34,14 +34,56 @@ Licence britannique : Wolseley à Birmingham (H1 [RÉSUMÉ]). Son dérivé à en
 
 ## 3. Puissance en fonction du régime
 
-**Courbe d'époque : non trouvée.**
+### 3.1 Mesure d'époque : NACA Report 46 (V. R. Gage, Bureau of Standards) [LU]
+Le moteur essayé est décrit page 527 :
+- Hispano-Suiza de série « coté **180 hp à 1 700 tr/min** » ;
+- 8 cylindres de **4,72 × 5,12 in** (120 × 130 mm) en V à 90° ;
+- **taux de compression de 5,3** ;
+- carburateur **Claudel**.
 
-Pistes précises :
+Ce sont exactement l'alésage, la course et la compression du **8Ab** (§ 1-2). Le constructeur (français ou licence américaine) n'est **pas** précisé.
+
+Conditions d'essai :
+- caisson d'altitude, pleins gaz ;
+- de 1 300 à 2 100 tr/min ;
+- pressions correspondant à environ 5 500, 11 500, 19 200 et 29 500 ft ;
+- **air maintenu vers 0 °F (−18 °C)** à toutes les « altitudes » ;
+- mélange réglé pour la puissance maximale, côté pauvre ;
+- 390 essais moyennés.
+
+**Tableau 1 (p. 550)**, puissance au frein en hp, valeurs lissées. Les étiquettes de lignes sont confirmées par le produit rendement mécanique × puissance indiquée du même tableau.
+
+| tr/min | Sol | 5 000 ft | 10 000 ft | 15 000 ft | 20 000 ft | 25 000 ft | 30 000 ft |
+|---|---|---|---|---|---|---|---|
+| 1 500 | 179 | 146 | 119 | 96,7 | 78,6 | 63,5 | 50,8 |
+| 1 700 | 203 | 165 | 134 | 109 | 89 | 71,6 | 56,2 |
+| 1 900 | 215 | 177 | 144 | 117 | 94,6 | 75 | 58,2 |
+| 2 100 | 228 | 185,5 | 150 | 123 | 97 | 78 | 59,3 |
+
+Données complémentaires du même tableau :
+- **Puissance indiquée au sol** : 164,5 (1 300), 195 (1 500), 218 (1 700), 235 (1 900) et 253 hp (2 100).
+- **Puissance de frottement**, à peu près constante quelle que soit l'altitude : environ 13,1 (1 300), 14,7 (1 500), 16 (1 700), 20 (1 900) et 25 hp (2 100).
+- **Rendement mécanique au sol** : 0,90 à 0,93.
+
+**Courbe proposée** (A pour le moteur essayé, **B** pour un 8Ab : même définition, constructeur non précisé). Puissance au frein à pleins gaz, au sol, rapportée à 2 100 tr/min :
+
+| tr/min | 1 500 | 1 700 | 1 900 | 2 100 |
+|---|---|---|---|---|
+| Facteur | 0,785 | 0,890 | 0,943 | 1,000 |
+
+Calcul (C) sur les valeurs du tableau. À 1 300 tr/min, rendement mécanique × puissance indiquée ≈ 151 hp, soit un facteur d'environ 0,66 (C).
+
+**Précautions**
+- Les valeurs sont mesurées en **air froid** (−18 °C), donc dense. Contrôle (C) : 203 hp × 255,4 K / 288,15 K ≈ 180 hp à 1 700 tr/min en air standard, si la puissance suit la densité. C'est bien la cote annoncée, mais l'hypothèse est simplificatrice (§ 4).
+- **Régime nominal** : 1 700 tr/min dans ce document américain, contre 2 100 tr/min dans les sources secondaires sur le 8Ab français (H1, H5). La puissance continue de croître jusqu'à 2 100 tr/min (tableau ci-dessus). La « cote » dépend donc de la convention ; voir le journal.
+- Le **8Aa** (compression 4,7) n'a pas de mesure équivalente. La courbe ci-dessus n'est transposable qu'avec un facteur d'échelle de puissance (C).
+
+### 3.2 Pistes restantes (inchangées)
 - Un essai du département moteurs du Royal Aircraft Establishment, daté du **8 août 1916**, sur un Hispano-Suiza de 150 hp. Sa courbe serait reproduite en **figure 10** de l'**ARC R&M n° 586** (juillet 1921). Le même participant du forum note qu'elle donne une puissance maximale un peu plus faible à 2 000 tr/min, mais plus de puissance et un couple maximal plus élevé vers 1 200 à 1 400 tr/min. La référence de comparaison n'est pas claire dans le résumé (H6 [RÉSUMÉ]).
 - R&M 586 doit se trouver dans les archives ARC numérisées par Cranfield (AERADE, `reports.aerade.cranfield.ac.uk`), inaccessibles depuis le conteneur. Une autre voie : le volume annuel *Technical Report of the Aeronautical Research Committee* de 1920-21 ou de 1921-22 sur archive.org (série dont seul le volume `technicalreport1917aero_2` a été repéré). Identifiant à trouver, contenu non lu.
 - Un participant du même forum dit utiliser cette courbe dans un modèle de performances du « Spad 7 C1 » à **740 kg**, réglé d'après des données de l'Air Board (H6 [RÉSUMÉ]). Ce n'est pas une source de chiffre, mais une piste vers des données de l'Air Board.
 
-**Conséquence pour le modèle de vol** : en attendant R&M 586, la forme de la courbe `power_curve` ne peut pas être sourcée. Seul le point nominal (150 ch à 2 000 tr/min, 180 ch à 2 100 tr/min, confiance C) l'est. Toute autre forme est une estimation `E:` à justifier par l'aérodynamicien. Cette fiche n'en propose pas.
+**Conséquence pour le modèle de vol** : la forme de `power_curve` peut désormais être sourcée, pour le 180 ch, par le Report 46 (§ 3.1). Le R&M 586 reste utile pour le 150 ch.
 
 Indice d'usage : dans une lettre du 8 septembre 1916, Guynemer décrit son approche d'un groupe ennemi « à 1800 » au compteur (« at 1800 on the speedometer » dans la traduction anglaise ; S1 de `spad7.md` [LU]). Il s'agit **peut-être** du compte-tours (1 800 tr/min en descente vers l'ennemi). Interprétation non vérifiée, inutilisable comme donnée.
 
@@ -49,11 +91,44 @@ Indice d'usage : dans une lettre du 8 septembre 1916, Guynemer décrit son appro
 - **Moteur atmosphérique** : aucune source consultée n'attribue un compresseur aux 8Aa et 8Ab de série. Un « Hispano-Suiza suralimenté de 190 ch » essayé sur un SPAD 7 en 1917 est cité comme un cas particulier (résumé de recherche ; page source probablement S5 ou S12 de `spad7.md`, attribution incertaine). Confiance C.
 - **Vocabulaire à surveiller** : une hélice Gallia série 3 porte la marque « Sur » pour un Hispano de 150 ch dit « surcompressé » (H8 [RÉSUMÉ]). En français d'époque, « surcomprimé » désigne en général un **taux de compression augmenté** (comme le 8Ab), pas une suralimentation. La traduction anglaise *supercharged* du forum est donc douteuse. À vérifier.
 - **Carburateur** : un participant du forum suggère que les premiers 150 ch n'avaient pas de correction altimétrique du mélange, ce qui ferait varier la montée au-dessus de 2 000 m selon le carburateur monté (H7 [RÉSUMÉ]). Hypothèse non vérifiée.
-- **Modèle retenu par défaut** : relation de Gagg-Farrar (règle du projet, skill `simulation-vol`). Confiance **C** : aucune mesure d'époque de la puissance en altitude n'a été trouvée.
+### 4.1 Mesures d'époque sur la famille Hispano (troisième passe) [LU]
+
+**Report 46** (Gage ; moteur de 180 hp, compression 5,3 ; § 3.1)
+- La **puissance indiquée décroît en proportion directe de la densité de l'air** : sur papier logarithmique, c'est une droite de pente 1 (p. 525).
+- La **puissance de frottement est à peu près constante** à régime donné, quelle que soit l'altitude (p. 525-526).
+- Vers 30 000 ft, la puissance ne croît presque plus au-delà de 1 700 tr/min (p. 526).
+- **Réserve de méthode** : la puissance indiquée a été calculée en supposant un frottement constant (p. 525, 527). La loi « indiquée ∝ densité » est donc en partie une hypothèse de calcul, jugée justifiée a posteriori par les auteurs.
+
+**Report 108** (Gage, « Some Factors of Airplane Engine Performance » ; essais en caisson d'altitude d'un Liberty et de trois Hispano-Suiza) (p. 649-651 et conclusions)
+- À conditions constantes, la puissance indiquée est proportionnelle à la densité de la charge au début de la compression.
+- La puissance décroît **un peu moins vite que la densité** quand c'est la température qui augmente, car le remplissage s'améliore avec la température.
+- Le couple de frottement varie linéairement avec le régime et avec la densité ; le pompage en représente environ la moitié.
+- Le réglage altimétrique des carburateurs de série est **insuffisant au-dessus d'environ 45 cm de mercure (≈ 15 000 ft)**.
+
+**Report 103** (Sparrow et White, « Performance of a 300-Horsepower Hispano-Suiza Airplane Engine » ; modèle « H » de 300 hp, autre cylindrée) (p. 581-582)
+- Au-dessous de 20 000 ft, la puissance au frein suit une **droite en fonction de la densité de l'air au carburateur**.
+- À 1 800 tr/min et 0,040 lb/ft³ (contre 0,075 au sol), la puissance au frein vaut **environ 42 %** de celle du sol, et la puissance indiquée **environ 47 %**.
+- Le mélange devient trop riche au-delà de 20 000 ft.
+
+### 4.2 Comparaison avec la relation de Gagg-Farrar (C, calculs faits ici)
+La relation du projet, g(σ) = σ − (1 − σ)/7,55 (`.claude/skills/simulation-vol/modele-aero.md`, section « Moteurs »), a exactement la forme qu'on obtient avec une **puissance indiquée proportionnelle à σ et un frottement constant** : g(σ) = σ − k(1 − σ), où k = frottement / puissance au frein au sol. Gagg-Farrar revient à **k = 1/7,55 ≈ 0,132**.
+
+- **Report 46** (Hispano de 180 hp) : k = 14,7/179 ≈ 0,082 (1 500 tr/min), 16/203 ≈ 0,079 (1 700), 20/215 ≈ 0,094 (1 900), 24,8/228 ≈ 0,109 (2 100). Ce moteur **perd moins** que Gagg-Farrar ne le prévoit. Exemple à 1 700 tr/min et σ ≈ 0,48 (rapport des puissances indiquées « 20 000 ft » / sol, 105/218) : mesure 89/203 = 0,438 ; Gagg-Farrar 0,413 (environ −6 %).
+- **Report 103** (Hispano « H » de 300 hp) : à σ ≈ 0,040/0,075 = 0,533, la mesure donne 0,42, contre 0,471 pour Gagg-Farrar. Ce moteur **perd plus** (environ +11 % d'écart).
+- **Conclusion** : Gagg-Farrar se situe **entre** les deux moteurs Hispano mesurés. Pour un 8Ab, le Report 46 est le plus pertinent (même cylindrée et même compression).
+- **Proposition** (à valider par l'aérodynamicien) : g(σ) = σ − k(1 − σ), avec k ≈ 0,08 à 0,11 selon le régime (Report 46). Confiance **B** pour un 8Ab, **A** pour le moteur essayé. À défaut, conserver Gagg-Farrar (C), en sachant qu'il est un peu pessimiste pour ce moteur, d'environ 5 % à σ = 0,5.
+- **Ce qui manque** : l'origine précise de la relation « Gagg-Farrar » citée par la skill. Les rapports lus sont de **V. R. Gage** (1920-1921), à ne pas confondre avec « Gagg ». La référence Gagg et Farrar n'a été ni trouvée ni lue.
 
 ## 5. Consommation
-- Consommation spécifique (g/ch/h) : **non trouvée**.
-- Contrôle de cohérence seulement (C, données faibles) : 135 L de carburant pour 1,5 à 2 h d'autonomie (`spad7.md` S13 [RÉSUMÉ]) donnent environ 68 à 90 L/h en moyenne, à un régime non précisé. Ne pas s'en servir comme donnée de modèle.
+- **Report 46, tableau 1 (p. 550)** [LU], en livres de carburant par hp au frein et par heure :
+  - **au sol** : 0,515 (1 300), 0,500 (1 500), 0,503 (1 700), 0,512 (1 900), 0,525 (2 100) ;
+  - **à « 30 000 ft »** : 0,649, 0,635, 0,610, 0,650, 0,650 ;
+  - rapportée à la puissance indiquée : environ 0,46 à 0,49 lb/(hp·h) à toutes les altitudes.
+  
+  Confiance A pour le moteur essayé, B pour un 8Ab.
+- **Conversion** (C) : 0,503 lb/(hp·h) ≈ 0,228 kg/(hp·h), soit **≈ 0,225 kg/(ch·h)**.
+- **Contrôle** (C, données faibles) : à 180 ch, environ 40 kg/h, soit environ 56 L/h avec une masse volumique de 0,72 kg/L (valeur du format de données, non sourcée ici). Les 135 L du SPAD (`spad7.md` S13 [RÉSUMÉ]) donneraient environ 2,4 h à pleine puissance, **plus** que l'autonomie de 1,5 à 2 h citée par la même source. Ces chiffres d'autonomie et de contenance restent à vérifier.
+- **Report 46, résumé** : rendement thermique au frein d'environ **24 %** au sol, en baisse vers 20 % en altitude (p. 525).
 - Huile : non trouvé.
 
 ## 6. Masse

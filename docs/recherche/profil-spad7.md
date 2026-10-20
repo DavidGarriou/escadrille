@@ -1,118 +1,209 @@
 # Profil d'aile du SPAD VII — fiche de recherche
 
 - Identifiant : `profil-spad7` (fichier de polaires visé : `airfoils/spad.ron`, voir `format-avion.md`)
-- Dernière mise à jour : 2026-10-20
-- État : **en cours** ; profil réel **inconnu** ; profil comparable proposé en confiance **C**
+- Dernière mise à jour : 2026-10-20 (troisième passe)
+- État : **en cours**.
+  - Un profil nommé **« Spad »** a été trouvé dans le NACA Report 93 (ordonnées et polaire du MIT de 1918). Confiance **B** pour le S.VII : le document ne précise pas de quel SPAD il s'agit.
+  - Des polaires de **RAF 15** ont été mesurées par la NACA jusqu'au Reynolds de vraie grandeur. Confiance **A** pour ce profil, **C** comme substitut.
 - Avion concerné : [`spad7.md`](spad7.md)
-- Méthode et statuts des sources (**[LU]**, **[RÉSUMÉ]**, **[PISTE]**) : voir `spad7.md` § 0.
+- Méthode et statuts des sources (**[LU]**, **[RÉSUMÉ]**, **[PISTE]**) : voir `spad7.md` § 0. Pour cette passe, **[LU]** désigne les rapports NACA téléchargés depuis NTRS par le coordinateur et lus ici : texte OCR, puis vérification visuelle des tableaux sur les pages PDF. Ce sont des copies locales non versionnées, dont l'adresse NTRS est donnée au § 7.
 
 ## 1. La question
-Quel profil portaient les ailes du SPAD S.VII ? Existe-t-il, pour ce profil ou pour un profil comparable, des données de soufflerie publiées (NACA, ACA/ARC britanniques, Eiffel, Göttingen) que le modèle de vol puisse utiliser ?
+Quel profil portaient les ailes du SPAD S.VII ? Existe-t-il, pour ce profil ou pour un profil comparable, des données de soufflerie publiées que le modèle de vol puisse utiliser ?
 
-## 2. Ce que disent les sources sur le profil réel
+## 2. Le profil « Spad » du NACA Report 93 (découverte de la troisième passe)
 
-| Constat | Source | Statut | Portée |
+### 2.1 Ce que dit le document [LU]
+- Le Report 93 (A1) compile des profils issus de plusieurs laboratoires. Son index range, parmi les profils essayés au **MIT**, une section nommée **« Spad »**, sous la référence **n° 49** (A1, index p. 262 et p. 264).
+- **Ordonnées** : tableau « Ref. No. 49, Spad », p. 268 (PDF p. 12). Elles sont lues à l'image et recoupées avec l'OCR et avec le tableau en médaillon de la planche (p. 291).
+- **Conditions d'essai**, sur la planche « Reference No. 49 », p. 291 (PDF p. 35) : section « Spad » ; maquette de **18 × 3 in** (allongement 6) ; vitesse **55,7 ft/s** (lecture visuelle) ; essai au **M.I.T.** ; date **1918** (lecture visuelle). La planche donne les courbes L_c, D_c, L/D et centre de poussée en fonction de l'incidence, de −4° à 18°.
+- **Ce que le document ne dit pas** : quel SPAD a servi (S.VII, S.XIII ou autre), ni comment les ordonnées ont été obtenues (relevé sur une aile ou sur un plan).
+
+### 2.2 Ordonnées (en % de corde, au-dessus de la ligne de référence) [LU]
+
+| x (%) | 0 | 1,25 | 2,5 | 5 | 7,5 | 10 | 15 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 95 | 100 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Extrados | 0,26 | 1,55 | 2,14 | 3,00 | 3,75 | 4,37 | 5,31 | 5,95 | 6,60 | 6,67 | 6,28 | 5,53 | 4,51 | 3,26 | 1,80 | 1,06 (OCR : 1,04) | 0,32 |
+| Intrados | 0,26 | 0,07 | 0,03 | 0,08 | 0,16 | 0,26 | 0,55 | 0,85 | 1,25 | 1,31 | 1,10 | 0,82 | 0,51 | 0,29 | 0,15 | 0,07 | 0,0 |
+
+**Caractéristiques déduites** (C, calcul fait ici) :
+- **Intrados creux** : ses ordonnées sont positives de 5 % à 95 % de la corde.
+- **Épaisseur maximale ≈ 5,4 %** vers 30 à 40 % (6,67 − 1,31 = 5,36 à 40 %).
+- **Cambrure ≈ 3,8 %** vers 40 % de la corde. Ligne moyenne à 40 % : (6,67 + 1,31) / 2 = 3,99 au-dessus de la référence, moins environ 0,2 pour la droite qui joint le bord d'attaque (0,26) au bord de fuite (environ 0,16).
+
+C'est donc un profil **mince et nettement cambré, à intrados creux**. Il est plus cambré que le RAF 15 et ressemble davantage au RAF 6 tel que le donne le même rapport (§ 4.2).
+
+### 2.3 Polaire du MIT (1918)
+- **Convention des coefficients (point essentiel).** Le Report 93 emploie un coefficient « absolu » défini par **P = C·ρ·V²**, sans le facteur ½ (A1, p. 259-260 [LU]). Les rapports ultérieurs le rappellent : les coefficients modernes C_L = L/(qS) sont « deux fois plus grands que les anciens coefficients L_c, D_c » (A21, pages des symboles [LU]). **Donc C_L = 2·L_c et C_D = 2·D_c** ; la finesse L/D ne change pas. Le rapprochement avec les K_L et K_D britanniques de l'époque est probable mais **n'est pas énoncé dans les documents lus**.
+- **Nombre de Reynolds** (C, calcul fait ici) : corde de 3 in (0,0762 m) et 55,7 ft/s (17,0 m/s) donnent environ **9 × 10⁴**, soit **50 à 100 fois moins** que le Reynolds du S.VII en vol (§ 4.4).
+- **Valeurs** : la planche est petite. Ma lecture graphique est **grossière** et ne vaut qu'à titre indicatif (confiance **D**) : L_c max d'environ 0,5 vers 14 à 16°, soit un C_L max d'environ 1,0 ; finesse maximale de l'ordre de 16 vers 3 à 4°. **À numériser proprement** à partir du PDF, p. 291, avec un outil de relevé de courbes, avant tout usage.
+
+### 2.4 Autres constats (inchangés)
+- Différents profils d'aile auraient été essayés sur le S.VII sans être adoptés en série (A11 [RÉSUMÉ], wiki). Le « Spad » du MIT pourrait donc ne pas être le profil de série du S.VII : à vérifier.
+- Les plans originaux du SPAD XIII auraient été détruits pendant la Seconde Guerre mondiale (A10 [RÉSUMÉ]).
+- Réputation de « profil mince » et de décrochage brutal (A12 [RÉSUMÉ]). Elle est **compatible** avec l'épaisseur trouvée (5,4 %), sans être démontrée par elle.
+- *Flugsport* 1919 : comparaison de profils français, dont le « Spad » (A8 [RÉSUMÉ]). C'est désormais une source de **recoupement** de la forme.
+
+## 3. Polaires mesurées du RAF 15 (profil de référence à Reynolds de vraie grandeur)
+
+### 3.1 NACA Report 233 (Munk et Miller, 1927) : la source principale [LU]
+- **Laboratoire et méthode** (A15, p. 73-74) :
+  - soufflerie à densité variable de Langley ;
+  - maquette rectangulaire en duralumin de **30 × 5 in**, soit un **allongement de 6** (et non une aile infinie) ;
+  - vitesse d'environ 76 ft/s, pression du caisson de 1 à 20 atmosphères ;
+  - correction appliquée : traînée des fils et pièces de suspension retranchée ; **aucune correction de paroi** (le Report 331 l'ajoute plus tard, § 3.2) ;
+  - coefficients absolus modernes C_L = L/(qS), C_D = D/(qS) ;
+  - **C_M rapporté au quart de corde, positif à cabrer**.
+- **Mise en garde des auteurs** : ces essais sont parmi les premiers de cette soufflerie ; certaines séries ne concordent pas avec les autres ; l'effet général du Reynolds est jugé donné « avec une précision raisonnable » (p. 73).
+- **Ordonnées** : elles ont été mesurées sur la maquette finie (tableau XXXVI, p. 82). Les auteurs signalent que les tables d'ordonnées du RAF 15 publiées à différentes époques diffèrent entre elles (p. 74). Ma lecture visuelle de ce tableau (C) donne une épaisseur maximale d'environ 6,4 % vers 15 %, proche du fichier UIUC (6,5 %).
+
+**Tableau XXX (p. 80)** : RAF 15, 20 atmosphères, **Re = 3 580 000**, allongement 6, sans correction de paroi.
+
+| α (°) | C_L | C_D | C_M (¼ c) |
 |---|---|---|---|
-| **Aucune** cote de profil (coordonnées, épaisseur relative, cambrure) du S.VII n'a été trouvée | toutes les recherches de cette passe | — | Le profil réel reste inconnu |
-| Différents profils d'aile auraient été essayés sur le S.VII sans être adoptés en série | A11 | [RÉSUMÉ], wiki | Le profil de série a pu varier, ou non : à vérifier |
-| Les plans originaux du **SPAD XIII** auraient été détruits pendant la Seconde Guerre mondiale. Le constructeur d'une reproduction a relevé les cotes sur des appareils originaux (NASM, collection Cole Palen) | A10 | [RÉSUMÉ] | Rien n'est dit des plans du VII : ne pas extrapoler |
-| Le SPAD serait « tout sauf facile » à basse vitesse, son **profil mince** provoquant souvent des décrochages brutaux | A12 | [RÉSUMÉ] ; page source mal identifiée (Memorial Flight ou NASM) | Qualificatif seulement ; aucune mesure |
-| Un article relayé par un forum classe le SPAD parmi les avions (avec le S.E.5a et le Camel) à **profil très mince**, recherché pour la vitesse : l'avion « tomberait » en perdant sa vitesse et se poserait au moteur | A12 | [RÉSUMÉ], forum | Réputation (voir `spad7.md` § 6.3), pas une donnée |
-| *Flugsport*, 1919 : comparaison de profils d'avions français, dont « Spad », Morane-Saulnier, Nieuport et Martinsyde | A8 | [RÉSUMÉ] (index des dessins de la revue *WW1 Aero*) | **La meilleure piste** pour la forme réelle du profil : relevé allemand d'après guerre, sans doute sur appareils capturés. Numéro et page non obtenus |
+| −4,5 | −0,162 | 0,0139 | −0,054 |
+| −3,0 | −0,052 | 0,0087 | −0,052 |
+| −1,5 | 0,052 | 0,0083 | −0,053 |
+| 0,0 | 0,166 | 0,0088 | −0,048 |
+| 1,5 | 0,285 | 0,0119 | −0,045 |
+| 3,0 | 0,398 | 0,0154 | −0,044 |
+| 4,5 | 0,507 (OCR : 0,557 ; image et pente : 0,507) | 0,0205 | −0,049 |
+| 6,0 | 0,629 | 0,0280 | −0,045 |
+| 9,0 | 0,850 | 0,0477 | −0,048 |
+| 12,0 | 1,063 | 0,0734 | −0,049 |
+| 15,0 | 1,209 | 0,0997 | −0,046 |
+| « 16 ± » | 1,127 | 0,1527 | −0,077 |
+| 18,0 | 1,004 | 0,2181 | −0,138 |
+| 21,0 | 0,924 | 0,2872 | −0,137 |
 
-**Conclusion** : on sait seulement, et par des sources secondaires faibles, que le profil serait **mince**. C'est insuffisant pour une valeur de confiance B.
+**Tableau XXXVII (p. 82)** : effet du Reynolds sur le RAF 15. La valeur du C_L max est recoupée par le produit (C_L max / C_D min) × C_D min.
 
-## 3. Données de soufflerie publiées : inventaire
+| Pression (atm) | Re | C_L max | C_D min |
+|---|---|---|---|
+| 1,00 | 185 000 | 1,067 | 0,0101 |
+| 2,51 | 461 000 | 1,061 | 0,0093 |
+| 5,10 | 950 000 | 1,063 | 0,0094 |
+| 10,75 | 2 060 000 | 1,095 | 0,0099 |
+| 20,00 | 3 580 000 | 1,216 | 0,0083 |
 
-### 3.1 Laboratoire Eiffel (Auteuil)
-- **A5** — G. Eiffel, *Résumé des principaux travaux exécutés pendant la guerre au Laboratoire aérodynamique Eiffel, 1915-1918*, Librairie aéronautique (E. Chiron), Paris, [1919]. Une copie en accès intégral (Université du Michigan) est signalée sur HathiTrust (notice 001035741) [RÉSUMÉ]. **Son contenu n'a pas pu être vérifié** : on ignore s'il contient l'aile ou une maquette du SPAD. C'est la source primaire française la plus probable pour un essai lié au SPAD, à consulter en priorité.
-- **A6** — G. Eiffel, *Nouvelles recherches sur la résistance de l'air et l'aviation faites au laboratoire d'Auteuil* (texte et atlas), essais de 1911 à 1913 [RÉSUMÉ]. Antérieur au SPAD VII, mais il contient les profils « Eiffel » de l'époque, ce qui peut servir de comparaison.
+Les tableaux complets aux pressions intermédiaires sont aux tableaux XXVI à XXIX (p. 79-80).
 
-### 3.2 NACA : compilations « Aerodynamic Characteristics of Aerofoils » (domaine public)
-- **A1** — NACA Report No. 93, *Aerodynamic Characteristics of Aerofoils*, 1921 (NTRS : date 1er janvier 1921 ; 83 p.). https://ntrs.nasa.gov/citations/19930091156 ; PDF : https://ntrs.nasa.gov/api/citations/19930091156/downloads/19930091156.pdf [RÉSUMÉ]. Compilation, sous une forme unifiée (coefficients absolus), des résultats publiés par plusieurs laboratoires américains et européens. Le rapport avertit lui-même que les résultats de laboratoires différents ne sont pas strictement comparables. **Liste des profils non vérifiée** (PDF inaccessible ; l'OCR est jugé illisible dans le résumé).
-- **A2** — NACA Report No. 124, *Aerodynamic Characteristics of Aerofoils II* (suite du n° 93), NTRS : https://ntrs.nasa.gov/citations/19930091187 (date de 1923 sur NTRS, 1921 ailleurs : **à vérifier**) ; copie UNT : https://digital.library.unt.edu/ark:/67531/metadc65774/ [RÉSUMÉ].
-- **A3** — Suites de la série : Reports n° 182, 244 et 286. Le n° 286 prolonge les n° 93, 124, 182 et 244 [RÉSUMÉ]. Identifiants NTRS non relevés.
-- **A4** — NACA Report No. 304 (1929), Crowley et Green, *An Investigation of the Aerodynamic Characteristics of an Airplane Equipped with Several Different Sets of Wings*. Essais en vol plané d'un Sperry Messenger équipé tour à tour d'ailes R.A.F. 15, U.S.A. 5, U.S.A. 27 et Göttingen 387. https://ntrs.nasa.gov/citations/19930091373 [RÉSUMÉ]. Intérêt : des mesures **en vraie grandeur** sur le RAF 15, utiles pour juger de l'effet d'échelle sur des données de soufflerie de 1917.
-- **A15** — NACA Report No. 233 (1927), M. M. Munk et E. W. Miller, *The Aerodynamic Characteristics of Seven Frequently Used Wing Sections at Full Reynolds Number*. https://ntrs.nasa.gov/citations/19930091301 ; PDF : https://ntrs.nasa.gov/api/citations/19930091301/downloads/19930091301.pdf [RÉSUMÉ]. Sections U.S.A. 5, U.S.A. 27, U.S.A. 35 A et 35 B, Clark Y, **R.A.F. 15** et Göttingen 387, essayées dans la soufflerie à densité variable jusqu'à un Reynolds proche de la vraie grandeur. D'après le résumé : effet du Reynolds important et irrégulier ; quand le Reynolds augmente, petite hausse du C_L max et baisse sensible de la traînée. **C'est la source à privilégier pour les polaires du RAF 15** (tableaux non lus).
-- **A16** — NACA Report No. 309 (1930), *Joint Report on Standardization Tests on N.P.L. R.A.F. 15 Airfoil Model*. https://ntrs.nasa.gov/citations/19930091378 [RÉSUMÉ]. Modèle de RAF 15 de 36 × 6 in, fourni par l'Aeronautical Research Committee pour des essais internationaux et passé dans plusieurs souffleries américaines. Utile pour juger de la dispersion entre souffleries.
-- **A17** — NACA Report No. 279 (1928), *Tests on Models of Three British Airplanes in the Variable Density Wind Tunnel*, https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19930091347.pdf [RÉSUMÉ]. L'un des modèles a des ailes RAF 15 ; l'étude porte sur l'effet d'échelle sur la traînée.
-- **A18** — NACA Report No. 331, *Collection of Wind-Tunnel Data on Commonly Used Wing Sections*, https://ntrs.nasa.gov/citations/19930091401 [RÉSUMÉ]. Regroupe sous une forme uniforme les propriétés de profils courants mesurées dans diverses souffleries. Présence du RAF 15 et du RAF 6 non vérifiée.
-- **A19** — NACA Report No. 319 (1930), Briggs et Dryden, *Aerodynamic Characteristics of Twenty-Four Airfoils at High Speeds*, https://ntrs.nasa.gov/citations/19930091389 [RÉSUMÉ]. Famille « R.A.F. » de profils **d'hélice** (épaisseurs de 0,04 à 0,20). Hors sujet pour l'aile, mais utile pour l'hélice (`hispano-suiza-8a.md` § 7).
+**Lecture physique** (C, interprétation faite ici) :
+- À **Re = 3,58 × 10⁶**, le C_L tombe d'environ 1,21 (15°) à 1,13 (environ 16°) puis à 1,00 (18°) : la **chute après le maximum est marquée**.
+- À **Re = 1,85 × 10⁵** (tableau XXVI), le maximum est plus bas (environ 1,07) et la chute plus douce (1,066 à 15°, 1,018 à 18°).
+- Le C_M au quart de corde vaut environ −0,045 à −0,054 et reste presque constant jusqu'à 15°. Il plonge ensuite (−0,138 à 18°) : c'est la signature du décrochage.
 
-### 3.3 Grande-Bretagne (ACA, puis ARC ; NPL)
-- Les essais de profils de la série RAF au National Physical Laboratory sont publiés dans les *Reports and Memoranda* de l'Advisory Committee for Aeronautics [RÉSUMÉ]. Numéros précis non relevés.
-- **A13** — Pankhurst, « N.P.L. Aerofoil Sections: Tabulated Details », ARC R&M 3311 (archives Cranfield), https://reports.aerade.cranfield.ac.uk/bitstream/handle/1826.2/3891/arc-rm-3311.pdf [RÉSUMÉ]. Profils conçus au NPL, postérieurs : utilité douteuse pour 1917.
-- **A14** — L. Bairstow, *Applied Aerodynamics*, Longmans, 1920 [PISTE] : synthèse britannique d'époque, à vérifier.
-- Aucune trace d'un essai britannique du profil SPAD (maquette ou aile) n'a été trouvée.
-- **A20** — *Technical Report of the Advisory Committee for Aeronautics* 1917-18, vol. 2, archive.org `technicalreport1917aero_2` (exemplaire de l'Université de l'Illinois, domaine public, 26 dépliants) [RÉSUMÉ ; contenu non lu]. C'est le volume annuel qui réunit les R&M de l'époque. Il contient probablement les essais du NPL sur la série RAF : à vérifier en cherchant « R.A.F. 15 » et « Spad » dans son texte OCR.
+### 3.2 NACA Report 331 (Louden) : les mêmes mesures corrigées de l'effet de paroi [LU]
+- **Tableau XI (p. 617)** : RAF 15, essai de Langley, maquette de 5 × 30 in, allongement 6, Re = 3 580 000, « données de la référence 2 corrigées de l'interférence de paroi ». La référence 2 est le Report 233, et les C_L sont identiques.
+- La **correction de Prandtl** déplace les incidences : −1,48 / 0,06 / 1,61 / 3,15 / 4,69 / 6,24 / 9,32 / 12,41 / 15,46 / 16,42 / 18,38 / 21,35° au lieu de −1,5 / 0 / 1,5 / … / 21°.
+- Le rapport donne aussi la **traînée de profil C_D0 = C_D − C_L²/(π·6)** (A18, p. 592) :
 
-### 3.4 Allemagne (Göttingen)
-- **A7** — M. Munk et E. Hückel, « Systematische Messungen an Flügelprofilen », *Technische Berichte* (Flugzeugmeisterei), 1917 ; A. S. Engels (comp.), *Flügelprofile : Untersuchungen der Modell-Versuchsanstalt für Aerodynamik der Jahre 1917/18* [RÉSUMÉ]. Profils allemands et profils d'industriels (Albatros, Junkers, Fokker…). **Aucun profil « Spad » signalé.**
+| α corrigé (°) | −4,56 | −3,02 | −1,48 | 0,06 | 1,61 | 3,15 | 4,69 | 6,24 | 9,32 | 12,41 | 15,46 | 16,42 | 18,38 | 21,35 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| C_D0 | 0,0127 | 0,0085 | 0,0081 | 0,0075 | 0,0081 | 0,0079 | 0,0085 | 0,0095 | 0,0141 | 0,0203 | 0,0317 | 0,0937 | 0,1712 | 0,2474 |
 
-### 3.5 États-Unis (McCook Field)
-- L'essai du SPAD XIII à McCook Field en 1921 (Air Service Information Circular vol. III n° 286 ; voir `spad7.md` P12) porte sur les performances et les qualités de vol, pas sur le profil [RÉSUMÉ].
+- C_M rapporté au **bord d'attaque**, positif à cabrer. Contrôle (C) : C_M(bord d'attaque) ≈ C_M(¼ c) − C_L/4, vérifié à 0,005 près à 0°, 6°, 12° et 15°.
+- Les deux C_D corrigés lus à 12,41° et à 15,46° (0,0809 et 0,1098) s'écartent d'environ 0,0007 de C_D0 + C_L²/(6π). C'est une lecture incertaine du dernier chiffre.
+- Le Report 331 reprend 15 profils courants aux États-Unis (Clark Y, Göttingen, M-6, M-12, RAF 15, USA 27…). **Le RAF 6 n'y figure pas** (A18, p. 591).
 
-## 4. Profil comparable proposé (confiance C)
+### 3.3 Dispersion entre souffleries : NACA Report 309 (Diehl, rapport de juin 1928, imprimé en 1929) [LU]
+- **Maquette** : RAF 15 de 6 × 36 in (allongement 6), en aluminium, construite par le NPL pour les essais internationaux de l'Aeronautical Research Committee. Elle a été essayée en 1923-1924 au Bureau of Standards, à Langley, au MIT et à McCook Field, entre 29,3 et 100 ft/s, donc à bas Reynolds. Elle était abîmée par ses voyages (56 trous, voilée) (A16, p. 5-8).
+- **Correction de paroi de Prandtl** appliquée (p. 10). Résultats corrigés (tableau XI, p. 20 ; discussion p. 13-15) :
+  - C_L max de **1,040 à 1,093**, sans les valeurs de McCook (1,110 et 1,153), jugées douteuses ;
+  - C_D min de **0,0138 à 0,0147** (MIT : 0,0123, sans doute trop bas) ;
+  - finesse maximale de **17,30 à 19,20** ;
+  - incidence de portance nulle de **−1,62 à −2,00°**.
+- **Conclusions** : l'accord entre souffleries dépend surtout du soin apporté à l'essai ; la correction de paroi est indispensable (p. 15).
 
-### 4.1 Proposition
-- **Profil de base : RAF 15.** Confiance **C**.
-- **Variante de sensibilité : RAF 6.** Confiance **C**.
+### 3.4 Effet d'échelle sur une cellule de chasseur biplan : NACA Report 279 (Higgins, Diehl et DeFoe, 1928) [LU]
+- Maquette de **Bristol Fighter au 1/15 à ailes RAF 15**, sans empennage, essayée en soufflerie à densité variable de Re ≈ 150 000 à plus de 3 000 000 (A17, résumé et introduction).
+- **C_L max de la maquette** : 0,99 à 1 atmosphère, 1,11 à 2,5 atmosphères, puis baisse lente jusqu'à **1,032** à 20 atmosphères (A17, discussion). Valeurs non corrigées de l'effet de paroi.
+- L'incidence de portance nulle reste constante. L'effet d'échelle sur la traînée vient surtout des parties autres que les ailes.
+- Utile comme **ordre de grandeur du C_L max d'une cellule biplan à profil mince** (confiance C pour le SPAD).
 
-### 4.2 Géométrie de ces profils (coordonnées lues)
-Coordonnées lues dans le miroir GitHub de la base UIUC (A9 [LU]). L'épaisseur et la cambrure ci-dessous ont été **calculées ici** à partir de ces coordonnées (C).
+### 3.5 Vraie grandeur : NACA Report 304 (Crowley et Green, 1929) [LU]
+- **Sperry Messenger** biplan muni d'ailes RAF 15, USA 5, USA 27 et Göttingen 387, en vol plané à « traction nulle » de l'hélice, de 45 à 105 mph (A4, p. 3-5) :
+  - envergure de 20 ft, écartement de 3 ft 10 in ;
+  - dièdre de 1½°, calage de +2°.
+- **Les coefficients sont ceux de l'avion complet**, avec sa traînée parasite, pas ceux du profil. Le **C_L max n'a pas été atteint** en vol. Précision : ±2 % sur les courbes lissées, ±3 à 4 % sur l'incidence (p. 6-7).
+- **Conclusion utile** : le RAF 15, mince, donne le C_L max le plus faible et la traînée minimale la plus faible des quatre (p. 7). Le choix du profil change peu les performances, hormis le C_L max.
 
-| Profil | Points | Épaisseur maxi | Position | Cambrure maxi | Position | Remarque |
-|---|---|---|---|---|---|---|
-| RAF 15 | 31 | ≈ 6,5 % | x ≈ 0,15 à 0,20 | ≈ 2,6 % | x ≈ 0,3 | profil **mince** ; intrados en S près du bord d'attaque |
-| RAF 6 | 25 | ≈ 10,0 % | x ≈ 0,3 | ≈ 4,6 % | x ≈ 0,3 à 0,4 | intrados presque plat ; bord de fuite épais (±0,0015) |
+### 3.6 Données basse vitesse d'époque du Report 93 (RAF 6 et RAF 15) [LU]
+- **RAF 6** (réf. n° 61) : NPL, maquette de 15 × 2,5 in, 30 ft/s, **1912** (planche p. 294).
+  - Ordonnées p. 268 : extrados 7,59 et intrados 0,77 à 30 %, intrados positif (creux).
+  - Épaisseur ≈ **6,8 %** et cambrure ≈ **3,9 %** (C, calcul fait ici).
+  - **Ce n'est pas la géométrie du fichier UIUC « raf6 »** (≈ 10 % d'épaisseur et 4,6 % de cambrure ; ancienne § 4.2). Il existe donc au moins deux « RAF 6 » différents : se fier au Report 93.
+- **RAF 15** (réf. n° 72) : NPL, maquette de 18 × 3 in, 40 ft/s, **1916** (planche p. 296). Convention L_c = C_L/2. Le maximum lu grossièrement (L_c ≈ 0,51, soit C_L ≈ 1,0) est cohérent avec les essais à bas Reynolds des Reports 233 et 309.
 
-Calcul (C) : épaisseur = extrados − intrados à abscisse égale ; cambrure = (extrados + intrados) / 2. RAF 15 à x = 0,15 : 0,05203 + 0,01287 = 0,0649. RAF 6 à x = 0,30 : 0,09578 + 0,00402 = 0,0998.
+## 4. Choix pour le modèle de vol
+
+### 4.1 Proposition (révisée)
+1. **Géométrie : le profil « Spad » du Report 93** (§ 2.2). Confiance **B** pour le S.VII : document primaire de 1918-1921, profil explicitement nommé, mais type de SPAD et origine des ordonnées non précisés.
+2. **Polaires : calcul `C:`** (panneaux et couche limite) à partir de ces ordonnées, au Reynolds du vol (environ 2 à 5 × 10⁶). Recalage et contrôle sur :
+   - (a) le **RAF 15 en vraie grandeur** (Reports 233 et 331, confiance A pour ce profil), pour la pente, les traînées et le comportement au maximum ;
+   - (b) la **polaire « Spad » du MIT**, une fois numérisée (Report 93, confiance A comme mesure mais à Re ≈ 9 × 10⁴), pour la forme générale et l'incidence de portance nulle.
+3. **Repli** si le calcul n'est pas prêt pour le M1 : **polaires du RAF 15** des Reports 233 et 331 (confiance C comme substitut). Elles sont probablement trop peu cambrées par rapport au « Spad » : incidence de portance nulle moins négative, C_M moins piqueur. Le **RAF 6** du Report 93 donne une variante plus cambrée, mais sa seule polaire disponible est à très bas Reynolds (1912).
+
+### 4.2 Passage aux coefficients de profil (allongement infini)
+Toutes les données ci-dessus sont des **maquettes d'allongement 6**. Formules de Prandtl, celles qu'utilise le Report 331 (A18, p. 592) : C_D0 = C_D − C_L²/(π·A), et α∞ = α − (C_L/(π·A))·(180/π), avec A = 6, en supposant une répartition elliptique (approximation).
+
+Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur les valeurs corrigées du Report 331, entre −1,48° et 6,24°) :
+- pente de la maquette ≈ 0,0747 par degré, soit ≈ 0,0967 par degré (5,5 par radian) en allongement infini ;
+- incidence de portance nulle ≈ −2,25° par interpolation (le Report 309 donne −1,6 à −2,0° à bas Reynolds) ;
+- C_L max ≈ 1,21, peu modifié par le passage en 2D.
 
 ### 4.3 Justification
-1. **Cohérence avec le peu que l'on sait** : les sources secondaires décrivent un profil *mince* (§ 2). Le RAF 15 est mince ; le RAF 6, plus épais et plus cambré, encadre l'incertitude.
-2. **Contemporanéité** : deux profils britanniques de la Grande Guerre, essayés au NPL. Le RAF 15 dispose en outre de mesures en vraie grandeur (A4).
-3. **Disponibilité** : coordonnées publiques et lisibles ; rapports NACA du domaine public.
-4. **Ce que le choix n'affirme pas** : rien n'indique que Béchereau ait utilisé un profil RAF. Le choix est purement **analogique**. Un profil Eiffel serait plus « français », mais aucune donnée Eiffel n'a pu être consultée (A5, A6 inaccessibles).
+- Le « Spad » est le seul profil trouvé qui porte ce nom dans un document d'époque. Sa finesse (5,4 %) concorde avec la réputation de profil mince.
+- Le RAF 15 est le seul profil mince de la Grande Guerre mesuré à Reynolds de vraie grandeur dans les documents disponibles, d'où son rôle de **référence de calage**.
 
 ### 4.4 Précautions pour l'aérodynamicien
-- **Données de polaires** : pour le **RAF 15**, des mesures NACA existent bel et bien d'après les résumés de NTRS. A15 (Report 233) donne des essais jusqu'au Reynolds de vraie grandeur, A16 (Report 309) des essais de normalisation, A4 (Report 304) des mesures en vol. **Source recommandée : A15.** Ses tableaux (C_L, C_D, C_M, plage d'incidence, nombre de Reynolds) n'ont pas été lus (§ 7). Pour le **RAF 6**, aucun rapport précis n'est identifié : sa présence dans le Report 93 (A1) n'est pas vérifiée. À défaut, les polaires seront un calcul (`C:`, par exemple panneaux plus couche limite) à partir des coordonnées A9, recalées sur A15 et A4.
-- **Effet d'échelle** : les essais de soufflerie de 1917 sont faits à bas nombre de Reynolds. La corde du S.VII n'est pas connue, mais elle est de l'ordre du mètre : environ 1,16 m de corde moyenne apparente (`spad7.md` § 2, C) et 1,400 m sur le XIII (`spad7.md` § 2.2). L'avion vole à plusieurs dizaines de m/s : son Reynolds est donc de plusieurs millions, bien plus que celui des essais (ordre de grandeur, C). Le C_L max et la brutalité du décrochage en dépendent.
-- **Décrochage** : la réputation de « décrochage brutal » (`spad7.md` § 6.2, trait **à confirmer**) ne doit **pas** servir à régler la polaire. Elle sera, ou non, un résultat.
-- **Biplan** : l'interférence entre les plans relève du modèle (écartement, décalage), pas du profil. Ces cotes manquent pour le S.VII ; voir les comparables du XIII dans `spad7.md` § 2.2.
+- **Échelle** : la corde du S.VII n'est pas connue, mais elle est de l'ordre du mètre (`spad7.md` § 2). Avec plusieurs dizaines de m/s, le Reynolds du vol dépasse le million. Les données MIT et NPL à 6 × 10⁴ – 9 × 10⁴ sous-estiment le C_L max et surestiment la traînée (Reports 233 et 279 : le C_L max varie de façon irrégulière avec le Reynolds).
+- **Décrochage** : les données du RAF 15 à Reynolds élevé montrent une chute après le maximum. C'est une **mesure**, et non un réglage : elle est cohérente avec la réputation (`spad7.md` § 6.2), sans la prouver pour le SPAD.
+- **Biplan** : l'interférence entre plans relève du modèle, pas du profil. Facteurs et méthodes : `spad7.md` § 2.4.
 
-## 5. Ce qu'il faudrait pour passer en confiance B, puis A
-1. ***Flugsport* 1919** (A8) : identifier le numéro et la page (index *WW1 Aero*), puis consulter une collection numérisée (bibliothèques allemandes). Cela donnerait la **forme** du profil SPAD relevée à l'époque.
-2. **Eiffel 1919** (A5) : vérifier sur HathiTrust si le volume contient l'aile ou une maquette du SPAD. On aurait alors des **polaires** françaises d'époque.
-3. **Relevé sur appareil original** : Musée de l'Air (S.254, le plus accessible pour un projet français), San Diego Air & Space Museum, Canada Aviation and Space Museum, Museo Baracca (Lugo), Vigna di Valle (`spad7.md` P17). Un gabarit de nervure à plusieurs stations donnerait la forme réelle.
-4. **Monographies avec plans** : Bruce, Windsock Datafile n° 8 ; Gronczewski et Fleischer ; 4+ Publications n° 19 (`spad7.md` P1 à P3). Leurs plans au 1/48 donnent parfois des coupes de nervures, mais à cette échelle la précision est faible.
-5. **Notice de réglage du SPAD XIII** (`spad7.md` S38) : calages et réglages d'une cellule voisine.
+## 5. Ce qu'il faudrait pour aller plus loin
+1. **Numériser la planche n° 49 du Report 93** (p. 291) : L_c, D_c, centre de poussée en fonction de l'incidence. C'est le plus urgent.
+2. **Identifier le SPAD mesuré au MIT** en 1918 : rapports d'essais du MIT de 1917-1918, ou bibliographie aéronautique de 1917-1921 (`spad7.md` § 9.6).
+3. ***Flugsport* 1919** (A8) et **Eiffel 1919** (A5) : forme et polaires françaises ou allemandes du profil SPAD.
+4. **Relevé de nervure sur un S.VII original** (Musée de l'Air, S.254, etc. ; `spad7.md` P17).
 
 ## 6. Sources (consultées le 2026-10-20)
-- **A1** — NACA, Report No. 93, *Aerodynamic Characteristics of Aerofoils*, 1921. https://ntrs.nasa.gov/citations/19930091156 [RÉSUMÉ]. Primaire (compilation), domaine public.
-- **A2** — NACA, Report No. 124, *Aerodynamic Characteristics of Aerofoils II*, 1921 ou 1923. https://ntrs.nasa.gov/citations/19930091187 ; https://digital.library.unt.edu/ark:/67531/metadc65774/ [RÉSUMÉ].
-- **A3** — NACA, Reports No. 182, 244 et 286 (suites de la série) [RÉSUMÉ, identifiants non relevés].
-- **A4** — Crowley et Green, NACA Report No. 304, 1929. https://ntrs.nasa.gov/citations/19930091373 ; notice : https://core.ac.uk/works/24852094 [RÉSUMÉ].
-- **A5** — G. Eiffel, *Résumé des principaux travaux exécutés pendant la guerre au Laboratoire aérodynamique Eiffel, 1915-1918*, E. Chiron, Paris, [1919]. https://catalog.hathitrust.org/Record/001035741 ; https://onlinebooks.library.upenn.edu/webbin/book/lookupid?key=ha001035741 [RÉSUMÉ].
-- **A6** — G. Eiffel, *Nouvelles recherches sur la résistance de l'air et l'aviation faites au laboratoire d'Auteuil*, texte et atlas (essais de 1911 à 1913) [RÉSUMÉ, notice de libraire].
-- **A7** — M. Munk et E. Hückel, « Systematische Messungen an Flügelprofilen », *Technische Berichte*, 1917 ; A. S. Engels (comp.), *Flügelprofile : Untersuchungen der Modell-Versuchsanstalt für Aerodynamik der Jahre 1917/18* [RÉSUMÉ ; PISTE].
-- **A8** — *Flugsport*, 1919, comparaison de profils d'avions français (MS, Nieuport, Spad, Martinsyde…), signalée par l'index des dessins de *WW1 Aero* : https://ww1aeroinc.org/ww1-aero-drawing-index/ [RÉSUMÉ ; numéro et page à trouver].
-- **A9** — UIUC Airfoil Coordinates Database (M. Selig), miroir GitHub `kennyjensen/uiuc_airfoil_database` : https://raw.githubusercontent.com/kennyjensen/uiuc_airfoil_database/master/raf15.dat et https://raw.githubusercontent.com/kennyjensen/uiuc_airfoil_database/master/raf6.dat [LU]. Base d'origine : https://m-selig.ae.illinois.edu/ads/coord_database.html (inaccessible).
-- **A10** — Museum of Flight (Seattle), « SPAD XIII S13 », https://www.museumofflight.org/exhibits-and-events/aircraft/spad-xiii-s13 [RÉSUMÉ].
-- **A11** — Wikipedia (en), « SPAD S.VII », https://en.wikipedia.org/wiki/SPAD_S.VII [RÉSUMÉ ; wiki : piste].
-- **A12** — Résumés de recherche non attribués avec certitude : Memorial Flight, « SPAD XIII », https://www.memorial-flight.com/spad-xiii?lang=en, ou NASM, « Spad XIII "Smith IV" », https://airandspace.si.edu/collection-objects/spad-xiii-smith-iv/nasm_A19200001000 ; forum relayant un article sur les profils minces [RÉSUMÉ].
-- **A13** — Pankhurst, ARC R&M 3311, https://reports.aerade.cranfield.ac.uk/bitstream/handle/1826.2/3891/arc-rm-3311.pdf [RÉSUMÉ].
-- **A14** — L. Bairstow, *Applied Aerodynamics*, Longmans, Green & Co, 1920 [PISTE ; édition à vérifier].
-- **A15** — M. M. Munk et E. W. Miller, NACA Report No. 233, 1927. https://ntrs.nasa.gov/citations/19930091301 [RÉSUMÉ].
-- **A16** — NACA Report No. 309, 1930, essais de normalisation sur le modèle N.P.L. R.A.F. 15. https://ntrs.nasa.gov/citations/19930091378 [RÉSUMÉ].
-- **A17** — NACA Report No. 279, 1928, maquettes de trois avions britanniques. https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19930091347.pdf [RÉSUMÉ].
-- **A18** — NACA Report No. 331, *Collection of Wind-Tunnel Data on Commonly Used Wing Sections*. https://ntrs.nasa.gov/citations/19930091401 [RÉSUMÉ].
-- **A19** — Briggs et Dryden, NACA Report No. 319, 1930. https://ntrs.nasa.gov/citations/19930091389 [RÉSUMÉ].
-- **A20** — Advisory Committee for Aeronautics, *Technical Report* 1917-18, vol. 2. https://archive.org/details/technicalreport1917aero_2 [RÉSUMÉ ; contenu non lu].
-- Accès (2026-10-20) : ntrs.nasa.gov et archive.org répondent au `curl` du conteneur (coordinateur), mais pas à l'outil de lecture de l'historien. Voir `spad7.md` § 9.5 et § 9.6.
+
+### 6.1 Lues [LU] : rapports NACA téléchargés depuis NTRS par le coordinateur (copies locales), lus en OCR et vérifiés sur les pages PDF
+- **A1** — NACA, Report No. 93, *Aerodynamic Characteristics of Aerofoils*, dans le rapport annuel de la NACA, p. 257 et suivantes, 1921. https://ntrs.nasa.gov/citations/19930091156. Pages utilisées : index p. 262 et 264 ; ordonnées p. 268 (réf. 49 « Spad », 61 RAF 6) ; transformation des coefficients p. 259-260 ; planches p. 291 (réf. 49), p. 294 (réf. 61), p. 296 (réf. 72). Primaire (compilation).
+- **A2** — NACA, Report No. 124, *Aerodynamic Characteristics of Aerofoils II*. https://ntrs.nasa.gov/citations/19930091187. Seulement parcouru par recherche dans l'OCR : aucune occurrence « R.A.F. » ni « Spad » trouvée. Non exploité.
+- **A4** — J. W. Crowley Jr. et M. W. Green, NACA Report No. 304, *An Investigation of the Aerodynamic Characteristics of an Airplane Equipped with Several Different Sets of Wings*, publié en février 1929. https://ntrs.nasa.gov/citations/19930091373. Primaire.
+- **A15** — M. M. Munk et E. W. Miller, NACA Report No. 233, *The Aerodynamic Characteristics of Seven Frequently Used Wing Sections at Full Reynolds Number*, Langley, 1927. https://ntrs.nasa.gov/citations/19930091301. Pages 73-82 (tableaux XXVI à XXX et XXXVI-XXXVII). Primaire.
+- **A16** — W. S. Diehl, NACA Report No. 309, *Joint Report on Standardization Tests on N.P.L. R.A.F. 15 Airfoil Model*, Bureau of Aeronautics, rapport de juin 1928, imprimé en 1929. https://ntrs.nasa.gov/citations/19930091378. Pages 3-20. Primaire.
+- **A17** — G. J. Higgins, W. S. Diehl et G. L. DeFoe, NACA Report No. 279, *Tests on Models of Three British Airplanes in the Variable Density Wind Tunnel*, 1928. https://ntrs.nasa.gov/citations/19930091347. Primaire.
+- **A18** — F. A. Louden, NACA Report No. 331, *Collection of Wind-Tunnel Data on Commonly Used Wing Sections*, Bureau of Aeronautics. https://ntrs.nasa.gov/citations/19930091401. Pages 591-593 et 617 (tableau XI). Primaire (compilation corrigée).
+- **A21** — Pages « Aeronautical Symbols » des Reports 271, 301, 304 et 309 : note sur les coefficients absolus, « deux fois plus grands que les anciens coefficients L_c, D_c » [LU].
+- **A9** — UIUC Airfoil Coordinates Database, miroir GitHub `kennyjensen/uiuc_airfoil_database`, fichiers raf15.dat et raf6.dat [LU]. Sa version du RAF 6 diffère de celle du Report 93 (§ 3.6).
+
+### 6.2 Vues seulement en résumé de recherche ou pistes (inchangées depuis la première passe)
+- **A3** — NACA Reports 182, 244 et 286 (suites de la série) [RÉSUMÉ].
+- **A5** — G. Eiffel, *Résumé des principaux travaux exécutés pendant la guerre au Laboratoire aérodynamique Eiffel, 1915-1918*, E. Chiron, Paris, [1919], https://catalog.hathitrust.org/Record/001035741 [RÉSUMÉ].
+- **A6** — G. Eiffel, *Nouvelles recherches sur la résistance de l'air et l'aviation…* (1911-1913) [RÉSUMÉ].
+- **A7** — M. Munk et E. Hückel, « Systematische Messungen an Flügelprofilen », 1917 ; A. S. Engels (comp.) [RÉSUMÉ].
+- **A8** — *Flugsport*, 1919, comparaison de profils français, signalée par https://ww1aeroinc.org/ww1-aero-drawing-index/ [RÉSUMÉ].
+- **A10** — Museum of Flight, « SPAD XIII S13 » [RÉSUMÉ].
+- **A11** — Wikipedia (en), « SPAD S.VII » [RÉSUMÉ].
+- **A12** — Memorial Flight ou NASM (attribution incertaine) ; forum [RÉSUMÉ].
+- **A13** — Pankhurst, ARC R&M 3311 [RÉSUMÉ].
+- **A14** — L. Bairstow, *Applied Aerodynamics*, 1920 [PISTE].
+- **A19** — Briggs et Dryden, NACA Report No. 319, 1930 (profils d'hélice). Téléchargé, mais **non exploité** dans cette passe.
+- **A20** — ACA, *Technical Report* 1917-18, vol. 2, archive.org `technicalreport1917aero_2` [RÉSUMÉ ; fichiers d'archive.org toujours inaccessibles].
 
 ## 7. Journal des décisions
-- **2026-10-20 — Profil réel.** Aucune donnée trouvée. **Inconnu** ; seule la qualification « mince » est rapportée, par des sources secondaires faibles (A12).
-- **2026-10-20 — Profil comparable.** **Retenu : RAF 15 (base) et RAF 6 (sensibilité), confiance C.** Raisons : cohérence avec un profil mince ; profils contemporains ; coordonnées publiques (A9) ; mesures en vraie grandeur disponibles pour le RAF 15 (A4). Aucune parenté historique avec le SPAD n'est affirmée.
-- **2026-10-20 — Polaires.** Ne pas citer le Report 93 pour le RAF 15 ou le RAF 6 avant d'avoir vérifié leur présence. À défaut, polaires calculées (`C:`), raccordées à la plaque plane au-delà du décrochage (plan du M1, étape 3).
-- **2026-10-20 — Priorités de recherche.** (1) *Flugsport* 1919 ; (2) Eiffel 1919 ; (3) relevé sur S.254 au Musée de l'Air.
-- **2026-10-20 — Deuxième passe.** NTRS n'est pas lisible par l'outil de l'historien (DNS en échec ; voir `spad7.md` § 0). Gains : les numéros exacts des rapports NACA contenant le RAF 15 (A15, A16, A17 ; A4 confirmé) et le volume de l'ACA de 1917-18 sur archive.org (A20). **Aucune valeur de C_L, C_D ou C_M n'a été lue ; le profil comparable reste en confiance C.** À faire dès que les PDF sont téléchargés : relever dans A15 les tableaux du RAF 15 (plage d'incidence couverte ; Reynolds par série ; C_L, C_D, centre de poussée ou C_M), puis consigner les numéros de tableau et de page ici.
+- **2026-10-20 (passe 1) — Profil réel** inconnu ; comparables RAF 15 et RAF 6 proposés en confiance C.
+- **2026-10-20 (passe 2)** — Numéros des rapports NACA identifiés ; rien de lu.
+- **2026-10-20 (passe 3) — Profil réel.** Le Report 93 contient une section nommée **« Spad »** (réf. 49, MIT, 1918), avec ordonnées et polaire. **Retenu pour la géométrie, confiance B** : le type de SPAD n'est pas précisé, et un autre profil a pu équiper la série (A11). L'hypothèse de la première passe (« profil mince ») est confirmée pour l'épaisseur (5,4 %) ; la cambrure (environ 3,8 %, intrados creux) est **plus forte** que celle du RAF 15.
+- **2026-10-20 (passe 3) — Polaires du RAF 15.** Valeurs des Reports 233 (tableau XXX) et 331 (tableau XI) lues et recoupées par trois contrôles : moments au bord d'attaque contre quart de corde, traînée de profil contre C_D, et C_L max contre le rapport C_L max / C_D min. **Confiance A pour le RAF 15 lui-même**, avec ces réserves :
+  - maquette d'allongement 6 ;
+  - mesures de 1926-1927 dans une soufflerie dont les auteurs reconnaissent des séries discordantes ;
+  - Report 233 sans correction de paroi, celle-ci étant apportée par le Report 331.
+  
+  **Confiance C** pour leur emploi comme profil du SPAD.
+- **2026-10-20 (passe 3) — Convention.** Les coefficients du Report 93 sont de la forme P = C·ρ·V². Il faut les **doubler** pour obtenir les C_L et C_D modernes. Les Reports 233, 309, 331 et 304 emploient déjà la convention moderne.
+- **2026-10-20 (passe 3) — RAF 6.** La géométrie du Report 93 (6,8 % d'épaisseur) diffère du fichier UIUC (10 %). **Retenue : celle du Report 93.** L'ancienne ligne « RAF 6 ≈ 10 % » de la première passe est donc **caduque**.
+- **2026-10-20 (passe 3) — Choix pour le M1.** Polaires calculées sur la géométrie « Spad », calées sur le RAF 15 de vraie grandeur. En repli, polaires du RAF 15 en substitut (C). Décision finale à l'aérodynamicien.
