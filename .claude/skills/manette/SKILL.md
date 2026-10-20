@@ -18,6 +18,13 @@ Sûr :
 - Mode le plus fiable sous Linux (X-input à priori) et combinaison de démarrage correspondante (manuel 8BitDo).
 - Correspondance des boutons : en mode X-input, le bouton du bas (B) devrait remonter comme le bouton « sud » (le A d'une manette Xbox).
 
+**Premier passage du labo (2026-10-20, Fedora, rapport archivé dans `docs/essais/labo-manette/`)** :
+- La manette se présente comme **« Xbox 360 Controller », USB 045e:028e** : mode X-input, pilote `xpad`. Elle est reconnue par Bevy et gilrs sans réglage.
+- Tous les boutons standard remontent (croix, faces, L1/R1, L2/R2, L3/R3, Select, Start, Home/`Mode`).
+- **L2/R2** : uniquement les valeurs 0 et 1 (deux appuis chacune, aucune valeur intermédiaire). C'est très probablement du **tout-ou-rien** ; le verdict formel du labo demande au moins 10 appuis.
+- **Sticks au repos** : 3·10⁻⁵ en X, soit un pas de quantification sur 16 bits, et 0 en Y. Pas de dérive mesurable.
+- Restent à confirmer : vibrations ressenties, course maximale des sticks, correspondance réelle des étiquettes (B physique = `South` ?).
+
 Conséquences :
 - **Toujours mapper par position** (sud, est, ouest, nord), jamais par étiquette.
 - **Afficher les étiquettes 8BitDo** (disposition Nintendo) dans l'interface : jeu de pictogrammes « SN30 » sélectionné automatiquement ou dans les options.

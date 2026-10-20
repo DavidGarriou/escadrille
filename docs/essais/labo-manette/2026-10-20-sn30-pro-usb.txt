@@ -1,0 +1,8 @@
+Panache blanc — gamepad lab report
+
+Gamepad: Xbox 360 Controller (vendor 0x045e, product 0x028e)
+Inputs seen (last raw value): {"axis LeftStickX": 3.0517578e-5, "axis LeftStickY": 0.0, "axis RightStickX": 3.0517578e-5, "axis RightStickY": 0.0, "button DPadDown": 0.0, "button DPadLeft": 0.0, "button DPadRight": 0.0, "button DPadUp": 0.0, "button East": 0.0, "button LeftThumb": 0.0, "button LeftTrigger": 0.0, "button LeftTrigger2": 0.0, "button Mode": 0.0, "button North": 0.0, "button RightThumb": 0.0, "button RightTrigger": 0.0, "button RightTrigger2": 0.0, "button Select": 0.0, "button South": 0.0, "button Start": 0.0, "button West": 0.0}
+button LeftTrigger2: 4 samples, 0 intermediate levels, verdict NotEnoughData, counts per 1/20: [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2]
+button RightTrigger2: 4 samples, 0 intermediate levels, verdict NotEnoughData, counts per 1/20: [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2]
+
+Rumble: to be filled in by the player (felt / not felt, per button).

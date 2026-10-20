@@ -298,3 +298,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Les deux, mais pour deux raisons différentes. Pour L2 et R2, on les enfonce lentement pour savoir si elles sont progressives (question 5). Les sticks sont analogiques à coup sûr : on les teste pour leur course (butées, cercles) et pour la valeur au repos, qui sert à régler les zones mortes et la dérive. Le labo affiche les sticks en direct, mais son rapport ne garde que la dernière valeur brute.
 - **A** README : consignes du labo complétées pour les sticks (butées, cercles, valeur au repos).
 - **⚠** Proposition en attente : enregistrer dans le rapport des statistiques sur les sticks (minimum et maximum par axe, bruit au repos), utiles pour régler les zones mortes au M2.
+
+### Premier rapport du labo manette
+- **A** Le joueur a lancé le labo sur sa Fedora et transmet `rapport.txt`. Le jeu a donc compilé et tourné sur sa machine. Le rapport est archivé dans `docs/essais/labo-manette/2026-10-20-sn30-pro-usb.txt`.
+- **R** Analyse de Claude :
+  - la SN30 Pro USB se présente comme « Xbox 360 Controller » (USB 045e:028e) : mode X-input, pilote `xpad`, reconnue sans réglage ;
+  - tous les boutons standard remontent ;
+  - L2 et R2 ne donnent que 0 ou 1, sur seulement 2 appuis chacune : très probablement tout-ou-rien. Le verdict formel (« NotEnoughData ») exige au moins 10 appuis ;
+  - sticks au repos à 3·10⁻⁵ et 0 : aucune dérive ;
+  - vibrations non renseignées.
+- **A** Skill `manette` complétée par ces résultats ; question 5 de la vision mise à jour (premier relevé).
+- **⚠** Reste à obtenir du joueur : ce qu'il a ressenti pour chaque vibration, une dizaine d'appuis lents sur L2 et R2 (ou son accord pour conclure au tout-ou-rien), la correspondance entre B physique et `South`, et la capture `m0-sol` faite sur la RX 7800 XT.
