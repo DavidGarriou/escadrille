@@ -527,3 +527,35 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **cellule du S.VII** (corde, écartement, décalage, calages), **version 150 ch** et **hélice réelle**, toujours sans source.
 - **⚠** L'historien croit archive.org inaccessible : son outil web ne passe pas par le réseau du conteneur. Les numéros de *Flight* sont pourtant téléchargés : **208 numéros de 1916 à 1919** dans le dossier de travail, dont **64 mentionnent le SPAD**. Ils lui seront confiés pour une quatrième passe, avec le rapport technique britannique de 1917-1918.
 - **A** Fiches `spad7.md`, `hispano-suiza-8a.md` et `profil-spad7.md` commitées dans leur version de fin de passe.
+
+### Relectures relancées, et étape 4 du M1 : hélice et moteur en ligne
+- **A** Deux relectures lancées en arrière-plan :
+  - **aérodynamicien** : contre-revue des corrections de l'étape 3. Il doit vérifier que le point bloquant est levé, juger la loi après décrochage et rejouer ses erreurs volontaires ;
+  - **historien** : quatrième passe, sur les 208 numéros de *Flight* téléchargés, le rapport technique britannique de 1917-1918 et *Aerial Age*. Il doit aussi chercher les données qu'attend l'aérodynamicien : corrections d'allongement τ et δ, conventions des coefficients, polaire du RAF 15 aux incidences négatives.
+- **A** Étape 4 écrite pendant ce temps, dans une copie de travail séparée, pour ne pas perturber la contre-revue. Nouveau module `propulsion` d'`escadrille_fdm`, testé sur des données synthétiques (aucun chiffre historique) :
+  - **hélice à pas fixe** :
+    - tables C_T(J) et C_P(J), commençant au point fixe ;
+    - au-delà du tableau, coefficients sur les **quatre quadrants**, comme pour les hélices marines de la série B de Wageningen : angle d'avance et vitesse de référence qui restent définis hélice arrêtée, en moulinet ou en glissade sur la queue. Trois points d'appui estimés (E:) pour l'hélice arrêtée et la rotation inverse, avec contrôle de leurs signes ;
+    - l'hélice voit la vitesse **absolue** du rotor, le moteur sa vitesse **relative** à la cellule ;
+  - **effet P simple** : décalage de la ligne de poussée, à la manière de JSBSim. Une hélice tournant à droite, avion cabré, fait lacer à gauche ;
+  - **souffle d'hélice** selon la théorie de Froude : contraction du tube à débit constant, bord adouci, branché sur l'« écoulement local » déjà prévu pour les surfaces ;
+  - **moteur en ligne** :
+    - la relation de Gagg-Farrar se réécrit exactement en « puissance indiquée proportionnelle à la densité, moins un frottement constant » (constat de l'historien) ; le moteur est codé ainsi, et le même coefficient k règle la perte en altitude et le frein moteur au ralenti ;
+    - gaz linéaires (E:) ;
+    - le moteur s'arrête d'allumer sous un régime de calage, et repart si l'hélice le fait mouliner.
+- **A** Tests :
+  - table et rendement reproduits exactement ;
+  - continuité sur le tour complet ;
+  - hélice arrêtée qui freine et mouline ;
+  - aucune valeur infinie ou NaN dans les quatre quadrants ;
+  - sens de l'effet P ;
+  - théorie de la quantité de mouvement et conservation du débit dans le souffle ;
+  - loi de Gagg-Farrar ;
+  - équilibre du régime entre le moteur et l'hélice, atteint par intégration depuis un régime plus bas comme depuis un régime plus haut.
+- **A** Résultat : **85 tests sur 85** dans `escadrille_fdm`, clippy propre sur tout l'espace de travail. La section « Hélice et moteurs » de `modele-aero.md` est mise à jour.
+- **⚠** Limites notées (E:) :
+  - pas de force normale de l'hélice (Ribner, NACA Report 819), légèrement déstabilisante ;
+  - souffle sans rotation ;
+  - k constant par moteur, alors que le rapport 46 donne 0,08 à 0,11 selon le régime ;
+  - l'origine exacte de la relation de Gagg-Farrar n'est toujours pas retrouvée.
+- **A** Revue de l'aérodynamicien sur l'étape 4 prévue dès la fin de sa contre-revue de l'étape 3.
