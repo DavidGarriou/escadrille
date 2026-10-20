@@ -384,3 +384,16 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   1. élargir l'accès réseau de l'environnement cloud aux sites de sources, ou fournir lui-même les documents ;
   2. choix de la version à valider en premier (150 ch puis 180 ch, ou 180 ch directement) ;
   3. si les sources primaires restent inaccessibles, accepter ou non un M1 validé en confiance C.
+
+### Accès réseau élargi
+- **A** Le joueur indique avoir débloqué l'accès aux sources. Vérification par curl depuis le conteneur :
+  - accessibles : `archive.org` et `ntrs.nasa.gov` (HTTP 200) ;
+  - `gallica.bnf.fr` répond 403 (refus du site lui-même, ou de la passerelle) ;
+  - toujours refusés par la passerelle réseau : `fr.wikipedia.org`, `en.wikipedia.org`, `albindenis.free.fr`, `www.theaerodrome.com`, `catalog.hathitrust.org`, `www.gutenberg.org`, `bibliotheques-numeriques.defense.gouv.fr`, `m-selig.ae.illinois.edu`, `digital.library.unt.edu`.
+- **A** L'historien est relancé pour une deuxième passe, sur archive.org et le serveur NTRS de la NASA. Ordre des priorités :
+  1. essais d'époque du SPAD VII en 150 ch, puis en 180 ch ;
+  2. géométrie manquante ;
+  3. courbe du moteur (rapport R&M 586) et hélice ;
+  4. données de soufflerie des profils RAF 15 et RAF 6 ;
+  5. témoignage italien et essais allemands.
+- **⚠** Les questions 2 (version à valider en premier) et 3 (validation en confiance C acceptable ou non) restent posées au joueur.
