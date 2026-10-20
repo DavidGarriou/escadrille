@@ -482,3 +482,48 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** FranceArchives oppose un mécanisme anti-robots : une redirection JavaScript en boucle avec cookie. Claude **ne le contourne pas**, puisqu'il sert justement à bloquer l'accès automatique. Pistes : une recherche manuelle du joueur, ou une interface officielle si FranceArchives en propose une.
 - **A** E-médiathèque du Musée de l'Air et de l'Espace : en ligne (logiciel Opsis/Skopus, photos, films, sons), avec une interface entièrement en JavaScript. Elle servira surtout de référence visuelle (livrées, cockpits) pour le M3 et les fiches, plutôt que pour des chiffres de performance.
 - **A** Nouvel instantané intermédiaire des fiches de recherche modifiées par l'historien (troisième passe en cours).
+
+### Revue de l'étape 3 par l'aérodynamicien, et corrections
+- **R** Verdict **bloquant**, sur un seul point : le solveur de l'angle induit, une itération de point fixe, diverge dès que e·AR < 2, c'est-à-dire sur toutes les dérives et gouvernes de direction de 1914-1918. Mesure sur une dérive d'allongement 1,5 : C_L oscille entre −1,24 et +1,46 au lieu de −0,15, et le moment de lacet change de signe selon le nombre d'itérations. Le test existant passait par hasard. Le reste du module est jugé sain, et les corrections de l'étape 2 conformes.
+- **A** Corrections :
+  - **Solveur exact** entre les deux points de décrochage du tableau, où la solution est unique (méthode de l'*Illinois*, encadrée).
+  - Une première version prolongeait la résolution au-delà du décrochage. Elle présentait une hystérésis à faible allongement : la portance sautait de 0,32 à 0,46. **Au-delà du décrochage**, l'angle induit garde donc sa valeur de décrochage et s'annule progressivement vers 40° d'incidence géométrique, comme le proposait l'aérodynamicien : la ligne portante n'a plus de sens en écoulement décollé ou inversé. C'est une estimation (E:), documentée dans le code.
+  - Un tableau de polaire qui s'arrête **avant le décrochage** d'un côté est désormais **refusé** au chargement (cas du RAF 15 du rapport NACA 233, qui s'arrête à −1,5°).
+  - Limites documentées dans le code, en confiance C :
+    - le modèle induit local n'est exact que pour une charge symétrique, si bien que l'amortissement en roulis est surestimé d'environ 27 % pour un allongement de 5,5 ;
+    - sous un allongement de 4, la ligne portante surestime la pente : la correction de Helmbold ira dans les données ;
+    - la loi du centre de poussée est justifiée par la loi de Rayleigh (écart inférieur à 0,05 corde).
+- **A** L'aérodynamicien avait injecté 15 erreurs volontaires dans une copie du code ; 8 survivaient aux tests. Les **dix tests qu'il proposait** sont ajoutés, entre autres :
+  - solveur exact pour des allongements de 1 à 10 ;
+  - continuité et monotonie sur le tour complet ;
+  - formule fermée de l'amortissement en roulis ;
+  - symétrie miroir ;
+  - effet du dièdre ;
+  - force de plaque en écoulement inversé ;
+  - valeurs de la polaire au-delà de 90° ;
+  - lacet inverse des ailerons, mesuré dans les axes de stabilité ;
+  - amortissement des traînées parasites en rotation.
+- **⚠** Quatre de ces nouveaux tests étaient eux-mêmes faux au premier essai, pas le code :
+  - l'amortissement en roulis doit inclure la traînée de profil ;
+  - le lacet inverse se mesure dans les axes de stabilité, pas dans les axes avion ;
+  - deux comparaisons de flottants demandaient une tolérance.
+
+  Une erreur de compilation (valeur déplacée) a aussi été corrigée.
+- **A** Résultat : **82 tests sur 82** dans le dépôt, `just check` vert.
+- **A** Reportés aux étapes suivantes, comme le demande la revue :
+  - **données** : ramener les polaires mesurées en soufflerie sur des ailes d'allongement 6 à un allongement infini, pour ne pas compter l'effet induit deux fois. Pièges notés : coefficient britannique k_L = C_L/2, C_m parfois donné au bord d'attaque. Prolonger côté négatif, jusqu'à un décrochage estimé (E:), les tableaux qui s'arrêtent trop tôt ;
+  - **assemblage du biplan** : interférence entre plans (Prandtl, Munk, Millikan, Fairbanks), déflexion sur l'empennage calculée depuis le C_L de l'aile avec un retard, souffle d'hélice (Froude), force latérale et moments du fuselage (Multhopp) ;
+  - plus tard : un segment de « profil inversé » autour de 180°, pour la glissade sur la queue et la vrille à plat.
+
+### Fin de la troisième passe de l'historien
+- **R** Le profil, le moteur et l'hélice ont maintenant des sources d'époque lues, toutes tirées des rapports NACA téléchargés, avec les pages citées. **Aucune performance du SPAD VII ne dépasse encore la confiance C.**
+  - **Profil** : la section « Spad » du rapport NACA 93 (MIT, 1918) est en B. Le type exact de SPAD mesuré n'est pas précisé, et les coefficients sont dans l'ancienne convention : il faut les doubler. Les polaires du RAF 15 sont en A pour ce profil lui-même (rapport 233, vraie grandeur), mais leur emploi pour le SPAD reste en C.
+  - **Moteur** : le rapport 46 (Bureau of Standards) porte sur un Hispano de 180 hp aux cotes du 8Ab, ce qui donne une source en B pour la courbe puissance-régime, la loi d'altitude (k ≈ 0,08 à 0,11 contre 0,132 pour Gagg-Farrar) et la consommation.
+  - **Hélice** : la table C_T/C_P/η de l'hélice D' du VE-7 (rapport 301) est en A pour la mesure, en C pour le SPAD. Elle servira à caler le calcul ou d'hélice de secours.
+  - **Biplan** : les lois d'interférence et de stabilité (rapports 17, 271 et 362) sont en C pour le SPAD. Le plan supérieur décroche avant le plan inférieur, ce qui rend plausible l'abattée de la réputation, sans la prouver.
+- **⚠** Points ouverts :
+  - **contradiction sur la cote du 8Ab** : 180 hp à 1 700 tr/min dans le rapport 46, 180 ch à 2 100 tr/min dans les sources françaises ; à trancher avec les essais de montée ;
+  - **sens de rotation** de l'hélice, toujours en C ;
+  - **cellule du S.VII** (corde, écartement, décalage, calages), **version 150 ch** et **hélice réelle**, toujours sans source.
+- **⚠** L'historien croit archive.org inaccessible : son outil web ne passe pas par le réseau du conteneur. Les numéros de *Flight* sont pourtant téléchargés : **208 numéros de 1916 à 1919** dans le dossier de travail, dont **64 mentionnent le SPAD**. Ils lui seront confiés pour une quatrième passe, avec le rapport technique britannique de 1917-1918.
+- **A** Fiches `spad7.md`, `hispano-suiza-8a.md` et `profil-spad7.md` commitées dans leur version de fin de passe.

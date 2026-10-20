@@ -191,7 +191,7 @@ Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur 
 - **A12** — Memorial Flight ou NASM (attribution incertaine) ; forum [RÉSUMÉ].
 - **A13** — Pankhurst, ARC R&M 3311 [RÉSUMÉ].
 - **A14** — L. Bairstow, *Applied Aerodynamics*, 1920 [PISTE].
-- **A19** — Briggs et Dryden, NACA Report No. 319, 1930 (profils d'hélice). Téléchargé, mais **non exploité** dans cette passe.
+- **A19** — L. J. Briggs et H. L. Dryden, NACA Report No. 319, *Aerodynamic Characteristics of Twenty-Four Airfoils at High Speeds*, 1929 ou 1930 (date de la page de titre mal lue par l'OCR ; 1930 selon l'index du coordinateur). Profils d'hélice. Téléchargé, mais **non exploité** dans cette passe (= H18 de `hispano-suiza-8a.md`).
 - **A20** — ACA, *Technical Report* 1917-18, vol. 2, archive.org `technicalreport1917aero_2` [RÉSUMÉ ; fichiers d'archive.org toujours inaccessibles].
 
 ## 7. Journal des décisions

@@ -11,8 +11,18 @@
 //! The pitching moment (about the quarter chord) beyond the table comes from the normal
 //! force and a centre of pressure moving linearly from its last measured position to
 //! mid-chord at ±90°, then to three-quarter chord at ±180° (the quarter chord of the
-//! reversed section). This is a modelling assumption (E:), to be reviewed by the
-//! aerodynamicist; the flight envelope of the essais stays inside the table.
+//! reversed section). Modelling assumption (E:), accepted for M1 by the aerodynamicist
+//! (review of 2026-10-20): the linear law stays within 0.05 c of Rayleigh's free-streamline
+//! flat plate, x_cp / c = 1/2 − (3/4) cos α / (4 + π sin α).
+//!
+//! Known limits, to revisit (aerodynamicist review): near ±180° a real section behaves
+//! like a sharp-edged aerofoil (lift slope close to the forward one, stall about ±10°
+//! from 180°; NACA TN 3361, Sandia SAND80-2114), and its drag there is 1.5 to 2 times
+//! the forward drag. This matters for tail slides and flat spins, not for the M1 tests.
+//!
+//! Each table must go past the stall on both sides (checked by [`Polar::new`]): a table
+//! that stops in the linear range would make the extension invent a gentle, stall-free
+//! curve. Missing negative-stall data must be added explicitly as an estimate (E:).
 
 use std::f64::consts::{FRAC_PI_2, PI};
 
@@ -42,6 +52,8 @@ pub enum PolarError {
     NonFinite,
     /// The table must contain α = 0 and stay strictly between −90° and +90°.
     BadRange,
+    /// The table must end past the stall on both sides (lift falling towards each end).
+    NoStallInTable,
     BadMaxDrag,
 }
 
@@ -51,8 +63,12 @@ pub struct Polar {
     points: Vec<PolarPoint>,
     /// Drag coefficient of the section broadside to the flow (α = ±90°).
     cd_max: f64,
-    /// Drag at zero lift, used for the reversed-flow flat plate.
+    /// Drag at α = 0, used for the reversed-flow flat plate.
     cd0: f64,
+    /// Upper bound of |C_L| over the whole circle.
+    max_abs_cl: f64,
+    /// Points of minimum and maximum C_L of the table (negative and positive stall).
+    stall: (PolarPoint, PolarPoint),
 }
 
 /// Maximum drag coefficient of a flat plate of aspect ratio `aspect_ratio`
@@ -85,16 +101,48 @@ impl Polar {
         if !(first < 0.0 && last > 0.0 && first > -FRAC_PI_2 && last < FRAC_PI_2) {
             return Err(PolarError::BadRange);
         }
+        let n = points.len();
+        if !(points[n - 1].cl < points[n - 2].cl && points[0].cl > points[1].cl) {
+            return Err(PolarError::NoStallInTable);
+        }
         if !(cd_max.is_finite() && cd_max > 0.0) {
             return Err(PolarError::BadMaxDrag);
         }
+        let first = points[0];
         let mut polar = Self {
             points,
             cd_max,
             cd0: 0.0,
+            max_abs_cl: 0.0,
+            stall: (first, first),
         };
+        let pick = |better: fn(f64, f64) -> bool| {
+            polar
+                .points
+                .iter()
+                .copied()
+                .reduce(|a, b| if better(b.cl, a.cl) { b } else { a })
+                .unwrap()
+        };
+        polar.stall = (pick(|b, a| b < a), pick(|b, a| b > a));
         polar.cd0 = polar.interpolate(0.0).cd;
+        // Sampled every 0.5°, with a margin for what lies between samples.
+        let max_sampled = (0..720)
+            .map(|i| polar.coefficients(-PI + f64::from(i) * PI / 360.0).cl.abs())
+            .fold(0.0, f64::max);
+        let max_table = polar.points.iter().map(|p| p.cl.abs()).fold(0.0, f64::max);
+        polar.max_abs_cl = 1.1 * max_sampled.max(max_table) + 0.1;
         Ok(polar)
+    }
+
+    /// Upper bound of |C_L| over the whole circle.
+    pub fn max_abs_cl(&self) -> f64 {
+        self.max_abs_cl
+    }
+
+    /// Table points of minimum and maximum lift (negative and positive stall).
+    pub fn stall_points(&self) -> (PolarPoint, PolarPoint) {
+        self.stall
     }
 
     /// Measured range of the table, rad.
@@ -178,21 +226,33 @@ impl Polar {
 mod tests {
     use super::*;
 
-    /// Thin-aerofoil textbook section (not historical data): C_L = 2πα, constant drag,
-    /// table up to ±15°.
+    /// Thin-aerofoil textbook section (not historical data): C_L = 2πα up to ±14°,
+    /// then a stall down to 80 % of the peak at ±20°.
     pub(crate) fn thin_aerofoil() -> Polar {
-        let points = (-15..=15)
-            .map(|deg| {
+        Polar::new(stalling_points(-0.02), viterna_cd_max(6.0)).unwrap()
+    }
+
+    pub(crate) fn stalling_points(cm: f64) -> Vec<PolarPoint> {
+        let peak = 2.0 * PI * 14f64.to_radians();
+        (-20..=20)
+            .map(|deg: i32| {
                 let alpha = f64::from(deg).to_radians();
-                PolarPoint {
-                    alpha,
-                    cl: 2.0 * PI * alpha,
-                    cd: 0.01 + 0.02 * alpha * alpha,
-                    cm: -0.02,
-                }
+                let a = deg.unsigned_abs();
+                let cl = if a <= 14 {
+                    2.0 * PI * alpha
+                } else {
+                    alpha.signum() * peak * (1.0 - 0.2 * f64::from(a - 14) / 6.0)
+                };
+                let cd = 0.01
+                    + 0.02 * alpha * alpha
+                    + if a > 14 {
+                        0.02 * f64::from(a - 14)
+                    } else {
+                        0.0
+                    };
+                PolarPoint { alpha, cl, cd, cm }
             })
-            .collect();
-        Polar::new(points, viterna_cd_max(6.0)).unwrap()
+            .collect()
     }
 
     #[test]
@@ -215,10 +275,60 @@ mod tests {
             Polar::new(vec![p(0.1), p(0.2), p(0.3)], 1.2),
             Err(PolarError::BadRange)
         );
+        let stall = |alpha: f64, cl: f64| PolarPoint {
+            alpha,
+            cl,
+            cd: 0.01,
+            cm: 0.0,
+        };
+        let stalled = vec![
+            stall(-0.2, -0.5),
+            stall(-0.1, -0.6),
+            stall(0.1, 0.6),
+            stall(0.2, 0.5),
+        ];
         assert_eq!(
-            Polar::new(vec![p(-0.1), p(0.0), p(0.1)], 0.0),
+            Polar::new(stalled.clone(), 0.0),
             Err(PolarError::BadMaxDrag)
         );
+        assert!(Polar::new(stalled, 1.2).is_ok());
+        // Stops in the linear range on the negative side (like the RAF 15 table of
+        // NACA Report 233, which ends at −1.5°).
+        let linear_negative = vec![
+            stall(-0.03, -0.1),
+            stall(0.0, 0.1),
+            stall(0.2, 1.2),
+            stall(0.3, 1.0),
+        ];
+        assert_eq!(
+            Polar::new(linear_negative, 1.2),
+            Err(PolarError::NoStallInTable)
+        );
+    }
+
+    #[test]
+    fn flat_plate_values_beyond_ninety_degrees() {
+        let polar = thin_aerofoil();
+        let cd_max = viterna_cd_max(6.0);
+        // Centre of pressure at mid-chord broadside: cm = ∓C_Dmax / 4.
+        assert!((polar.coefficients(FRAC_PI_2).cm + cd_max / 4.0).abs() < 1e-9);
+        assert!((polar.coefficients(-FRAC_PI_2).cm - cd_max / 4.0).abs() < 1e-9);
+        assert!((polar.coefficients(135f64.to_radians()).cl + cd_max / 2.0).abs() < 1e-9);
+        // Near 180°, centre of pressure at 3/4 chord: cm ≈ −C_N / 2.
+        let a = 179f64.to_radians();
+        let c = polar.coefficients(a);
+        let normal = c.cl * a.cos() + c.cd * a.sin();
+        // The centre of pressure is at 0.747 c at 179° (0.75 c at 180°).
+        assert!((c.cm + 0.5 * normal).abs() < 1e-2 * normal.abs(), "{c:?}");
+    }
+
+    #[test]
+    fn max_abs_cl_bounds_the_whole_circle() {
+        let polar = thin_aerofoil();
+        for i in 0..3_600 {
+            let a = -PI + 2.0 * PI * f64::from(i) / 3_600.0;
+            assert!(polar.coefficients(a).cl.abs() < polar.max_abs_cl());
+        }
     }
 
     #[test]

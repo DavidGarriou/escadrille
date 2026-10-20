@@ -34,7 +34,7 @@ Licence britannique : Wolseley à Birmingham (H1 [RÉSUMÉ]). Son dérivé à en
 
 ## 3. Puissance en fonction du régime
 
-### 3.1 Mesure d'époque : NACA Report 46 (V. R. Gage, Bureau of Standards) [LU]
+### 3.1 Mesure d'époque : NACA Report 46 (V. R. Gage, Bureau of Standards ; source H14) [LU]
 Le moteur essayé est décrit page 527 :
 - Hispano-Suiza de série « coté **180 hp à 1 700 tr/min** » ;
 - 8 cylindres de **4,72 × 5,12 in** (120 × 130 mm) en V à 90° ;
@@ -99,22 +99,24 @@ Indice d'usage : dans une lettre du 8 septembre 1916, Guynemer décrit son appro
 - Vers 30 000 ft, la puissance ne croît presque plus au-delà de 1 700 tr/min (p. 526).
 - **Réserve de méthode** : la puissance indiquée a été calculée en supposant un frottement constant (p. 525, 527). La loi « indiquée ∝ densité » est donc en partie une hypothèse de calcul, jugée justifiée a posteriori par les auteurs.
 
-**Report 108** (Gage, « Some Factors of Airplane Engine Performance » ; essais en caisson d'altitude d'un Liberty et de trois Hispano-Suiza) (p. 649-651 et conclusions)
+**Report 108** (H15 ; Gage, « Some Factors of Airplane Engine Performance » ; essais en caisson d'altitude d'un Liberty et de trois Hispano-Suiza) (p. 649-651 et conclusions)
 - À conditions constantes, la puissance indiquée est proportionnelle à la densité de la charge au début de la compression.
 - La puissance décroît **un peu moins vite que la densité** quand c'est la température qui augmente, car le remplissage s'améliore avec la température.
 - Le couple de frottement varie linéairement avec le régime et avec la densité ; le pompage en représente environ la moitié.
 - Le réglage altimétrique des carburateurs de série est **insuffisant au-dessus d'environ 45 cm de mercure (≈ 15 000 ft)**.
 
-**Report 103** (Sparrow et White, « Performance of a 300-Horsepower Hispano-Suiza Airplane Engine » ; modèle « H » de 300 hp, autre cylindrée) (p. 581-582)
+**Report 103** (H16 ; Sparrow et White, « Performance of a 300-Horsepower Hispano-Suiza Airplane Engine »). Moteur décrit p. 584 : Hispano-Suiza de 300 hp, V8 à refroidissement liquide, **alésage 140 mm, course 150 mm**, compression 5,3, carburateur Stromberg à correcteur manuel. C'est un autre moteur que le 8A, de plus grande cylindrée ; le rapport ne lui donne pas de désignation de type. Résultats p. 581-582 :
 - Au-dessous de 20 000 ft, la puissance au frein suit une **droite en fonction de la densité de l'air au carburateur**.
 - À 1 800 tr/min et 0,040 lb/ft³ (contre 0,075 au sol), la puissance au frein vaut **environ 42 %** de celle du sol, et la puissance indiquée **environ 47 %**.
 - Le mélange devient trop riche au-delà de 20 000 ft.
+
+**Ce que le Report 103 apporte au 8A** : aucun chiffre directement transposable. La cylindrée, le carburateur et la puissance diffèrent ; seul le taux de compression est le même. Le rapport confirme deux choses : la forme quasi linéaire de la puissance en fonction de la densité, et le fait que la perte relative en altitude **varie d'un moteur Hispano à l'autre** (§ 4.2). Il ne sert que de **borne** : confiance C pour le 8A.
 
 ### 4.2 Comparaison avec la relation de Gagg-Farrar (C, calculs faits ici)
 La relation du projet, g(σ) = σ − (1 − σ)/7,55 (`.claude/skills/simulation-vol/modele-aero.md`, section « Moteurs »), a exactement la forme qu'on obtient avec une **puissance indiquée proportionnelle à σ et un frottement constant** : g(σ) = σ − k(1 − σ), où k = frottement / puissance au frein au sol. Gagg-Farrar revient à **k = 1/7,55 ≈ 0,132**.
 
 - **Report 46** (Hispano de 180 hp) : k = 14,7/179 ≈ 0,082 (1 500 tr/min), 16/203 ≈ 0,079 (1 700), 20/215 ≈ 0,094 (1 900), 24,8/228 ≈ 0,109 (2 100). Ce moteur **perd moins** que Gagg-Farrar ne le prévoit. Exemple à 1 700 tr/min et σ ≈ 0,48 (rapport des puissances indiquées « 20 000 ft » / sol, 105/218) : mesure 89/203 = 0,438 ; Gagg-Farrar 0,413 (environ −6 %).
-- **Report 103** (Hispano « H » de 300 hp) : à σ ≈ 0,040/0,075 = 0,533, la mesure donne 0,42, contre 0,471 pour Gagg-Farrar. Ce moteur **perd plus** (environ +11 % d'écart).
+- **Report 103** (Hispano de 300 hp, 140 × 150 mm) : à σ ≈ 0,040/0,075 = 0,533, la mesure donne 0,42, contre 0,471 pour Gagg-Farrar. Ce moteur **perd plus** (environ +11 % d'écart).
 - **Conclusion** : Gagg-Farrar se situe **entre** les deux moteurs Hispano mesurés. Pour un 8Ab, le Report 46 est le plus pertinent (même cylindrée et même compression).
 - **Proposition** (à valider par l'aérodynamicien) : g(σ) = σ − k(1 − σ), avec k ≈ 0,08 à 0,11 selon le régime (Report 46). Confiance **B** pour un 8Ab, **A** pour le moteur essayé. À défaut, conserver Gagg-Farrar (C), en sachant qu'il est un peu pessimiste pour ce moteur, d'environ 5 % à σ = 0,5.
 - **Ce qui manque** : l'origine précise de la relation « Gagg-Farrar » citée par la skill. Les rapports lus sont de **V. R. Gage** (1920-1921), à ne pas confondre avec « Gagg ». La référence Gagg et Farrar n'a été ni trouvée ni lue.
@@ -168,7 +170,7 @@ Bipale en bois à pas fixe, d'après les fiches de collectionneurs (H8, H11 [RÉ
 2. L'hélice du SPAD XIII (8Be à réducteur) est « à gauche » et **tourne en sens inverse** de celle du S.VII à entraînement direct (H12 [RÉSUMÉ]).
 3. Sur le S.E.5a, le Hispano à réducteur tourne dans le sens **antihoraire vu du pilote**, et le Viper à entraînement direct dans le sens **horaire vu du pilote** (H13 [RÉSUMÉ], revues de maquettes concordantes ; la formulation de Wikipedia diverge, sans doute par confusion du point de vue).
 4. Recoupement physique : le pilote de McCook doit mettre « beaucoup de pied à gauche » à cause du couple sur le SPAD XIII (`spad7.md` S15 [RÉSUMÉ]). C'est cohérent avec une hélice antihoraire vue du pilote sur le XIII (C), donc avec une hélice horaire sur le VII.
-5. **Troisième passe, indice d'époque [LU]** : les trois hélices de série de la Navy dessinées pour le Vought VE-7 à moteur **Wright 180 hp E-2** portent toutes la mention « *Rotation: Right hand* » (NACA Report 301, p. 5, légendes des figures 3, 4 et 5 ; vérifié sur l'image de la page). Deux maillons manquent pour en tirer le sens d'un S.VII :
+5. **Troisième passe, indice d'époque [LU]** : les trois hélices en bois de forme standard de la Navy essayées sur le Vought VE-7 à moteur **Wright 180 hp E-2** portent toutes la mention « *Rotation: Right hand* » (NACA Report 301, p. 5, légendes des figures 3, 4 et 5 ; vérifié sur l'image de la page). Deux maillons manquent pour en tirer le sens d'un S.VII :
    - le rapport **ne définit pas** la convention « right hand ». La lecture usuelle américaine (hélice tractive « à droite » = horaire vue de l'arrière, donc du pilote) est une connaissance générale que je n'ai pas retrouvée dans les documents lus ;
    - le rapport ne dit **ni** que le E-2 est un Hispano sous licence, **ni** qu'il est à entraînement direct. L'identification « Wright-Hispano E » repose sur S31 de `spad7.md` [RÉSUMÉ].
 
@@ -182,12 +184,12 @@ Bipale en bois à pas fixe, d'après les fiches de collectionneurs (H8, H11 [RÉ
 
 **Effets attendus en vol** (C, physique élémentaire, à faire émerger du modèle et non à scripter) : à pleine puissance et à basse vitesse, tendance à partir à gauche, contrée au pied droit ; réaction de couple en roulis vers la gauche.
 
-### 7.4 Mesure d'époque d'hélices en bois comparables : NACA Report 301 (VE-7) [LU]
+### 7.4 Mesure d'époque d'hélices en bois comparables : NACA Report 301 (VE-7 ; source H17) [LU]
 
-**Ce n'est pas l'hélice du SPAD.** Ce sont trois hélices bipales en bois de série de la Navy (« standard Navy wood type »), dessinées pour le biplace d'entraînement Vought VE-7 à moteur Wright 180 hp E-2. Elles sont essayées en vraie grandeur, montées sur l'avion complet, dans la soufflerie de 20 ft (6,1 m) de Langley. **Confiance A pour la mesure, C pour l'usage sur le SPAD.**
+**Ce n'est pas l'hélice du SPAD.** Ce sont trois hélices en bois de forme standard de la Navy (« standard Navy wood type »), présentées comme hélices expérimentales pour le Vought VE-7 à moteur Wright 180 hp E-2. Le VE-7 est un biplace : un observateur occupe le poste arrière pendant les essais (p. 6). Le nombre de pales n'est pas écrit dans le texte lu. Elles sont essayées en vraie grandeur, montées sur l'avion complet, dans la soufflerie de 20 ft (6,1 m) de Langley. **Confiance A pour la mesure, C pour l'usage sur le SPAD.**
 
 **Conditions** (p. 3, 6-7, 10) :
-- veine ouverte de 20 ft de diamètre, jusqu'à 110 mph ; le VE-7 (34 ft d'envergure) dépasse d'environ 7 ft de chaque côté de la veine ;
+- veine ouverte de 20 ft de diamètre, jusqu'à 110 mph ; les ailes du VE-7 (34 ft d'envergure) dépassent la veine d'environ 7 ft ;
 - axe de l'hélice toujours horizontal ;
 - couple lu sur un bâti dynamométrique, régime au tachymètre (lecture à ±5 tr/min près) ;
 - rapport daté du 18 juin 1928, publié en 1929.
@@ -237,13 +239,13 @@ Contrôle de cohérence (C) : C_T = 0,1215 au point quasi statique de D' (tablea
 Les tableaux III de B' (p. 18) et de I (p. 19) sont lus et vérifiés sur l'image. Ils ne sont pas recopiés ici. Ils serviront si l'aérodynamicien veut encadrer le pas.
 
 **Autres résultats utiles** :
-- **Ailes** : sur l'hélice I, la présence des ailes **réduit le rendement propulsif maximal d'environ 5 %** et augmente un peu la puissance absorbée. L'empennage n'a **pas d'effet sensible** (p. 3, 10 ; tableaux III p. 19, 21 et 22 : η max 0,773 avec l'avion complet contre environ 0,81 sans ailes ni empennage).
+- **Ailes** : sur l'hélice I, la présence des ailes **réduit le rendement propulsif maximal d'environ 5 %** et augmente un peu la puissance absorbée. L'empennage n'a **pas d'effet sensible** (p. 3, 10). Tableaux III, p. 19, 21 et 22, vérifiés sur l'image : η max vaut **0,773** avec l'avion complet, **0,770** avec les ailes sans empennage et **0,807** sans ailes ni empennage, chaque fois à J = 0,75.
 - **Vol et soufflerie** : dans trois essais sur quatre, les coefficients de puissance mesurés en vol (rapports NACA 220 et 292) sont **3 à 5 % plus élevés** qu'en soufflerie. L'auteur en conclut que les moteurs délivraient en vol un peu moins que leur puissance au banc (p. 10). Pour le jeu, c'est un ordre de grandeur de l'écart possible entre puissance au banc et puissance installée (C).
 - **Vrillage** : la déformation des pales en fonctionnement est faible, de 0,2 à 0,5° (p. 7).
-- **Puissance absorbée** (calcul C sur le tableau II, p. 15) : vers 99,5 mph et 1 740 tr/min, couple de 552 lb·ft, soit environ **183 hp**. Au point quasi statique (19,7 mph, 1 655 tr/min, 556 lb·ft), environ **175 hp** pour **801 lb** de poussée effective (≈ 3,56 kN). Ces valeurs donnent un ordre de grandeur pour la poussée statique d'un « 180 » à entraînement direct, **pas une valeur SPAD**.
+- **Puissance absorbée** (calcul C sur le tableau II, p. 15) : vers 99,5 mph et 1 740 tr/min, couple de 552 lb·ft, soit environ **183 hp**. Au point quasi statique (19,7 mph, 1 655 tr/min, 556 lb·ft), environ **175 hp** pour **801 lb** de poussée effective (≈ 3,56 kN). Ces valeurs donnent un ordre de grandeur de la poussée statique avec un moteur de 180 hp, **pas une valeur SPAD**.
 
 **Usage proposé pour le modèle** (C, à valider par l'aérodynamicien) :
-- **D'** est la plus proche des cotes relevées pour le SPAD (§ 7.1) : diamètre 2,39 m contre 2,35-2,45 m, pas 1,91 m contre 1,75-2,10 m, P/D 0,8 contre environ 0,71 à 0,86 (calcul C). Le pas de D' coïncide avec celui du plan britannique AB 759 (1,91 m, H8 [RÉSUMÉ]), ce qui est probablement une coïncidence.
+- **D'** est la plus proche des cotes relevées pour le SPAD (§ 7.1) : diamètre 2,39 m contre 2,35-2,45 m, pas 1,91 m contre 1,75-2,10 m, P/D 0,8 contre environ 0,74 à 0,86 (calcul C : Éclair 1,75/2,35 ; Gallia 2,10/2,45). Le pas de D' coïncide avec celui du plan britannique AB 759 (1,91 m, H8 [RÉSUMÉ]), ce qui est probablement une coïncidence.
 - Deux options :
   - **calibrer le calcul BEMT** de l'hélice Gallia ou Levasseur pour qu'il retrouve la table de D' quand on lui donne la géométrie de D' (forme en plan et calages lisibles sur la figure 5, ordonnées des profils au tableau I, p. 12) ;
   - ou **reprendre directement la table de D'** comme hélice de secours, mise à l'échelle par le diamètre (les coefficients sont sans dimension), avec une étiquette `C:` dans les données.
@@ -274,6 +276,16 @@ Les tableaux III de B' (p. 18) et de I (p. 19) sont lus et vérifiés sur l'imag
 - **H13** — IPMS USA, « SE.5a Propeller Two-Blade (right) and Two-Blade (Left) », https://reviews.ipmsusa.org/review/se5a-propeller-two-blade-right-and-two-blade-left ; Wikipedia (en), « Royal Aircraft Factory S.E.5 » ; notices de maquettes Eduard. [RÉSUMÉ] Pistes.
 - Sources partagées avec `spad7.md` : S1 (Bordeaux, 1918) [LU] ; S3 (Hall, 1918) [LU] ; S5, S13, S15, S31, S32, S38 [RÉSUMÉ].
 
+**Sources primaires lues (troisième passe)**
+
+Fichiers PDF et texte extrait de NASA NTRS, téléchargés par le coordinateur le 2026-10-20 et lus dans le dossier de travail. Les chiffres douteux de l'OCR ont été vérifiés sur l'image des pages. Pages citées : pagination imprimée des rapports.
+- **H14** — Victor R. Gage (Bureau of Standards), « A Study of Airplane Engine Tests », NACA Report No. 46, rapport annuel du NACA, p. 525 et suivantes ; 1920 d'après l'index NTRS. NTRS 19930091075, https://ntrs.nasa.gov/citations/19930091075. **[LU]** : résumé p. 525-527, tableau 1 p. 550 (vérifié sur l'image).
+- **H15** — Victor R. Gage (Bureau of Standards), « Some Factors of Airplane Engine Performance », NACA Report No. 108, rapport annuel du NACA, p. 649 et suivantes, 1921. NTRS 19930091171, https://ntrs.nasa.gov/citations/19930091171. **[LU]** : résumé et conclusions.
+- **H16** — S. W. Sparrow et H. S. White (Bureau of Standards), « Performance of a 300-Horsepower Hispano-Suiza Airplane Engine », NACA Report No. 103, rapport annuel du NACA, p. 579 et suivantes, 1921. NTRS 19930091166, https://ntrs.nasa.gov/citations/19930091166. **[LU]** : p. 581-582 et 584.
+- **H17** — Fred E. Weick (Langley Memorial Aeronautical Laboratory), « Full Scale Tests of Wood Propellers on a VE-7 Airplane in the Propeller Research Tunnel », NACA Report No. 301, Government Printing Office, 1929 ; texte daté du 18 juin 1928. NTRS 19930091370, https://ntrs.nasa.gov/citations/19930091370. **[LU]** : texte entier, images des p. 5, 15 et 18 à 22.
+- **H18** — L. J. Briggs et H. L. Dryden, « Aerodynamic Characteristics of Twenty-Four Airfoils at High Speeds », NACA Report No. 319, 1929 ou 1930 (date de la page de titre mal lue par l'OCR). NTRS 19930091389. Téléchargé, **non exploité** : piste pour les profils de pale et l'effet du nombre de Mach en bout de pale.
+- Pistes citées par H17 : NACA Report 220 (Durand et Lesley, 1926, comparaison des essais d'hélices en vol et sur maquette) et NACA Report 292 (Crowley et Mixson, essais en vol de cinq hélices), sur les mêmes hélices du VE-7. Non lus.
+
 **Pistes non consultées**
 - ARC R&M n° 586 (juillet 1921), figure 10 : courbe puissance/régime du Hispano 150, d'après l'essai du RAE du 8 août 1916 (archives Cranfield AERADE).
 - Rapport du département moteurs du RAE, 8 août 1916 (National Archives).
@@ -291,3 +303,18 @@ Les tableaux III de B' (p. 18) et de I (p. 19) sont lus et vérifiés sur l'imag
 - **2026-10-20 — Hélice du 180 ch.** Non trouvée. Faute de mieux, garder les cotes du 150 ch et le signaler en `E:` dans les données.
 - **2026-10-20 — Deuxième passe : rien de relevé.** archive.org et NTRS ne sont pas lisibles par l'outil de l'historien (DNS en échec ; `spad7.md` § 0). Ni l'ARC R&M 586, ni une consommation, ni une hélice d'époque n'ont pu être consultées. Pour les profils de pale d'hélice, NACA Report 319 (famille « R.A.F. » d'hélices, NTRS 19930091389, `profil-spad7.md` A19) est une piste pour le calcul BEMT.
 - **2026-10-20 — Sens de rotation.** **Horaire vu du pilote, confiance C** : déduction concordante de H1, H12, H13 et de l'essai de McCook (§ 7.3). À confirmer par une photographie ou une notice d'époque.
+
+**Troisième passe (rapports NACA lus)**
+- **2026-10-20 — Courbe puissance/régime (remplace l'entrée « non trouvée »).** Retenu : facteurs du Report 46 (H14), rapportés à 2 100 tr/min, soit 0,785 / 0,890 / 0,943 / 1,000 pour 1 500 / 1 700 / 1 900 / 2 100 tr/min (§ 3.1). Confiance A pour le moteur essayé, **B pour un 8Ab** : même alésage, course et compression, constructeur non précisé. Pour le 8Aa, même forme mise à l'échelle, confiance C. Le R&M 586 reste à trouver pour le 150 ch.
+- **2026-10-20 — Cote du 8Ab : 1 700 ou 2 100 tr/min.** H14 cote le moteur à 180 hp à 1 700 tr/min ; H1 et H5 donnent 180 ch à 2 100 tr/min. Ramené en air standard par la seule densité (C, hypothèse simplificatrice), le moteur de H14 donne environ 180 hp à 1 700 tr/min, mais **environ 202 hp (≈ 205 ch) à 2 100 tr/min**. Ce dernier chiffre dépasse la cote française.
+  - Explications possibles, non tranchées : cote française prise à un autre régime ; correction de température moins forte que la densité (H15), qui creuserait encore l'écart ; moteur américain différent du 8Ab français.
+  - **Retenu pour les données** : 180 ch à 2 100 tr/min (C) comme puissance de référence, avec la forme de H14. **Variante à essayer** : la puissance absolue de H14 corrigée en air standard (C).
+  - L'arbitrage revient à l'aérodynamicien, par les essais de montée (STAé et rapport britannique n° 96, `spad7.md` § 5).
+- **2026-10-20 — Loi d'altitude.** Fourchette : k ≈ 0,08 à 0,11 (H14, Hispano de 180 hp) ; k = 0,132 (Gagg-Farrar de la skill) ; perte plus forte sur le 300 hp (H16).
+  - **Proposition** : g(σ) = σ − k(1 − σ), avec k de H14 selon le régime. Confiance B pour un 8Ab.
+  - Je ne modifie pas la skill (hors de `docs/recherche/`). Gagg-Farrar reste le défaut, en C, tant que l'aérodynamicien n'a pas validé le changement.
+  - L'origine de la référence « Gagg-Farrar » n'est toujours pas trouvée.
+- **2026-10-20 — Consommation.** **Retenu : 0,503 lb/(hp·h) à 1 700 tr/min au sol, soit ≈ 0,225 kg/(ch·h)** (H14, tableau 1), confiance B pour un 8Ab, à pleins gaz et au mélange de puissance maximale. Elle augmente en altitude jusqu'à environ 0,61-0,65 lb/(hp·h) à « 30 000 ft ». L'écart avec l'autonomie citée par S13 (§ 5) est signalé, non résolu.
+- **2026-10-20 — Report 103 (300 hp).** Utilisé seulement comme borne pour la perte en altitude, confiance C pour le 8A. **Correction** : j'avais d'abord qualifié ce moteur de modèle « H ». Cette désignation n'apparaît pas dans le rapport ; je l'ai retirée et remplacée par les cotes lues p. 584.
+- **2026-10-20 — Hélice : table mesurée de secours.** Retenu : la **table C_T/C_P/η de l'hélice D' du VE-7** (H17, tableau III, p. 20) sert d'**étalon** au calcul BEMT et d'**hélice de secours** mise à l'échelle du diamètre. Confiance **A pour la mesure, C pour l'usage sur le SPAD** : ce n'est pas l'hélice du SPAD, l'avion et le moteur diffèrent, et le rendement inclut l'interférence propre au VE-7. La Gallia série 3 (§ 7.1) reste la géométrie de référence. D' est choisie parmi les trois hélices parce que son diamètre (2,39 m) et son rapport pas/diamètre (0,8) sont les plus proches des cotes relevées pour le SPAD.
+- **2026-10-20 — Sens de rotation (troisième passe).** Indice nouveau : « Rotation: Right hand » sur les trois hélices du VE-7 (H17, p. 5). **Pas de relèvement de la confiance** : la convention n'est pas définie dans le rapport, et H17 ne dit pas que le moteur E-2 est un Hispano à entraînement direct. Reste C, renforcée (§ 7.3).

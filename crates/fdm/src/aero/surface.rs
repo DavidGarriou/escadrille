@@ -4,14 +4,32 @@
 //! chord–normal plane (the spanwise component is ignored), section coefficients from
 //! the surface's 360° polar, lift perpendicular to the local in-plane velocity.
 //!
-//! Finite span is handled once, as an induced angle: α_i = C_L / (π e AR), solved by
-//! fixed-point iteration (C_L depends on α − α_i), and the force is tilted back by α_i.
-//! In the linear range this gives the classical C_L = a₀ α / (1 + a₀ / (π e AR)) and
-//! C_Di = C_L² / (π e AR); beyond the stall, the induced angle collapses with the lift.
+//! Finite span is handled once, as an induced angle α_i = k C_L(α − α_i), k = 1 / (π e AR),
+//! solved exactly with a bracketed root finder (Illinois method), and the force is tilted
+//! back by α_i. In the linear range this gives the classical C_L = a₀ α / (1 + a₀ k) and
+//! C_Di = k C_L². A fixed-point iteration would diverge when a₀ k > 1, i.e. e·AR < 2: every
+//! fin and rudder of 1914-18 (aerodynamicist review, 2026-10-20).
+//!
+//! The exact solve is done between the two stall points of the table (maximum and
+//! minimum C_L), where x + k C_L(x) is monotone and the solution unique. Past the stall,
+//! the equation may have several solutions (a lift-curve slope steeper than −1/k, common
+//! on low aspect ratio fins), which would make the loads jump; and lifting-line induction
+//! makes no sense in separated or reversed flow anyway. So beyond the stall the induced
+//! angle keeps its stall value and fades linearly to zero at [`INDUCTION_FADE_END`] of
+//! geometric incidence (or 15° past the stall, whichever is larger). Continuous, monotone,
+//! with no hysteresis; an estimate (E:) for the post-stall region.
+//!
+//! Known limits (E:, confidence C): one k per surface is exact only for a symmetric
+//! loading; for antisymmetric loading (roll damping, ailerons) lifting-line theory gives a
+//! lower slope, so the roll damping is overestimated (about 27 % for AR 5.5) and all strips
+//! stall together. The target is a nonlinear lifting line with an influence matrix
+//! (Phillips & Snyder, J. Aircraft 37(4), 2000), which will also give the biplane
+//! interference and the downwash on the tail. Below AR ≈ 4, lifting-line theory
+//! overestimates the lift slope (Helmbold or DATCOM corrections belong in the data, C:).
 
 use glam::DVec3;
 
-use super::polar::{Coefficients, Polar};
+use super::polar::{Coefficients, Polar, wrap_angle};
 use crate::rigid_body::Wrench;
 
 /// Pilot control channels, normalised commands in [−1, 1] are converted to surface
@@ -80,9 +98,29 @@ pub struct Strip {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct InducedModel {
     /// Effective aspect ratio (biplane interference included by the aircraft data).
-    pub aspect_ratio: f64,
+    aspect_ratio: f64,
     /// Span efficiency e.
-    pub efficiency: f64,
+    efficiency: f64,
+}
+
+impl InducedModel {
+    /// `None` unless 0 < AR and 0 < e ≤ 1.
+    pub fn new(aspect_ratio: f64, efficiency: f64) -> Option<Self> {
+        let valid = aspect_ratio.is_finite()
+            && aspect_ratio > 0.0
+            && efficiency.is_finite()
+            && efficiency > 0.0
+            && efficiency <= 1.0;
+        valid.then_some(Self {
+            aspect_ratio,
+            efficiency,
+        })
+    }
+
+    /// Induced-angle factor k = 1 / (π e AR).
+    pub fn factor(&self) -> f64 {
+        1.0 / (std::f64::consts::PI * self.efficiency * self.aspect_ratio)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -93,9 +131,16 @@ pub struct LiftingSurface {
     pub induced: Option<InducedModel>,
 }
 
-/// Number of fixed-point iterations for the induced angle (converges geometrically
-/// when a₀ / (π e AR) < 1, which holds for any real wing; fixed for determinism).
-const INDUCED_ITERATIONS: usize = 8;
+/// Induction is faded out completely beyond this geometric angle of attack (rad), unless
+/// the stall is close to it (then 15° past the stall).
+pub const INDUCTION_FADE_END: f64 = 40.0 * std::f64::consts::PI / 180.0;
+
+/// Maximum iterations of the induced-angle root finder (converges in a few; the cap
+/// keeps the cost bounded and the result deterministic).
+const SOLVER_MAX_ITERATIONS: usize = 60;
+
+/// Residual (rad) below which the induced-angle root finder stops.
+const SOLVER_TOLERANCE: f64 = 1e-13;
 
 /// Below this local airspeed, a strip produces no force (avoids 0/0 at rest).
 const MIN_STRIP_SPEED: f64 = 1e-3;
@@ -114,44 +159,91 @@ pub struct StripState {
 impl LiftingSurface {
     /// Aerodynamic force and moment about the centre of gravity, body axes.
     ///
-    /// `air_velocity` is the velocity of the centre of gravity relative to the air,
-    /// body axes; `downwash` (rad) lowers the angle of attack of every strip (tail
-    /// behind a wing), `density` in kg/m³.
+    /// `air_velocity` is the velocity of the centre of gravity relative to the free-stream
+    /// air, body axes; `local_flow(r)` is the extra air velocity at body point `r` (wing
+    /// downwash on the tail, propeller slipstream, ground effect…), body axes; `density`
+    /// in kg/m³.
     pub fn loads(
         &self,
         air_velocity: DVec3,
         angular_velocity: DVec3,
         density: f64,
         controls: &ControlDeflections,
-        downwash: f64,
+        local_flow: impl Fn(DVec3) -> DVec3,
     ) -> Wrench {
         self.strips
             .iter()
             .map(|strip| {
-                self.strip_loads(
-                    strip,
-                    air_velocity,
-                    angular_velocity,
-                    density,
-                    controls,
-                    downwash,
-                )
-                .0
+                let v = air_velocity + angular_velocity.cross(strip.position)
+                    - local_flow(strip.position);
+                self.strip_loads(strip, v, density, controls).0
             })
             .fold(Wrench::default(), |a, b| a + b)
     }
 
-    /// Loads and diagnostics of one strip.
+    /// Effective angle of attack x = α − α_i for geometric angle of attack α (rad).
+    fn effective_alpha(&self, alpha: f64, k: f64) -> f64 {
+        let alpha = wrap_angle(alpha);
+        let (neg, pos) = self.polar.stall_points();
+        // Geometric incidences at which each stall is reached.
+        let (alpha_neg, alpha_pos) = (neg.alpha + k * neg.cl, pos.alpha + k * pos.cl);
+        if alpha > alpha_pos || alpha < alpha_neg {
+            let (stall_alpha, stall_cl, a) = if alpha > alpha_pos {
+                (alpha_pos, pos.cl, alpha)
+            } else {
+                (-alpha_neg, -neg.cl, -alpha)
+            };
+            let end = INDUCTION_FADE_END.max(stall_alpha + 15f64.to_radians());
+            let weight = ((end - a) / (end - stall_alpha)).clamp(0.0, 1.0);
+            let induced = k * stall_cl * weight;
+            return if alpha > alpha_pos {
+                alpha - induced
+            } else {
+                alpha + induced
+            };
+        }
+        // Attached flow: solve x + k C_L(x) = α on [x_neg, x_pos], where the residual
+        // goes from ≤ 0 to ≥ 0 (Illinois variant of regula falsi).
+        let residual = |x: f64| x + k * self.polar.coefficients(x).cl - alpha;
+        let (mut lo, mut hi) = (neg.alpha, pos.alpha);
+        let (mut f_lo, mut f_hi) = (residual(lo), residual(hi));
+        let mut x = alpha;
+        let mut last_side = 0;
+        for _ in 0..SOLVER_MAX_ITERATIONS {
+            if f_hi - f_lo <= 0.0 {
+                break;
+            }
+            x = (lo * f_hi - hi * f_lo) / (f_hi - f_lo);
+            let f = residual(x);
+            if f.abs() < SOLVER_TOLERANCE || hi - lo < SOLVER_TOLERANCE {
+                break;
+            }
+            if f < 0.0 {
+                (lo, f_lo) = (x, f);
+                if last_side == -1 {
+                    f_hi *= 0.5; // Illinois step: avoid a stagnant end point.
+                }
+                last_side = -1;
+            } else {
+                (hi, f_hi) = (x, f);
+                if last_side == 1 {
+                    f_lo *= 0.5;
+                }
+                last_side = 1;
+            }
+        }
+        x
+    }
+
+    /// Loads and diagnostics of one strip, for `v` the strip's velocity relative to the
+    /// local air (body axes).
     pub fn strip_loads(
         &self,
         strip: &Strip,
-        air_velocity: DVec3,
-        angular_velocity: DVec3,
+        v: DVec3,
         density: f64,
         controls: &ControlDeflections,
-        downwash: f64,
     ) -> (Wrench, StripState) {
-        let v = air_velocity + angular_velocity.cross(strip.position);
         let (u_c, u_n) = (v.dot(strip.chord_axis), v.dot(strip.normal));
         let speed_sq = u_c * u_c + u_n * u_n;
         if speed_sq < MIN_STRIP_SPEED * MIN_STRIP_SPEED {
@@ -161,18 +253,13 @@ impl LiftingSurface {
         let control_shift = strip
             .control
             .map_or(0.0, |c| c.alpha_per_rad * controls.get(c.channel));
-        let alpha = (-u_n).atan2(u_c) + control_shift - downwash;
+        let alpha = (-u_n).atan2(u_c) + control_shift;
 
-        let mut induced = 0.0;
-        let mut coefficients = self.polar.coefficients(alpha);
-        if let Some(model) = self.induced {
-            let k = 1.0 / (std::f64::consts::PI * model.efficiency * model.aspect_ratio);
-            for _ in 0..INDUCED_ITERATIONS {
-                induced = coefficients.cl * k;
-                coefficients = self.polar.coefficients(alpha - induced);
-            }
-            induced = coefficients.cl * k;
-        }
+        let effective = self
+            .induced
+            .map_or(alpha, |model| self.effective_alpha(alpha, model.factor()));
+        let induced = alpha - effective;
+        let coefficients = self.polar.coefficients(effective);
 
         // Directions in the chord–normal plane: drag along the local flow, lift
         // perpendicular to it (equal to `normal` when the flow is along the chord),

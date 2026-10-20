@@ -2,7 +2,12 @@
 
 - Identifiant : `spad7` (même nom que `assets/aircraft/spad7/`)
 - Dernière mise à jour : 2026-10-20
-- État : **en cours** (première passe ; aucune valeur de performance n'atteint la confiance A ou B)
+- État : **en cours** (troisième passe). Aucune **performance** du S.VII n'atteint la confiance A ou B. Sont désormais sourcés par des documents d'époque lus :
+  - le profil « Spad » (B) ;
+  - les polaires du RAF 15 (A pour ce profil) ;
+  - la courbe de puissance et la loi d'altitude du Hispano de 180 hp (B pour un 8Ab) ;
+  - une hélice en bois comparable (A pour la mesure, C pour l'usage) ;
+  - des lois d'interférence biplan (C pour le SPAD).
 - Fiches liées : [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (moteur et hélice), [`profil-spad7.md`](profil-spad7.md) (profil d'aile)
 - Contexte de jeu visé : escadrille SPA 3 (« Cigognes », Groupe de Combat 12), Flandres, été 1917
 
@@ -26,6 +31,10 @@
 - Refus explicite de l'outil : web.archive.org.
 - **Aucun document d'archive.org ni de NTRS n'a donc pu être lu, et aucune confiance n'a été relevée.**
 - Seul gain : des **identifiants exacts** de documents à télécharger (§ 9.6), trouvés par le moteur de recherche restreint à ces domaines. Pour les exploiter, un agent ou une personne disposant d'un terminal doit les télécharger dans un dossier local (texte OCR `_djvu.txt` d'archive.org, PDF de NTRS) ; l'historien les lira ensuite.
+
+**Troisième passe (2026-10-20).** Le coordinateur a téléchargé **15 rapports NACA** depuis NTRS (PDF et texte extrait) dans un dossier de travail local. L'historien les a lus comme des données, sans rien exécuter, et a vérifié sur l'image des pages les chiffres douteux de l'OCR. Ils sont marqués **[LU]** avec leurs pages.
+- Ils alimentent `profil-spad7.md` (profil et polaires), `hispano-suiza-8a.md` (moteur, consommation, hélice) et le § 2.4 ci-dessous (interférence biplan, stabilité).
+- **Les fichiers d'archive.org restent inaccessibles.** *Flight*, *The Aeroplane*, Jane's et les rapports d'essais du STAé et britanniques ne sont donc toujours pas lus, et les **performances du S.VII restent en confiance C**.
 
 ## 1. Identification et contexte
 
@@ -115,7 +124,7 @@ Aucune cote détaillée (corde, écartement, décalage, calages, dièdre, gouver
 | Structure de voilure | une seule travée, avec des mâts intermédiaires au croisement des câbles de vol et d'atterrissage | — | S16, S42 [RÉSUMÉ] | B (qualitatif) | Ces mâts intermédiaires donnent l'aspect d'un biplan à deux travées ; S15 qualifie le XIII de biplan « à deux travées » |
 | Ailerons | sur le plan supérieur seulement (attesté pour le XIII), commandés par bielles depuis des renvois à 90° apparents qui sortent du plan inférieur ; « tringlerie analogue » sur le VII | — | S41 [RÉSUMÉ] | C | Surfaces et débattements : non trouvés |
 | Empennage, gouvernes | non trouvé pour le VII | — | — | — | Voir le XIII au § 2.2 |
-| Profil | inconnu ; « profil mince » d'après des sources secondaires | — | voir `profil-spad7.md` | C | |
+| Profil | section nommée **« Spad »** dans le NACA Report 93 (MIT, 1918) : épaisseur ≈ 5,4 %, cambrure ≈ 3,8 %, intrados creux | % de corde | `profil-spad7.md` § 2 [LU] | **B** | Type de SPAD mesuré non précisé. Polaires : calcul calé sur le RAF 15 de vraie grandeur (A pour ce profil, C pour le SPAD) |
 
 ### 2.2 Comparable : SPAD S.XIII C.1 (cotes publiées d'après un exemplaire américain)
 
@@ -138,6 +147,51 @@ Source : S15 [RÉSUMÉ], *This Day in Aviation*, d'après l'exemplaire 17956 ess
 ### 2.3 Traînées parasites (inventaire pour le modèle de vol)
 Éléments à modéliser, d'après les descriptions : mâts interplans **et mâts intermédiaires** (S16), câbles de vol et d'atterrissage, tringlerie d'ailerons extérieure à renvois (attestée sur le XIII), radiateur frontal du V8 à refroidissement liquide, train fixe, mitrailleuse au-dessus du moteur (§ 7), tête du pilote. **Aucune dimension ni aucun coefficient n'a été trouvé.** Tout devra être calculé (Hoerner) et marqué `C:`, ou estimé (`E:`) et justifié par l'aérodynamicien.
 
+### 2.4 Interférence biplan et stabilité : ce qui servira au modèle (troisième passe) [LU]
+
+**Portée.** Aucune de ces mesures ne porte sur un SPAD. Ce sont des lois de cellules biplans mesurées ou calculées sur d'autres avions. **Confiance A pour l'objet essayé, C pour le SPAD.** Les cotes de cellule du S.VII restent inconnues (§ 2.1). À titre d'ordre de grandeur, le XIII a un rapport écartement/corde de 1,181/1,400 ≈ 0,84 (calcul C, § 2.2).
+
+**Portance de la cellule**
+- **Facteurs de cellule mesurés** (S43 : maquette de Curtiss JN-2, profil Eiffel 36, écartement/corde ≈ 1, MIT, été 1917). Le facteur est la portance du biplan rapportée à deux fois celle d'un plan seul.
+  - Aux incidences de vol, il vaut de **0,82 à 0,94**, avec un minimum vers 8° (p. 290). Le résumé donne 0,82 à 0,86 aux faibles incidences (p. 339).
+  - Pour le **C_L max**, les auteurs recommandent **0,95** pour un écartement/corde voisin de 1 et un décalage de 10 à 25 % (p. 290, 339).
+  - D'après des essais de Hunsaker et du NPL cités p. 290, passer d'un écartement/corde de 1,2 à 1 fait perdre environ 5 % ; un décalage de 20 % fait gagner environ 2 %.
+- **Pentes de cellule calculées et recoupées par l'expérience** (S45, p. 659). Plans égaux, allongement 6, écartement/corde 1, sans décalage angulaire :
+  - RAF 15 : **3,57** sans décalage, **3,65** à 29° de décalage ;
+  - Clark Y : 3,30 et 3,59 ;
+  - Göttingen 387 : 3,27 et 3,40.
+
+  L'unité n'est pas écrite dans le tableau ; les valeurs sont cohérentes avec une pente par radian. Selon l'auteur, la théorie et l'expérience diffèrent de moins de 1 %.
+- **Recoupement** (C, calcul fait ici). En monoplan d'allongement 6, corrigé de l'effet de paroi, le RAF 15 a une pente d'environ 0,0747/° ≈ 4,28/rad (`profil-spad7.md` § 4.2). Le rapport 3,57/4,28 ≈ **0,83** concorde avec les 0,82 à 0,86 de S43 aux faibles incidences : deux sources indépendantes, deux profils, même ordre de grandeur.
+- **Lois utiles de S45** (p. 658-661) :
+  - la cambrure ne change pas sensiblement la pente de la cellule ;
+  - pour un profil peu cambré comme le RAF 15, la cellule garde l'**incidence de portance nulle du profil**. Elle devient plus négative quand la cambrure augmente : Clark Y −5,8° seul, environ −6,4° en biplan. **À retenir pour le « Spad », plus cambré que le RAF 15** ;
+  - un décalage de −15° à +30° est sans effet sensible sur l'incidence de portance nulle et a un petit effet sur la pente (pente minimale pour un décalage nul ou faible) ;
+  - un décalage angulaire de −2° à +4° (essais sur USA 27) ne change pas la pente. La **méthode simple de Glauert** (ARC R&M 901, 1923) suffit donc pour des plans égaux, avec ou sans décalage angulaire, sauf en cas de décalage négatif ;
+  - un décalage positif augmente la part de portance du plan supérieur. Un écartement plus faible accentue toutes les interférences ;
+  - la théorie ne vaut qu'au-dessus d'un écartement/corde d'environ 0,75. **Le SPAD est près de cette limite** s'il ressemble au XIII ;
+  - pour chaque plan, on peut garder la relation centre de poussée / C_L du monoplan ;
+  - pour la traînée induite, S45 renvoie à la formule de Prandtl des multiplans. Supposer les portances des deux plans proportionnelles à leurs surfaces ne coûte qu'environ 3 % d'erreur dans le pire cas étudié (p. 661).
+
+**Décrochage de la cellule (S44)**
+
+Essais de pression sur maquettes des ailes du chasseur PW-9 : profil Göttingen 436, environ 30 m/s, de −6° à +24°, plans essayés seuls puis en cellule (p. 3 et 11 à 13).
+- L'interférence touche presque uniquement l'intrados du plan supérieur et l'extrados du plan inférieur.
+- Le plan supérieur décroche **à la même incidence** que seul. Le plan inférieur décroche **plus tard**, avec un maximum un peu plus élevé et **sans chute brutale**.
+- La pente et le maximum de la cellule sont inférieurs à la somme des deux plans seuls.
+- Aux grandes incidences, les centres de poussée **avancent** sur les deux plans.
+
+Conséquence possible (C, raisonnement, à faire émerger et non à scripter) : si le modèle traite les deux plans séparément, le décrochage de la cellule commence par le plan supérieur. Si ce plan est en avant du centre de gravité, la perte de portance peut donner une **abattée**, ce qui rejoint la réputation (§ 6.2). L'intensité dépend du décalage et des calages, inconnus pour le S.VII.
+
+**Traînée et stabilité (S43, p. 339-340)**
+- En présence des ailes, la traînée du fuselage et du train vaut environ les **trois cinquièmes** de celle de ces éléments essayés seuls.
+- L'empennage fournit **82 %** de l'amortissement en tangage du JN-2. La théorie usuelle n'en prédit qu'environ les deux tiers. La règle des auteurs, pour une estimation préliminaire : calculer l'amortissement de l'empennage et le compter pour **55 %** de celui de l'avion complet, soit un total d'environ 1,8 fois la valeur calculée (C, conversion faite ici). Cela sert de **contrôle de vraisemblance** de la dérivée M_q, pas de valeur SPAD.
+- Le centrage du JN-2 (centre de gravité de 4 à 18 in en avant du centre de poussée moyen des ailes, p. 339) lui est propre et **n'est pas transposable**.
+
+**Hélice et ailes** : sur le VE-7, la présence des ailes réduit d'environ 5 % le rendement propulsif maximal (`hispano-suiza-8a.md` § 7.4).
+
+**Ce qui manque** : l'écartement, le décalage, les calages et les cordes du S.VII. Sans eux, ces lois ne donnent aucun chiffre propre au SPAD. Pour la cellule RAF 15, S45 cite des données expérimentales dans les ARC R&M 774, 816, 857 et 997 et le NACA TR 256 ; ce sont des pistes, non lues.
+
 ## 3. Masses et centrage
 
 | Grandeur | Valeur | Conditions | Source | Confiance | Remarque |
@@ -155,8 +209,9 @@ Source : S15 [RÉSUMÉ], *This Day in Aviation*, d'après l'exemplaire 17956 ess
 
 ## 4. Moteur et hélice (résumé ; détail dans [`hispano-suiza-8a.md`](hispano-suiza-8a.md))
 - 150 ch : Hispano-Suiza 8Aa ; 180 ch : Hispano-Suiza 8Ab. V8 à refroidissement liquide, entraînement **direct** de l'hélice.
-- Hélice bipale en bois à pas fixe. Selon des forums [RÉSUMÉ], diamètre de 2,35 à 2,45 m et pas de 1,75 à 2,10 m pour le 150 ch. Rien de fiable pour le 180 ch.
-- **Sens de rotation** : **horaire vu du siège du pilote** (confiance C), déduit de sources concordantes qui ne sont pas primaires. Conséquence attendue (C) : à pleine puissance et à basse vitesse, l'avion tend à partir à gauche, ce qui demande du pied à droite. C'est l'inverse du SPAD XIII à réducteur, pour lequel McCook note qu'il faut beaucoup de pied à gauche (S15).
+- **Puissance** (troisième passe) : la forme de la courbe puissance/régime, la loi d'altitude et la consommation d'un Hispano de 180 hp (même alésage, course et compression que le 8Ab) ont été mesurées par le Bureau of Standards (NACA Report 46, lu). Confiance **B pour un 8Ab**. La cote absolue reste discutée : 180 hp à 1 700 tr/min dans le rapport, 180 ch à 2 100 tr/min dans les sources françaises secondaires. Détail et journal dans `hispano-suiza-8a.md` § 3 à 5.
+- Hélice bipale en bois à pas fixe. Selon des forums [RÉSUMÉ], diamètre de 2,35 à 2,45 m et pas de 1,75 à 2,10 m pour le 150 ch. Rien de fiable pour le 180 ch. **Table C_T/C_P mesurée** sur une hélice en bois comparable (Navy D' du VE-7 à moteur Wright de 180 hp, 2,39 m, P/D 0,8) : A pour la mesure, **C pour le SPAD** (`hispano-suiza-8a.md` § 7.4).
+- **Sens de rotation** : **horaire vu du siège du pilote** (confiance C), déduit de sources concordantes qui ne sont pas primaires. Troisième passe : les hélices du VE-7 portent « Rotation: Right hand » (NACA Report 301, p. 5). L'indice concorde, mais il ne relève pas la confiance, faute de définition de la convention et d'identification certaine du moteur. Conséquence attendue (C) : à pleine puissance et à basse vitesse, l'avion tend à partir à gauche, ce qui demande du pied à droite. C'est l'inverse du SPAD XIII à réducteur, pour lequel McCook note qu'il faut beaucoup de pied à gauche (S15).
 
 ## 5. Performances
 
@@ -305,7 +360,7 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 | Boucle aisée | T1 Guynemer [LU] ; T4 (c), témoin de boucles après combat [LU] | **À confirmer** : un seul jugement de pilote | Provisoire, non bloquant : boucle depuis la vitesse de croisière à pleins gaz, bouclée sans décrochage au sommet | C |
 | Vrille : entrée « paresseuse et irrégulière, mais très douce » | T1 Guynemer [LU] | **À confirmer** : un seul témoignage | Provisoire : `SpinEntryRecovery(turns: 3)`. Rotation établie lentement et irrégulière, sortie franche aux commandes croisées. Pas de seuil chiffré | C |
 | Moins maniable que le Nieuport ; commandes lourdes | Secondaires : S5, S32/T10, S33, S34 [RÉSUMÉ] ; **contre** : T9 Tallman (commandes légères) [RÉSUMÉ] et T4 (b), Bordeaux (« facilité de conduite » supérieure à celle de l'Albatros) [LU] | **Contesté** ; le comparant change (Nieuport ou Albatros) | Aucune. Ne pas régler le modèle pour l'obtenir : le rayon de virage doit émerger de la charge alaire et de la puissance | — |
-| Décrochage brutal à basse vitesse, mauvais plané, atterrissage au moteur | T9 Tallman [RÉSUMÉ] ; secondaires (`profil-spad7.md` A12 : forum, page Memorial Flight ou NASM) ; fait T16 (Olivari) ; S21 (XIII) | **À confirmer** : aucun témoignage direct lu | Provisoire, non bloquant : décrochage moteur réduit avec abattée nette et départ en roulis, plané plus pentu que celui d'un Nieuport. **Aucun seuil chiffré** tant qu'il n'est pas sourcé | C |
+| Décrochage brutal à basse vitesse, mauvais plané, atterrissage au moteur | T9 Tallman [RÉSUMÉ] ; secondaires (`profil-spad7.md` A12 : forum, page Memorial Flight ou NASM) ; fait T16 (Olivari) ; S21 (XIII) | **À confirmer** : aucun témoignage direct lu | Provisoire, non bloquant : décrochage moteur réduit avec abattée nette et départ en roulis, plané plus pentu que celui d'un Nieuport. **Aucun seuil chiffré** tant qu'il n'est pas sourcé. Mécanismes physiques maintenant documentés, sans valeur SPAD : chute de portance nette après le maximum du RAF 15 à Reynolds élevé (`profil-spad7.md` § 3.1) ; décrochage du plan supérieur avant le plan inférieur (§ 2.4, S44). Ils doivent **produire** le trait, pas le remplacer | C |
 | Très stable en vol, bonne plate-forme de tir | T8 Meister (XIII) [RÉSUMÉ] ; S5 [RÉSUMÉ] | **À confirmer** pour le VII | Provisoire : modes propres. Oscillation d'incidence bien amortie, spirale peu divergente | C |
 | Couple marqué, embardée au décollage | T8 (XIII, rotation inverse) | **À confirmer** ; sens déduit pour le VII | M2 (sol) : à pleine puissance, l'avion part à gauche, contré au pied droit (déduit du sens de rotation, C) | C |
 | Visibilité latérale et vers l'arrière limitée, angle mort sous le moteur | T4 (a) Bordeaux [LU] ; S9 [RÉSUMÉ] (avant et vers le bas médiocres) | **À confirmer** | Pour la caméra cockpit (M2+), pas pour le modèle de vol | C |
@@ -356,6 +411,12 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **S2** — Manfred Freiherr von Richthofen, *Der rote Kampfflieger*, Ullstein & Co, Berlin-Wien, 1917 (151.–200. Tausend). Project Gutenberg n° 24572 via GITenberg : https://raw.githubusercontent.com/GITenberg/Der-rote-Kampfflieger_24572/master/24572-8.txt (consulté le 2026-10-20). Chapitres « Das Anti-Richthofen-Geschwader (25. April 1917) » et « Der "alte Herr" kommt uns besuchen ». Type : primaire (mémoires de guerre, propagande).
 - **S3** — James Norman Hall, *High Adventure: A Narrative of Air Fighting in France*, Houghton Mifflin, Boston et New York, juin 1918. Project Gutenberg n° 24570 via GITenberg : https://raw.githubusercontent.com/GITenberg/High-Adventure--A-Narrative-of-Air-Fighting-in-France_24570/master/24570-8.txt (consulté le 2026-10-20). Type : primaire (lettres et récit).
 - **S4** — Charles Bernard Nordhoff, *The Fledgling*, Houghton Mifflin, Boston et New York, 1919. Project Gutenberg n° 51559 via GITenberg : https://raw.githubusercontent.com/GITenberg/The-Fledgling_51559/master/51559-8.txt (consulté le 2026-10-20). Type : primaire, en partie romancé.
+
+**Lues en troisième passe** : rapports NACA téléchargés depuis NASA NTRS par le coordinateur le 2026-10-20 (PDF et texte extrait). Lus dans le dossier de travail ; chiffres douteux vérifiés sur l'image des pages ; pagination imprimée.
+- **S43** — Alexander Klemin, Edward P. Warner et George M. Denkinger (Massachusetts Institute of Technology), « An Investigation of the Elements Which Contribute to Statical and Dynamical Stability, and of the Effects of Variation in Those Elements », NACA Report No. 17, rapport annuel du NACA, p. 273-340. Essais de l'été 1917 ; 1918 d'après l'index NTRS. NTRS 19930091044, https://ntrs.nasa.gov/citations/19930091044. Pages utilisées : 289-290 (interférence biplan) et 339-340 (résumés). Primaire.
+- **S44** — A. J. Fairbanks (Langley Memorial Aeronautical Laboratory), « Pressure Distribution Tests on PW-9 Wing Models Showing Effects of Biplane Interference », NACA Report No. 271. Texte daté du 7 avril 1927 ; 1928 d'après l'index NTRS. NTRS 19930091339, https://ntrs.nasa.gov/citations/19930091339. Pages 3 et 11 à 13. Primaire.
+- **S45** — Clark B. Millikan (California Institute of Technology), « An Extended Theory of Thin Airfoils and Its Application to the Biplane Problem », NACA Report No. 362. Texte daté du 15 mars 1930 ; 1931 d'après l'index NTRS. NTRS 19930091433, https://ntrs.nasa.gov/citations/19930091433. Pages 658 à 662 (vérifiées sur l'image pour 659 à 661). Primaire (théorie confrontée à l'expérience).
+- Rapports NACA sur le profil et le moteur : voir `profil-spad7.md` § 6.1 (A1, A4, A15 à A18, A21) et `hispano-suiza-8a.md` § 9 (H14 à H17).
 
 ### 9.2 Vues seulement en résumé de recherche [RÉSUMÉ] (pages non ouvertes ; consultées le 2026-10-20)
 - **S5** — Wikipedia (en), « SPAD S.VII », https://en.wikipedia.org/wiki/SPAD_S.VII (wiki : piste).
@@ -436,7 +497,10 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 | 2 | *Technical Report of the Advisory Committee for Aeronautics* 1917-18, vol. 2 | `technicalreport1917aero_2` | Essais du NPL et du RAE ; essais en vol éventuels ; profils RAF |
 | 2 | Autres volumes de la même série (1916-17, 1918-19, 1919-20, 1920-21, 1921-22) | identifiants non relevés (modèle supposé : `technicalreport19xxaero…`) | ARC R&M 586 (juillet 1921) : courbe de puissance de l'Hispano |
 | 3 | *All the World's Aircraft* 1924 (le plus ancien volume trouvé sur archive.org) | `allworldsaircraft1924` | Probablement sans fiche du S.VII ; les volumes 1917-1919 ne sont pas trouvés sur archive.org |
-| 3 | NACA Reports n° 233, 309, 279, 304, 331, 93 et 124 | voir `profil-spad7.md` § 3.2 | Polaires du RAF 15 et du RAF 6 |
+| 3 | NACA Reports n° 233, 309, 279, 304, 331, 93 et 124 | voir `profil-spad7.md` § 3 et 6.1 | **Fait (troisième passe)** : téléchargés par le coordinateur et lus |
+| 1 | ARC R&M 586 (juillet 1921), figure 10 | ni archive.org ni NTRS ; archives ARC de Cranfield (AERADE) | Courbe puissance/régime du Hispano de **150 ch** (aucune mesure lue pour le 8Aa) |
+| 2 | NACA Reports 220 et 292 | NTRS, identifiants non relevés | Essais en vol des hélices du VE-7 (`hispano-suiza-8a.md` § 9) |
+| 2 | ARC R&M 774, 816, 857, 901 et 997 ; NACA TR 256 | archives ARC (Cranfield) ; NTRS | Cellules biplans RAF 15 et méthode de Glauert (§ 2.4) |
 
 ## 10. Journal des décisions
 - **2026-10-20 — Sous-version pour la SPA 3, été 1917.** S5, S8 et S16 font du 8Ab de 180 ch le moteur des S.VII neufs à partir du printemps 1917 (« avril 1917 » pour S16). Guynemer juge le 150 ch insuffisant dès décembre 1916 (S1). Aucun état des appareils de la SPA 3 n'a été trouvé. **Retenu : S.VII 180 ch (8Ab), confiance C**, en sachant que la SPA 3 alignait sans doute encore des 150 ch et quelques SPAD XIII à partir de fin juillet 1917 (S18, S1). Ce choix sera à revoir dès que l'historique d'Albin Denis ou les journaux de marche seront accessibles.
@@ -451,4 +515,14 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 - **2026-10-20 — Données de jeux.** Les chiffres d'IL-2, de *Rise of Flight* et de *Wings of Glory* (S39) sont exclus comme sources ; la confusion qu'ils entretiennent est signalée.
 - **2026-10-20 — Sens de rotation de l'hélice.** Horaire vu du pilote (C). Détail et justification dans `hispano-suiza-8a.md`.
 - **2026-10-20 — Deuxième passe : aucune confiance relevée.** archive.org et NTRS ne sont pas lisibles par l'outil de l'historien (§ 0, § 9.5) ; ni Jane's 1917-1919, ni *Flight*, ni *The Aeroplane*, ni *L'Aérophile*, ni le rapport n° 96, ni les essais du STAé n'ont pu être consultés. Toutes les valeurs restent au niveau de la première passe. Les identifiants des documents à télécharger sont au § 9.6.
+- **2026-10-20 — Troisième passe : profil.** La « section Spad » du NACA Report 93 remplace « inconnu » au § 2.1. **Confiance B** : document d'époque, mais type de SPAD non précisé. Polaires et convention dans `profil-spad7.md`.
+- **2026-10-20 — Troisième passe : interférence biplan.** Pour le modèle, retenu en **C** :
+  - un facteur de cellule de **0,82 à 0,86** sur la portance aux faibles incidences (S43) ;
+  - un facteur de **0,95 sur le C_L max** (S43) ;
+  - la pente de cellule du RAF 15 à 3,57 par radian pour un écartement/corde de 1, sans décalage (S45). Ces trois valeurs concordent entre elles.
+
+  **Méthode préférée** : la méthode de Glauert (R&M 901, non lu), ou un modèle à deux plans séparés. Le facteur global n'est qu'une **valeur de contrôle**. Le choix revient à l'aérodynamicien. Aucune cote de cellule du S.VII n'étant connue, rien n'est chiffré pour le SPAD lui-même.
+- **2026-10-20 — Troisième passe : décrochage.** Le décrochage du plan supérieur en premier (S44) et la chute nette du RAF 15 après son maximum (Report 233) rendent **plausible** l'abattée de la réputation. Le trait reste « à confirmer » (§ 6.2), faute de témoignage direct lu sur le S.VII.
+- **2026-10-20 — Troisième passe : amortissement en tangage.** Règle de S43 retenue comme **contrôle** : amortissement total ≈ amortissement calculé de l'empennage / 0,55. Elle vient du JN-2 de 1917 : confiance C pour le SPAD.
+- **2026-10-20 — Troisième passe : performances.** Aucune source nouvelle sur les performances du S.VII : les **valeurs du § 5 restent en C**. Le moteur et l'hélice ont progressé (`hispano-suiza-8a.md`) ; il faudra refaire les cibles de puissance quand l'aérodynamicien aura tranché la cote du 8Ab (1 700 ou 2 100 tr/min).
 - **2026-10-20 — Traits retenus.** Seuls deux traits sont **confirmés** par au moins deux témoignages directs indépendants : la robustesse et la tenue en piqué (Guynemer, Hall), et la sensibilité thermique du moteur (Hall pour le S.VII, Meister pour le XIII). Le second sort du M1. Les autres traits restent « à confirmer » ou « contestés » et ne doivent servir que d'essais non bloquants.
