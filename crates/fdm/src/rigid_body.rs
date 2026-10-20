@@ -1,14 +1,21 @@
-//! Six-degree-of-freedom rigid body and its fixed-step RK4 integrator (ADR 0005).
+//! Six-degree-of-freedom rigid body with an axisymmetric rotor (engine and propeller),
+//! integrated with fixed-step RK4 (ADR 0005).
 //!
-//! State: position in the NED frame, attitude quaternion (world ← body), linear and
-//! angular velocities in body axes (x forward, y right, z down), about the centre of
-//! gravity. Equations (skill `simulation-vol`, `modele-aero.md`):
-//! - ṗ = q v
-//! - q̇ = ½ q ⊗ (ω, 0)
-//! - m (v̇ + ω × v) = F
-//! - I ω̇ = M − ω × (I ω)
+//! State: centre of gravity in the NED frame, attitude quaternion (world ← body),
+//! linear and angular velocities in body axes (x forward, y right, z down), and the
+//! **absolute** axial angular speed Ω of the rotor about its body axis e.
 //!
-//! The rotor angular momentum (engine and propeller) is added later.
+//! The airframe inertia I' excludes the rotor's axial inertia I_r (I' = I − I_r e eᵀ),
+//! so that, with h = I_r Ω e (skill `simulation-vol`, `modele-aero.md`):
+//! - ṗ = q v ; q̇ = ½ q ⊗ ω (ω as a pure quaternion)
+//! - m (v̇ + ω × v) = F + m g
+//! - I' ω̇ = M − ω × (I' ω + h) − Q_net e, where M includes the propeller's
+//!   aerodynamic torque −Q_prop e
+//! - I_r Ω̇ = Q_net = Q_engine − Q_prop − Q_friction
+//!
+//! The engine and friction torques are internal: the airframe feels their reaction
+//! automatically; the gyroscopic coupling comes from ω × h. Nothing is added twice.
+//! The relative speed of the rotor (engine rpm) is Ω − e·ω.
 
 use glam::{DMat3, DQuat, DVec3};
 
@@ -17,6 +24,8 @@ use crate::constants::G0;
 /// Inertia about the centre of gravity, body axes, aeronautical convention:
 /// products of inertia are positive integrals (`ixz` = ∫ x z dm), so the tensor holds −ixz.
 /// Aircraft are symmetric about their x–z plane, hence no `ixy` or `iyz`.
+/// Data sheets give the whole aircraft with its rotor locked; [`MassProperties`]
+/// removes the rotor's axial part itself.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Inertia {
     pub ixx: f64,
@@ -33,6 +42,29 @@ impl Inertia {
             DVec3::new(-self.ixz, 0.0, self.izz),
         )
     }
+
+    /// Positive definite, and a physical body (triangle inequalities on the
+    /// principal moments, including the x–z coupling by `ixz`).
+    fn is_physical(&self) -> bool {
+        let Inertia { ixx, iyy, izz, ixz } = *self;
+        if ![ixx, iyy, izz, ixz].iter().all(|v| v.is_finite()) {
+            return false;
+        }
+        let half_sum = 0.5 * (ixx + izz);
+        let radius = (0.25 * (ixx - izz).powi(2) + ixz * ixz).sqrt();
+        let (lambda_min, lambda_max) = (half_sum - radius, half_sum + radius);
+        iyy > 0.0 && lambda_min > 0.0 && iyy <= ixx + izz && iyy >= lambda_max - lambda_min
+    }
+}
+
+/// Engine crankshaft, propeller (and rotating cylinders of a rotary engine),
+/// seen as one body symmetric about `axis`.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Rotor {
+    /// Unit vector of the rotation axis, body axes; Ω > 0 is a right-handed rotation about it.
+    pub axis: DVec3,
+    /// Axial moment of inertia, kg·m².
+    pub inertia: f64,
 }
 
 /// Why mass properties were rejected.
@@ -40,39 +72,45 @@ impl Inertia {
 pub enum MassError {
     NonPositiveMass,
     InvalidInertia,
+    InvalidRotor,
 }
 
-/// Mass and inertia, with the inverse tensor cached for the integrator.
+/// Mass, airframe inertia I' (rotor axial inertia removed) and rotor, with the
+/// inverse tensor cached for the integrator.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct MassProperties {
     mass: f64,
     inertia: DMat3,
     inertia_inv: DMat3,
+    rotor: Option<Rotor>,
 }
 
 impl MassProperties {
-    pub fn new(mass: f64, inertia: Inertia) -> Result<Self, MassError> {
+    /// `inertia` is the whole aircraft about its centre of gravity, rotor included.
+    pub fn new(mass: f64, inertia: Inertia, rotor: Option<Rotor>) -> Result<Self, MassError> {
         if !(mass.is_finite() && mass > 0.0) {
             return Err(MassError::NonPositiveMass);
         }
-        let i = inertia;
-        // Positive definite, and the triangle inequalities of a physical body.
-        let valid = [i.ixx, i.iyy, i.izz, i.ixz].iter().all(|v| v.is_finite())
-            && i.ixx > 0.0
-            && i.iyy > 0.0
-            && i.izz > 0.0
-            && i.ixx * i.izz > i.ixz * i.ixz
-            && i.ixx + i.iyy >= i.izz
-            && i.iyy + i.izz >= i.ixx
-            && i.izz + i.ixx >= i.iyy;
-        if !valid {
+        if !inertia.is_physical() {
             return Err(MassError::InvalidInertia);
         }
-        let tensor = inertia.tensor();
+        let mut tensor = inertia.tensor();
+        if let Some(r) = rotor {
+            let unit = (r.axis.length() - 1.0).abs() < 1e-9;
+            if !(unit && r.inertia.is_finite() && r.inertia >= 0.0) {
+                return Err(MassError::InvalidRotor);
+            }
+            let e = r.axis;
+            tensor -= DMat3::from_cols(e * e.x, e * e.y, e * e.z) * r.inertia;
+            if tensor.determinant() <= 0.0 {
+                return Err(MassError::InvalidRotor);
+            }
+        }
         Ok(Self {
             mass,
             inertia: tensor,
             inertia_inv: tensor.inverse(),
+            rotor,
         })
     }
 
@@ -80,16 +118,31 @@ impl MassProperties {
         self.mass
     }
 
-    pub fn inertia(&self) -> DMat3 {
+    /// Airframe inertia I' (rotor axial inertia excluded), body axes.
+    pub fn airframe_inertia(&self) -> DMat3 {
         self.inertia
+    }
+
+    pub fn rotor(&self) -> Option<Rotor> {
+        self.rotor
     }
 }
 
-/// Force and moment about the centre of gravity, body axes. Includes gravity.
+/// Force and moment about the centre of gravity, body axes.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Wrench {
     pub force: DVec3,
     pub moment: DVec3,
+}
+
+impl Wrench {
+    /// A force applied at `point` (body axes, relative to the centre of gravity).
+    pub fn force_at(force: DVec3, point: DVec3) -> Self {
+        Self {
+            force,
+            moment: point.cross(force),
+        }
+    }
 }
 
 impl std::ops::Add for Wrench {
@@ -100,6 +153,32 @@ impl std::ops::Add for Wrench {
             moment: self.moment + rhs.moment,
         }
     }
+}
+
+impl std::ops::AddAssign for Wrench {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
+    }
+}
+
+/// Axial torques acting on the rotor, N·m, positive about the rotor axis.
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct RotorTorques {
+    /// Engine torque on the crankshaft (internal: reacts on the airframe).
+    pub engine: f64,
+    /// Aerodynamic torque of the propeller, opposing its rotation when it drives.
+    pub propeller: f64,
+    /// Bearing and pumping friction (internal).
+    pub friction: f64,
+}
+
+/// What the aircraft model computes for a given state, **gravity excluded**
+/// (the integrator adds it, so that `wrench.force / m` is the specific force).
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct Loads {
+    /// Aerodynamic and contact forces and moments, without the propeller's axial torque.
+    pub wrench: Wrench,
+    pub rotor: RotorTorques,
 }
 
 /// Weight of the body expressed in body axes, N.
@@ -117,6 +196,8 @@ pub struct RigidBodyState {
     pub velocity_body: DVec3,
     /// Angular velocity (p, q, r), body axes, rad/s.
     pub angular_velocity_body: DVec3,
+    /// Absolute axial angular speed of the rotor, rad/s (0 without rotor).
+    pub rotor_speed: f64,
 }
 
 impl Default for RigidBodyState {
@@ -126,6 +207,7 @@ impl Default for RigidBodyState {
             attitude: DQuat::IDENTITY,
             velocity_body: DVec3::ZERO,
             angular_velocity_body: DVec3::ZERO,
+            rotor_speed: 0.0,
         }
     }
 }
@@ -137,6 +219,7 @@ struct StateDerivative {
     attitude: DQuat,
     velocity: DVec3,
     angular_velocity: DVec3,
+    rotor_speed: f64,
 }
 
 impl RigidBodyState {
@@ -145,26 +228,68 @@ impl RigidBodyState {
         self.attitude * self.velocity_body
     }
 
-    /// Translational plus rotational kinetic energy, J.
+    /// Rotor speed relative to the airframe (engine shaft speed), rad/s.
+    pub fn rotor_relative_speed(&self, mass: &MassProperties) -> f64 {
+        mass.rotor.map_or(0.0, |r| {
+            self.rotor_speed - r.axis.dot(self.angular_velocity_body)
+        })
+    }
+
+    fn rotor_momentum(&self, mass: &MassProperties) -> DVec3 {
+        mass.rotor
+            .map_or(DVec3::ZERO, |r| r.axis * (r.inertia * self.rotor_speed))
+    }
+
+    /// Kinetic energy of airframe and rotor, J.
     pub fn kinetic_energy(&self, mass: &MassProperties) -> f64 {
         let w = self.angular_velocity_body;
-        0.5 * mass.mass * self.velocity_body.length_squared() + 0.5 * w.dot(mass.inertia * w)
+        let rotor = mass
+            .rotor
+            .map_or(0.0, |r| 0.5 * r.inertia * self.rotor_speed.powi(2));
+        0.5 * mass.mass * self.velocity_body.length_squared()
+            + 0.5 * w.dot(mass.inertia * w)
+            + rotor
     }
 
-    /// Angular momentum about the centre of gravity, NED frame, kg·m²/s.
+    /// Total angular momentum about the centre of gravity, NED frame, kg·m²/s.
     pub fn angular_momentum_ned(&self, mass: &MassProperties) -> DVec3 {
-        self.attitude * (mass.inertia * self.angular_velocity_body)
+        self.attitude * (mass.inertia * self.angular_velocity_body + self.rotor_momentum(mass))
     }
 
-    fn derivative(&self, mass: &MassProperties, wrench: Wrench) -> StateDerivative {
+    /// Same state with a unit attitude quaternion (what the load model sees).
+    fn normalized(&self) -> Self {
+        Self {
+            attitude: self.attitude.normalize(),
+            ..*self
+        }
+    }
+
+    fn derivative(&self, mass: &MassProperties, loads: &Loads) -> StateDerivative {
         let v = self.velocity_body;
         let w = self.angular_velocity_body;
-        let omega = DQuat::from_xyzw(w.x, w.y, w.z, 0.0);
+        let unit_attitude = self.attitude.normalize();
+        let force = loads.wrench.force + gravity_body(unit_attitude, mass.mass);
+
+        let mut moment = loads.wrench.moment;
+        let mut rotor_speed_dot = 0.0;
+        if let Some(r) = mass.rotor {
+            let t = loads.rotor;
+            let net = t.engine - t.propeller - t.friction;
+            // External propeller torque −Q_prop e, plus the −Q_net e term of I' ω̇:
+            // the airframe ends up feeling −(Q_engine − Q_friction) e.
+            moment -= r.axis * (t.propeller + net);
+            if r.inertia > 0.0 {
+                rotor_speed_dot = net / r.inertia;
+            }
+        }
+        let momentum = mass.inertia * w + self.rotor_momentum(mass);
+
         StateDerivative {
             position: self.attitude * v,
-            attitude: self.attitude.mul_quat(omega) * 0.5,
-            velocity: wrench.force / mass.mass - w.cross(v),
-            angular_velocity: mass.inertia_inv * (wrench.moment - w.cross(mass.inertia * w)),
+            attitude: self.attitude.mul_quat(DQuat::from_xyzw(w.x, w.y, w.z, 0.0)) * 0.5,
+            velocity: force / mass.mass - w.cross(v),
+            angular_velocity: mass.inertia_inv * (moment - w.cross(momentum)),
+            rotor_speed: rotor_speed_dot,
         }
     }
 
@@ -175,30 +300,32 @@ impl RigidBodyState {
             attitude: self.attitude + d.attitude * h,
             velocity_body: self.velocity_body + d.velocity * h,
             angular_velocity_body: self.angular_velocity_body + d.angular_velocity * h,
+            rotor_speed: self.rotor_speed + d.rotor_speed * h,
         }
     }
 }
 
 /// Advances `state` by `dt` seconds with the classical fourth-order Runge-Kutta method.
 ///
-/// `wrench` returns the total force and moment (gravity included) for a given state;
-/// it is called four times per step, always with the same commands and environment.
+/// `loads` returns the forces, moments and rotor torques (gravity excluded) for a
+/// state; it is called four times per step, on trial states, so it must not have side
+/// effects (damage, contact events, telemetry are handled once per accepted step).
+/// It always receives a unit attitude quaternion.
 pub fn step_rk4(
     state: &RigidBodyState,
     mass: &MassProperties,
     dt: f64,
-    mut wrench: impl FnMut(&RigidBodyState) -> Wrench,
+    loads: impl Fn(&RigidBodyState) -> Loads,
 ) -> RigidBodyState {
-    let k1 = state.derivative(mass, wrench(state));
-    let s2 = state.advanced(&k1, 0.5 * dt);
-    let k2 = s2.derivative(mass, wrench(&s2));
-    let s3 = state.advanced(&k2, 0.5 * dt);
-    let k3 = s3.derivative(mass, wrench(&s3));
-    let s4 = state.advanced(&k3, dt);
-    let k4 = s4.derivative(mass, wrench(&s4));
+    let eval = |s: &RigidBodyState| s.derivative(mass, &loads(&s.normalized()));
+    let k1 = eval(state);
+    let k2 = eval(&state.advanced(&k1, 0.5 * dt));
+    let k3 = eval(&state.advanced(&k2, 0.5 * dt));
+    let k4 = eval(&state.advanced(&k3, dt));
 
     let sixth = dt / 6.0;
-    let mut next = RigidBodyState {
+    let combine = |a: f64, b: f64, c: f64, d: f64| (a + 2.0 * (b + c) + d) * sixth;
+    let next = RigidBodyState {
         position_ned: state.position_ned
             + (k1.position + (k2.position + k3.position) * 2.0 + k4.position) * sixth,
         attitude: state.attitude
@@ -210,204 +337,16 @@ pub fn step_rk4(
                 + (k2.angular_velocity + k3.angular_velocity) * 2.0
                 + k4.angular_velocity)
                 * sixth,
+        rotor_speed: state.rotor_speed
+            + combine(
+                k1.rotor_speed,
+                k2.rotor_speed,
+                k3.rotor_speed,
+                k4.rotor_speed,
+            ),
     };
-    next.attitude = next.attitude.normalize();
-    next
+    next.normalized()
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use std::f64::consts::FRAC_PI_6;
-
-    const DT: f64 = 1.0 / 240.0;
-
-    fn body(ixx: f64, iyy: f64, izz: f64) -> MassProperties {
-        MassProperties::new(
-            700.0,
-            Inertia {
-                ixx,
-                iyy,
-                izz,
-                ixz: 0.0,
-            },
-        )
-        .unwrap()
-    }
-
-    fn gravity_only(mass: f64) -> impl FnMut(&RigidBodyState) -> Wrench {
-        move |s| Wrench {
-            force: gravity_body(s.attitude, mass),
-            moment: DVec3::ZERO,
-        }
-    }
-
-    fn simulate(
-        mut state: RigidBodyState,
-        mass: &MassProperties,
-        dt: f64,
-        duration: f64,
-        mut wrench: impl FnMut(&RigidBodyState) -> Wrench,
-    ) -> RigidBodyState {
-        let steps = (duration / dt).round() as usize;
-        for _ in 0..steps {
-            state = step_rk4(&state, mass, dt, &mut wrench);
-        }
-        state
-    }
-
-    #[test]
-    fn rejects_unphysical_mass_properties() {
-        let ok = Inertia {
-            ixx: 1.0,
-            iyy: 2.0,
-            izz: 2.5,
-            ixz: 0.1,
-        };
-        assert_eq!(
-            MassProperties::new(0.0, ok),
-            Err(MassError::NonPositiveMass)
-        );
-        let flat = Inertia { izz: 4.0, ..ok }; // ixx + iyy < izz
-        assert_eq!(
-            MassProperties::new(1.0, flat),
-            Err(MassError::InvalidInertia)
-        );
-        assert!(MassProperties::new(1.0, ok).is_ok());
-    }
-
-    #[test]
-    fn free_fall_matches_exact_solution_in_any_attitude() {
-        // RK4 integrates a constant acceleration exactly (up to rounding).
-        let mass = body(1_000.0, 1_500.0, 2_200.0);
-        let attitude = DQuat::from_euler(glam::EulerRot::ZYX, 0.7, FRAC_PI_6, -0.4);
-        let start = RigidBodyState {
-            attitude,
-            ..Default::default()
-        };
-        let end = simulate(start, &mass, DT, 3.0, gravity_only(mass.mass()));
-        let expected_z = 0.5 * G0 * 9.0;
-        assert!((end.position_ned.z - expected_z).abs() < 1e-9, "{end:?}");
-        assert!(end.position_ned.truncate().length() < 1e-9);
-        assert!((end.velocity_ned() - DVec3::new(0.0, 0.0, G0 * 3.0)).length() < 1e-9);
-        // Components, not `angle_between`: acos cannot resolve angles below ~1e-8.
-        assert!((end.attitude - attitude).length() < 1e-12, "{end:?}");
-    }
-
-    #[test]
-    fn steady_rotation_about_principal_axis() {
-        let mass = body(1_000.0, 1_500.0, 2_200.0);
-        let rate = 0.8; // rad/s, roll
-        let start = RigidBodyState {
-            angular_velocity_body: DVec3::new(rate, 0.0, 0.0),
-            ..Default::default()
-        };
-        let end = simulate(start, &mass, DT, 2.0, |_| Wrench::default());
-        let expected = DQuat::from_rotation_x(rate * 2.0);
-        assert!(end.attitude.angle_between(expected) < 1e-9, "{end:?}");
-        assert!((end.angular_velocity_body - start.angular_velocity_body).length() < 1e-12);
-    }
-
-    #[test]
-    fn torque_free_motion_conserves_energy_and_angular_momentum() {
-        // Asymmetric body spinning near its unstable intermediate axis: the motion is
-        // violent (tumbling), but energy and world-frame angular momentum are conserved.
-        let mass = body(1.0, 2.0, 3.0);
-        let start = RigidBodyState {
-            angular_velocity_body: DVec3::new(0.05, 2.0, 0.05),
-            ..Default::default()
-        };
-        let e0 = start.kinetic_energy(&mass);
-        let l0 = start.angular_momentum_ned(&mass);
-        let end = simulate(start, &mass, DT, 20.0, |_| Wrench::default());
-        let e1 = end.kinetic_energy(&mass);
-        let l1 = end.angular_momentum_ned(&mass);
-        assert!(((e1 - e0) / e0).abs() < 1e-7, "energy {e0} -> {e1}");
-        assert!(
-            (l1 - l0).length() / l0.length() < 1e-6,
-            "momentum {l0} -> {l1}"
-        );
-        // It did tumble: the body-frame rates changed a lot.
-        assert!((end.angular_velocity_body - start.angular_velocity_body).length() > 0.5);
-    }
-
-    #[test]
-    fn symmetric_top_precesses_at_the_analytic_rate() {
-        // Ixx = Iyy: ω⊥ turns about the body z axis at λ = (Izz − Ixx) / Ixx · ωz.
-        let (ixx, izz, wz, a) = (2.0, 3.0, 4.0, 0.3);
-        let mass = body(ixx, ixx, izz);
-        let start = RigidBodyState {
-            angular_velocity_body: DVec3::new(a, 0.0, wz),
-            ..Default::default()
-        };
-        let t = 1.5;
-        let end = simulate(start, &mass, DT, t, |_| Wrench::default());
-        let lambda = (izz - ixx) / ixx * wz;
-        let expected = DVec3::new(a * (lambda * t).cos(), a * (lambda * t).sin(), wz);
-        assert!(
-            (end.angular_velocity_body - expected).length() < 1e-8,
-            "{} vs {expected}",
-            end.angular_velocity_body
-        );
-    }
-
-    #[test]
-    fn product_of_inertia_couples_roll_and_yaw() {
-        // A pure roll moment on a body with ixz ≠ 0 also starts a yaw rate.
-        let mass = MassProperties::new(
-            700.0,
-            Inertia {
-                ixx: 1_000.0,
-                iyy: 1_500.0,
-                izz: 2_200.0,
-                ixz: 100.0,
-            },
-        )
-        .unwrap();
-        let end = simulate(RigidBodyState::default(), &mass, DT, 0.1, |_| Wrench {
-            force: DVec3::ZERO,
-            moment: DVec3::new(500.0, 0.0, 0.0),
-        });
-        assert!(end.angular_velocity_body.x > 0.0);
-        assert!(end.angular_velocity_body.z > 0.0, "{end:?}");
-    }
-
-    #[test]
-    fn error_shrinks_like_fourth_order() {
-        // Halving the step divides the error by about 2⁴ = 16.
-        let mass = body(1.0, 2.0, 3.0);
-        let start = RigidBodyState {
-            angular_velocity_body: DVec3::new(0.3, 1.0, 0.6),
-            ..Default::default()
-        };
-        let reference = simulate(start, &mass, 1.0 / 3_840.0, 2.0, |_| Wrench::default());
-        let error = |dt: f64| {
-            let s = simulate(start, &mass, dt, 2.0, |_| Wrench::default());
-            (s.angular_velocity_body - reference.angular_velocity_body).length()
-        };
-        let ratio = error(1.0 / 60.0) / error(1.0 / 120.0);
-        assert!((10.0..24.0).contains(&ratio), "error ratio {ratio}");
-    }
-
-    #[test]
-    fn integration_is_deterministic() {
-        let mass = body(1.0, 2.0, 3.0);
-        let start = RigidBodyState {
-            velocity_body: DVec3::new(50.0, 1.0, -2.0),
-            angular_velocity_body: DVec3::new(0.3, 1.0, 0.6),
-            ..Default::default()
-        };
-        let run = || simulate(start, &mass, DT, 5.0, gravity_only(mass.mass()));
-        let (a, b) = (run(), run());
-        assert_eq!(a.position_ned.to_array(), b.position_ned.to_array());
-        assert_eq!(a.attitude.to_array(), b.attitude.to_array());
-    }
-
-    #[test]
-    fn gravity_points_down_in_body_axes_when_pitched_up() {
-        // Nose 90° up: "down" is −x in body axes.
-        let attitude = DQuat::from_rotation_y(std::f64::consts::FRAC_PI_2);
-        let g = gravity_body(attitude, 1.0);
-        assert!((g - DVec3::new(-G0, 0.0, 0.0)).length() < 1e-12, "{g}");
-    }
-}
+mod tests;

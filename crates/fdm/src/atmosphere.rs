@@ -1,7 +1,9 @@
 //! International Standard Atmosphere (ISO 2533:1975), troposphere and lower stratosphere.
 //!
-//! Altitudes are treated as geopotential altitudes; the difference with geometric
-//! altitude stays below 0.1 % up to 6 km, the flight envelope of a 1917 fighter.
+//! Altitudes are treated as geopotential altitudes, consistent with a constant G0.
+//! Taking a geometric altitude for a geopotential one shifts the density by 0.015 %
+//! at 3 km, 0.063 % at 6 km and 0.105 % at 7.6 km (aerodynamicist review, 2026-10-20):
+//! negligible for a 1917 fighter.
 
 use crate::constants::{G0, GAMMA_AIR, LAPSE_RATE, P0, R_AIR, RHO0, T0};
 
@@ -40,8 +42,14 @@ fn pressure_exponent() -> f64 {
 ///
 /// Below sea level the tropospheric law is extrapolated; above [`MAX_ALTITUDE`]
 /// the value at that altitude is returned (no 1917 aircraft flies there).
+/// A NaN altitude gives NaN values, so that a diverging simulation is not hidden.
 pub fn isa(altitude: f64) -> AtmosphereState {
-    let h = altitude.min(MAX_ALTITUDE);
+    // Not `f64::min`, which would turn a NaN into MAX_ALTITUDE.
+    let h = if altitude > MAX_ALTITUDE {
+        MAX_ALTITUDE
+    } else {
+        altitude
+    };
     let t11 = T0 + LAPSE_RATE * TROPOPAUSE_ALTITUDE;
     let (temperature, pressure) = if h <= TROPOPAUSE_ALTITUDE {
         let t = T0 + LAPSE_RATE * h;
@@ -85,6 +93,26 @@ mod tests {
         assert!(close(a.temperature, 216.65, 1e-9), "{a:?}");
         assert!(close(a.pressure, 22_632.0, 1e-4), "{a:?}");
         assert!(close(a.density, 0.363_92, 1e-3), "{a:?}");
+    }
+
+    #[test]
+    fn reference_points_match_iso_2533_tables() {
+        // (altitude m, T K, p Pa, ρ kg/m³)
+        for (h, t, p, rho) in [
+            (3_000.0, 268.65, 70_108.5, 0.909_12),
+            (5_000.0, 255.65, 54_019.9, 0.736_12),
+            (20_000.0, 216.65, 5_474.89, 0.088_035),
+        ] {
+            let a = isa(h);
+            assert!(close(a.temperature, t, 1e-9), "{h} m: {a:?}");
+            assert!(close(a.pressure, p, 1e-5), "{h} m: {a:?}");
+            assert!(close(a.density, rho, 1e-4), "{h} m: {a:?}");
+        }
+    }
+
+    #[test]
+    fn nan_altitude_propagates() {
+        assert!(isa(f64::NAN).density.is_nan());
     }
 
     #[test]

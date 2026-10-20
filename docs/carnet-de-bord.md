@@ -397,3 +397,38 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   4. données de soufflerie des profils RAF 15 et RAF 6 ;
   5. témoignage italien et essais allemands.
 - **⚠** Les questions 2 (version à valider en premier) et 3 (validation en confiance C acceptable ou non) restent posées au joueur.
+
+### Revue de l'aérodynamicien sur l'étape 2, et corrections
+- **R** Verdict de l'aérodynamicien : « à corriger », sans point bloquant. Les équations, les signes, le RK4 et l'ISA sont justes. Il a injecté des erreurs volontaires dans une copie : la suite de tests en laissait passer 3 sur 12 (signe de ω × v inversé, ω × v supprimé, renormalisation supprimée).
+- **A** Corrections appliquées :
+  - **Rotor intégré à l'état** : vitesse axiale **absolue** Ω ; la cellule utilise I' = I − I_r e eᵀ ; le couple du moteur et les frottements sont internes, le couple aérodynamique de l'hélice est externe. La réaction et la précession émergent des équations, sans être ajoutées à part. Régime moteur = Ω − e·ω.
+  - **Gravité ajoutée par l'intégrateur** : le modèle d'avion renvoie `Loads` (efforts aérodynamiques et de contact, couples du rotor) ; F/m donne ainsi le facteur de charge.
+  - **Fonction d'efforts sans effets de bord** : elle passe de `FnMut` à `Fn` et reçoit toujours un quaternion unitaire.
+  - Ajout de `Wrench::force_at` (force appliquée en un point).
+  - **Inertie** : contrôle physique complet, y compris le couplage par ixz.
+  - **Atmosphère** : une altitude NaN donne désormais NaN (la divergence n'est plus masquée), et des points ISO 2533 sont vérifiés à 3, 5 et 20 km.
+- **A** Tests : 33 dans `escadrille_fdm`, 50 sur tout le workspace, tous réussis. Nouveaux tests :
+  - chute libre d'un corps en rotation lancé avec une vitesse initiale ;
+  - virage à droite coordonné (cercle exact) ;
+  - vitesses angulaires bien en axes corps ;
+  - impulsion angulaire ;
+  - énergie totale conservée sous la gravité ;
+  - rapport ṙ/ṗ exact pour ixz ;
+  - quaternion unitaire après 60 s de culbute ;
+  - couple moteur dans le vide (la cellule tourne en sens inverse, moment cinétique total nul) ;
+  - couple de l'hélice qui freine le rotor sans faire tourner la cellule ;
+  - précession gyroscopique (lacet à droite, nez qui descend, rotor selon +x) ;
+  - conservation avec le rotor ;
+  - trajectoire de référence figée au bit près.
+- **A** Documentation : `modele-aero.md` (convention du rotor, gravité, notation du quaternion) ; `format-avion.md` (convention de l'inertie : avion complet avec rotor bloqué, au centre de gravité à vide, ixz = ∫xz dm). Claude a retiré une remarque non sourcée qu'il venait d'écrire sur le signe d'ixz.
+- **⚠** Points notés pour plus tard : position du centre de gravité par rapport au point de référence de la fiche et déplacement du centre de gravité (à traiter avec les masses variables) ; normale et nature du sol (M2).
+
+### Deuxième et troisième passes de l'historien
+- **R** Deuxième passe sans gain de confiance : l'outil web du subagent ne passe pas par le réseau du conteneur, il ne peut donc pas télécharger. Il a toutefois trouvé des identifiants exacts de documents (rapports NACA, volumes d'archive.org), consignés dans les fiches (§ 9.6 de `spad7.md`, § 3.2 de `profil-spad7.md`).
+- **A** Claude télécharge lui-même avec curl : **15 rapports NACA** depuis NTRS, en PDF et en texte, dans le dossier de travail de la session (non versionné). Parmi eux :
+  - les profils, dont le rapport 233 sur le RAF 15 en vraie grandeur, et les rapports 309, 279, 304, 331, 93, 124 et 319 ;
+  - les hélices en bois du VE-7 ;
+  - la puissance des moteurs en altitude ;
+  - l'interférence entre les plans d'un biplan et la stabilité.
+- **⚠** archive.org : seul son moteur de recherche passe. Ses serveurs de fichiers (`*.us.archive.org`, `*.ca.archive.org`, `*.eu.archive.org`) sont refusés par la passerelle réseau, si bien que *Flight* 1917-1918, les rapports techniques britanniques et l'annuaire Jane's restent inaccessibles. Il faut que le joueur autorise `*.archive.org`.
+- **A** Historien relancé (troisième passe) pour lire ces fichiers locaux : polaires du RAF 15 et du RAF 6, loi de puissance en altitude, tables d'hélice, interférence biplan.

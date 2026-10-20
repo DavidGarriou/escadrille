@@ -17,13 +17,15 @@
 ## Équations du mouvement (repère corps)
 
 - Translation : m (v̇ + ω × v) = F_aéro + F_hélice + F_sol + m g_corps
-- Rotation, en traitant cellule + rotor (cylindres du rotatif et hélice) comme un seul système. Moment cinétique du rotor : h_r = I_r Ω_r e_axe.
-  - I ω̇ = M_ext − ω × (I ω + h_r) − ḣ_r
-  - M_ext contient les moments externes, dont le couple aérodynamique de l'hélice (−Q_hélice e_axe).
-  - Rotor : I_r Ω̇_r = Q_moteur − Q_hélice − Q_frottements, donc ḣ_r = I_r Ω̇_r e_axe.
-  - Le terme −ḣ_r fait apparaître le couple de réaction : au total, la cellule ressent −Q_moteur autour de l'axe. **Ne pas ajouter un couple de réaction séparé**, et ne pas ajouter la précession gyroscopique une seconde fois : elle vient du terme ω × h_r.
+- Rotation, en traitant cellule + rotor (cylindres du rotatif et hélice) comme un seul système. **Convention retenue (revue `aerodynamicien` du 2026-10-20, implémentée dans `rigid_body.rs`)** : Ω_r est la vitesse axiale **absolue** du rotor, et l'inertie de cellule I' **exclut** l'inertie axiale du rotor : I' = I − I_r e eᵀ (I = avion complet, rotor bloqué, celle des fiches). Moment cinétique du rotor : h_r = I_r Ω_r e.
+  - I' ω̇ = M_ext − ω × (I' ω + h_r) − Q_net e
+  - M_ext contient les moments externes, dont le couple aérodynamique de l'hélice (−Q_hélice e).
+  - Rotor : I_r Ω̇_r = Q_net = Q_moteur − Q_hélice − Q_frottements.
+  - Au total, la cellule ressent −(Q_moteur − Q_frottements) e : le couple de réaction. **Ne pas ajouter un couple de réaction séparé**, et ne pas ajouter la précession gyroscopique une seconde fois : elle vient du terme ω × h_r.
+  - Régime moteur (vitesse relative) : Ω_r − e·ω. Énergie : ½ ωᵀI'ω + ½ I_r Ω_r² (+ translation) ; moment cinétique : I'ω + h_r.
   - Les mêmes équations valent pour un moteur en ligne (h_r plus faible : vilebrequin et hélice).
-- Orientation : quaternion q (monde ← corps), q̇ = ½ q ⊗ (0, ω) ; renormaliser à chaque pas.
+  - La gravité est ajoutée par l'intégrateur : le modèle d'avion renvoie les seuls efforts aérodynamiques et de contact, si bien que F/m est la force spécifique (facteur de charge).
+- Orientation : quaternion q (monde ← corps), q̇ = ½ q ⊗ (0, ω), notation (w ; x, y, z), soit `DQuat::from_xyzw(ω.x, ω.y, ω.z, 0)` dans glam ; renormaliser en fin de pas. Les efforts sont toujours évalués avec un quaternion unitaire.
 - Masse variable : m, CG et I recalculés à partir de la masse à vide, du carburant, des munitions et du pilote.
 - Intégrateur : RK4 à pas fixe (départ : 240 Hz). Les contacts au sol peuvent demander des sous-pas. Mesurer avant d'optimiser.
 

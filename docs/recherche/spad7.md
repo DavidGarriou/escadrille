@@ -21,6 +21,12 @@
 - **Exclusion** : les chiffres des jeux et simulateurs (IL-2 *Flying Circus*, *Rise of Flight*, *Wings of Glory*) ne sont pas retenus comme sources (S39). Ils sont dérivés et alimentent les forums en boucle.
 - Aucune lacune n'est comblée de mémoire. Quand une valeur manque, c'est écrit « non trouvé ».
 
+**Deuxième passe (2026-10-20).** Le coordinateur signale qu'archive.org et ntrs.nasa.gov répondent désormais au `curl` du conteneur. Mais l'outil de lecture de l'historien ne passe pas par le réseau du conteneur et n'a pas de terminal.
+- Échec de résolution DNS, testé le 2026-10-20 : archive.org, www.archive.org, scholar.archive.org, ia800300.us.archive.org, ntrs.nasa.gov.
+- Refus explicite de l'outil : web.archive.org.
+- **Aucun document d'archive.org ni de NTRS n'a donc pu être lu, et aucune confiance n'a été relevée.**
+- Seul gain : des **identifiants exacts** de documents à télécharger (§ 9.6), trouvés par le moteur de recherche restreint à ces domaines. Pour les exploiter, un agent ou une personne disposant d'un terminal doit les télécharger dans un dossier local (texte OCR `_djvu.txt` d'archive.org, PDF de NTRS) ; l'historien les lira ensuite.
+
 ## 1. Identification et contexte
 
 ### 1.1 Constructeur et genèse
@@ -414,8 +420,23 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 ### 9.4 Historique des escadrilles
 - Albin Denis, historiques des escadrilles (`http://albindenis.free.fr/Site_escadrille/escadrille003.htm`) : **inaccessible**, à consulter en priorité pour la SPA 3 (terrains, appareils, dates).
 
-### 9.5 Sites inaccessibles depuis le conteneur (testés le 2026-10-20 ; à consulter plus tard)
-albindenis.free.fr ; en.wikipedia.org ; fr.wikipedia.org ; it.wikisource.org ; ntrs.nasa.gov ; archive.org ; catalog.hathitrust.org ; gallica.bnf.fr ; www.gutenberg.org (direct) ; projekt-gutenberg.org ; www.theaerodrome.com ; flyingmachines.ru ; www.avionslegendaires.net ; historynet.com ; www.flightglobal.com (archives de *Flight*) ; www.thisdayinaviation.com ; www.hydroretro.net ; digital.library.unt.edu ; bibliotheques-numeriques.defense.gouv.fr ; m-selig.ae.illinois.edu ; aergistal.github.io ; www.google.com. Seuls github.com, raw.githubusercontent.com et, par intermittence, api.github.com répondent.
+### 9.5 Sites inaccessibles depuis l'outil de lecture de l'historien (testés le 2026-10-20 ; à consulter plus tard)
+albindenis.free.fr ; en.wikipedia.org ; fr.wikipedia.org ; it.wikisource.org ; catalog.hathitrust.org ; gallica.bnf.fr (403 selon le coordinateur) ; www.gutenberg.org (direct) ; projekt-gutenberg.org ; www.theaerodrome.com ; flyingmachines.ru ; www.avionslegendaires.net ; historynet.com ; www.flightglobal.com (archives de *Flight*) ; www.thisdayinaviation.com ; www.hydroretro.net ; digital.library.unt.edu ; bibliotheques-numeriques.defense.gouv.fr ; m-selig.ae.illinois.edu ; aergistal.github.io ; web.archive.org ; www.google.com. Seuls github.com, raw.githubusercontent.com et, par intermittence, api.github.com répondent.
+
+**Cas particulier** : archive.org et ntrs.nasa.gov répondent au `curl` du conteneur (coordinateur, 2026-10-20), mais **pas** à l'outil de lecture de l'historien (DNS en échec). Ils ne sont exploitables que par téléchargement préalable (§ 9.6).
+
+### 9.6 Documents à télécharger en priorité (identifiants vérifiés par le moteur de recherche, contenu non lu)
+Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https://archive.org/download/<identifiant>/<identifiant>_djvu.txt` et, si possible, le PDF. Pour NTRS, l'adresse est `https://ntrs.nasa.gov/api/citations/<id>/downloads/<id>.pdf`.
+
+| Priorité | Document | Identifiant | Ce qu'on y cherche |
+|---|---|---|---|
+| 1 | *Flight* 1917 (collection « Flight International Magazine », 1909-1935 ; numéros nommés sur le modèle `Flight_International_Magazine_1919-06-12-pdf`) | collection `Flight_International_Magazine`, numéros 1917 à filtrer par identifiant | Description du SPAD, reprises d'essais britanniques ; chercher « Spad » dans les `_djvu.txt` |
+| 1 | *The Aeroplane*, vol. 12 et 13 (1917) | identifiants non relevés (le scan de la revue pour 1911-1922 est signalé sur archive.org) | Idem |
+| 1 | *Bibliography of Aeronautics* 1917-1921 (P. Brockett, Smithsonian) | `bibliographyofa191721broc` | **Outil de repérage** : références d'articles d'époque sur le SPAD (*L'Aérophile*, *Flight*, *Aerial Age*…) |
+| 2 | *Technical Report of the Advisory Committee for Aeronautics* 1917-18, vol. 2 | `technicalreport1917aero_2` | Essais du NPL et du RAE ; essais en vol éventuels ; profils RAF |
+| 2 | Autres volumes de la même série (1916-17, 1918-19, 1919-20, 1920-21, 1921-22) | identifiants non relevés (modèle supposé : `technicalreport19xxaero…`) | ARC R&M 586 (juillet 1921) : courbe de puissance de l'Hispano |
+| 3 | *All the World's Aircraft* 1924 (le plus ancien volume trouvé sur archive.org) | `allworldsaircraft1924` | Probablement sans fiche du S.VII ; les volumes 1917-1919 ne sont pas trouvés sur archive.org |
+| 3 | NACA Reports n° 233, 309, 279, 304, 331, 93 et 124 | voir `profil-spad7.md` § 3.2 | Polaires du RAF 15 et du RAF 6 |
 
 ## 10. Journal des décisions
 - **2026-10-20 — Sous-version pour la SPA 3, été 1917.** S5, S8 et S16 font du 8Ab de 180 ch le moteur des S.VII neufs à partir du printemps 1917 (« avril 1917 » pour S16). Guynemer juge le 150 ch insuffisant dès décembre 1916 (S1). Aucun état des appareils de la SPA 3 n'a été trouvé. **Retenu : S.VII 180 ch (8Ab), confiance C**, en sachant que la SPA 3 alignait sans doute encore des 150 ch et quelques SPAD XIII à partir de fin juillet 1917 (S18, S1). Ce choix sera à revoir dès que l'historique d'Albin Denis ou les journaux de marche seront accessibles.
@@ -429,4 +450,5 @@ albindenis.free.fr ; en.wikipedia.org ; fr.wikipedia.org ; it.wikisource.org ; n
 - **2026-10-20 — Plafond du 180 ch.** 6 200 m (S7, musée) contre 6 553 m (sites de jeux, S39). **Retenu 6 200 m (C)**, la source institutionnelle étant préférée.
 - **2026-10-20 — Données de jeux.** Les chiffres d'IL-2, de *Rise of Flight* et de *Wings of Glory* (S39) sont exclus comme sources ; la confusion qu'ils entretiennent est signalée.
 - **2026-10-20 — Sens de rotation de l'hélice.** Horaire vu du pilote (C). Détail et justification dans `hispano-suiza-8a.md`.
+- **2026-10-20 — Deuxième passe : aucune confiance relevée.** archive.org et NTRS ne sont pas lisibles par l'outil de l'historien (§ 0, § 9.5) ; ni Jane's 1917-1919, ni *Flight*, ni *The Aeroplane*, ni *L'Aérophile*, ni le rapport n° 96, ni les essais du STAé n'ont pu être consultés. Toutes les valeurs restent au niveau de la première passe. Les identifiants des documents à télécharger sont au § 9.6.
 - **2026-10-20 — Traits retenus.** Seuls deux traits sont **confirmés** par au moins deux témoignages directs indépendants : la robustesse et la tenue en piqué (Guynemer, Hall), et la sensibilité thermique du moteur (Hall pour le S.VII, Meister pour le XIII). Le second sort du M1. Les autres traits restent « à confirmer » ou « contestés » et ne doivent servir que d'essais non bloquants.

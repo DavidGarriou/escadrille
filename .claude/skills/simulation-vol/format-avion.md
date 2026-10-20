@@ -11,6 +11,7 @@
   - `// C:<méthode>` calculé (formule, outil, à partir de quelles valeurs) ;
   - `// E:<justification>` ESTIMÉ.
 - La validation (`crates/data`, lancée par `just test`) refuse un fichier où une valeur n'a pas d'origine.
+- **Inertie** (`inertia_empty_kg_m2`) : avion **à vide, rotor compris et bloqué**, calculée **au centre de gravité à vide** (`cg_empty_m`), en axes corps (x avant, y droite, z bas). Produit d'inertie : `ixz` = ∫ x z dm, le tenseur contenant −ixz (convention de Stevens et Lewis). Certaines sources utilisent le signe opposé : le vérifier et le noter. L'inertie axiale du rotor (moteur, hélice, cylindres d'un rotatif) est donnée à part, avec l'axe de rotation et le sens vu du pilote ; le FDM la retire de la cellule (`modele-aero.md`).
 
 ## `assets/aircraft/<id>/aircraft.ron`
 
