@@ -1,5 +1,7 @@
-//! Aerodynamics: section polars, lifting surfaces split into strips, parasitic drag.
+//! Aerodynamics: section polars, lifting surfaces split into strips, the lifting system
+//! with biplane interference, parasitic drag.
 
 pub mod drag;
 pub mod polar;
 pub mod surface;
+pub mod system;

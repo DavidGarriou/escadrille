@@ -26,6 +26,10 @@
 //! AR 1.5), whereas a real low aspect ratio surface stalls gently; to revisit when fins
 //! are made to stall (spins), with a wider fade or measured 3D polars for the fins.
 //!
+//! The planes of a biplane also induce on each other: an extra induced angle `mutual`,
+//! computed by [`super::system::LiftingSystem`], shifts the target of the solve and
+//! fades out past the stall with the surface's own induction.
+//!
 //! Known limits (E:, confidence C): one k per surface is exact only for a symmetric
 //! loading; for antisymmetric loading (roll damping, ailerons) lifting-line theory gives a
 //! lower slope, so the roll damping is overestimated (about 27 % for AR 5.5) and all strips
@@ -258,50 +262,76 @@ impl LiftingSurface {
         controls: &ControlDeflections,
         local_flow: impl Fn(DVec3) -> DVec3,
     ) -> Wrench {
-        self.strips
-            .iter()
-            .map(|strip| {
-                let v = air_velocity + angular_velocity.cross(strip.position)
-                    - local_flow(strip.position);
-                self.strip_loads(strip, v, density, controls).0
-            })
-            .fold(Wrench::default(), |a, b| a + b)
+        self.loads_with_mutual(
+            air_velocity,
+            angular_velocity,
+            density,
+            controls,
+            local_flow,
+            0.0,
+        )
+        .0
     }
 
-    /// Effective angle of attack x = α − α_i for geometric angle of attack α (rad).
-    fn effective_alpha(&self, alpha: f64, k: f64) -> f64 {
+    /// Same as [`Self::loads`], with an extra induced angle `mutual` (rad) coming from
+    /// the other planes of a biplane ([`super::system::LiftingSystem`]); also returns
+    /// the surface's lift coefficient, weighted by each strip's dynamic pressure and area.
+    pub fn loads_with_mutual(
+        &self,
+        air_velocity: DVec3,
+        angular_velocity: DVec3,
+        density: f64,
+        controls: &ControlDeflections,
+        local_flow: impl Fn(DVec3) -> DVec3,
+        mutual: f64,
+    ) -> (Wrench, f64) {
+        let (mut wrench, mut lift, mut weight) = (Wrench::default(), 0.0, 0.0);
+        for strip in &self.strips {
+            let v =
+                air_velocity + angular_velocity.cross(strip.position) - local_flow(strip.position);
+            let (w, state) = self.strip_loads(strip, v, density, controls, mutual);
+            wrench += w;
+            lift += state.coefficients.cl * state.dynamic_pressure * strip.area;
+            weight += state.dynamic_pressure * strip.area;
+        }
+        let cl = if weight > 0.0 { lift / weight } else { 0.0 };
+        (wrench, cl)
+    }
+
+    /// Effective angle of attack x = α − α_i for geometric angle of attack α (rad),
+    /// own-induction factor k and induced angle `mutual` from the other planes.
+    fn effective_alpha(&self, alpha: f64, k: f64, mutual: f64) -> f64 {
         let alpha = wrap_angle(alpha);
+        let target = alpha - mutual;
         let (neg, pos) = self.polar.stall_points();
-        // Geometric incidences at which each stall is reached.
+        // Values of α − mutual at which each stall is reached.
         let (alpha_neg, alpha_pos) = (neg.alpha + k * neg.cl, pos.alpha + k * pos.cl);
-        if alpha > alpha_pos || alpha < alpha_neg {
-            let (stall_alpha, stall_cl, a) = if alpha > alpha_pos {
-                (alpha_pos, pos.cl, alpha)
+        if target > alpha_pos || target < alpha_neg {
+            // Total induced angle at the stall, faded with the geometric incidence,
+            // worked on the positive side (mirrored for the negative stall).
+            let (side, stall, induced) = if target > alpha_pos {
+                (1.0, alpha_pos + mutual, k * pos.cl + mutual)
             } else {
-                (-alpha_neg, -neg.cl, -alpha)
+                (-1.0, alpha_neg + mutual, k * neg.cl + mutual)
             };
+            let (a, stall) = (side * alpha, side * stall);
             // Bounded by 180°, so that the induction is zero there from both sides.
             let end = INDUCTION_FADE_END
-                .max(stall_alpha + INDUCTION_FADE_MARGIN)
+                .max(stall + INDUCTION_FADE_MARGIN)
                 .min(PI);
-            let weight = if end > stall_alpha {
-                ((end - a) / (end - stall_alpha)).clamp(0.0, 1.0)
+            let weight = if end > stall {
+                ((end - a) / (end - stall)).clamp(0.0, 1.0)
             } else {
                 0.0
             };
-            let induced = k * stall_cl * weight;
-            return if alpha > alpha_pos {
-                alpha - induced
-            } else {
-                alpha + induced
-            };
+            return alpha - induced * weight;
         }
-        // Attached flow: solve x + k C_L(x) = α on [x_neg, x_pos], where the residual
-        // goes from ≤ 0 to ≥ 0 (Illinois variant of regula falsi).
-        let residual = |x: f64| x + k * self.polar.coefficients(x).cl - alpha;
+        // Attached flow: solve x + k C_L(x) = α − mutual on [x_neg, x_pos], where the
+        // residual goes from ≤ 0 to ≥ 0 (Illinois variant of regula falsi).
+        let residual = |x: f64| x + k * self.polar.coefficients(x).cl - target;
         let (mut lo, mut hi) = (neg.alpha, pos.alpha);
         let (mut f_lo, mut f_hi) = (residual(lo), residual(hi));
-        let mut x = alpha;
+        let mut x = target;
         let mut last_side = 0;
         for _ in 0..SOLVER_MAX_ITERATIONS {
             if f_hi - f_lo <= 0.0 {
@@ -330,13 +360,14 @@ impl LiftingSurface {
     }
 
     /// Loads and diagnostics of one strip, for `v` the strip's velocity relative to the
-    /// local air (body axes).
+    /// local air (body axes) and `mutual` the induced angle from the other planes (rad).
     pub fn strip_loads(
         &self,
         strip: &Strip,
         v: DVec3,
         density: f64,
         controls: &ControlDeflections,
+        mutual: f64,
     ) -> (Wrench, StripState) {
         let (u_c, u_n) = (v.dot(strip.chord_axis), v.dot(strip.normal));
         let speed_sq = u_c * u_c + u_n * u_n;
@@ -349,9 +380,9 @@ impl LiftingSurface {
             .map_or(0.0, |c| c.alpha_per_rad * controls.get(c.channel));
         let alpha = wrap_angle((-u_n).atan2(u_c) + control_shift);
 
-        let effective = self
-            .induced
-            .map_or(alpha, |model| self.effective_alpha(alpha, model.factor()));
+        let effective = self.induced.map_or(alpha, |model| {
+            self.effective_alpha(alpha, model.factor(), mutual)
+        });
         let induced = wrap_angle(alpha - effective);
         let coefficients = self.polar.coefficients(effective);
 

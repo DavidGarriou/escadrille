@@ -137,7 +137,7 @@ fn cambered_strip(aspect_ratio: f64) -> LiftingSurface {
 
 /// Force and moment over the dynamic pressure, and diagnostics, at angle of attack `alpha`.
 fn coefficients_at(s: &LiftingSurface, alpha: f64) -> (DVec3, DVec3, StripState) {
-    let (w, state) = s.strip_loads(&s.strips[0], flight(alpha), RHO, &NO_CONTROLS);
+    let (w, state) = s.strip_loads(&s.strips[0], flight(alpha), RHO, &NO_CONTROLS, 0.0);
     let q = state.dynamic_pressure;
     (w.force / q, w.moment / q, state)
 }
@@ -164,7 +164,7 @@ fn induced_solver_is_exact_for_any_aspect_ratio() {
         let mut s = wing(1.0, 1.0, 1, 0.0, DVec3::ZERO);
         s.induced = InducedModel::new(ar, 1.0);
         let k = s.induced.unwrap().factor();
-        let x = s.effective_alpha(alpha, k);
+        let x = s.effective_alpha(alpha, k, 0.0);
         let residual = x + k * s.polar.coefficients(x).cl - alpha;
         assert!(residual.abs() < 1e-12, "AR {ar}: residual {residual:e}");
         let cl = s.polar.coefficients(x).cl;
@@ -181,10 +181,10 @@ fn induced_angle_is_continuous_and_monotone_over_the_whole_circle() {
         let mut s = wing(1.0, 1.0, 1, 0.0, DVec3::ZERO);
         s.induced = InducedModel::new(ar, 0.9);
         let k = s.induced.unwrap().factor();
-        let mut previous = s.effective_alpha(-PI + 1e-9, k);
+        let mut previous = s.effective_alpha(-PI + 1e-9, k, 0.0);
         for i in 1..3_600 {
             let alpha = -PI + f64::from(i) * PI / 1_800.0;
-            let x = s.effective_alpha(alpha, k);
+            let x = s.effective_alpha(alpha, k, 0.0);
             assert!(x.is_finite(), "AR {ar}, {alpha}");
             let step = x - previous;
             assert!(
@@ -451,7 +451,7 @@ fn reversed_flow_force_is_the_flat_plate_normal_force() {
     let strip = w.strips[0];
     let alpha = 175f64.to_radians();
     let v = DVec3::new(V * alpha.cos(), 0.0, V * alpha.sin());
-    let (loads, state) = w.strip_loads(&strip, v, RHO, &NO_CONTROLS);
+    let (loads, state) = w.strip_loads(&strip, v, RHO, &NO_CONTROLS, 0.0);
     let c = state.coefficients;
     let normal = c.cl * alpha.cos() + c.cd * alpha.sin();
     let expected = 0.5 * RHO * V * V * strip.area * normal;
