@@ -291,3 +291,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 ### Qu'est-ce que GitHub ?
 - **Q** Le joueur écrit « github », compris dans la suite de la question précédente comme « précise ce qu'est GitHub ».
 - **R** Claude explique GitHub (hébergement du dépôt Git, historique, branches, pull requests) et son rôle dans le projet : dépôt `DavidGarriou/escadrille`, sauvegarde du travail, passerelle entre les sessions cloud et le poste Fedora. Il précise l'état actuel : `main` est resté au premier commit, tout le travail depuis est sur la branche `main-tcd0yw`.
+- **⚠** Le joueur précise que le message « github » était une erreur d'envoi. L'explication reste dans le carnet ; aucune action n'en découle.
