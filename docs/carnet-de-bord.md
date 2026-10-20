@@ -559,3 +559,22 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - k constant par moteur, alors que le rapport 46 donne 0,08 à 0,11 selon le régime ;
   - l'origine exacte de la relation de Gagg-Farrar n'est toujours pas retrouvée.
 - **A** Revue de l'aérodynamicien sur l'étape 4 prévue dès la fin de sa contre-revue de l'étape 3.
+
+### Contre-revue de l'étape 3 : point bloquant levé
+- **R** L'aérodynamicien confirme que le **point bloquant est levé**, sans nouveau blocage :
+  - le solveur donne exactement la valeur de la ligne portante pour des allongements de 1 à 10, avec un résidu d'au plus 2,5e-15 rad ;
+  - la dérive d'allongement 1,5 en dérapage de 3,4° donne +1 051 N·m de moment de lacet, au lieu de +8 188 ou −9 280 ;
+  - la loi après décrochage ne présente ni saut ni hystérésis, vérifié sur 360° par pas de 0,001° ; il l'**accepte en E: pour le M1**. Réserve : à faible allongement, elle rend le décrochage plus brutal que celui de la section, l'inverse du comportement réel. À reprendre quand on fera décrocher les dérives (vrille).
+- **R** Quatre points importants :
+  - la monotonie supposée par le solveur n'était pas vérifiée : un creux de la courbe de portance avant le décrochage créait un saut ;
+  - l'angle induit affiché valait ±360° à −180° exact ;
+  - une discontinuité à ±180° apparaissait pour des allongements absurdes (e·AR < 0,2) ;
+  - le test du solveur ne l'exerçait pas, car la section de test est exactement linéaire : 14 de ses 21 nouvelles erreurs volontaires survivaient.
+- **A** Corrections :
+  - nouveau constructeur validé `LiftingSurface::new`. Il refuse une surface sans bande, une bande mal formée (axes non unitaires ou non orthogonaux, aire ou corde nulle) et une polaire dont la pente, entre les deux décrochages, descend sous −π·e·AR : c'est la condition exacte d'unicité. Les champs deviennent privés ;
+  - e·AR ≥ 0,5 exigé ;
+  - fin de l'annulation bornée à 180° ;
+  - angles enveloppés dans le diagnostic ;
+  - constante nommée pour la marge de 15° ;
+  - `max_abs_cl`, devenu inutile, est supprimé.
+- **A** Ses **cinq tests** sont intégrés, avec une section cambrée, courbe et asymétrique : solveur exact, continuité sur 360°, induction nulle en écoulement décollé ou inversé, force égale aux coefficients tournés de l'angle induit, traînée parasite dans le souffle. S'y ajoute un test de refus des surfaces mal formées. Résultat : **90 tests sur 90**, `just check` vert.

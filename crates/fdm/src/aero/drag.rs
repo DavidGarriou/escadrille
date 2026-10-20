@@ -79,4 +79,17 @@ mod tests {
             + item(-2.0).loads(v, yawing, 1.225, |_| DVec3::ZERO);
         assert!(total.moment.z < 0.0, "{total:?}");
     }
+
+    #[test]
+    fn slipstream_increases_the_drag_with_the_square_of_the_local_speed() {
+        let item = DragItem {
+            name: "radiator".into(),
+            drag_area: 0.1,
+            position: DVec3::new(1.5, 0.0, 0.0),
+        };
+        let v = DVec3::new(40.0, 0.0, 0.0);
+        let free = item.loads(v, DVec3::ZERO, 1.225, |_| DVec3::ZERO);
+        let blown = item.loads(v, DVec3::ZERO, 1.225, |_| DVec3::new(-10.0, 0.0, 0.0));
+        assert!((blown.force.x / free.force.x - (50.0f64 / 40.0).powi(2)).abs() < 1e-12);
+    }
 }

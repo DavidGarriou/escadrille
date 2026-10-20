@@ -72,12 +72,7 @@ fn wing_with(
             }
         })
         .collect();
-    LiftingSurface {
-        name: "wing".into(),
-        strips,
-        polar: section(0.01, 0.0),
-        induced,
-    }
+    LiftingSurface::new("wing".into(), strips, section(0.01, 0.0), induced).unwrap()
 }
 
 fn wing(span: f64, chord: f64, strips: usize, incidence: f64, centre: DVec3) -> LiftingSurface {
@@ -85,20 +80,66 @@ fn wing(span: f64, chord: f64, strips: usize, incidence: f64, centre: DVec3) -> 
     wing_with(span, chord, strips, incidence, 0.0, centre, induced)
 }
 
+/// Single-strip surface at the tail, normal `normal`.
+fn tail_strip(polar: Polar, normal: DVec3, induced: Option<InducedModel>) -> LiftingSurface {
+    let strip = Strip {
+        position: DVec3::new(-4.5, 0.0, -0.5),
+        chord_axis: DVec3::X,
+        normal,
+        area: 1.0,
+        chord: 1.0,
+        control: None,
+    };
+    LiftingSurface::new("tail".into(), vec![strip], polar, induced).unwrap()
+}
+
 fn fin(aspect_ratio: f64) -> LiftingSurface {
-    LiftingSurface {
-        name: "fin".into(),
-        strips: vec![Strip {
-            position: DVec3::new(-4.5, 0.0, -0.5),
-            chord_axis: DVec3::X,
-            normal: DVec3::Y,
-            area: 1.0,
-            chord: 1.0,
-            control: None,
-        }],
-        polar: section(0.01, 0.0),
-        induced: InducedModel::new(aspect_ratio, 0.9),
-    }
+    tail_strip(
+        section(0.01, 0.0),
+        DVec3::Y,
+        InducedModel::new(aspect_ratio, 0.9),
+    )
+}
+
+/// Synthetic cambered section with a curved lift curve and asymmetric stalls (not
+/// historical data; aerodynamicist review): the thin section is exactly linear between
+/// its stall points, so a single secant step solves it and hides solver errors.
+fn cambered() -> Polar {
+    let peak = |a: f64| 0.25 + 5.6 * a - 6.0 * a * a.abs();
+    let points = (-16..=20)
+        .map(|deg: i32| {
+            let alpha = f64::from(deg).to_radians();
+            let cl = if deg < -10 {
+                -0.75 + 0.03 * f64::from(-10 - deg)
+            } else if deg <= 14 {
+                peak(alpha)
+            } else {
+                peak(14f64.to_radians()) - 0.06 * f64::from(deg - 14)
+            };
+            PolarPoint {
+                alpha,
+                cl,
+                cd: 0.01 + 0.3 * alpha * alpha,
+                cm: -0.05,
+            }
+        })
+        .collect();
+    Polar::new(points, viterna_cd_max(6.0)).unwrap()
+}
+
+fn cambered_strip(aspect_ratio: f64) -> LiftingSurface {
+    tail_strip(
+        cambered(),
+        DVec3::NEG_Z,
+        InducedModel::new(aspect_ratio, 0.9),
+    )
+}
+
+/// Force and moment over the dynamic pressure, and diagnostics, at angle of attack `alpha`.
+fn coefficients_at(s: &LiftingSurface, alpha: f64) -> (DVec3, DVec3, StripState) {
+    let (w, state) = s.strip_loads(&s.strips[0], flight(alpha), RHO, &NO_CONTROLS);
+    let q = state.dynamic_pressure;
+    (w.force / q, w.moment / q, state)
 }
 
 fn flight(alpha: f64) -> DVec3 {
@@ -156,10 +197,147 @@ fn induced_angle_is_continuous_and_monotone_over_the_whole_circle() {
 }
 
 #[test]
+fn induced_solver_is_exact_on_a_curved_asymmetric_polar() {
+    for ar in [1.0, 1.5, 2.0, 3.5, 6.0, 10.0] {
+        let s = cambered_strip(ar);
+        let k = s.induced.unwrap().factor();
+        let (neg, pos) = s.polar.stall_points();
+        let (lo, hi) = (neg.alpha + k * neg.cl, pos.alpha + k * pos.cl);
+        for i in 0..=400 {
+            let alpha = lo + (hi - lo) * f64::from(i) / 400.0;
+            let state = coefficients_at(&s, alpha).2;
+            let x = state.alpha - state.induced_alpha;
+            let residual = state.induced_alpha - k * s.polar.coefficients(x).cl;
+            assert!(residual.abs() < 1e-12, "AR {ar}, α {alpha}: {residual:e}");
+        }
+    }
+}
+
+#[test]
+fn loads_are_continuous_over_the_whole_circle_with_a_cambered_section() {
+    for ar in [1.0, 1.5, 6.0] {
+        let s = cambered_strip(ar);
+        let n = 72_000;
+        let first = coefficients_at(&s, -PI + 1e-12);
+        let mut previous = first;
+        for i in 1..=n {
+            let alpha = -PI + 2.0 * PI * f64::from(i) / f64::from(n);
+            let c = coefficients_at(&s, alpha);
+            let jump = (c.0 - previous.0).length().max((c.1 - previous.1).length());
+            assert!(
+                jump < 0.02,
+                "AR {ar}, {:.3}°: jump {jump}",
+                alpha.to_degrees()
+            );
+            previous = c;
+        }
+        let jump = (previous.0 - first.0)
+            .length()
+            .max((previous.1 - first.1).length());
+        assert!(jump < 1e-6, "AR {ar}: jump across 180°: {jump}");
+    }
+}
+
+#[test]
+fn induction_vanishes_in_separated_and_reversed_flow() {
+    // The diagnostic itself must be zero, not ±2π, even at exactly −180°.
+    for ar in [1.0, 1.5, 6.0] {
+        let s = cambered_strip(ar);
+        for deg in (60..=180).step_by(5) {
+            for alpha in [f64::from(deg).to_radians(), -f64::from(deg).to_radians()] {
+                let state = coefficients_at(&s, alpha).2;
+                assert!(
+                    state.induced_alpha.abs() < 1e-12,
+                    "AR {ar}, {deg}°: {state:?}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn force_is_the_section_force_tilted_by_the_induced_angle() {
+    let s = cambered_strip(1.0);
+    for deg in [10.0, 25.0, 35.0, 45.0] {
+        let alpha: f64 = f64::to_radians(deg);
+        let (force, _, state) = coefficients_at(&s, alpha);
+        let c = state.coefficients;
+        let flow = DVec3::new(alpha.cos(), 0.0, alpha.sin());
+        let up = DVec3::new(alpha.sin(), 0.0, -alpha.cos());
+        let ai = state.induced_alpha;
+        let lift = c.cl * ai.cos() - c.cd * ai.sin();
+        let drag = c.cd * ai.cos() + c.cl * ai.sin();
+        assert!(
+            (force.dot(up) - lift).abs() < 1e-9 && (-force.dot(flow) - drag).abs() < 1e-9,
+            "{deg}°: {force:?} {state:?}"
+        );
+    }
+}
+
+#[test]
 fn rejects_unphysical_induced_models() {
     assert!(InducedModel::new(0.0, 0.8).is_none());
     assert!(InducedModel::new(6.0, 1.2).is_none());
+    assert!(InducedModel::new(0.5, 0.9).is_none());
+    assert!(InducedModel::new(0.6, 0.9).is_some());
     assert!(InducedModel::new(6.0, 0.8).is_some());
+}
+
+#[test]
+fn rejects_unphysical_surfaces() {
+    let strip = wing(1.0, 1.0, 1, 0.0, DVec3::ZERO).strips()[0];
+    let polar = || section(0.01, 0.0);
+    let new = |strips: Vec<Strip>, polar: Polar, ar: f64| {
+        LiftingSurface::new("s".into(), strips, polar, InducedModel::new(ar, 0.9))
+    };
+    assert_eq!(new(vec![], polar(), 6.0), Err(SurfaceError::NoStrips));
+    for bad in [
+        Strip { area: 0.0, ..strip },
+        Strip {
+            chord: -1.0,
+            ..strip
+        },
+        Strip {
+            normal: DVec3::new(0.1, 0.0, -1.0).normalize(),
+            ..strip
+        },
+        Strip {
+            chord_axis: DVec3::new(2.0, 0.0, 0.0),
+            ..strip
+        },
+        Strip {
+            position: DVec3::new(f64::NAN, 0.0, 0.0),
+            ..strip
+        },
+    ] {
+        assert_eq!(new(vec![bad], polar(), 6.0), Err(SurfaceError::BadStrip));
+    }
+    // A dip of the lift curve before the stall (slope −11.5 /rad): several induced
+    // solutions when −1/k = −π e AR is above it (AR 1), unique at AR 6.
+    let dip = |alpha: f64, cl: f64| PolarPoint {
+        alpha: alpha.to_radians(),
+        cl,
+        cd: 0.01,
+        cm: 0.0,
+    };
+    let dipped = || {
+        let points = vec![
+            dip(-14.0, -0.9),
+            dip(-12.0, -1.0),
+            dip(0.0, 0.0),
+            dip(10.0, 1.0),
+            dip(11.0, 0.8),
+            dip(14.0, 1.2),
+            dip(18.0, 1.0),
+        ];
+        Polar::new(points, viterna_cd_max(6.0)).unwrap()
+    };
+    assert_eq!(
+        new(vec![strip], dipped(), 1.0),
+        Err(SurfaceError::InductionNotMonotone)
+    );
+    assert!(new(vec![strip], dipped(), 6.0).is_ok());
+    assert!(LiftingSurface::new("s".into(), vec![strip], dipped(), None).is_ok());
 }
 
 #[test]

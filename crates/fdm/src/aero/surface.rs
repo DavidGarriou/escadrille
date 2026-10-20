@@ -11,13 +11,20 @@
 //! fin and rudder of 1914-18 (aerodynamicist review, 2026-10-20).
 //!
 //! The exact solve is done between the two stall points of the table (maximum and
-//! minimum C_L), where x + k C_L(x) is monotone and the solution unique. Past the stall,
+//! minimum C_L), where x + k C_L(x) is monotone, so that the solution is unique: checked
+//! by [`LiftingSurface::new`], which requires every table slope there to exceed −1/k
+//! (a dip before the stall, as in noisy data or a double stall, can break it at low
+//! aspect ratio). Past the stall,
 //! the equation may have several solutions (a lift-curve slope steeper than −1/k, common
 //! on low aspect ratio fins), which would make the loads jump; and lifting-line induction
 //! makes no sense in separated or reversed flow anyway. So beyond the stall the induced
 //! angle keeps its stall value and fades linearly to zero at [`INDUCTION_FADE_END`] of
-//! geometric incidence (or 15° past the stall, whichever is larger). Continuous, monotone,
-//! with no hysteresis; an estimate (E:) for the post-stall region.
+//! geometric incidence (or [`INDUCTION_FADE_MARGIN`] past the stall, whichever is larger).
+//! Continuous, monotone, with no hysteresis; an estimate (E:) for the post-stall region,
+//! accepted for M1 by the aerodynamicist (review of 2026-10-20). Reserve: at low aspect
+//! ratio this makes the stall steeper than the section's (by a factor of about 2 at
+//! AR 1.5), whereas a real low aspect ratio surface stalls gently; to revisit when fins
+//! are made to stall (spins), with a wider fade or measured 3D polars for the fins.
 //!
 //! Known limits (E:, confidence C): one k per surface is exact only for a symmetric
 //! loading; for antisymmetric loading (roll damping, ailerons) lifting-line theory gives a
@@ -26,6 +33,8 @@
 //! (Phillips & Snyder, J. Aircraft 37(4), 2000), which will also give the biplane
 //! interference and the downwash on the tail. Below AR ≈ 4, lifting-line theory
 //! overestimates the lift slope (Helmbold or DATCOM corrections belong in the data, C:).
+
+use std::f64::consts::PI;
 
 use glam::DVec3;
 
@@ -75,7 +84,7 @@ pub struct StripControl {
 pub fn flap_effectiveness(chord_ratio: f64) -> f64 {
     let e = chord_ratio.clamp(0.0, 1.0);
     let theta = (2.0 * e - 1.0).acos();
-    1.0 - (theta - theta.sin()) / std::f64::consts::PI
+    1.0 - (theta - theta.sin()) / PI
 }
 
 /// One spanwise strip.
@@ -103,14 +112,18 @@ pub struct InducedModel {
     efficiency: f64,
 }
 
+/// Smallest e·AR accepted: below it, lifting-line induction is meaningless and the
+/// post-stall fade could run past ±180°.
+pub const MIN_EFFECTIVE_ASPECT_RATIO: f64 = 0.5;
+
 impl InducedModel {
-    /// `None` unless 0 < AR and 0 < e ≤ 1.
+    /// `None` unless 0 < e ≤ 1 and e·AR ≥ [`MIN_EFFECTIVE_ASPECT_RATIO`].
     pub fn new(aspect_ratio: f64, efficiency: f64) -> Option<Self> {
         let valid = aspect_ratio.is_finite()
-            && aspect_ratio > 0.0
             && efficiency.is_finite()
             && efficiency > 0.0
-            && efficiency <= 1.0;
+            && efficiency <= 1.0
+            && efficiency * aspect_ratio >= MIN_EFFECTIVE_ASPECT_RATIO;
         valid.then_some(Self {
             aspect_ratio,
             efficiency,
@@ -119,21 +132,35 @@ impl InducedModel {
 
     /// Induced-angle factor k = 1 / (π e AR).
     pub fn factor(&self) -> f64 {
-        1.0 / (std::f64::consts::PI * self.efficiency * self.aspect_ratio)
+        1.0 / (PI * self.efficiency * self.aspect_ratio)
     }
+}
+
+/// Why a lifting surface was rejected.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SurfaceError {
+    NoStrips,
+    /// Non-finite position, axes not unit or not orthogonal, area or chord not positive.
+    BadStrip,
+    /// A table slope between the stall points is below −1/k: the induced angle would
+    /// have several solutions (see the module documentation).
+    InductionNotMonotone,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct LiftingSurface {
-    pub name: String,
-    pub strips: Vec<Strip>,
-    pub polar: Polar,
-    pub induced: Option<InducedModel>,
+    name: String,
+    strips: Vec<Strip>,
+    polar: Polar,
+    induced: Option<InducedModel>,
 }
 
 /// Induction is faded out completely beyond this geometric angle of attack (rad), unless
-/// the stall is close to it (then 15° past the stall).
-pub const INDUCTION_FADE_END: f64 = 40.0 * std::f64::consts::PI / 180.0;
+/// the stall is close to it (then [`INDUCTION_FADE_MARGIN`] past the stall).
+pub const INDUCTION_FADE_END: f64 = 40.0 * PI / 180.0;
+
+/// Smallest fade of the induction past the stall (rad).
+pub const INDUCTION_FADE_MARGIN: f64 = 15.0 * PI / 180.0;
 
 /// Maximum iterations of the induced-angle root finder (converges in a few; the cap
 /// keeps the cost bounded and the result deterministic).
@@ -157,6 +184,66 @@ pub struct StripState {
 }
 
 impl LiftingSurface {
+    pub fn new(
+        name: String,
+        strips: Vec<Strip>,
+        polar: Polar,
+        induced: Option<InducedModel>,
+    ) -> Result<Self, SurfaceError> {
+        if strips.is_empty() {
+            return Err(SurfaceError::NoStrips);
+        }
+        let unit = |v: DVec3| (v.length() - 1.0).abs() < 1e-9;
+        if strips.iter().any(|s| {
+            !(s.position.is_finite()
+                && unit(s.chord_axis)
+                && unit(s.normal)
+                && s.chord_axis.dot(s.normal).abs() < 1e-9
+                && s.area.is_finite()
+                && s.area > 0.0
+                && s.chord.is_finite()
+                && s.chord > 0.0
+                && s.control.is_none_or(|c| c.alpha_per_rad.is_finite()))
+        }) {
+            return Err(SurfaceError::BadStrip);
+        }
+        if let Some(model) = induced {
+            let min_slope = -1.0 / model.factor();
+            let (neg, pos) = polar.stall_points();
+            let points = polar.table_points();
+            let monotone = points.windows(2).all(|w| {
+                w[1].alpha <= neg.alpha
+                    || w[0].alpha >= pos.alpha
+                    || (w[1].cl - w[0].cl) / (w[1].alpha - w[0].alpha) > min_slope
+            });
+            if !monotone {
+                return Err(SurfaceError::InductionNotMonotone);
+            }
+        }
+        Ok(Self {
+            name,
+            strips,
+            polar,
+            induced,
+        })
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn strips(&self) -> &[Strip] {
+        &self.strips
+    }
+
+    pub fn polar(&self) -> &Polar {
+        &self.polar
+    }
+
+    pub fn induced(&self) -> Option<InducedModel> {
+        self.induced
+    }
+
     /// Aerodynamic force and moment about the centre of gravity, body axes.
     ///
     /// `air_velocity` is the velocity of the centre of gravity relative to the free-stream
@@ -193,8 +280,15 @@ impl LiftingSurface {
             } else {
                 (-alpha_neg, -neg.cl, -alpha)
             };
-            let end = INDUCTION_FADE_END.max(stall_alpha + 15f64.to_radians());
-            let weight = ((end - a) / (end - stall_alpha)).clamp(0.0, 1.0);
+            // Bounded by 180°, so that the induction is zero there from both sides.
+            let end = INDUCTION_FADE_END
+                .max(stall_alpha + INDUCTION_FADE_MARGIN)
+                .min(PI);
+            let weight = if end > stall_alpha {
+                ((end - a) / (end - stall_alpha)).clamp(0.0, 1.0)
+            } else {
+                0.0
+            };
             let induced = k * stall_cl * weight;
             return if alpha > alpha_pos {
                 alpha - induced
@@ -253,12 +347,12 @@ impl LiftingSurface {
         let control_shift = strip
             .control
             .map_or(0.0, |c| c.alpha_per_rad * controls.get(c.channel));
-        let alpha = (-u_n).atan2(u_c) + control_shift;
+        let alpha = wrap_angle((-u_n).atan2(u_c) + control_shift);
 
         let effective = self
             .induced
             .map_or(alpha, |model| self.effective_alpha(alpha, model.factor()));
-        let induced = alpha - effective;
+        let induced = wrap_angle(alpha - effective);
         let coefficients = self.polar.coefficients(effective);
 
         // Directions in the chord–normal plane: drag along the local flow, lift

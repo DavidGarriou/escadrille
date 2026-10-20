@@ -65,8 +65,6 @@ pub struct Polar {
     cd_max: f64,
     /// Drag at α = 0, used for the reversed-flow flat plate.
     cd0: f64,
-    /// Upper bound of |C_L| over the whole circle.
-    max_abs_cl: f64,
     /// Points of minimum and maximum C_L of the table (negative and positive stall).
     stall: (PolarPoint, PolarPoint),
 }
@@ -113,7 +111,6 @@ impl Polar {
             points,
             cd_max,
             cd0: 0.0,
-            max_abs_cl: 0.0,
             stall: (first, first),
         };
         let pick = |better: fn(f64, f64) -> bool| {
@@ -126,18 +123,12 @@ impl Polar {
         };
         polar.stall = (pick(|b, a| b < a), pick(|b, a| b > a));
         polar.cd0 = polar.interpolate(0.0).cd;
-        // Sampled every 0.5°, with a margin for what lies between samples.
-        let max_sampled = (0..720)
-            .map(|i| polar.coefficients(-PI + f64::from(i) * PI / 360.0).cl.abs())
-            .fold(0.0, f64::max);
-        let max_table = polar.points.iter().map(|p| p.cl.abs()).fold(0.0, f64::max);
-        polar.max_abs_cl = 1.1 * max_sampled.max(max_table) + 0.1;
         Ok(polar)
     }
 
-    /// Upper bound of |C_L| over the whole circle.
-    pub fn max_abs_cl(&self) -> f64 {
-        self.max_abs_cl
+    /// Measured points of the table.
+    pub fn table_points(&self) -> &[PolarPoint] {
+        &self.points
     }
 
     /// Table points of minimum and maximum lift (negative and positive stall).
@@ -320,15 +311,6 @@ mod tests {
         let normal = c.cl * a.cos() + c.cd * a.sin();
         // The centre of pressure is at 0.747 c at 179° (0.75 c at 180°).
         assert!((c.cm + 0.5 * normal).abs() < 1e-2 * normal.abs(), "{c:?}");
-    }
-
-    #[test]
-    fn max_abs_cl_bounds_the_whole_circle() {
-        let polar = thin_aerofoil();
-        for i in 0..3_600 {
-            let a = -PI + 2.0 * PI * f64::from(i) / 3_600.0;
-            assert!(polar.coefficients(a).cl.abs() < polar.max_abs_cl());
-        }
     }
 
     #[test]
