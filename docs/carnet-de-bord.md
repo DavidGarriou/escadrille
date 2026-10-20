@@ -366,3 +366,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - valeurs ISA à la tropopause.
 - **⚠** Un premier test comparait deux quaternions avec `angle_between`, qui passe par `acos` et ne distingue pas un angle inférieur à environ 1e-8 : tolérance irréaliste. Remplacé par une comparaison des composantes. La physique n'était pas en cause.
 - **A** Subagent `aerodynamicien` lancé en arrière-plan pour relire l'étape 2, comme l'exige `CLAUDE.md` pour toute modification du modèle de vol.
+- **A** Vérification complète de l'étape 2 : `just check` vert (formatage, clippy, cargo-deny), `just test` : 36 tests sur 36 réussis sur tout le workspace.
