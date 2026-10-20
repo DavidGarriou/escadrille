@@ -61,14 +61,22 @@ Effet de sol : réduction de la traînée induite en fonction de h / envergure (
 
 ## Hélice
 
+Implémentation : `crates/fdm/src/propulsion/propeller.rs`.
+
 - J = V / (n D) ; T = C_T ρ n² D⁴ ; P = C_P ρ n³ D⁵ ; Q = P / (2π n) ; η = J C_T / C_P
-- Tables C_T(J), C_P(J) sourcées ou calculées hors ligne par la théorie de l'élément de pale (BEMT, dans `fdm_lab`) pour les hélices en bois à pas fixe.
-- Souffle d'hélice (théorie de Froude) sur les surfaces situées dans le disque : vitesse induite au disque v_i = ½ (√(V² + 2T / (ρ A)) − V), deux fois plus loin en aval.
-- Effet P et couple : émergent si l'hélice est modélisée par éléments de pale ; sinon, termes explicites et documentés.
+- Tables C_T(J), C_P(J) sourcées ou calculées hors ligne par la théorie de l'élément de pale (BEMT, dans `fdm_lab`) pour les hélices en bois à pas fixe. Le tableau commence à J = 0 (point fixe), mesuré ou calculé.
+- **Quatre quadrants** : C_T et C_P divergent quand n → 0 (hélice arrêtée, glissade sur la queue). Partout, l'hélice est décrite comme les hélices marines de la série B de Wageningen : angle d'avance β = atan2(V_a, 0,7 π n D), vitesse de référence V_r² = V_a² + (0,7 π n D)², T = C_T* ½ ρ V_r² (π/4) D², Q = C_Q* ½ ρ V_r² (π/4) D³. Dans le tableau, C_T* = 8 C_T / (π (J² + (0,7π)²)) et C_Q* = 8 C_Q / (π (J² + (0,7π)²)), avec C_Q = C_P / 2π. Au-delà, interpolation linéaire en β vers trois points d'appui estimés (E:) : hélice arrêtée, écoulement venant de l'avant (β = 90°) ou de l'arrière (β = −90°), rotation inverse à l'arrêt (β = ±180°). Leurs signes sont contrôlés au chargement.
+- **Vitesse de rotation** : l'hélice voit la vitesse **absolue** du rotor (les pales tournent aussi avec la cellule) ; le moteur, la vitesse **relative** à la cellule.
+- **Effet P** (modèle simple de JSBSim) : la ligne de poussée se décale de `p_factor` × sin(angle d'incidence de l'hélice), du côté où les pales avancent dans l'écoulement transversal (E:). Hélice à droite (horaire vue du poste) cabrée : lacet à gauche.
+- **Souffle d'hélice** (théorie de Froude), fourni comme écoulement local (`local_flow`) des surfaces et des traînées : vitesse induite au disque v_i = ½ (√(V² + 2T / (ρ A)) − V), v(x) = v_i (1 + x / √(x² + R²)) à la distance x derrière le disque (2 v_i loin en aval), tube contracté à débit constant, bord adouci sur ±10 % du rayon (E:). Pas de souffle en moulinet (T ≤ 0). Limites (E:) : souffle axial seulement (pas de rotation), rectiligne le long de l'axe de traction.
+- Non modélisé pour l'instant : force normale de l'hélice (Ribner, NACA Report 819, 1945), légèrement déstabilisante en tangage et en lacet.
 
 ## Moteurs
 
-- En ligne : P(rpm, gaz, σ) = P_nom × f_gaz × courbe(rpm) × g(σ). Par défaut, g(σ) = σ − (1 − σ) / 7,55 (Gagg-Farrar) ; vérifier et sourcer.
+Implémentation : `crates/fdm/src/propulsion/engine.rs`.
+
+- **En ligne** : puissance au frein P_b = (1 + k) P₀(ω) σ θ − k P₀(ω). P₀(ω) est la courbe de puissance au frein à pleins gaz au niveau de la mer, σ le rapport de densité, θ l'ouverture effective des gaz et k la part des frottements (puissance de frottement à pleine puissance, rapportée à la puissance au frein). La puissance indiquée suit la densité de la charge et les gaz, les frottements non. À pleins gaz, on retrouve la relation de Gagg-Farrar : P_b / P₀ = σ − k (1 − σ), avec k = 1/7,55 dans sa forme usuelle ; k est sourcé dans la fiche du moteur (Hispano-Suiza 8A : 0,08 à 0,11 selon le régime d'après le rapport NACA 46, proposition de l'historien à valider, voir `docs/recherche/hispano-suiza-8a.md`). Un k constant par moteur est une approximation. L'origine exacte de la relation dite de Gagg-Farrar n'est pas encore retrouvée.
+- Gaz : θ = ralenti + (1 − ralenti) × manette (E:, linéaire). Couple P₀/ω tenu constant hors de la courbe mesurée (E:). Sous le régime de calage, le moteur cesse d'allumer (il repart si l'hélice le fait mouliner assez vite) ; le frottement s'annule linéairement à l'arrêt.
 - Rotatifs : I_r inclut carter, cylindres et hélice ; coupe-contact (tout ou rien, ou par groupes de cylindres) ; mélange (manette fine) : une richesse hors plage provoque ratés, noyage, arrêt ; refroidissement par la rotation.
 - Températures (huile, eau), consommation, pannes : modèle simple d'abord, activé par les réglages de réalisme.
 

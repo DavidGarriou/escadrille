@@ -9,4 +9,5 @@ pub mod aero;
 pub mod atmosphere;
 pub mod constants;
 pub mod environment;
+pub mod propulsion;
 pub mod rigid_body;
