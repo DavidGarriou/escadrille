@@ -471,3 +471,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Skill `recherche-historique` : nouvelle section « Fonds et portails à consulter » (FranceArchives, Musée de l'Air et de l'Espace, archive.org, NTRS), avec ce qu'on y trouve, les domaines à autoriser et un rappel sur les conditions de réutilisation. Le Musée de l'Air et ses témoignages sonores sont ajoutés aux sources françaises de témoignages. Subagent `historien` : ces deux fonds deviennent prioritaires pour les sources françaises.
 - **A** Accès vérifié depuis le conteneur : `francearchives.gouv.fr` et `museeairespace.fr` sont **refusés** par la passerelle réseau. La seule adresse trouvée pour l'e-médiathèque du musée (`mediatheque.museeairespace.fr`) vient d'un article de 2020 : à confirmer.
 - **⚠** Domaines à ajouter par le joueur : `francearchives.gouv.fr`, `museeairespace.fr` et `*.museeairespace.fr`, ainsi que le domaine nu `archive.org`.
+
+### Accès élargi : vérification des nouveaux domaines
+- **A** Le joueur a ajouté tous les domaines demandés. Vérification : `archive.org` (domaine nu et serveurs de fichiers), `francearchives.gouv.fr`, `museeairespace.fr`, `mediatheque.museeairespace.fr` et `ntrs.nasa.gov` répondent. `www.memoiredeshommes.sga.defense.gouv.fr` reste refusé : c'est là que sont publiés les journaux de marche numérisés des unités, dont ceux des escadrilles.
+- **A** archive.org :
+  - recherche et métadonnées de nouveau disponibles ;
+  - le volume 5 d'*Aerial Age Weekly* (1917) n'existe pas sur le site, seul un volume de 1919 est présent ;
+  - un seul volume des rapports techniques britanniques (1917-1918) ;
+  - *Flight* 1916-1919 en cours de téléchargement (80 numéros sur environ 200 à ce stade, dont 4 avec des mentions du SPAD).
+- **⚠** FranceArchives oppose un mécanisme anti-robots : une redirection JavaScript en boucle avec cookie. Claude **ne le contourne pas**, puisqu'il sert justement à bloquer l'accès automatique. Pistes : une recherche manuelle du joueur, ou une interface officielle si FranceArchives en propose une.
+- **A** E-médiathèque du Musée de l'Air et de l'Espace : en ligne (logiciel Opsis/Skopus, photos, films, sons), avec une interface entièrement en JavaScript. Elle servira surtout de référence visuelle (livrées, cockpits) pour le M3 et les fiches, plutôt que pour des chiffres de performance.
