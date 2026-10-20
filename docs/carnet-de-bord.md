@@ -465,3 +465,9 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Téléchargement en cours, en arrière-plan, des numéros de *Flight* de 1916 à 1919 : identifiants générés pour chaque jeudi, puisque la recherche est inaccessible.
 - **⚠** Demande au joueur : ajouter aussi le domaine nu `archive.org`, en plus de `*.archive.org`, pour retrouver la recherche et les métadonnées (noms de fichiers des volumes de revues).
 - **A** Instantané intermédiaire des fiches `hispano-suiza-8a.md` et `profil-spad7.md`, en cours de modification par l'historien (troisième passe, rapports NACA). La version finale sera commitée à la fin de sa passe.
+
+### Nouvelles sources : FranceArchives et Musée de l'Air et de l'Espace
+- **D** Le joueur demande d'ajouter deux fonds : FranceArchives et les collections numériques du Musée de l'Air et de l'Espace.
+- **A** Skill `recherche-historique` : nouvelle section « Fonds et portails à consulter » (FranceArchives, Musée de l'Air et de l'Espace, archive.org, NTRS), avec ce qu'on y trouve, les domaines à autoriser et un rappel sur les conditions de réutilisation. Le Musée de l'Air et ses témoignages sonores sont ajoutés aux sources françaises de témoignages. Subagent `historien` : ces deux fonds deviennent prioritaires pour les sources françaises.
+- **A** Accès vérifié depuis le conteneur : `francearchives.gouv.fr` et `museeairespace.fr` sont **refusés** par la passerelle réseau. La seule adresse trouvée pour l'e-médiathèque du musée (`mediatheque.museeairespace.fr`) vient d'un article de 2020 : à confirmer.
+- **⚠** Domaines à ajouter par le joueur : `francearchives.gouv.fr`, `museeairespace.fr` et `*.museeairespace.fr`, ainsi que le domaine nu `archive.org`.

@@ -22,7 +22,7 @@ Le comportement d'un avion ne se résume pas à ses chiffres : il faut savoir co
 
 | Langue | Où chercher (pistes, à vérifier) |
 |---|---|
-| Français | carnets de vol et lettres de pilotes, rapports d'escadrille et comptes rendus de combat (Service historique de la Défense), mémoires, presse aéronautique d'époque (*La Guerre aérienne illustrée*, *L'Aérophile*) |
+| Français | carnets de vol et lettres de pilotes, rapports d'escadrille et comptes rendus de combat (Service historique de la Défense, via FranceArchives), mémoires, presse aéronautique d'époque (*La Guerre aérienne illustrée*, *L'Aérophile*), témoignages sonores du Musée de l'Air et de l'Espace |
 | Anglais | combat reports et rapports d'essais du RFC/RNAS/RAF (National Archives), mémoires (Cecil Lewis, *Sagittarius Rising* ; James McCudden, *Five Years in the Royal Flying Corps*), pilotes américains (Eddie Rickenbacker, *Fighting the Flying Circus*) |
 | Allemand | rapports de Jasta et évaluations de l'Idflieg, mémoires (Manfred von Richthofen, *Der rote Kampfflieger* ; Ernst Udet, *Mein Fliegerleben*), rapports d'essais d'avions alliés capturés |
 | Italien | lettres et mémoires des pilotes de la Squadriglia 91 et d'autres unités équipées de SPAD, Nieuport, Hanriot |
@@ -36,6 +36,17 @@ Méthode :
 - **Paraphraser en français**, en indiquant la langue d'origine. Une citation originale de quelques mots est permise quand la nuance compte, avec sa référence complète.
 - **Distinguer la réputation des faits** : ce que les pilotes disaient d'un avion (surnoms, rumeurs, peurs, comme une aile réputée fragile) est noté séparément de ce qui est confirmé. La réputation est un matériau précieux même quand elle est fausse : dialogues au mess, carnet de vol, choix du joueur.
 - **Traduire chaque trait confirmé en attente vérifiable** dans `essais.ron` (scénario qualitatif, skill `simulation-vol`). Exemple : « tend à engager la vrille en virage serré à droite » devient un essai scénarisé.
+
+## Fonds et portails à consulter
+
+| Fonds | Ce qu'on y trouve | Domaine à autoriser dans l'environnement cloud |
+|---|---|---|
+| **FranceArchives** (portail national des archives de France) | inventaires et documents numérisés des services d'archives français, dont ceux du Service historique de la Défense (journaux de marche et opérations des escadrilles, dossiers de personnel, rapports techniques) | `francearchives.gouv.fr` |
+| **Musée de l'Air et de l'Espace** (Le Bourget), collections numériques | photographies, plaques de verre et tirages anciens (numérisés avec l'ECPAD), films, témoignages sonores ; e-médiathèque signalée en 2020 sous `mediatheque.museeairespace.fr` (adresse à confirmer) | `museeairespace.fr`, `*.museeairespace.fr` |
+| **archive.org** | revues d'époque (*Flight*, *Aerial Age*, *The Aeroplane*), rapports techniques britanniques (ACA), bibliographies | `archive.org` **et** `*.archive.org` (le joker ne couvre pas le domaine nu, qui porte la recherche et les métadonnées) |
+| **NASA Technical Reports Server** | rapports NACA (profils, hélices, moteurs), domaine public | `ntrs.nasa.gov` |
+
+Rappels : vérifier les **conditions de réutilisation** de chaque document avant de l'intégrer au jeu (photos et films du Musée de l'Air et de l'ECPAD notamment) ; une consultation pour référence est toujours permise. L'outil web du subagent `historien` ne passe pas par le réseau du conteneur : c'est la session principale qui télécharge les documents avec curl (dossier de travail de la session) et les lui confie.
 
 ## Niveaux de confiance
 

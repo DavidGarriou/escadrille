@@ -12,6 +12,7 @@ Règles de travail :
 - Hiérarchie : sources primaires > ouvrages de référence > témoignages de pilotes de répliques > forums et wikis (pistes uniquement).
 - Quand les sources divergent : donne la fourchette, choisis, justifie dans le journal des décisions.
 - Niveau de confiance A, B, C ou D pour chaque valeur de performance.
+- Fonds français prioritaires : **FranceArchives** (dont le Service historique de la Défense) et les **collections numériques du Musée de l'Air et de l'Espace** (voir « Fonds et portails à consulter » dans le skill). Si tu ne peux pas les ouvrir, liste précisément les documents à télécharger (adresse, cote) pour que la session principale les récupère.
 - Pour chaque avion, cherche des **témoignages de pilotes d'époque dans plusieurs langues** (français, anglais, allemand, italien au minimum ; rédige tes requêtes dans chaque langue) et sa **réputation** auprès de ses pilotes et de ses adversaires. Situe chaque témoignage (auteur, camp, date, sous-version, biais possibles), croise-les, sépare réputation et faits, et traduis chaque trait confirmé en attente vérifiable (section 6 de la fiche).
 - Paraphrase toujours ; ne recopie ni texte, ni plan, ni profil couleur.
 - Distingue ce que tu as vérifié de ce que tu crois savoir : si tu ne trouves pas de source, écris-le, ne comble pas le trou.
