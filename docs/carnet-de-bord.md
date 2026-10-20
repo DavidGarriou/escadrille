@@ -367,3 +367,20 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Un premier test comparait deux quaternions avec `angle_between`, qui passe par `acos` et ne distingue pas un angle inférieur à environ 1e-8 : tolérance irréaliste. Remplacé par une comparaison des composantes. La physique n'était pas en cause.
 - **A** Subagent `aerodynamicien` lancé en arrière-plan pour relire l'étape 2, comme l'exige `CLAUDE.md` pour toute modification du modèle de vol.
 - **A** Vérification complète de l'étape 2 : `just check` vert (formatage, clippy, cargo-deny), `just test` : 36 tests sur 36 réussis sur tout le workspace.
+
+### Retour de l'historien (étape 1 du M1)
+- **A** L'historien a rédigé `docs/recherche/spad7.md` (432 lignes), `hispano-suiza-8a.md` et `profil-spad7.md`. Chaque source y est étiquetée : [LU] pour un texte intégral lu, [RÉSUMÉ] pour un résumé de moteur de recherche seulement, [PISTE] pour une référence non consultée.
+- **⚠** **Limite majeure : le réseau du conteneur ne laisse passer que GitHub.** Wikipedia, archive.org, ntrs.nasa.gov (rapports NACA), gallica.bnf.fr, la bibliothèque numérique de la Défense, albindenis.free.fr, theaerodrome.com et d'autres sont refusés. Seuls quatre livres du domaine public ont été lus en entier, par un miroir GitHub de Gutenberg (Bordeaux sur Guynemer, Richthofen, Hall, Nordhoff). En conséquence, **aucune performance ne dépasse la confiance C**, et le critère de fin du M1 (essais de confiance A et B) est inatteignable en l'état.
+- **R** Résultats principaux :
+  - sous-version proposée : SPAD VII à moteur Hispano-Suiza 8Ab de 180 ch (confiance C), avec un parc probablement mixte 150/180 ch à la SPA 3 ; SPAD XIII en très petit nombre à partir de fin juillet-août 1917 ;
+  - valeurs B : envergure supérieure 7,82 m, surface 17,85 m² (définition inconnue), longueur 6,08 m, masses en 150 ch de 500 kg à vide et 705 kg au décollage ;
+  - performances : toutes en C ;
+  - deux traits confirmés : structure robuste en piqué quasi vertical, moteur sensible à la température ;
+  - un témoignage dans chaque langue demandée, mais l'italien seulement en résumé ;
+  - lacunes : corde, écartement, décalage, calages, dièdre, gouvernes, courbe de puissance, centrage ;
+  - profil d'aile réel inconnu : RAF 15 proposé (C).
+- **R** Recommandation de l'historien : valider d'abord le modèle en 150 ch, la seule version mesurée à l'époque (essais STAé et rapport britannique n° 96), puis passer au 180 ch.
+- **⚠** Décisions demandées au joueur :
+  1. élargir l'accès réseau de l'environnement cloud aux sites de sources, ou fournir lui-même les documents ;
+  2. choix de la version à valider en premier (150 ch puis 180 ch, ou 180 ch directement) ;
+  3. si les sources primaires restent inaccessibles, accepter ou non un M1 validé en confiance C.
