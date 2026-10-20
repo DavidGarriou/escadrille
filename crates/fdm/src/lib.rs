@@ -5,6 +5,7 @@
 //! `f64`; body axes are x forward, y right, z down, and the local world frame is NED.
 //! Integration: fixed-step RK4 (ADR 0005).
 
+pub mod aero;
 pub mod atmosphere;
 pub mod constants;
 pub mod environment;

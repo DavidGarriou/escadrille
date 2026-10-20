@@ -438,3 +438,18 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Le joueur décide de commencer par le **SPAD VII 150 ch** (Hispano-Suiza 8Aa).
 - **D** Le joueur valide un **M1 en confiance C** : les cibles d'essai peuvent être de confiance C, étiquetées comme telles ; la confiance sera relevée plus tard, avec une revalidation.
 - **A** Amendement noté dans la définition de « terminé » du M1 (`docs/roadmap.md`) et dans le plan du M1 (section « Décisions du joueur en cours de jalon »).
+
+### Étape 3 du M1 : mécanique aérodynamique
+- **A** Nouveau module `aero` dans `escadrille_fdm`, indépendant des chiffres du SPAD :
+  - `polar.rs` : polaires sur 360°. Interpolation du tableau mesuré ; au-delà, extension de Viterna-Corrigan (NASA CP-2230, 1982) raccordée au dernier point jusqu'à ±90° ; plaque plane en écoulement inversé. Moment de tangage au-delà du tableau : centre de poussée qui se déplace linéairement. **Hypothèse de modélisation (E:)**, soumise à l'aérodynamicien.
+  - `surface.rs` : surfaces portantes découpées en bandes (vitesse locale avec ω × r, incidence dans le plan corde-normale). Effet de l'envergure finie compté une seule fois, par un angle induit résolu par itération ; il retombe sur la théorie de la ligne portante en régime linéaire. Gouvernes (efficacité τ d'un volet simple, théorie des profils minces de Glauert), déflexion de l'aile sur l'empennage, diagnostics par bande pour la télémétrie.
+  - `drag.rs` : traînées parasites, élément par élément, avec leur position (elles créent donc aussi des moments).
+- **A** Tests : 54 sur 54 dans `escadrille_fdm`, `just check` vert. Ils vérifient notamment :
+  - l'accord avec la ligne portante (C_L et C_Di à 0,1 et 0,2 % près) ;
+  - l'absence d'efforts latéraux en vol symétrique ;
+  - les signes de la portance, de la traînée et du calage ;
+  - les amortissements en roulis et en tangage, la stabilité statique de l'empennage, l'effet de la déflexion ;
+  - les ailerons (commande positive = roulis à droite) et la dérive (stabilité en lacet) ;
+  - la continuité des polaires sur le tour complet, et l'absence de NaN au repos et en vol inversé.
+  Données de test synthétiques (profil mince de manuel), pas de chiffres historiques.
+- **⚠** Tests corrigés en cours de route : une comparaison exacte de flottants après l'ajout de 2π (arrondi). Le code n'était pas en cause.

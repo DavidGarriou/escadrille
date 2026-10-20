@@ -1,0 +1,57 @@
+//! Parasitic drag of non-lifting parts (struts, wires, radiator, undercarriage, pilot),
+//! each with its own position, so that it also creates moments (`modele-aero.md`).
+
+use glam::DVec3;
+
+use crate::rigid_body::Wrench;
+
+/// One drag item: C_D × reference area, at a point.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DragItem {
+    pub name: String,
+    /// Drag area C_D · S, m².
+    pub drag_area: f64,
+    /// Point of application, body axes, relative to the centre of gravity, m.
+    pub position: DVec3,
+}
+
+impl DragItem {
+    /// Drag force −½ ρ |v| v C_D S at the item, with v = air velocity + ω × r.
+    pub fn loads(&self, air_velocity: DVec3, angular_velocity: DVec3, density: f64) -> Wrench {
+        let v = air_velocity + angular_velocity.cross(self.position);
+        let force = -v * (0.5 * density * v.length() * self.drag_area);
+        Wrench::force_at(force, self.position)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn drag_opposes_the_motion_with_the_dynamic_pressure() {
+        let item = DragItem {
+            name: "strut".into(),
+            drag_area: 0.05,
+            position: DVec3::new(0.0, 2.0, -1.0),
+        };
+        let w = item.loads(DVec3::new(50.0, 0.0, 0.0), DVec3::ZERO, 1.225);
+        let expected = 0.5 * 1.225 * 2_500.0 * 0.05;
+        assert!((w.force - DVec3::new(-expected, 0.0, 0.0)).length() < 1e-9);
+        // Drag on the right wing yaws the nose right (positive yaw moment).
+        assert!(w.moment.z > 0.0, "{w:?}");
+    }
+
+    #[test]
+    fn no_force_at_rest() {
+        let item = DragItem {
+            name: "wire".into(),
+            drag_area: 0.01,
+            position: DVec3::ZERO,
+        };
+        assert_eq!(
+            item.loads(DVec3::ZERO, DVec3::ZERO, 1.225),
+            Wrench::default()
+        );
+    }
+}
