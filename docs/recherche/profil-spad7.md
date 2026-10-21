@@ -1,7 +1,7 @@
 # Profil d'aile du SPAD VII — fiche de recherche
 
 - Identifiant : `profil-spad7` (fichier de polaires visé : `airfoils/spad.ron`, voir `format-avion.md`)
-- Dernière mise à jour : 2026-10-20 (troisième passe)
+- Dernière mise à jour : 2026-10-21 (quatrième passe : conventions des coefficients établies par un document britannique d'époque ; incidences négatives et facteurs τ, δ **non trouvés** dans les documents disponibles ; § 2.3, 3.7, 4.2 et 4.5)
 - État : **en cours**.
   - Un profil nommé **« Spad »** a été trouvé dans le NACA Report 93 (ordonnées et polaire du MIT de 1918). Confiance **B** pour le S.VII : le document ne précise pas de quel SPAD il s'agit.
   - Des polaires de **RAF 15** ont été mesurées par la NACA jusqu'au Reynolds de vraie grandeur. Confiance **A** pour ce profil, **C** comme substitut.
@@ -34,7 +34,8 @@ Quel profil portaient les ailes du SPAD S.VII ? Existe-t-il, pour ce profil ou p
 C'est donc un profil **mince et nettement cambré, à intrados creux**. Il est plus cambré que le RAF 15 et ressemble davantage au RAF 6 tel que le donne le même rapport (§ 4.2).
 
 ### 2.3 Polaire du MIT (1918)
-- **Convention des coefficients (point essentiel).** Le Report 93 emploie un coefficient « absolu » défini par **P = C·ρ·V²**, sans le facteur ½ (A1, p. 259-260 [LU]). Les rapports ultérieurs le rappellent : les coefficients modernes C_L = L/(qS) sont « deux fois plus grands que les anciens coefficients L_c, D_c » (A21, pages des symboles [LU]). **Donc C_L = 2·L_c et C_D = 2·D_c** ; la finesse L/D ne change pas. Le rapprochement avec les K_L et K_D britanniques de l'époque est probable mais **n'est pas énoncé dans les documents lus**.
+- **Convention des coefficients (point essentiel).** Le Report 93 emploie un coefficient « absolu » défini par **P = C·ρ·V²**, sans le facteur ½ (A1, p. 259-260 [LU]). Les rapports ultérieurs le rappellent : les coefficients modernes C_L = L/(qS) sont « deux fois plus grands que les anciens coefficients L_c, D_c » (A21, pages des symboles [LU]). **Donc C_L = 2·L_c et C_D = 2·D_c** ; la finesse L/D ne change pas.
+- **Convention britannique d'époque (quatrième passe) [LU-OCR]** : Glauert et Gates écrivent l'équilibre en palier W = 0,0051 K_L A V², avec V en mph et A la surface en ft² (ARC R&M 324, mars 1917, dans le rapport ACA 1917-18, vol. II, p. 578-579 ; A22). Or 0,0051 = 0,00237 slug/ft³ × (88/60)², c'est-à-dire ρ₀ × (conversion des mph en ft/s)², calcul C fait ici. La formule est donc **L = K_L ρ A V², sans le facteur ½**. Le **K_L britannique vaut C_L/2**, comme le L_c du Report 93. Les tableaux du NPL du même volume (profils d'hélice, A23) ont d'ailleurs des coefficients de portance maximaux d'environ 0,5, cohérents avec cette convention. Le rapprochement, seulement probable en troisième passe, est maintenant **établi par un document d'époque**.
 - **Nombre de Reynolds** (C, calcul fait ici) : corde de 3 in (0,0762 m) et 55,7 ft/s (17,0 m/s) donnent environ **9 × 10⁴**, soit **50 à 100 fois moins** que le Reynolds du S.VII en vol (§ 4.4).
 - **Valeurs** : la planche est petite. Ma lecture graphique est **grossière** et ne vaut qu'à titre indicatif (confiance **D**) : L_c max d'environ 0,5 vers 14 à 16°, soit un C_L max d'environ 1,0 ; finesse maximale de l'ordre de 16 vers 3 à 4°. **À numériser proprement** à partir du PDF, p. 291, avec un outil de relevé de courbes, avant tout usage.
 
@@ -135,6 +136,25 @@ Les tableaux complets aux pressions intermédiaires sont aux tableaux XXVI à XX
   - **Ce n'est pas la géométrie du fichier UIUC « raf6 »** (≈ 10 % d'épaisseur et 4,6 % de cambrure ; ancienne § 4.2). Il existe donc au moins deux « RAF 6 » différents : se fier au Report 93.
 - **RAF 15** (réf. n° 72) : NPL, maquette de 18 × 3 in, 40 ft/s, **1916** (planche p. 296). Convention L_c = C_L/2. Le maximum lu grossièrement (L_c ≈ 0,51, soit C_L ≈ 1,0) est cohérent avec les essais à bas Reynolds des Reports 233 et 309.
 
+### 3.7 Incidences négatives : ce qui existe et ce qui manque (quatrième passe)
+
+**Rectification.** Le tableau XXX du Report 233 ne s'arrête pas à −1,5° : il commence à **−4,5°** (C_L = −0,162 ; § 3.1). Le Report 331 reprend ces points jusqu'à −4,56° corrigé. Aucun des deux n'approche le décrochage négatif.
+
+**Point le plus négatif trouvé pour le RAF 15** : Report 309 (A16), essais de McCook Field, mars 1924, à bas Reynolds [LU] :
+- tableau IX, 29,3 ft/s : C_L = −0,337 à −6° (−6,19° corrigé), C_D = 0,0598 ;
+- tableau X, 58,7 ft/s : C_L = −0,329 à −6° (−6,18° corrigé), C_D = 0,0589 ;
+- les autres laboratoires du même rapport s'arrêtent à −4°.
+
+Contrôle (C, calcul fait ici) : entre −4° et −6°, la pente vaut environ 0,08 par degré, la même qu'aux incidences positives. **À −6°, l'écoulement n'a donc pas encore décroché** côté intrados. Le C_L minimal et l'incidence du décrochage négatif du RAF 15 restent **inconnus**.
+
+**Autres données lues, non représentatives** : les profils d'hélice du NPL publiés dans le volume II du rapport ACA 1917-18 (A23, p. 277 et suivantes) sont essayés jusqu'à −6°, et l'un d'eux de −30° à +25°. Mais ce sont des profils à intrados **plat** et extrados en arc de cercle, de 7,5 à 20 % d'épaisseur, très différents du « Spad » à intrados creux de 5,4 %. Un constat qualitatif reste utile : pour le profil le plus cambré de la série, la portance reste positive jusqu'à −25°, preuve que le comportement aux grandes incidences négatives dépend fortement de la forme.
+
+**Où chercher** (§ 5) :
+- volume I du même rapport ACA 1917-18 : essai « Forces and moments on R.A.F. 14 for negative angles of attack » (titre lu dans la table des matières du volume II). Le RAF 14 n'est pas le RAF 15, mais c'est un profil mince britannique de la même époque ;
+- à défaut, un profil mince cambré à intrados creux essayé aux incidences négatives à Reynolds élevé. Le NACA Report 460 (profils NACA, pas RAF) est une **piste non vérifiée** : j'ignore jusqu'à quelle incidence négative ses essais descendent.
+
+**Conséquence pour le modèle** (C) : tant qu'aucune mesure n'existe, la branche négative au-delà de −6° est une **extrapolation** à marquer `E:`. La forme du décrochage négatif d'un profil à intrados creux ne doit pas être copiée sur la branche positive.
+
 ## 4. Choix pour le modèle de vol
 
 ### 4.1 Proposition (révisée)
@@ -152,20 +172,47 @@ Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur 
 - incidence de portance nulle ≈ −2,25° par interpolation (le Report 309 donne −1,6 à −2,0° à bas Reynolds) ;
 - C_L max ≈ 1,21, peu modifié par le passage en 2D.
 
+**Facteurs τ et δ d'une aile rectangulaire d'allongement 6 (quatrième passe) : non trouvés.**
+- Les formules demandées par l'aérodynamicien, α∞ = α − C_L(1 + τ)/(π·A) (en radians) et C_D∞ = C_D − C_L²(1 + δ)/(π·A), corrigent l'hypothèse elliptique pour une forme en plan rectangulaire.
+- **Aucun document disponible ne donne τ ni δ.** Le Report 331 calcule sa traînée de profil avec la formule elliptique pure, c'est-à-dire **δ = 0** (A18, p. 592) ; il en va de même pour les incidences corrigées. Les Reports 309 et 331 ne citent Glauert que pour la correction de paroi (le Report 331 rapporte que le coefficient de paroi passe de 0,125 à 0,137 pour une veine carrée, p. 592). Le Report 362 renvoie à Glauert, *The Elements of Aerofoil and Airscrew Theory* (Cambridge, 1926), non disponible. La TN 182 de Prandtl (`spad7.md` S61) suppose des répartitions elliptiques et ne donne pas non plus ces facteurs.
+- Les valeurs τ ≈ 0,17 et δ ≈ 0,05 avancées par l'aérodynamicien restent donc **non vérifiées**. Documents à obtenir (§ 5) : NACA Report 460 (1933 ; NTRS 19930091108 d'après le moteur de recherche, à confirmer), NACA Report 669 (Jacobs et Abbott, 1939 ; NTRS 19930091744), qui traitent de la réduction des essais d'allongement 6 de la soufflerie à densité variable en caractéristiques de profil ; à défaut, le livre de Glauert.
+
+**Sensibilité** (C, calcul fait ici avec les valeurs **non vérifiées** τ = 0,17 et δ = 0,05, pour l'aérodynamicien) :
+- incidence induite à C_L = 1,0 et A = 6 : 3,04° en elliptique, 3,56° avec τ, soit **0,52°** d'écart ; 0,26° à C_L = 0,5 ;
+- traînée induite à C_L = 1,0 : 0,0531 en elliptique, 0,0557 avec δ, soit **0,0027** d'écart, c'est-à-dire 13 à 27 % d'une traînée de profil de 0,02 à 0,01 ; 0,0007 à C_L = 0,5 ;
+- pente en allongement infini du RAF 15 (pente de maquette 4,28 par radian) : 5,54 par radian en elliptique, 5,83 avec τ, soit **+5 %**.
+
+À forte portance, l'écart de traînée dépasse la dispersion entre souffleries des traînées minimales du RAF 15 (0,0138 à 0,0147, Report 309, § 3.3). L'emploi de τ et δ mérite donc une source avant d'être figé dans les données.
+
 ### 4.3 Justification
 - Le « Spad » est le seul profil trouvé qui porte ce nom dans un document d'époque. Sa finesse (5,4 %) concorde avec la réputation de profil mince.
 - Le RAF 15 est le seul profil mince de la Grande Guerre mesuré à Reynolds de vraie grandeur dans les documents disponibles, d'où son rôle de **référence de calage**.
 
 ### 4.4 Précautions pour l'aérodynamicien
-- **Échelle** : la corde du S.VII n'est pas connue, mais elle est de l'ordre du mètre (`spad7.md` § 2). Avec plusieurs dizaines de m/s, le Reynolds du vol dépasse le million. Les données MIT et NPL à 6 × 10⁴ – 9 × 10⁴ sous-estiment le C_L max et surestiment la traînée (Reports 233 et 279 : le C_L max varie de façon irrégulière avec le Reynolds).
+- **Échelle** : la corde du S.VII n'est pas connue, mais elle est de l'ordre du mètre : environ 1,15 à 1,2 m d'après la surface, 1,40 m d'après un article de 1917 incompatible avec la surface (`spad7.md` § 2.1). Avec plusieurs dizaines de m/s, le Reynolds du vol dépasse le million. Les données MIT et NPL à 6 × 10⁴ – 9 × 10⁴ sous-estiment le C_L max et surestiment la traînée (Reports 233 et 279 : le C_L max varie de façon irrégulière avec le Reynolds).
 - **Décrochage** : les données du RAF 15 à Reynolds élevé montrent une chute après le maximum. C'est une **mesure**, et non un réglage : elle est cohérente avec la réputation (`spad7.md` § 6.2), sans la prouver pour le SPAD.
-- **Biplan** : l'interférence entre plans relève du modèle, pas du profil. Facteurs et méthodes : `spad7.md` § 2.4.
+- **Biplan** : l'interférence entre plans relève du modèle, pas du profil. Facteurs et méthodes : `spad7.md` § 2.4, dont le facteur σ de Prandtl (TN 182) pour la traînée induite de la cellule.
+
+### 4.5 Convention de chaque tableau utilisé (quatrième passe ; demande de l'aérodynamicien)
+
+| Source | Coefficients de force | Moment ou centre de poussée | Corrections déjà appliquées | Vérification |
+|---|---|---|---|---|
+| Report 93 (A1), dont le « Spad » (MIT, 1918), le RAF 6 et le RAF 15 du NPL | L_c, D_c définis par P = C·ρ·V², **sans ½** : C_L = 2 L_c | **centre de poussée** en fraction de corde depuis le bord d'attaque (planches) | aucune (maquettes d'allongement 6) | p. 259-260 [LU] ; A21 |
+| Données britanniques d'époque (NPL, RAE ; A22, A23) | K_L = L/(ρ A V²), **sans ½** : C_L = 2 K_L | centre de poussée depuis le bord d'attaque, mesuré le long de l'intrados ; moments autour du bord d'attaque (A23) | selon l'essai | R&M 324, p. 578-579 ; A23, p. 279 [LU-OCR] |
+| Report 233 (A15), RAF 15 à Re élevé | C_L, C_D modernes, L/(qS) | **C_M au quart de corde**, positif quand il tend à **augmenter l'incidence** (cabrer) | aucune correction de paroi ; traînée des suspensions retranchée | p. 73 [LU, revérifié] |
+| Report 331 (A18) | modernes | **C_M au bord d'attaque**, positif quand il tend à **lever le bord d'attaque** ; centre de poussée en fraction de corde | **paroi corrigée** (Prandtl) ; C_D0 calculé en **elliptique (δ = 0)** | p. 591-592 [LU] |
+| Report 309 (A16), RAF 15 dans cinq souffleries | modernes (« deux fois les anciens L_c, D_c ») | **centre de poussée** en fraction de corde depuis le bord d'attaque ; moments pris au bord d'attaque à Langley, à 1/8 in sous le bord d'attaque au Bureau of Standards | colonnes non corrigées **et** corrigées de la paroi | pages des symboles et p. 9-10 [LU] |
+| Report 304 (A4), Sperry Messenger en vol | modernes, **avion complet** (traînée parasite comprise) | — | — | A21 |
+
+**À retenir** : tout coefficient britannique d'époque ou du Report 93 doit être **doublé** ; tout moment du Report 331 doit être **ramené au quart de corde** (C_M¼ ≈ C_M,BA + C_L/4, contrôle du § 3.2) avant d'être comparé au Report 233.
 
 ## 5. Ce qu'il faudrait pour aller plus loin
 1. **Numériser la planche n° 49 du Report 93** (p. 291) : L_c, D_c, centre de poussée en fonction de l'incidence. C'est le plus urgent.
 2. **Identifier le SPAD mesuré au MIT** en 1918 : rapports d'essais du MIT de 1917-1918, ou bibliographie aéronautique de 1917-1921 (`spad7.md` § 9.6).
 3. ***Flugsport* 1919** (A8) et **Eiffel 1919** (A5) : forme et polaires françaises ou allemandes du profil SPAD.
 4. **Relevé de nervure sur un S.VII original** (Musée de l'Air, S.254, etc. ; `spad7.md` P17).
+5. **τ et δ** (quatrième passe) : NACA Report 460 (NTRS 19930091108 selon le moteur de recherche, à confirmer) et NACA Report 669 (NTRS 19930091744), à télécharger en PDF ; à défaut, H. Glauert, *The Elements of Aerofoil and Airscrew Theory*, Cambridge University Press, 1926.
+6. **Incidences négatives** (quatrième passe) : volume I du *Technical Report of the ACA* 1917-18 (identifiant archive.org non trouvé ; `spad7.md` § 9.6), pour le RAF 14 aux incidences négatives, l'effet biplan sur le RAF 15 et la comparaison du RAF 15 avec un profil Albatros.
 
 ## 6. Sources (consultées le 2026-10-20)
 
@@ -180,6 +227,12 @@ Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur 
 - **A21** — Pages « Aeronautical Symbols » des Reports 271, 301, 304 et 309 : note sur les coefficients absolus, « deux fois plus grands que les anciens coefficients L_c, D_c » [LU].
 - **A9** — UIUC Airfoil Coordinates Database, miroir GitHub `kennyjensen/uiuc_airfoil_database`, fichiers raf15.dat et raf6.dat [LU]. Sa version du RAF 6 diffère de celle du Report 93 (§ 3.6).
 
+**Lues en quatrième passe**
+- **A20** (statut changé) — *Technical Report of the Advisory Committee for Aeronautics for the Year 1917-18*, vol. II, « Airscrews and Full Scale Work on Aeroplanes », HMSO, Londres, 1921. archive.org `technicalreport1917aero_2`, texte OCR téléchargé par le coordinateur. **[LU-OCR]** : table des matières des deux volumes ; A22, A23 ; R&M 462 et 492 (`hispano-suiza-8a.md` H21, `spad7.md` S60).
+- **A22** — H. Glauert et S. B. Gates, « Prediction of the Performance and Longitudinal Stability of an Aeroplane… », ARC R&M n° 324, mars 1917, dans A20, p. 576-580 environ (formule W = 0,0051 K_L A V², p. 578-579). Primaire.
+- **A23** — Essais du NPL de profils pour hélices (intrados plat, séries A et B, cambrures de 0,075 à 0,20), dans A20, p. 277-284 environ ; auteurs lus partiellement dans l'OCR (W. L. Cowley et H. Levy, à confirmer). Primaire ; cité pour la convention des coefficients et pour un constat qualitatif aux incidences négatives.
+- Prandtl, NACA TN 182 (1924), facteur σ du biplan : voir `spad7.md` S61 et § 2.4 [LU sur l'image].
+
 ### 6.2 Vues seulement en résumé de recherche ou pistes (inchangées depuis la première passe)
 - **A3** — NACA Reports 182, 244 et 286 (suites de la série) [RÉSUMÉ].
 - **A5** — G. Eiffel, *Résumé des principaux travaux exécutés pendant la guerre au Laboratoire aérodynamique Eiffel, 1915-1918*, E. Chiron, Paris, [1919], https://catalog.hathitrust.org/Record/001035741 [RÉSUMÉ].
@@ -192,7 +245,7 @@ Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur 
 - **A13** — Pankhurst, ARC R&M 3311 [RÉSUMÉ].
 - **A14** — L. Bairstow, *Applied Aerodynamics*, 1920 [PISTE].
 - **A19** — L. J. Briggs et H. L. Dryden, NACA Report No. 319, *Aerodynamic Characteristics of Twenty-Four Airfoils at High Speeds*, 1929 ou 1930 (date de la page de titre mal lue par l'OCR ; 1930 selon l'index du coordinateur). Profils d'hélice. Téléchargé, mais **non exploité** dans cette passe (= H18 de `hispano-suiza-8a.md`).
-- **A20** — ACA, *Technical Report* 1917-18, vol. 2, archive.org `technicalreport1917aero_2` [RÉSUMÉ ; fichiers d'archive.org toujours inaccessibles].
+- **A20** — ACA, *Technical Report* 1917-18, vol. 2 : lu en quatrième passe (§ 6.1).
 
 ## 7. Journal des décisions
 - **2026-10-20 (passe 1) — Profil réel** inconnu ; comparables RAF 15 et RAF 6 proposés en confiance C.
@@ -207,3 +260,7 @@ Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur 
 - **2026-10-20 (passe 3) — Convention.** Les coefficients du Report 93 sont de la forme P = C·ρ·V². Il faut les **doubler** pour obtenir les C_L et C_D modernes. Les Reports 233, 309, 331 et 304 emploient déjà la convention moderne.
 - **2026-10-20 (passe 3) — RAF 6.** La géométrie du Report 93 (6,8 % d'épaisseur) diffère du fichier UIUC (10 %). **Retenue : celle du Report 93.** L'ancienne ligne « RAF 6 ≈ 10 % » de la première passe est donc **caduque**.
 - **2026-10-20 (passe 3) — Choix pour le M1.** Polaires calculées sur la géométrie « Spad », calées sur le RAF 15 de vraie grandeur. En repli, polaires du RAF 15 en substitut (C). Décision finale à l'aérodynamicien.
+- **2026-10-21 (passe 4) — Convention britannique.** K_L = C_L/2, établi par la formule de Glauert et Gates (A22). **A** pour la convention. Elle s'applique à toutes les données britanniques d'époque et au Report 93.
+- **2026-10-21 (passe 4) — Tableau des conventions** (§ 4.5) dressé pour chaque source utilisée. Point de vigilance : le C_M du Report 331 est au bord d'attaque, celui du Report 233 au quart de corde.
+- **2026-10-21 (passe 4) — τ et δ.** Non trouvés. **Aucune valeur retenue** : les valeurs τ = 0,17 et δ = 0,05 restent celles de l'aérodynamicien, **non vérifiées**. Les données d'allongement infini du § 4.2 restent en correction elliptique (τ = δ = 0), comme dans le Report 331. Sensibilité chiffrée pour aider la décision (§ 4.2).
+- **2026-10-21 (passe 4) — Incidences négatives.** Le Report 233 descend à −4,5° (et non −1,5°) ; le point le plus négatif mesuré pour le RAF 15 est −6° (Report 309, bas Reynolds), sans décrochage. **Décrochage négatif : non sourcé.** La branche au-delà de −6° sera une extrapolation `E:`.
