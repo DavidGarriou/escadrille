@@ -4,7 +4,8 @@
 - Dernière mise à jour : 2026-10-21
 - État : **en cours**.
   - Troisième passe : courbe puissance/régime, loi d'altitude et consommation du 180 hp sourcées par des rapports NACA lus ; hélice d'époque comparable mesurée (VE-7).
-  - **Quatrième passe** : la contradiction sur la cote du 8Ab est **expliquée** par deux conventions de cote, américaine et française (§ 3.2). Une **loi d'altitude mesurée en vol** sur un Hispano de 150 hp sans réducteur est trouvée (§ 4.3). L'hélice réelle du SPAD et le sens de rotation restent sans source primaire.
+  - **Quatrième passe** : la contradiction sur la cote du 8Ab est **expliquée** par plusieurs conventions de cote (§ 3.2). Une **loi d'altitude mesurée en vol** sur un Hispano de 150 hp sans réducteur est trouvée (§ 4.3). L'hélice réelle du SPAD et le sens de rotation restent sans source primaire.
+  - **Cinquième passe (2026-10-21)** : tableaux des moteurs et des avions relus **sur l'image**. Puissance maximale autorisée sur le S.VII : 175 hp à 1 700 tr/min (8Aa), 205 hp à 1 800 tr/min (8Ab) ; régimes en palier ; consommation, masses et couples (§ 3.2, 4.4, 5, 6, 7.4).
 - Avion concerné : [`spad7.md`](spad7.md) (SPAD S.VII C.1)
 - Méthode et statuts des sources (**[LU]**, **[LU-OCR]**, **[RÉSUMÉ]**, **[PISTE]**) : voir `spad7.md` § 0. Première et deuxième passes : seules des pages GitHub ont pu être lues, le reste n'a été vu qu'en résumé de moteur de recherche. Troisième passe : rapports NACA téléchargés par le coordinateur (PDF et texte extrait) et **lus** (§ 3.1, 4.1, 5, 7.4), chiffres douteux de l'OCR vérifiés sur l'image des pages.
 
@@ -14,11 +15,11 @@
 |---|---|---|---|---|---|
 | 8A (premier type) | 140 hp | 1 900 tr/min | Présenté au ministère de la Guerre en février 1915. Endurance de 15 h à pleine puissance à Chalais-Meudon, puis essai de **50 h** sans interruption réussi le 21 juillet 1915 | — | H1, H2 [RÉSUMÉ] |
 | **8Aa** | **150 ch** | 2 000 tr/min (H1) ; 1 700 tr/min (H1, fiche technique d'un miroir) | Taux de compression **4,7** | SPAD S.VII « 150 ch » | H1, H2 [RÉSUMÉ] |
-| **8Ab** | **180 ch** | 2 100 tr/min (H1, H5) ; 1 800 tr/min (H4) ; ligne française de H19 : 2 000 tr/min en régime normal, 2 100 au maximum [LU-OCR] | Taux de compression porté à **5,3**. Remplace le 8Aa sur les S.VII à partir du début de 1917. Carburateur Zenith (H5). **1 533** construits en 1917-1918, hors licences (H5) | SPAD S.VII « 180 ch » | H1, H4, H5 [RÉSUMÉ] |
+| **8Ab** | **180 ch** | 2 100 tr/min (H1, H5) ; 1 800 tr/min (H4) ; ligne française de H19 : 208 hp à 2 000 tr/min en régime normal, 225 hp à 2 100 tr/min au maximum (p. 201) [LU-IMG] ; puissance maximale autorisée sur le S.VII : 205 hp à 1 800 tr/min (`spad7.md` S46, p. 205) [LU-IMG] | Taux de compression porté à **5,3**. Remplace le 8Aa sur les S.VII à partir du début de 1917. Carburateur Zenith (H5). **1 533** construits en 1917-1918, hors licences (H5) | SPAD S.VII « 180 ch » | H1, H4, H5 [RÉSUMÉ] |
 | 8B, 8Ba, 8Be (à réducteur) | 200 à 220 ch | — | Réducteur qui **inverse le sens de rotation** de l'hélice (§ 7.3) | SPAD XIII | H1, H12 [RÉSUMÉ] ; S38 de `spad7.md` (notice du XIII « 200 HP ») |
 | 8C, 8Cb (à réducteur, moteur-canon) | — | — | Canon tirant à travers l'arbre d'hélice | SPAD XII | H1 [RÉSUMÉ] |
 | Wright-Martin « A » (licence américaine) | 150 hp | **1 450 tr/min** | Puissance américaine, autre définition : **ne pas confondre** avec le 8Aa | — | H3 [RÉSUMÉ] ; confirmé par H19 : 150 hp « normaux » à 1 450 tr/min, 170 hp au maximum à 1 700 tr/min [LU-OCR] |
-| Wright-Hispano E (licence américaine) | 180 hp | 1 700 tr/min en régime normal ; maximum 203 hp à 1 800 tr/min (H19) | Moteur du S.VII de Tallman (N4727V). Identification de la ligne « Hispano-Suiza 180 » de H19 avec le modèle E : **déduite** (C) | — | `spad7.md` S31 [RÉSUMÉ] ; H19 [LU-OCR] |
+| Wright-Hispano E (licence américaine) | 180 hp | 1 700 tr/min en régime normal ; maximum **205** hp à 1 800 tr/min (H19, p. 201 [LU-IMG] ; « 203 » était une erreur d'OCR) | Moteur du S.VII de Tallman (N4727V). Identification de la ligne « Hispano-Suiza 180 » de H19 avec le modèle E : **déduite** (C) | — | `spad7.md` S31 [RÉSUMÉ] ; H19 [LU-OCR] |
 | Hispano « type V » de 160 hp | 160 hp vers 1 500 tr/min | — | Moteur annoncé pour le S.VII par un article américain de 1917 ; cotes et masse identiques à celles du moteur américain de 150 hp (§ 6) | — | H20 [LU-OCR] |
 
 Licence britannique : Wolseley à Birmingham (H1 [RÉSUMÉ]). Son dérivé à entraînement direct, le Viper, a équipé le S.E.5a (H13 [RÉSUMÉ]).
@@ -32,7 +33,7 @@ Licence britannique : Wolseley à Birmingham (H1 [RÉSUMÉ]). Son dérivé à en
 | Architecture | V8, refroidissement liquide | — | H3 [RÉSUMÉ] | B | |
 | Alésage × course | 120 × 130 mm | mm | H1, H2, H3 [RÉSUMÉ] | B | Trois sources concordantes |
 | Cylindrée | 11,76 L (11 760 cm³) | L | H1, H2 [RÉSUMÉ] ; 11,78 L (H3) | B | Contrôle (C) : π/4 × 1,2² × 1,3 × 8 = 11,76 L |
-| Taux de compression | 4,7 (8Aa) ; 5,3 (8Ab) | — | H1, H2, H5 [RÉSUMÉ] | B | |
+| Taux de compression | 4,7 (8Aa) ; 5,3 (8Ab) | — | H1, H2, H5 [RÉSUMÉ] ; H19, p. 201 [LU-IMG] : 4,8 pour les Hispano de 150 hp américain et britannique, 5,3 pour tous les 180 | B | Écart de 0,1 sur le 150 : non tranché, sans effet notable pour le modèle |
 | Carburant | « indice d'octane 80 » | — | H5 [RÉSUMÉ] | **D** | L'indice d'octane n'existait pas en 1917 : mention suspecte |
 
 ## 3. Puissance en fonction du régime
@@ -81,38 +82,50 @@ Calcul (C) sur les valeurs du tableau. À 1 300 tr/min, rendement mécanique × 
 - **Régime nominal** : 1 700 tr/min dans ce document américain, contre 2 100 tr/min dans les sources secondaires sur le 8Ab français (H1, H5). La puissance continue de croître jusqu'à 2 100 tr/min (tableau ci-dessus). La « cote » dépend donc de la convention : explication au § 3.2 (quatrième passe) et journal.
 - Le **8Aa** (compression 4,7) n'a pas de mesure équivalente. La courbe ci-dessus n'est transposable qu'avec un facteur d'échelle de puissance (C).
 
-### 3.2 La cote du 8Ab : deux conventions (quatrième passe) [LU-OCR]
+### 3.2 La cote du 8Ab : plusieurs conventions (quatrième passe, relue sur l'image en cinquième passe) [LU-IMG]
 
-**Source.** Tableau « Complete technical specifications of important American and foreign aeroplane engines », compilé par le service aéronautique américain et reproduit par *Flight* le 13 février 1919, p. 201-203 (H19). Le tableau distingue les moteurs **construits aux États-Unis** et les moteurs **français**, marqués d'un astérisque (« * French »). Il donne pour chacun une puissance au frein « normale » et une puissance « maximale », chacune avec son régime.
+**Source.** Tableau « Complete technical specifications of important American and foreign aeroplane engines », compilé par le service aéronautique américain et reproduit par *Flight* le 13 février 1919, **p. 201** (H19). Le tableau a trois sections :
+- une première section de moteurs utilisés aux États-Unis (Curtiss, Liberty, Hispano-Suiza, Le Rhône…) ;
+- une deuxième, sans astérisque, qui regroupe des moteurs britanniques (B.R., Beardmore, Siddeley, Rolls-Royce, Sunbeam…) et deux « Hispano » : je l'appelle **section britannique** (attribution déduite, C) ;
+- une troisième de moteurs étrangers, où les deux Hispano portent l'astérisque « * French ».
 
-**Lignes Hispano lues** (alésage 120 mm, soit 4,72 in, course 5,12 in, rapport 1,08 pour toutes) :
+Le tableau donne pour chacun une puissance au frein « normale » et une puissance « maximale », chacune avec son régime, puis la pression moyenne au frein (« M.B.P. ») en lb/in².
 
-| Ligne | Puissance « normale » | Puissance « maximale » | Compression | Vitesse moyenne de piston | Lecture |
+**Lignes Hispano** (alésage 120 mm, soit 4,72 in, course 130 mm, soit 5,12 in, rapport 1,08 pour toutes) :
+
+| Ligne (p. 201) | Puissance « normale » | Puissance « maximale » | Compression | Vitesse de piston (ft/min) | Pression moyenne (lb/in²) |
 |---|---|---|---|---|---|
-| Hispano-Suiza 150 (États-Unis) | 150 hp à **1 450** tr/min | 170 hp à 1 700 tr/min | 4,8 (OCR) | 1 240 ft/min | régimes validés, puissances lues |
-| Hispano-Suiza 180 (États-Unis) | 180 hp à **1 700** tr/min | 203 hp à 1 800 tr/min | 5,3 | 1 450 ft/min | idem |
-| Hispano 180 * (**français**) | 208 hp (OCR) à **2 000** tr/min | 223 hp à 2 100 tr/min | 5,3 | 1 707 ft/min | régimes validés ; puissances **à confirmer** |
-| Hispano 200 * (français) | 220 hp à 2 000 tr/min | illisible | 4,8 (OCR) | 1 707 ft/min | moteur à réducteur (C) |
+| Hispano-Suiza 150 (section américaine) | 150 hp à **1 450** tr/min | 170 hp à 1 700 tr/min | 4,8 | 1 240 | 114 |
+| Hispano-Suiza 180 (section américaine) | 180 hp à **1 700** tr/min | **205** hp à 1 800 tr/min | 5,3 | 1 450 | 122 |
+| Hispano 150 (section britannique) | 156 hp à 1 500 tr/min | 165 hp à 1 600 tr/min | 4,8 | 1 280 | 114,75 |
+| Hispano 180 (section britannique) | **220 hp à 2 000** tr/min | **225 hp à 2 100** tr/min | 5,3 | 1 707 | 121,8 |
+| Hispano 180 * (**français**) | **208 hp à 2 000** tr/min | **225 hp à 2 100** tr/min | 5,3 | 1 707 | 121,8 |
+| Hispano 200 * (français) | 220 hp à 2 000 tr/min | 215 hp à 2 100 tr/min | 4,8 | 1 707 | 115 |
 
-**Contrôle** (C, calcul fait ici) : la vitesse moyenne de piston vaut 2 × course × régime. Avec une course de 5,12 in, 1 450 tr/min donnent 1 237 ft/min, 1 700 tr/min 1 451 ft/min et 2 000 tr/min 1 707 ft/min. Les trois valeurs du tableau tombent juste : **les régimes « normaux » sont donc bien lus**, ligne par ligne. Les puissances ne bénéficient pas d'un tel contrôle.
+Les « 203 hp » et « 223 hp » de la quatrième passe étaient des erreurs d'OCR : l'image porte 205 et 225.
+
+**Contrôles** (C, calculs faits ici) :
+- **Vitesse de piston** = 2 × course × régime : 1 450 tr/min donnent 1 237 ft/min, 1 500 tr/min 1 280, 1 700 tr/min 1 451 et 2 000 tr/min 1 707. Toutes les lignes tombent juste : **les régimes « normaux » sont validés.**
+- **Pression moyenne** = 792 000 × puissance / (cylindrée de 718 in³ × régime), formule du moteur à quatre temps. Elle redonne exactement la puissance « normale » pour le 150 américain (114,1), le 150 britannique (114,7) et le 180 britannique (121,3). Elle **ne colle pas** pour le 180 américain (116,8 calculé contre 122 imprimé) ni pour les deux lignes françaises.
+- **Indice d'une inversion entre les deux lignes françaises** : 121,8 correspond à 220 hp à 2 000 tr/min et 115 à 208 hp. Les pressions imprimées vont donc avec des puissances **échangées**. Si l'on échange les puissances « normales » des deux lignes, la ligne 200 * devient cohérente (208 hp normaux, 215 hp maximaux, au lieu de 220 et 215). La ligne 180 * devient alors identique à la ligne britannique (220 et 225 hp, 121,8), comme l'est déjà toute sa ligne de la p. 203. C'est une **hypothèse** (C) : le tableau imprimé dit 208.
 
 **Ce que cela explique.**
-- Le moteur du Report 46 (H14), « coté 180 hp à 1 700 tr/min », suit exactement la **convention américaine** de la ligne « Hispano-Suiza 180 ». C'était donc **probablement un moteur construit aux États-Unis** (déduction C ; le rapport ne nomme pas le constructeur).
-- Les 1 450 tr/min du Wright-Martin A (H3) correspondent de même à la ligne américaine de 150 hp.
-- Les sources françaises (H1, H5 : 180 ch à 2 100 tr/min) suivent la **convention française**, où le régime « normal » est de 2 000 tr/min et le régime maximal de 2 100 tr/min.
-- **Il n'y a donc pas de contradiction sur le moteur**, mais deux façons de le coter. La forme de la courbe de H14 reste valable de 1 300 à 2 100 tr/min.
+- Le moteur du Report 46 (H14), « coté 180 hp à 1 700 tr/min », suit la convention de la section **américaine**. C'était donc **probablement un moteur construit aux États-Unis** (déduction C). Réserve : H14 décrit un carburateur Claudel, alors que H19 attribue un Zenith Duplex 58 D.C. à tous les Hispano de 180 hp (p. 202).
+- Les 1 450 tr/min du Wright-Martin A (H3) correspondent à la ligne américaine de 150 hp.
+- Les sources françaises secondaires (H1, H5 : 180 ch à 2 100 tr/min) suivent la convention européenne, où le régime normal est de 2 000 tr/min et le maximal de 2 100 tr/min.
+- **Il n'y a pas de contradiction sur le moteur**, mais plusieurs façons de le coter. La forme de la courbe de H14 reste valable de 1 300 à 2 100 tr/min.
 
-**Ce qui reste ouvert : la puissance réelle du 8Ab à 2 000-2 100 tr/min.**
-- Cote nominale française : 180 ch (H1, H5), C.
-- H14 ramené en air standard par la seule densité : environ 196 hp à 2 000 et 202 hp à 2 100 tr/min (C, § 3.1 et journal).
-- Ligne française de H19 : 208 hp « normaux » à 2 000 tr/min et 223 hp au maximum à 2 100 tr/min, lecture OCR **à confirmer sur l'image**.
-- Deux sources indépendantes placent donc la puissance au frein du 8Ab au-dessus de sa cote de « 180 ch ». Le « 180 » serait une **classe de puissance** plutôt qu'une mesure. Hypothèse **C** tant que l'image de H19 n'est pas lue.
+**La puissance du 8Ab sur le S.VII** (`spad7.md` S46, p. 205, colonne « Maximum Power Permitted ») [LU-IMG] :
+- **8Ab : 205 hp à 1 800 tr/min**, la puissance maximale de la section américaine ;
+- **8Aa : 175 hp à 1 700 tr/min**, un peu plus que les 170 hp maximaux de la section américaine.
 
-**Indices complémentaires** (C, à confirmer) :
-- Dans le tableau des avions français du même numéro (`spad7.md` S46), la ligne « Spa. 7C1 » à moteur 8Ab porte, d'après l'OCR, les nombres 1 700 et 203, soit le couple de la ligne américaine. Coïncidence de lecture ou emploi de la cote américaine : non tranché.
-- La même ligne semble donner des régimes d'environ 1 720 et 1 680 tr/min au-dessus des vitesses en palier. Si l'image le confirme, le S.VII 180 ch volerait à pleins gaz **bien au-dessous de 2 100 tr/min**, ce qui dépend de l'hélice (§ 7).
+Recoupement (C, calcul fait ici) : avec la forme de H14 (facteur d'environ 0,917 à 1 800 tr/min par interpolation entre 1 700 et 1 900 tr/min), 205 hp à 1 800 tr/min correspondent à **environ 224 hp à 2 100 tr/min**. C'est la puissance maximale de 225 hp des lignes britannique et française de H19. Trois chiffres d'origines différentes (S46, H19, forme de H14) sont donc cohérents entre eux, et tous au-dessus de la cote nominale de « 180 ch ». Le « 180 » est une **classe** de moteur, pas une puissance mesurée.
 
-**Autre tableau du même numéro, non lu** : « Performances of important American and foreign aeroplane engines » (p. 203 environ). Il donne pour chaque moteur la consommation d'essence et d'huile, les masses, et une **puissance estimée à 6 000, 10 000, 15 000 et 20 000 ft**. L'OCR ne permet pas d'attribuer les chiffres aux lignes Hispano. À lire sur l'image (`spad7.md` § 9.6) : ce serait une loi d'altitude officielle américaine pour les Hispano de 150 et 180 hp.
+Remarque (C) : les puissances de H19 à 2 000 et 2 100 tr/min (220 et 225 hp) sont très proches des valeurs **brutes** du Report 46, mesurées en air froid (environ 221 et 228 hp), et non de ses valeurs ramenées en air standard (environ 196 et 202 hp). Je ne sais pas si c'est une coïncidence.
+
+**Régimes en palier du S.VII** (S46, p. 205) [LU-IMG] : 8Ab, 1 870 à 1 710 tr/min de 2 000 à 5 000 m ; 8Aa, 1 720 à 1 640 tr/min de 2 000 à 4 000 m. Le moteur tourne donc en vol au-dessus de son régime de « puissance maximale autorisée », mais bien au-dessous de 2 100 tr/min (`spad7.md` § 4 ; contrôle de l'hélice au § 7.4).
+
+**Tableau de la p. 203, « Performances of important American and foreign aeroplane engines »** [LU-IMG] : consommations, masses, couples et **puissance estimée en altitude** (§ 4.4, § 5, § 6).
 
 **Laboratoire d'altitude du Bureau of Standards.** Un article de H. C. Dickinson et H. G. Boutell sur ce laboratoire, repris par *Flight* le 23 octobre 1919 (p. 1402-1403, H22), indique que les essais en caisson d'altitude, de janvier 1918 à janvier 1919, ont porté sur **plusieurs moteurs Hispano-Suiza de 150 hp** et de 180 hp. Des mesures d'altitude sur le 150 hp existent donc ; le rapport qui les publie n'est pas identifié (§ 9, pistes).
 
@@ -193,6 +206,24 @@ La mesure **en vol** de H21 perd **plus** que les deux lois tirées du banc : en
 - Le rapport mesure la puissance **installée**, relevée en vol par l'hélice. H14 et H15 sont des mesures au banc en caisson. L'écart entre les deux familles de résultats croît avec l'altitude ; aucun document lu ne l'explique. Ce n'est pas le même phénomène que l'écart constant de 3 à 5 % entre vol et soufflerie relevé par H17 (§ 7.4).
 - Pour le jeu, qui vole en atmosphère type, une loi en pression s'applique directement : P(h) = P_banc(N) × (p/p₀)^1,04 pour le 150 ch.
 
+### 4.4 Puissance « estimée » en altitude du tableau américain (H19, p. 203 ; cinquième passe) [LU-IMG]
+
+La dernière partie du tableau des performances des moteurs donne une « puissance estimée » à 6 000, 10 000, 15 000 et 20 000 ft :
+
+| Ligne | 6 000 ft (1 829 m) | 10 000 ft (3 048 m) | 15 000 ft (4 572 m) | 20 000 ft (6 096 m) | Référence au sol |
+|---|---|---|---|---|---|
+| Hispano 150 (section britannique) | 129 hp | 114,2 hp | 97,5 hp | 83,8 hp | 156 hp normaux à 1 500 tr/min |
+| Hispano 180 (section britannique) **et** Hispano 180 * (français) : lignes identiques | 182 hp | 161 hp | 137,5 hp | 118 hp | 220 hp normaux (britannique) |
+
+Les deux lignes américaines du Hispano n'ont pas d'estimation.
+
+**Lecture** (C, calculs faits ici) :
+- Les rapports à la puissance au sol sont **les mêmes** pour le 150 et le 180 : 0,827, 0,732, 0,625 et 0,537. C'est donc une **loi conventionnelle** appliquée par les compilateurs, pas une mesure. Le tableau dit d'ailleurs « estimée ».
+- Ces rapports suivent la **densité** de l'atmosphère type à 1 % près : 0,836, 0,738, 0,629 et 0,533.
+- La mesure en vol de H21, (p/p₀)^1,04, donne aux mêmes altitudes 0,794, 0,678, 0,552 et 0,445. À 20 000 ft, l'estimation américaine est donc **plus optimiste de 20 %** que la mesure britannique.
+
+**Usage** : à ne pas retenir comme loi d'altitude ; c'est une convention de calcul de 1918. Elle peut expliquer pourquoi des performances calculées à l'époque surestiment le plafond. Confiance C.
+
 ## 5. Consommation
 - **Report 46, tableau 1 (p. 550)** [LU], en livres de carburant par hp au frein et par heure :
   - **au sol** : 0,515 (1 300), 0,500 (1 500), 0,503 (1 700), 0,512 (1 900), 0,525 (2 100) ;
@@ -204,7 +235,8 @@ La mesure **en vol** de H21 perd **plus** que les deux lois tirées du banc : en
 - **Contrôle** (C, données faibles) : à 180 ch, environ 40 kg/h, soit environ 56 L/h avec une masse volumique de 0,72 kg/L (valeur du format de données, non sourcée ici). Les 135 L du SPAD (`spad7.md` S13 [RÉSUMÉ]) donneraient environ 2,4 h à pleine puissance, **plus** que l'autonomie de 1,5 à 2 h citée par la même source. Ces chiffres d'autonomie et de contenance restent à vérifier.
 - **Report 46, résumé** : rendement thermique au frein d'environ **24 %** au sol, en baisse vers 20 % en altitude (p. 525).
 - **Quatrième passe** : l'article américain de 1917 sur le S.VII (H20) donne pour son Hispano de « 160 hp » une consommation d'environ ½ lb d'essence par hp et par heure (le signe est rendu « j » par l'OCR : lecture à confirmer) et **3 quarts d'huile par heure**, soit 2,8 L/h en quarts américains (C). La consommation d'essence concorde avec H14 (0,50 à 0,53 lb/(hp·h) au sol) : **B** pour l'ordre de grandeur.
-- Huile : environ 2,8 L/h (H20, moteur américain, C). Le tableau H19 donne aussi des consommations d'huile par moteur, illisibles dans l'OCR.
+- Huile : environ 2,8 L/h (H20, moteur américain, C).
+- **Cinquième passe, H19, p. 203 [LU-IMG]** : consommation d'essence de **0,52 lb par hp et par heure** pour **toutes** les lignes Hispano (américaines, britanniques, françaises), soit 0,236 kg/(hp·h) (C). Consommation d'huile : 0,043 lb/(hp·h) pour le 150 britannique, 0,05 pour le 150 américain, 0,056 pour les 180. Par heure, au régime normal : 81,45 lb d'essence et 6,75 lb d'huile pour le 150 britannique ; 114,8 lb d'essence et 12,4 lb d'huile pour les 180 britannique et français. **Confiance A** pour la valeur de 0,52 lb/(hp·h), concordante avec H14 (0,50 à 0,525 au sol) et H20.
 
 ## 6. Masse
 
@@ -213,7 +245,8 @@ La mesure **en vol** de H21 perd **plus** que les deux lois tirées du banc : en
 | 8Aa, avec huile et eau | 195 kg | H2 [RÉSUMÉ] | C | |
 | Wright-Martin « A », à sec | 202 kg (445 lb) | H3 [RÉSUMÉ] ; H20 [LU-OCR] : 445 lb pour le Hispano « type V » de 160 hp, avec carburateur, magnétos, magnéto de départ, manivelle et moyeu d'hélice, sans radiateur, eau, huile ni échappements | **B** (deux sources concordantes, dont une d'époque) | Moteur américain. Cylindrée annoncée par H20 : 718 in³ (11,77 L, C), concordante avec le § 2 |
 | 8Aa (tableau comparatif) | 215 kg | H1, miroir [RÉSUMÉ] | D | Tableau tronqué ; définition inconnue |
-| 8Ab (tableau comparatif) | 230 kg | H1, miroir [RÉSUMÉ] | D | idem |
+| 8Ab (tableau comparatif) | 230 kg | H1, miroir [RÉSUMÉ] | D → **B** | Recoupé par H19 (ligne suivante) |
+| **H19, p. 203, masse à sec** [LU-IMG] | 150 américain : 440 lb (200 kg) ; 180 américain : 485 lb (220 kg) ; 150 britannique : 455 lb (206 kg) ; 180 britannique et 180 français : **510 lb (231 kg)** | H19 | **A** pour les valeurs imprimées | Le Hispano de 180 hp européen pèse 55 lb (25 kg) de plus que le 150 britannique (C). Couples imprimés : 546 lb·ft (150 britannique, exactement 156 hp à 1 500 tr/min) et 583 lb·ft (180, soit environ 222 hp à 2 000 tr/min), calculs C |
 
 ## 7. Hélice du SPAD VII
 
@@ -329,7 +362,11 @@ Les tableaux III de B' (p. 18) et de I (p. 19) sont lus et vérifiés sur l'imag
   - **calibrer le calcul BEMT** de l'hélice Gallia ou Levasseur pour qu'il retrouve la table de D' quand on lui donne la géométrie de D' (forme en plan et calages lisibles sur la figure 5, ordonnées des profils au tableau I, p. 12) ;
   - ou **reprendre directement la table de D'** comme hélice de secours, mise à l'échelle par le diamètre (les coefficients sont sans dimension), avec une étiquette `C:` dans les données.
 - **Domaine couvert** (calcul C) : en palier à 208 km/h et 2 000 tr/min avec D = 2,45 m, J ≈ 0,71. La table (J de 0,10 à 1,10) couvre le palier, la montée et un piqué modéré.
-- **Quatrième passe, contrôle possible** (C, lecture provisoire de `spad7.md` S46) : si le S.VII 180 ch tourne à environ 1 720 tr/min à 212 km/h, J ≈ 0,84 avec D = 2,45 m, soit près du rendement maximal de D' (0,775 à J = 0,85). Le régime en palier, s'il est confirmé sur l'image, permettra de choisir le pas de l'hélice de modèle : un pas trop faible ferait monter le régime au-delà de la valeur lue.
+- **Contrôle par les régimes en palier** (cinquième passe ; `spad7.md` S46, p. 205, lu sur l'image ; calculs C avec D = 2,45 m) :
+  - 8Ab à 2 000 m : 212 km/h à 1 870 tr/min, soit J ≈ 0,77 ;
+  - 8Aa à 2 000 m : 192 km/h à 1 720 tr/min, soit J ≈ 0,76.
+  
+  Les deux versions volent donc près du **rendement maximal** de l'hélice D' (0,77 à 0,775 pour J de 0,75 à 0,85). **Contrôle fort** pour l'aérodynamicien : avec la puissance de S46 (205 hp à 1 800 tr/min pour le 8Ab, 175 hp à 1 700 tr/min pour le 8Aa) et une seule hélice, le modèle doit retrouver **à la fois** la vitesse et le régime de chaque altitude. Un pas trop faible ferait monter le régime au-delà de la valeur lue ; un pas trop fort le ferait baisser. (La quatrième passe donnait par erreur 1 720 tr/min pour le 8Ab.)
 - **Ce que la table ne donne pas** : J = 0 (point fixe au sol), l'effet de l'incidence de l'axe (toujours horizontal ici) et l'effet du nombre de Mach en bout de pale. Pour ce dernier, le Report 319 (profils d'hélice à grande vitesse, téléchargé, non exploité) est une piste.
 
 ## 8. Fiabilité et défauts connus (pour les pannes et l'ambiance, pas pour le M1)
@@ -367,7 +404,7 @@ Fichiers PDF et texte extrait de NASA NTRS, téléchargés par le coordinateur l
 - Pistes citées par H17 : NACA Report 220 (Durand et Lesley, 1926, comparaison des essais d'hélices en vol et sur maquette) et NACA Report 292 (Crowley et Mixson, essais en vol de cinq hélices), sur les mêmes hélices du VE-7. Non lus.
 
 **Sources lues en quatrième passe** (texte OCR d'archive.org téléchargé par le coordinateur ; **[LU-OCR]**)
-- **H19** — « Complete technical specifications of important American and foreign aeroplane engines », « Performances of important American and foreign aeroplane engines » et « Further details… », tableaux compilés par le service aéronautique américain, d'après *Automotive Industries*, reproduits dans *Flight*, 13 février 1919, p. 201-203. archive.org `Flight_International_Magazine_1919-02-13-pdf`. Primaire (compilation officielle) ; OCR désordonné, régimes validés par la vitesse de piston.
+- **H19** — « Complete technical specifications of important American and foreign aeroplane engines », « Performances of important American and foreign aeroplane engines » et « Further details… », tableaux compilés par le service aéronautique américain, d'après *Automotive Industries*, reproduits dans *Flight*, 13 février 1919, p. 201-203. archive.org `Flight_International_Magazine_1919-02-13-pdf`. Primaire (compilation officielle). OCR désordonné ; **relu sur l'image en cinquième passe** [LU-IMG] (images PNG à 150 dpi fournies par le coordinateur le 2026-10-21) : caractéristiques p. 201, accessoires p. 202 (carburateurs Zenith Duplex 48 D.C. pour les 150, 58 D.C. pour les 180 ; hélice en prise directe, « E.S. » ; aucun sens de rotation), performances p. 203. Voir aussi `spad7.md` S46 (tableau des avions, p. 204-205).
 - **H20** — « The Spad Scout », d'après *Aerial Age Weekly* (2 juillet 1917), *Flight*, 16 août 1917, p. 840-841, paragraphe sur le moteur. `Flight_International_Magazine_1917-08-16-pdf`. Secondaire d'époque (presse américaine).
 - **H21** — D. H. Pinsent et H. A. Renwick, « The Variation of Engine Power with Height », ARC R&M n° 462, mars 1918, dans *Technical Report of the Advisory Committee for Aeronautics for the Year 1917-18*, vol. II, HMSO, 1921, p. 748-757. archive.org `technicalreport1917aero_2`. Primaire (essais en vol du RAE).
 - **H22** — H. C. Dickinson et H. G. Boutell, « The Altitude Laboratory for the Testing of Aircraft Engines », repris par *Flight*, 23 octobre 1919, p. 1402-1403 (suite d'un article commencé p. 1380). `Flight_International_Magazine_1919-10-23-pdf`. Secondaire d'époque ; rapport NACA d'origine à identifier.
@@ -375,7 +412,7 @@ Fichiers PDF et texte extrait de NASA NTRS, téléchargés par le coordinateur l
 - Bibliographie Brockett : `spad7.md` S56.
 
 **Pistes non consultées**
-- Images des pages 201-203 de *Flight* du 13 février 1919 (H19) : puissances des lignes Hispano, consommations, puissances estimées en altitude. **Priorité 1.**
+- ~~Images des pages 201-203 de *Flight* du 13 février 1919 (H19)~~ : **lues en cinquième passe** (§ 3.2, 4.4, 5, 6). Reste à trouver l'original d'*Automotive Industries* (fin 1918 ou début 1919), d'où *Flight* tire ces tableaux, pour écarter une erreur de recopie (inversion possible des lignes françaises, § 3.2).
 - Rapport NACA du Bureau of Standards sur les Hispano de 150 hp en caisson d'altitude (H22) : numéro à trouver dans les rapports annuels NACA de 1919-1921.
 - Notices Wright-Martin de 1918 et *L'Aérophile* d'avril 1919 (§ 7.3).
 - ARC R&M n° 586 (juillet 1921), figure 10 : courbe puissance/régime du Hispano 150, d'après l'essai du RAE du 8 août 1916 (archives Cranfield AERADE).
@@ -416,3 +453,12 @@ Fichiers PDF et texte extrait de NASA NTRS, téléchargés par le coordinateur l
 - **Loi d'altitude du 180 ch.** Deux familles de données : banc en caisson (H14, k ≈ 0,08 à 0,11, B) et vol (H21 sur le 170 hp à haute compression, exposant voisin de 1, illisible). **Non tranché** ; à l'aérodynamicien. Si l'on veut une seule loi pour les deux moteurs, la loi en pression de H21 est la seule mesurée en vol.
 - **Consommation et masse.** Consommation d'essence d'environ ½ lb/(hp·h) dans un document de 1917 (H20) : concorde avec H14, B. Masse à sec de 445 lb pour le moteur américain : B (H3, H20).
 - **Sens de rotation.** Aucune donnée nouvelle ; reste **C**. Documents à obtenir listés au § 7.3.
+
+**Cinquième passe (2026-10-21 ; tableaux de *Flight* relus sur l'image)**
+- **Corrections d'OCR** : maximum du 180 américain, 205 hp (et non 203) ; maximum du 180 français, 225 hp (et non 223). La section britannique du tableau, absente de la quatrième passe, cote le 180 à 220 hp à 2 000 tr/min et 225 hp à 2 100 tr/min.
+- **Puissance de référence du 8Ab pour le modèle (remplace l'entrée « Cote du 8Ab » de la quatrième passe).** **Retenu : 205 hp à 1 800 tr/min**, la « puissance maximale autorisée » associée aux performances du S.VII dans S46 (A pour la valeur imprimée), avec la forme de H14 (B). Cela donne environ 224 hp à 2 100 tr/min, en accord avec les 225 hp maximaux de H19 (C). La cote de « 180 ch » reste le nom de la classe, pas une puissance à mettre dans les données.
+- **Puissance de référence du 8Aa.** **Retenu : 175 hp à 1 700 tr/min** (S46, A pour la valeur imprimée). La forme de la courbe reste celle de H14 mise à l'échelle (C, faute de mesure sur un 150 hp).
+- **Lignes françaises de H19.** Les pressions moyennes imprimées suggèrent une inversion des puissances normales entre les lignes 180 * et 200 * (§ 3.2). **Non corrigé** dans les données : simple signalement, C.
+- **Loi d'altitude.** La « puissance estimée » de H19 suit la densité à 1 % près : c'est une convention de calcul, **non retenue** (§ 4.4). La loi mesurée en vol de H21 reste la référence proposée pour le 150 ch.
+- **Consommation : 0,52 lb/(hp·h), A** (H19, H14, H20 concordants).
+- **Masse à sec du 8Ab : 231 kg (510 lb), A** pour la valeur imprimée dans H19 ; recoupe les 230 kg de H1.
