@@ -690,3 +690,28 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - les deux numéros de *Flight* de février 1919, dont les pages des tableaux officiels sont **rendues en images** (150 dpi), lisibles directement. La page 205 montre le tableau des avions français avec les lignes « Spa. 7C1 Hispano 8Aa » et « 8Ab ».
 - **⚠** Le volume I du rapport technique britannique de 1917-1918 n'existe pas sur archive.org, et l'OCR d'*Aerial Age* du 2 juillet 1917 non plus.
 - **A** Historien relancé pour une cinquième passe courte : lire ces images pour faire passer en A les vitesses, les montées et le plafond du tableau officiel.
+
+### Revue de l'étape 4 et de l'assemblage par l'aérodynamicien
+- **R** Verdict « à corriger », **rien de bloquant**.
+  - **Confirmé** : les corrections de l'étape 3. Il a rejoué toutes ses erreurs volontaires, et toutes celles qui ont un effet sont tuées.
+  - **Juste** :
+    - les quatre quadrants de l'hélice ;
+    - les signes de l'effet P ;
+    - les vitesses absolue et relative du rotor ;
+    - l'induction mutuelle de Prandtl, qui converge en 9 à 16 itérations ;
+    - la déflexion retardée (approximation de Padé d'ordre 1 du retard) ;
+    - l'ordre de calcul de l'assemblage.
+- **R** Points importants :
+  1. L'effet P **sature à basse vitesse** : il atteint presque son maximum dès qu'un faible écoulement transversal existe, par exemple 934 N·m au sol par vent de travers de 3 m/s. Il faut le rendre proportionnel à V⊥·V_pale/V_r².
+  2. Aucun **contrôle d'énergie** sur les points d'appui de l'hélice : on peut fabriquer un moteur perpétuel. Il faut vérifier Q·Ω − T·V_a ≥ 0 sur tout le tour.
+  3. **Ralenti instable au sol** : le rotor s'arrête en 60 s une fois les gaz réduits. À gaz fermés, un vrai moteur à carburateur garde une puissance indiquée à peu près constante, si bien que son couple varie en 1/ω. Cela compte pour le roulage du M2.
+  4. Le souffle n'a **pas de rotation** : sur la dérive, c'est l'effet dominant, environ 4 fois l'effet P en montée à pleins gaz. Sans elle, la tendance à partir à gauche ne peut pas émerger.
+  5. Données : le tableau de l'hélice D' (NACA 301) donne une traction « effective » (traction moins la traînée due au souffle), à corriger au chargement.
+- **R** Autres réponses :
+  - valeurs proposées pour les points d'appui d'une bipale en bois, calculées par éléments de pale et vérifiées en énergie : arrêt (−0,065 ; −0,008), écoulement inversé (+0,07 ; +0,008), rotation inverse (−0,04 ; −0,007) ;
+  - frottement : utiliser directement la puissance de frottement mesurée par le rapport 46, de 13,1 à 25 hp de 1 300 à 2 100 tr/min, plutôt qu'une fraction fixe ;
+  - cote du 8Ab : ne pas la trancher par les essais de montée, où l'hélice inconnue se confond avec la puissance. Ce n'est pas sur le chemin critique, puisque le 150 ch passe d'abord ;
+  - déflexion à pondérer par max(0, u/V) en vol queue en avant ;
+  - **avant les modes propres** : ajouter la force normale de l'hélice (Ribner, NACA 819), soit 15 à 30 % de la stabilité de route due à la dérive sur un SPAD, et la force latérale et les moments du fuselage. Sans eux, les stabilités sont surestimées ;
+  - 13 de ses 49 nouvelles erreurs volontaires survivent, dont la traction qui n'est plus ajoutée aux efforts. Neuf tests sont proposés.
+- **A** Ces points sont traités tout de suite, avant la suite de l'étape 6.
