@@ -44,6 +44,7 @@ fn moment(m: DVec3) -> impl Fn(&RigidBodyState) -> Loads {
             moment: m,
         },
         rotor: RotorTorques::default(),
+        ..Default::default()
     }
 }
 
@@ -55,6 +56,7 @@ fn weightless(mass: f64) -> impl Fn(&RigidBodyState) -> Loads {
             moment: DVec3::ZERO,
         },
         rotor: RotorTorques::default(),
+        ..Default::default()
     }
 }
 
@@ -179,6 +181,7 @@ fn coordinated_right_turn_is_a_clockwise_circle() {
             moment: DVec3::ZERO,
         },
         rotor: RotorTorques::default(),
+        ..Default::default()
     };
     let end = simulate(start, &m, DT, t, centripetal);
     let (radius, psi) = (v / r, r * t);
@@ -303,6 +306,7 @@ fn angular_impulse_equals_the_change_of_world_momentum() {
             moment: s.attitude.conjugate() * world_moment,
         },
         rotor: RotorTorques::default(),
+        ..Default::default()
     };
     let end = simulate(start, &m, DT, t, loads);
     let err = (end.angular_momentum_ned(&m) - (l0 + world_moment * t)).length() / l0.length();
@@ -330,6 +334,7 @@ fn rotor_loads(engine: f64, propeller: f64) -> impl Fn(&RigidBodyState) -> Loads
             propeller,
             friction: 0.0,
         },
+        ..Default::default()
     }
 }
 
@@ -494,3 +499,23 @@ const GOLDEN: [u64; 14] = [
     13824336082511140949,
     4639657594238009184,
 ];
+
+// --- Auxiliary states ------------------------------------------------------------
+
+#[test]
+fn auxiliary_lag_follows_the_exact_exponential() {
+    // dε/dt = (ε_target − ε) / τ, as for the downwash lag: ε = ε_t (1 − e^(−t/τ)).
+    let m = body(0.0);
+    let (target, tau) = (0.05, 0.08);
+    let lag = |s: &RigidBodyState| Loads {
+        aux_rates: [(target - s.aux[0]) / tau, 1.0],
+        ..weightless(MASS)(s)
+    };
+    let end = simulate(RigidBodyState::default(), &m, DT, 0.3, lag);
+    let exact = target * (1.0 - (-0.3f64 / tau).exp());
+    // Fourth order: (dt/τ)⁵ / 120 per step, about 1e-8 relative over the run.
+    assert!((end.aux[0] - exact).abs() < 1e-7 * target, "{end:?}");
+    assert!((end.aux[1] - 0.3).abs() < 1e-12);
+    // The body itself is untouched.
+    assert_eq!(end.velocity_body, DVec3::ZERO);
+}

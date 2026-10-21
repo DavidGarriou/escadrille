@@ -1,0 +1,443 @@
+//! A synthetic 1917-like biplane (not historical data: round numbers of the right order).
+
+use std::f64::consts::PI;
+
+use glam::{DQuat, DVec3, EulerRot};
+
+use super::*;
+use crate::aero::polar::{Polar, PolarPoint, viterna_cd_max};
+use crate::aero::surface::{
+    ControlChannel, InducedModel, LiftingSurface, Strip, StripControl, flap_effectiveness,
+};
+use crate::aero::system::MutualInduction;
+use crate::environment::StandardEnvironment;
+use crate::propulsion::engine::tests::engine;
+use crate::propulsion::propeller::tests::{anchors, table};
+use crate::propulsion::propeller::{Propeller, PropellerGeometry};
+use crate::rigid_body::{Inertia, Rotor, Wrench};
+
+const SEA_LEVEL: StandardEnvironment = StandardEnvironment {
+    wind_ned: DVec3::ZERO,
+    ground_altitude: 0.0,
+};
+
+fn section(cd0: f64, cm: f64) -> Polar {
+    let peak = 2.0 * PI * 14f64.to_radians();
+    let points = (-20..=20)
+        .map(|deg: i32| {
+            let alpha = f64::from(deg).to_radians();
+            let a = deg.unsigned_abs();
+            let cl = if a <= 14 {
+                2.0 * PI * alpha
+            } else {
+                alpha.signum() * peak * (1.0 - 0.2 * f64::from(a - 14) / 6.0)
+            };
+            PolarPoint {
+                alpha,
+                cl,
+                cd: cd0 + 0.5 * alpha * alpha,
+                cm,
+            }
+        })
+        .collect();
+    Polar::new(points, viterna_cd_max(6.0)).unwrap()
+}
+
+/// Horizontal plane of `strips` strips; `control(y)` gives each strip's control.
+fn plane(
+    span: f64,
+    chord: f64,
+    centre: DVec3,
+    incidence: f64,
+    strips: u32,
+    control: impl Fn(f64) -> Option<StripControl>,
+) -> Vec<Strip> {
+    let width = span / f64::from(strips);
+    let chord_axis = DVec3::new(incidence.cos(), 0.0, -incidence.sin());
+    let normal = DVec3::new(-incidence.sin(), 0.0, -incidence.cos());
+    (0..strips)
+        .map(|i| {
+            let y = -0.5 * span + (f64::from(i) + 0.5) * width;
+            Strip {
+                position: centre + DVec3::new(0.0, y, 0.0),
+                chord_axis,
+                normal,
+                area: width * chord,
+                chord,
+                control: control(y),
+            }
+        })
+        .collect()
+}
+
+fn biplane() -> Aircraft {
+    let aileron = flap_effectiveness(0.25);
+    let elevator = flap_effectiveness(0.4);
+    let rudder = flap_effectiveness(0.5);
+    let wing = |name: &str, span: f64, z: f64, x: f64, ailerons: bool| {
+        let strips = plane(span, 1.4, DVec3::new(x, 0.0, z), 0.03, 8, |y| {
+            (ailerons && y.abs() > 2.5).then_some(StripControl {
+                channel: ControlChannel::Aileron,
+                // Positive roll: right wing lift down, left wing lift up.
+                alpha_per_rad: -y.signum() * aileron,
+            })
+        });
+        let induced = InducedModel::new(span / 1.4, 0.85);
+        LiftingSurface::new(name.into(), strips, section(0.012, -0.05), induced).unwrap()
+    };
+    let tailplane = LiftingSurface::new(
+        "tailplane".into(),
+        plane(3.0, 0.8, DVec3::new(-4.6, 0.0, -0.2), -0.01, 2, |_| {
+            Some(StripControl {
+                channel: ControlChannel::Elevator,
+                alpha_per_rad: -elevator,
+            })
+        }),
+        section(0.012, 0.0),
+        InducedModel::new(3.75, 0.85),
+    )
+    .unwrap();
+    let fin = LiftingSurface::new(
+        "fin".into(),
+        vec![Strip {
+            position: DVec3::new(-4.9, 0.0, -0.6),
+            chord_axis: DVec3::X,
+            normal: DVec3::Y,
+            area: 1.0,
+            chord: 0.9,
+            control: Some(StripControl {
+                channel: ControlChannel::Rudder,
+                alpha_per_rad: -rudder,
+            }),
+        }],
+        section(0.012, 0.0),
+        InducedModel::new(1.6, 0.85),
+    )
+    .unwrap();
+    let (b1, b2, c) = (8.0, 7.6, 1.4);
+    let sigma = 0.5;
+    let lifting = LiftingSystem::new(
+        vec![
+            wing("upper", b1, -1.0, 0.2, true),
+            wing("lower", b2, 0.3, 0.0, false),
+            tailplane,
+            fin,
+        ],
+        vec![
+            MutualInduction {
+                on: 0,
+                from: 1,
+                factor: sigma * b2 * c / (PI * b1 * b2),
+            },
+            MutualInduction {
+                on: 1,
+                from: 0,
+                factor: sigma * b1 * c / (PI * b1 * b2),
+            },
+        ],
+    )
+    .unwrap();
+    let drag = |name: &str, drag_area: f64, position: DVec3| DragItem {
+        name: name.into(),
+        drag_area,
+        position,
+    };
+    let propeller = Propeller::new(
+        table(),
+        anchors(),
+        PropellerGeometry {
+            diameter: 2.5,
+            hub: DVec3::new(1.8, 0.0, 0.0),
+            thrust_axis: DVec3::X,
+            right_handed: true,
+            p_factor: 0.2,
+        },
+    )
+    .unwrap();
+    let rotor = Rotor {
+        axis: propeller.rotation_axis(),
+        inertia: 1.2,
+    };
+    let inertia = Inertia {
+        ixx: 1_100.0,
+        iyy: 1_300.0,
+        izz: 2_200.0,
+        ixz: 40.0,
+    };
+    Aircraft::new(
+        MassProperties::new(700.0, inertia, Some(rotor)).unwrap(),
+        lifting,
+        vec![
+            drag("fuselage", 0.35, DVec3::new(0.0, 0.0, 0.0)),
+            drag("struts_right", 0.07, DVec3::new(0.1, 2.5, -0.35)),
+            drag("struts_left", 0.07, DVec3::new(0.1, -2.5, -0.35)),
+            drag("undercarriage", 0.1, DVec3::new(0.6, 0.0, 1.0)),
+        ],
+        Some(Propulsion {
+            propeller,
+            engine: engine(),
+        }),
+        Some(Downwash {
+            wings: vec![0, 1],
+            tail: vec![2],
+            factor: 0.11,
+            tail_arm: 4.7,
+        }),
+        ControlTravel {
+            aileron: 0.35,
+            elevator: 0.45,
+            rudder: 0.5,
+        },
+    )
+    .unwrap()
+}
+
+/// Flying at `speed` with angle of attack `alpha`, rotor at `rotor` rad/s.
+fn flying(speed: f64, alpha: f64, rotor: f64) -> RigidBodyState {
+    RigidBodyState {
+        position_ned: DVec3::new(0.0, 0.0, -1_000.0),
+        attitude: DQuat::from_euler(EulerRot::ZYX, 0.0, alpha, 0.0),
+        velocity_body: DVec3::new(speed * alpha.cos(), 0.0, speed * alpha.sin()),
+        rotor_speed: rotor,
+        ..Default::default()
+    }
+}
+
+const GLIDE: PilotControls = PilotControls {
+    roll: 0.0,
+    pitch: 0.0,
+    yaw: 0.0,
+    throttle: 0.0,
+};
+
+#[test]
+fn at_rest_there_is_nothing_but_a_finite_zero() {
+    let d = biplane().evaluate(&RigidBodyState::default(), &GLIDE, &SEA_LEVEL);
+    assert_eq!(d.loads.wrench, Wrench::default());
+    assert_eq!(d.loads.rotor, RotorTorques::default());
+    assert_eq!(d.loads.aux_rates, [0.0; AUX_STATES]);
+}
+
+#[test]
+fn air_moving_with_the_aircraft_gives_no_aerodynamic_load() {
+    let wind = StandardEnvironment {
+        wind_ned: DVec3::new(20.0, -5.0, 1.0),
+        ground_altitude: 0.0,
+    };
+    let state = RigidBodyState {
+        attitude: DQuat::from_euler(EulerRot::ZYX, 0.6, 0.1, -0.2),
+        ..Default::default()
+    };
+    let state = RigidBodyState {
+        velocity_body: state.attitude.conjugate() * wind.wind_ned,
+        ..state
+    };
+    let d = biplane().evaluate(&state, &GLIDE, &wind);
+    assert!(d.air_velocity.length() < 1e-12);
+    assert!(d.loads.wrench.force.length() < 1e-9, "{:?}", d.loads);
+}
+
+#[test]
+fn symmetric_glide_has_no_lateral_loads() {
+    // Engine stopped (rotor at rest): no torque reaction, no slipstream, no P-factor.
+    let d = biplane().evaluate(&flying(40.0, 0.06, 0.0), &GLIDE, &SEA_LEVEL);
+    let w = d.loads.wrench;
+    assert!(w.force.y.abs() < 1e-9 && w.moment.x.abs() < 1e-9 && w.moment.z.abs() < 1e-9);
+    assert!(w.force.z < 0.0, "lift: {w:?}");
+    // The stopped propeller drags and is turned by the flow (it windmills).
+    let p = d.propeller.unwrap();
+    assert!(p.thrust < 0.0 && d.loads.rotor.propeller < 0.0);
+}
+
+#[test]
+fn engine_torque_rolls_the_airframe_against_the_propeller() {
+    // Right-handed propeller (clockwise from the cockpit): reaction rolls to the left.
+    let a = biplane();
+    let state = flying(40.0, 0.06, 200.0);
+    let full = PilotControls {
+        throttle: 1.0,
+        ..GLIDE
+    };
+    let d = a.evaluate(&state, &full, &SEA_LEVEL);
+    let t = d.loads.rotor;
+    assert!(t.engine > 0.0 && t.propeller > 0.0);
+    assert!(d.propeller.unwrap().thrust > 0.0);
+    // What the integrator applies to the airframe: −(Q_engine − Q_friction) about +x.
+    let reaction = -(t.engine - t.friction);
+    assert!(reaction < 0.0);
+}
+
+#[test]
+fn controls_move_the_aircraft_the_right_way() {
+    let a = biplane();
+    let state = flying(45.0, 0.05, 0.0);
+    let base = a.evaluate(&state, &GLIDE, &SEA_LEVEL).loads.wrench.moment;
+    let with = |controls: PilotControls| {
+        a.evaluate(&state, &controls, &SEA_LEVEL)
+            .loads
+            .wrench
+            .moment
+            - base
+    };
+    let roll = with(PilotControls { roll: 0.5, ..GLIDE });
+    let pitch = with(PilotControls {
+        pitch: 0.5,
+        ..GLIDE
+    });
+    let yaw = with(PilotControls { yaw: 0.5, ..GLIDE });
+    assert!(roll.x > 0.0, "{roll:?}");
+    assert!(pitch.y > 0.0, "{pitch:?}");
+    assert!(yaw.z > 0.0, "{yaw:?}");
+    // Commands are clamped.
+    assert_eq!(
+        with(PilotControls {
+            pitch: 3.0,
+            ..GLIDE
+        }),
+        with(PilotControls {
+            pitch: 1.0,
+            ..GLIDE
+        })
+    );
+}
+
+#[test]
+fn downwash_lags_towards_its_target_and_lifts_the_nose() {
+    let a = biplane();
+    let state = flying(45.0, 0.08, 0.0);
+    let d = a.evaluate(&state, &GLIDE, &SEA_LEVEL);
+    let speed = 45.0;
+    let wings = (d.lift_coefficients[0] * 8.0 + d.lift_coefficients[1] * 7.6) / 15.6;
+    let target = 0.11 * wings;
+    assert!(target > 0.0);
+    let rate = d.loads.aux_rates[AUX_DOWNWASH];
+    assert!((rate - target * speed / 4.7).abs() < 1e-12 * rate.abs());
+
+    let mut settled = state;
+    settled.aux[AUX_DOWNWASH] = target;
+    let e = a.evaluate(&settled, &GLIDE, &SEA_LEVEL);
+    assert!(e.loads.aux_rates[AUX_DOWNWASH].abs() < 1e-12);
+    // Downwash lowers the tail's angle of attack: less tail lift, nose-up moment.
+    assert!(e.lift_coefficients[2] < d.lift_coefficients[2]);
+    assert!(e.loads.wrench.moment.y > d.loads.wrench.moment.y);
+}
+
+#[test]
+fn slipstream_makes_the_elevator_more_effective_at_low_speed() {
+    let a = biplane();
+    let full = PilotControls {
+        throttle: 1.0,
+        ..GLIDE
+    };
+    let elevator_effect = |rotor: f64| {
+        let state = flying(25.0, 0.1, rotor);
+        let up = PilotControls { pitch: 0.5, ..full };
+        a.evaluate(&state, &up, &SEA_LEVEL).loads.wrench.moment.y
+            - a.evaluate(&state, &full, &SEA_LEVEL).loads.wrench.moment.y
+    };
+    assert!(elevator_effect(200.0) > 1.2 * elevator_effect(0.0));
+}
+
+#[test]
+fn rejects_inconsistent_aircraft() {
+    let a = biplane();
+    let wrong_rotor = MassProperties::new(
+        700.0,
+        Inertia {
+            ixx: 1_100.0,
+            iyy: 1_300.0,
+            izz: 2_200.0,
+            ixz: 0.0,
+        },
+        Some(Rotor {
+            axis: -DVec3::X,
+            inertia: 1.2,
+        }),
+    )
+    .unwrap();
+    let travel = a.travel;
+    let rebuild = |mass: MassProperties, downwash: Option<Downwash>, travel: ControlTravel| {
+        Aircraft::new(
+            mass,
+            a.lifting.clone(),
+            vec![],
+            a.propulsion.clone(),
+            downwash,
+            travel,
+        )
+    };
+    assert_eq!(
+        rebuild(wrong_rotor, None, travel),
+        Err(AircraftError::RotorMismatch)
+    );
+    let downwash = |wings: Vec<usize>, tail: Vec<usize>| {
+        Some(Downwash {
+            wings,
+            tail,
+            factor: 0.1,
+            tail_arm: 4.0,
+        })
+    };
+    for bad in [
+        downwash(vec![], vec![2]),
+        downwash(vec![0], vec![7]),
+        downwash(vec![0, 2], vec![2]),
+    ] {
+        assert_eq!(
+            rebuild(a.mass, bad, travel),
+            Err(AircraftError::BadDownwash)
+        );
+    }
+    let bad_travel = ControlTravel {
+        aileron: f64::NAN,
+        ..travel
+    };
+    assert_eq!(
+        rebuild(a.mass, None, bad_travel),
+        Err(AircraftError::BadTravel)
+    );
+}
+
+#[test]
+fn flight_stays_finite_and_deterministic() {
+    // Twenty seconds of untrimmed flight, then a stall and a tail slide: no NaN, and two
+    // runs are identical to the bit.
+    let a = biplane();
+    let run = || {
+        let mut s = flying(45.0, 0.05, 180.0);
+        let dt = 1.0 / 240.0;
+        for i in 0..4_800 {
+            let controls = PilotControls {
+                roll: (f64::from(i) * 0.01).sin() * 0.3,
+                pitch: if i < 2_400 { 0.1 } else { 1.0 },
+                yaw: 0.0,
+                throttle: if i < 2_400 { 0.8 } else { 0.0 },
+            };
+            s = a.step(&s, &controls, &SEA_LEVEL, dt);
+        }
+        // Tail slide: falling backwards, nose up.
+        let mut t = RigidBodyState {
+            velocity_body: DVec3::new(-15.0, 0.0, 2.0),
+            ..flying(0.0, 1.4, 150.0)
+        };
+        for _ in 0..1_200 {
+            t = a.step(&t, &GLIDE, &SEA_LEVEL, dt);
+        }
+        (s, t)
+    };
+    let (s, t) = run();
+    for state in [s, t] {
+        let values = [
+            state.position_ned.to_array(),
+            state.velocity_body.to_array(),
+            state.angular_velocity_body.to_array(),
+        ];
+        assert!(
+            values.iter().flatten().all(|v| v.is_finite())
+                && state.rotor_speed.is_finite()
+                && state.aux.iter().all(|v| v.is_finite()),
+            "{state:?}"
+        );
+    }
+    assert_eq!(run(), (s, t));
+}

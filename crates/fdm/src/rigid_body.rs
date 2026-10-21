@@ -172,6 +172,11 @@ pub struct RotorTorques {
     pub friction: f64,
 }
 
+/// Number of auxiliary states integrated with the body: first-order flow lags (wing
+/// downwash reaching the tail, later dynamic stall). Their meaning belongs to the
+/// aircraft model (`crate::aircraft`); unused ones stay at zero.
+pub const AUX_STATES: usize = 2;
+
 /// What the aircraft model computes for a given state, **gravity excluded**
 /// (the integrator adds it, so that `wrench.force / m` is the specific force).
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
@@ -179,6 +184,8 @@ pub struct Loads {
     /// Aerodynamic and contact forces and moments, without the propeller's axial torque.
     pub wrench: Wrench,
     pub rotor: RotorTorques,
+    /// Time derivatives of the auxiliary states, per second.
+    pub aux_rates: [f64; AUX_STATES],
 }
 
 /// Weight of the body expressed in body axes, N.
@@ -198,6 +205,8 @@ pub struct RigidBodyState {
     pub angular_velocity_body: DVec3,
     /// Absolute axial angular speed of the rotor, rad/s (0 without rotor).
     pub rotor_speed: f64,
+    /// Auxiliary states (see [`AUX_STATES`]).
+    pub aux: [f64; AUX_STATES],
 }
 
 impl Default for RigidBodyState {
@@ -208,6 +217,7 @@ impl Default for RigidBodyState {
             velocity_body: DVec3::ZERO,
             angular_velocity_body: DVec3::ZERO,
             rotor_speed: 0.0,
+            aux: [0.0; AUX_STATES],
         }
     }
 }
@@ -220,6 +230,7 @@ struct StateDerivative {
     velocity: DVec3,
     angular_velocity: DVec3,
     rotor_speed: f64,
+    aux: [f64; AUX_STATES],
 }
 
 impl RigidBodyState {
@@ -290,6 +301,7 @@ impl RigidBodyState {
             velocity: force / mass.mass - w.cross(v),
             angular_velocity: mass.inertia_inv * (moment - w.cross(momentum)),
             rotor_speed: rotor_speed_dot,
+            aux: loads.aux_rates,
         }
     }
 
@@ -301,6 +313,7 @@ impl RigidBodyState {
             velocity_body: self.velocity_body + d.velocity * h,
             angular_velocity_body: self.angular_velocity_body + d.angular_velocity * h,
             rotor_speed: self.rotor_speed + d.rotor_speed * h,
+            aux: std::array::from_fn(|i| self.aux[i] + d.aux[i] * h),
         }
     }
 }
@@ -344,6 +357,9 @@ pub fn step_rk4(
                 k3.rotor_speed,
                 k4.rotor_speed,
             ),
+        aux: std::array::from_fn(|i| {
+            state.aux[i] + combine(k1.aux[i], k2.aux[i], k3.aux[i], k4.aux[i])
+        }),
     };
     next.normalized()
 }

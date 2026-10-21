@@ -6,6 +6,7 @@
 //! Integration: fixed-step RK4 (ADR 0005).
 
 pub mod aero;
+pub mod aircraft;
 pub mod atmosphere;
 pub mod constants;
 pub mod environment;

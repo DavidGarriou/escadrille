@@ -59,6 +59,14 @@ Traînées parasites : chaque élément (mât, câble, hauban, radiateur, train,
 
 Effet de sol : réduction de la traînée induite en fonction de h / envergure (formule de Wieselsberger ou de McCormick).
 
+## Assemblage de l'avion
+
+Implémentation : `crates/fdm/src/aircraft.rs` (`Aircraft::evaluate`, `Aircraft::step`).
+
+- Ordre de calcul pour un état : données de l'air (vent, densité) ; hélice (traction, couple, souffle) ; moteur ; surfaces portantes (`LiftingSystem`, souffle partout, déflexion retardée sur l'empennage) ; traînées parasites (dans le souffle) ; somme.
+- **Déflexion de l'aile sur l'empennage** : ε = `factor` × C_L des ailes (elle s'effondre avec la portance au décrochage), avec un retard l_t / V modélisé par un premier ordre, dε/dt = (factor × C_L − ε) V / l_t : état auxiliaire `AUX_DOWNWASH` intégré par le RK4 avec le corps (`RigidBodyState::aux`). D'où l'amortissement classique M_α̇. La vitesse de déflexion ε V est appliquée aux bandes de l'empennage, à l'opposé de la direction de portance du plan de symétrie.
+- Commandes du pilote dans [−1, 1] (gaz dans [0, 1]), converties en braquages par les débattements de l'avion (symétriques pour l'instant).
+
 ## Hélice
 
 Implémentation : `crates/fdm/src/propulsion/propeller.rs`.
@@ -67,7 +75,7 @@ Implémentation : `crates/fdm/src/propulsion/propeller.rs`.
 - Tables C_T(J), C_P(J) sourcées ou calculées hors ligne par la théorie de l'élément de pale (BEMT, dans `fdm_lab`) pour les hélices en bois à pas fixe. Le tableau commence à J = 0 (point fixe), mesuré ou calculé.
 - **Quatre quadrants** : C_T et C_P divergent quand n → 0 (hélice arrêtée, glissade sur la queue). Partout, l'hélice est décrite comme les hélices marines de la série B de Wageningen : angle d'avance β = atan2(V_a, 0,7 π n D), vitesse de référence V_r² = V_a² + (0,7 π n D)², T = C_T* ½ ρ V_r² (π/4) D², Q = C_Q* ½ ρ V_r² (π/4) D³. Dans le tableau, C_T* = 8 C_T / (π (J² + (0,7π)²)) et C_Q* = 8 C_Q / (π (J² + (0,7π)²)), avec C_Q = C_P / 2π. Au-delà, interpolation linéaire en β vers trois points d'appui estimés (E:) : hélice arrêtée, écoulement venant de l'avant (β = 90°) ou de l'arrière (β = −90°), rotation inverse à l'arrêt (β = ±180°). Leurs signes sont contrôlés au chargement.
 - **Vitesse de rotation** : l'hélice voit la vitesse **absolue** du rotor (les pales tournent aussi avec la cellule) ; le moteur, la vitesse **relative** à la cellule.
-- **Effet P** (modèle simple de JSBSim) : la ligne de poussée se décale de `p_factor` × sin(angle d'incidence de l'hélice), du côté où les pales avancent dans l'écoulement transversal (E:). Hélice à droite (horaire vue du poste) cabrée : lacet à gauche.
+- **Effet P** (d'après le modèle de JSBSim) : la ligne de poussée se décale de `p_factor` × sin(angle d'incidence de l'hélice) × cos β, du côté où les pales avancent dans l'écoulement transversal (E:). Le facteur cos β annule l'effet hélice arrêtée et l'inverse en rotation inverse, puisque l'asymétrie vient de la rotation. Hélice à droite (horaire vue du poste) cabrée : lacet à gauche.
 - **Souffle d'hélice** (théorie de Froude), fourni comme écoulement local (`local_flow`) des surfaces et des traînées : vitesse induite au disque v_i = ½ (√(V² + 2T / (ρ A)) − V), v(x) = v_i (1 + x / √(x² + R²)) à la distance x derrière le disque (2 v_i loin en aval), tube contracté à débit constant, bord adouci sur ±10 % du rayon (E:). Pas de souffle en moulinet (T ≤ 0). Limites (E:) : souffle axial seulement (pas de rotation), rectiligne le long de l'axe de traction.
 - Non modélisé pour l'instant : force normale de l'hélice (Ribner, NACA Report 819, 1945), légèrement déstabilisante en tangage et en lacet.
 

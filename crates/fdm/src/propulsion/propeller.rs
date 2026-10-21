@@ -18,8 +18,10 @@
 //! from behind (β = −90°), and propeller turning backwards in still air (β = ±180°).
 //!
 //! P-factor: at an inflow angle, the blade moving with the cross flow works harder and
-//! the thrust line shifts towards it (the simple model of JSBSim's `p_factor`): the shift
-//! is `p_factor` × sine of the inflow angle (E:).
+//! the thrust line shifts towards it (after JSBSim's `p_factor`): the shift is
+//! `p_factor` × sine of the inflow angle × cos β (E:). The cos β factor, the share of
+//! the blade speed in the reference speed, makes the shift vanish when the propeller
+//! stops and reverse when it turns backwards, since the asymmetry comes from rotation.
 //!
 //! Known limits (E:): no propeller normal force (Ribner, NACA Report 819, 1945), which
 //! slightly destabilises in pitch and yaw; the slipstream is axial only (no swirl) and
@@ -280,9 +282,16 @@ impl Propeller {
         let torque = c.cq * force_scale * g.diameter;
 
         let speed = v.length();
+        let reference_speed = (axial * axial + blade * blade).sqrt();
         let offset = if speed > MIN_INFLOW_SPEED {
             let sense = if g.right_handed { 1.0 } else { -1.0 };
-            cross_flow.cross(axis) * (sense * g.p_factor / speed)
+            // cos β; zero when neither the blades nor the axial flow move.
+            let rotation = if reference_speed > 0.0 {
+                blade / reference_speed
+            } else {
+                0.0
+            };
+            cross_flow.cross(axis) * (sense * g.p_factor * rotation / speed)
         } else {
             DVec3::ZERO
         };

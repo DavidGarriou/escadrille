@@ -188,9 +188,18 @@ fn p_factor_yaws_a_right_handed_tractor_to_the_left_at_high_incidence() {
     assert!(r.thrust > 0.0);
     assert!(r.wrench.moment.z < 0.0, "{r:?}");
     assert!((l.wrench.moment + r.wrench.moment).length() < 1e-9, "{l:?}");
-    // Shift = p_factor × sin(inflow angle).
-    let expected = 0.3 * 6.0 / air.length() * r.thrust;
+    // Shift = p_factor × sin(inflow angle) × cos β.
+    let blade = 0.7 * PI * 25.0 * 2.5;
+    let cos_beta = blade / (30.0f64 * 30.0 + blade * blade).sqrt();
+    let expected = 0.3 * 6.0 / air.length() * cos_beta * r.thrust;
     assert!(close(-r.wrench.moment.z, expected, 1e-12));
+
+    // A stopped propeller has no P-factor; turning backwards reverses it.
+    let stopped = right.loads(air, DVec3::ZERO, 0.0, RHO);
+    assert!(stopped.wrench.moment.length() < 1e-12, "{stopped:?}");
+    let backwards = right.loads(air, DVec3::ZERO, -omega, RHO);
+    let shift = |w: &PropellerLoads| -w.wrench.moment.z / w.thrust;
+    assert!(shift(&backwards) * shift(&r) < 0.0, "{backwards:?}");
 
     // Sideslip to the right (air from the right): the top blade works harder, the thrust
     // rises above the axis and pitches the nose down.
