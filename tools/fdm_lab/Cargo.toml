@@ -10,7 +10,10 @@ publish.workspace = true
 
 [dependencies]
 escadrille_fdm.workspace = true
+escadrille_data.workspace = true
 clap.workspace = true
+glam.workspace = true
+nalgebra.workspace = true
 
 [lints]
 workspace = true

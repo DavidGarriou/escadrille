@@ -38,6 +38,7 @@ pub(crate) fn geometry(right_handed: bool, p_factor: f64) -> PropellerGeometry {
         thrust_axis: DVec3::X,
         right_handed,
         p_factor,
+        normal_force: 0.0,
     }
 }
 
@@ -188,11 +189,15 @@ fn p_factor_yaws_a_right_handed_tractor_to_the_left_at_high_incidence() {
     assert!(r.thrust > 0.0);
     assert!(r.wrench.moment.z < 0.0, "{r:?}");
     assert!((l.wrench.moment + r.wrench.moment).length() < 1e-9, "{l:?}");
-    // Shift = p_factor × sin(inflow angle) × cos β.
+    // Shift = p_factor × V⊥ V_blade / V_r².
     let blade = 0.7 * PI * 25.0 * 2.5;
-    let cos_beta = blade / (30.0f64 * 30.0 + blade * blade).sqrt();
-    let expected = 0.3 * 6.0 / air.length() * cos_beta * r.thrust;
+    let expected = 0.3 * 6.0 * blade / (30.0 * 30.0 + blade * blade) * r.thrust;
     assert!(close(-r.wrench.moment.z, expected, 1e-12));
+
+    // It vanishes at low speed instead of saturating: crosswind of 3 m/s at rest.
+    let crosswind = right.loads(DVec3::new(0.0, 3.0, 0.0), DVec3::ZERO, omega, RHO);
+    let shift = crosswind.wrench.moment.y.abs() / crosswind.thrust;
+    assert!(shift < 0.3 * 3.0 / blade + 1e-12, "{crosswind:?}");
 
     // A stopped propeller has no P-factor; turning backwards reverses it.
     let stopped = right.loads(air, DVec3::ZERO, 0.0, RHO);
@@ -316,12 +321,30 @@ fn rejects_unphysical_propellers() {
     let mut t = table();
     t[0].ct = -0.01;
     assert_eq!(reject(t, anchors(), g), PropellerError::NoStaticThrust);
+    for flip in 0..6 {
+        let mut a = anchors();
+        let value = match flip {
+            0 => &mut a.stopped.ct,
+            1 => &mut a.stopped.cq,
+            2 => &mut a.reversed_flow.ct,
+            3 => &mut a.reversed_flow.cq,
+            4 => &mut a.reversed_rotation.ct,
+            _ => &mut a.reversed_rotation.cq,
+        };
+        *value = -*value;
+        assert_eq!(reject(table(), a, g), PropellerError::BadAnchors, "{flip}");
+    }
+    // Right signs, but a perpetual motion machine near β = 53° (aerodynamicist review).
     let mut a = anchors();
-    a.stopped.ct = 0.05;
-    assert_eq!(reject(table(), a, g), PropellerError::BadAnchors);
-    let mut a = anchors();
-    a.reversed_rotation.cq = 0.01;
-    assert_eq!(reject(table(), a, g), PropellerError::BadAnchors);
+    a.stopped = QuadrantPoint {
+        ct: -0.02,
+        cq: -0.03,
+    };
+    assert_eq!(reject(table(), a, g), PropellerError::CreatesEnergy);
+    // η > 1 inside the table.
+    let mut t = table();
+    t[8].cp = 0.01;
+    assert_eq!(reject(t, anchors(), g), PropellerError::CreatesEnergy);
     for bad in [
         PropellerGeometry { diameter: 0.0, ..g },
         PropellerGeometry {
@@ -332,7 +355,78 @@ fn rejects_unphysical_propellers() {
             p_factor: -0.1,
             ..g
         },
+        PropellerGeometry {
+            normal_force: f64::NAN,
+            ..g
+        },
     ] {
         assert_eq!(reject(table(), anchors(), bad), PropellerError::BadGeometry);
     }
+}
+
+#[test]
+fn normal_force_opposes_the_cross_flow_and_destabilises() {
+    let g = PropellerGeometry {
+        normal_force: 0.4,
+        ..geometry(true, 0.0)
+    };
+    let p = Propeller::new(table(), anchors(), g).unwrap();
+    let omega = 2.0 * PI * 25.0;
+    // Nose up: air from below. Upward in-plane force ahead of the centre of gravity:
+    // nose-up moment, the destabilising sense.
+    let up = p.loads(DVec3::new(30.0, 0.0, 6.0), DVec3::ZERO, omega, RHO);
+    let blade = 0.7 * PI * 25.0 * 2.5;
+    let v_r = (30.0f64 * 30.0 + blade * blade).sqrt();
+    let expected = 0.5 * RHO * v_r * p.disc_area() * 0.4 * 6.0;
+    assert!(close(-up.wrench.force.z, expected, 1e-12), "{up:?}");
+    assert!(up.wrench.moment.y > 0.0);
+    // A yaw rate moves the hub sideways: cross flow there too.
+    let yawing = p.loads(
+        DVec3::new(30.0, 0.0, 0.0),
+        DVec3::new(0.0, 0.0, 0.5),
+        omega,
+        RHO,
+    );
+    assert!(yawing.wrench.force.y < 0.0, "{yawing:?}");
+}
+
+#[test]
+fn energy_balance_holds_over_the_whole_circle() {
+    let p = propeller();
+    for i in 0..3_600 {
+        let beta = -PI + f64::from(i) * PI / 1_800.0;
+        let c = p.coefficients(beta);
+        assert!(
+            c.cq * beta.cos() / 0.35 - c.ct * beta.sin() >= -1e-12,
+            "β = {beta}: {c:?}"
+        );
+    }
+}
+
+#[test]
+fn slipstream_swirls_with_the_propeller() {
+    let p = propeller();
+    let w = p.loads(
+        DVec3::new(30.0, 0.0, 0.0),
+        DVec3::ZERO,
+        2.0 * PI * 25.0,
+        RHO,
+    );
+    let s = p.slipstream(&w, RHO);
+    let mass_flow = RHO * p.disc_area() * (30.0 + s.induced_speed());
+    assert!(close(s.swirl() * mass_flow, w.torque, 1e-12));
+    // Clockwise seen from the cockpit: above the axis the air goes to the right.
+    let hub = p.geometry().hub;
+    let far = 1e4;
+    let above = s.local_flow(hub + DVec3::new(-far, 0.0, -0.8));
+    assert!(above.y > 0.0 && above.z.abs() < 1e-12, "{above:?}");
+    assert!(close(above.y, s.swirl() / 0.8, 1e-6));
+    // Half of it at the disc, continuous across the core, nothing on the axis.
+    let at_disc = s.local_flow(hub + DVec3::new(0.0, 0.0, -0.8));
+    assert!(close(at_disc.y, 0.5 * s.swirl() / 0.8, 1e-12));
+    let core = 0.25 * s.tube_radius(far);
+    let inside = s.local_flow(hub + DVec3::new(-far, 0.0, -(core - 1e-9)));
+    let outside = s.local_flow(hub + DVec3::new(-far, 0.0, -(core + 1e-9)));
+    assert!((inside.y - outside.y).abs() < 1e-6 * outside.y);
+    assert_eq!(s.local_flow(hub - DVec3::X * 3.0).y, 0.0);
 }

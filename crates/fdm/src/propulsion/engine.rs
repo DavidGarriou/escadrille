@@ -1,25 +1,32 @@
 //! Inline piston engine with a fixed crankcase, naturally aspirated (skill
 //! `simulation-vol`, `modele-aero.md`, section « Moteurs »).
 //!
-//! Brake power P_b = (1 + k) P₀(ω) σ θ − k P₀(ω), where P₀(ω) is the sea-level,
-//! full-throttle brake power curve, σ the density ratio, θ the effective throttle and
-//! k the friction fraction (friction power at full power, as a fraction of brake power).
-//! Indicated power scales with the charge density and the throttle, friction does not.
-//! At full throttle this is the Gagg-Farrar law, P_b / P₀ = σ − k (1 − σ), with
-//! k = 1/7.55 in its usual form; the research sheet of each engine gives k (for the
-//! Hispano-Suiza 8A, `docs/recherche/hispano-suiza-8a.md`).
+//! Two sea-level curves against the shaft speed ω: full-throttle brake power P₀(ω) and
+//! friction power P_f(ω) (friction and pumping, measured by motoring the engine). The
+//! indicated power at full throttle, P₀ + P_f, scales with the density ratio σ; friction
+//! does not. At full throttle, P_b = σ (P₀ + P_f) − P_f: with P_f = k P₀ this is the
+//! Gagg-Farrar law P_b / P₀ = σ − k (1 − σ), k = 1/7.55 in its usual form; the research
+//! sheet of each engine gives its friction (Hispano-Suiza 8A: measured, NACA Report 46,
+//! `docs/recherche/hispano-suiza-8a.md`).
 //!
-//! Throttle: θ = idle + (1 − idle) × lever (E:, linear). Outside the measured curve the
-//! torque P₀ / ω is held constant (E:). Below the stall speed the engine stops firing
-//! (it restarts when windmilled fast enough); friction then fades linearly to zero at
-//! rest, which avoids a torque jump.
+//! Throttle: with the throttle closed, the carburettor limits the air flow, so the
+//! indicated power is about constant and the torque falls as 1/ω, which gives a stable
+//! idle and engine braking in a dive (aerodynamicist review of 2026-10-21). Indicated
+//! power P_i = σ min(P₀(ω) + P_f(ω), θ P_i,max), with θ = idle + (1 − idle) × lever
+//! (E:, linear) and P_i,max the largest full-throttle indicated power of the curves.
+//!
+//! Outside the measured curves (E:), the torque is held constant below the first point and
+//! the power above the last one, so that full throttle stays the largest power. Below the stall
+//! speed the engine stops firing (it restarts when windmilled fast enough), with a C¹
+//! ramp up to twice the stall speed; friction fades linearly to zero at rest, which
+//! avoids a torque jump.
 
-/// One point of the sea-level, full-throttle brake power curve.
+/// One point of a sea-level power curve.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct EnginePoint {
     /// Shaft speed relative to the crankcase, rad/s.
     pub speed: f64,
-    /// Brake power, W.
+    /// Power, W.
     pub power: f64,
 }
 
@@ -30,7 +37,8 @@ pub enum EngineError {
     NonFinite,
     NotStrictlyIncreasing,
     NonPositive,
-    BadFrictionFraction,
+    /// Friction curve: fewer than two points, not increasing in speed, or negative.
+    BadFriction,
     BadIdleThrottle,
     /// The stall speed must be positive and the engine fully firing (twice the stall
     /// speed) before the start of the curve.
@@ -50,25 +58,41 @@ pub struct EngineTorques {
 #[derive(Debug, Clone, PartialEq)]
 pub struct InlineEngine {
     curve: Vec<EnginePoint>,
-    friction_fraction: f64,
+    friction: Vec<EnginePoint>,
     idle_throttle: f64,
     stall_speed: f64,
+    /// Largest full-throttle indicated power at sea level, W.
+    max_indicated: f64,
+}
+
+/// Torque P(ω) / ω of a power curve: linear in power between points, constant torque
+/// below the first point, constant power above the last one.
+fn torque_from(points: &[EnginePoint], speed: f64) -> f64 {
+    let last = points.len() - 1;
+    let s = speed.clamp(points[0].speed, points[last].speed);
+    let i = points.partition_point(|p| p.speed <= s).clamp(1, last);
+    let (a, b) = (points[i - 1], points[i]);
+    let t = (s - a.speed) / (b.speed - a.speed);
+    let power = a.power + t * (b.power - a.power);
+    if speed > points[last].speed {
+        power / speed
+    } else {
+        power / s
+    }
 }
 
 impl InlineEngine {
     pub fn new(
         curve: Vec<EnginePoint>,
-        friction_fraction: f64,
+        friction: Vec<EnginePoint>,
         idle_throttle: f64,
         stall_speed: f64,
     ) -> Result<Self, EngineError> {
+        let finite = |p: &EnginePoint| p.speed.is_finite() && p.power.is_finite();
         if curve.len() < 2 {
             return Err(EngineError::TooFewPoints);
         }
-        if curve
-            .iter()
-            .any(|p| !(p.speed.is_finite() && p.power.is_finite()))
-        {
+        if !curve.iter().all(finite) {
             return Err(EngineError::NonFinite);
         }
         if curve.windows(2).any(|w| w[1].speed <= w[0].speed) {
@@ -77,8 +101,12 @@ impl InlineEngine {
         if curve.iter().any(|p| p.speed <= 0.0 || p.power <= 0.0) {
             return Err(EngineError::NonPositive);
         }
-        if !(friction_fraction.is_finite() && friction_fraction >= 0.0) {
-            return Err(EngineError::BadFrictionFraction);
+        if friction.len() < 2
+            || !friction.iter().all(finite)
+            || friction.windows(2).any(|w| w[1].speed <= w[0].speed)
+            || friction.iter().any(|p| p.speed <= 0.0 || p.power < 0.0)
+        {
+            return Err(EngineError::BadFriction);
         }
         if !(0.0..1.0).contains(&idle_throttle) {
             return Err(EngineError::BadIdleThrottle);
@@ -86,40 +114,37 @@ impl InlineEngine {
         if !(stall_speed > 0.0 && 2.0 * stall_speed <= curve[0].speed) {
             return Err(EngineError::BadStallSpeed);
         }
+        let max_indicated = curve
+            .iter()
+            .map(|p| p.power + torque_from(&friction, p.speed) * p.speed)
+            .fold(0.0, f64::max);
         Ok(Self {
             curve,
-            friction_fraction,
+            friction,
             idle_throttle,
             stall_speed,
+            max_indicated,
         })
-    }
-
-    /// Sea-level, full-throttle brake torque P₀(ω) / ω, held constant outside the curve.
-    fn reference_torque(&self, speed: f64) -> f64 {
-        let last = self.curve.len() - 1;
-        let s = speed.clamp(self.curve[0].speed, self.curve[last].speed);
-        let i = self.curve.partition_point(|p| p.speed <= s).clamp(1, last);
-        let (a, b) = (self.curve[i - 1], self.curve[i]);
-        let t = (s - a.speed) / (b.speed - a.speed);
-        (a.power + t * (b.power - a.power)) / s
-    }
-
-    /// Full-throttle brake power at density ratio σ, relative to sea level.
-    pub fn altitude_factor(&self, density_ratio: f64) -> f64 {
-        let k = self.friction_fraction;
-        (1.0 + k) * density_ratio - k
     }
 
     /// Torques at a shaft speed relative to the crankcase (rad/s), throttle lever
     /// position (0 to 1) and density ratio σ = ρ / ρ₀.
     pub fn torques(&self, shaft_speed: f64, throttle: f64, density_ratio: f64) -> EngineTorques {
-        let k = self.friction_fraction;
-        let reference = self.reference_torque(shaft_speed.abs());
+        let speed = shaft_speed.abs();
+        let brake = torque_from(&self.curve, speed);
+        let friction = torque_from(&self.friction, speed);
         let theta = self.idle_throttle + (1.0 - self.idle_throttle) * throttle.clamp(0.0, 1.0);
         let firing = smoothstep(shaft_speed / self.stall_speed - 1.0);
+        let combustion = if firing > 0.0 {
+            let full = (brake + friction) * speed;
+            let indicated = density_ratio.max(0.0) * full.min(theta * self.max_indicated);
+            indicated / speed * firing
+        } else {
+            0.0
+        };
         EngineTorques {
-            combustion: (1.0 + k) * reference * density_ratio.max(0.0) * theta * firing,
-            friction: k * reference * (shaft_speed / self.stall_speed).clamp(-1.0, 1.0),
+            combustion,
+            friction: friction * (shaft_speed / self.stall_speed).clamp(-1.0, 1.0),
         }
     }
 
@@ -140,12 +165,23 @@ fn smoothstep(x: f64) -> f64 {
 pub(crate) mod tests {
     use super::*;
 
-    /// Synthetic engine (not historical data): about 110 kW near 2 100 rpm.
+    /// Synthetic engine (not historical data): about 110 kW near 2 100 rpm, friction a
+    /// tenth of the brake power.
     pub(crate) fn engine() -> InlineEngine {
         let curve = [(120.0, 75e3), (160.0, 95e3), (200.0, 108e3), (230.0, 112e3)]
             .map(|(speed, power)| EnginePoint { speed, power })
             .to_vec();
-        InlineEngine::new(curve, 0.1, 0.05, 30.0).unwrap()
+        InlineEngine::new(curve.clone(), scaled(&curve, 0.1), 0.08, 20.0).unwrap()
+    }
+
+    pub(crate) fn scaled(curve: &[EnginePoint], k: f64) -> Vec<EnginePoint> {
+        curve
+            .iter()
+            .map(|p| EnginePoint {
+                speed: p.speed,
+                power: k * p.power,
+            })
+            .collect()
     }
 
     fn close(a: f64, b: f64, rel: f64) -> bool {
@@ -161,17 +197,13 @@ pub(crate) mod tests {
                 "{speed}"
             );
         }
-        // Constant torque outside the curve.
+        // Constant torque below the curve, constant power above it.
         assert!(close(
             e.brake_power(100.0, 1.0, 1.0),
             75e3 * 100.0 / 120.0,
             1e-12
         ));
-        assert!(close(
-            e.brake_power(260.0, 1.0, 1.0),
-            112e3 * 260.0 / 230.0,
-            1e-12
-        ));
+        assert!(close(e.brake_power(260.0, 1.0, 1.0), 112e3, 1e-12));
     }
 
     #[test]
@@ -186,11 +218,10 @@ pub(crate) mod tests {
                 power: 110e3,
             },
         ];
-        let e = InlineEngine::new(curve, 1.0 / 7.55, 0.1, 30.0).unwrap();
+        let e = InlineEngine::new(curve.clone(), scaled(&curve, 1.0 / 7.55), 0.1, 30.0).unwrap();
         for sigma in [1.0, 0.9, 0.7, 0.5, 0.3] {
             let ratio = e.brake_power(200.0, 1.0, sigma) / e.brake_power(200.0, 1.0, 1.0);
             assert!(close(ratio, sigma - (1.0 - sigma) / 7.55, 1e-12), "{sigma}");
-            assert!(close(ratio, e.altitude_factor(sigma), 1e-12));
         }
     }
 
@@ -199,9 +230,19 @@ pub(crate) mod tests {
         let e = engine();
         let full = e.torques(200.0, 1.0, 1.0);
         let half = e.torques(200.0, 0.5, 1.0);
-        assert!(close(half.combustion / full.combustion, 0.525, 1e-12));
+        // θ = 0.08 + 0.92 × 0.5 of the largest indicated power, 1.1 × 112 kW.
+        let throttled = 0.54 * 1.1 * 112e3 / 200.0;
+        assert!(close(half.combustion, throttled, 1e-12));
+        assert!(close(full.combustion, 1.1 * 108e3 / 200.0, 1e-12));
         assert_eq!(half.friction, full.friction);
-        // Idle: (1 + k) θ_idle = 1.1 × 0.05 < k = 0.1, the engine brakes the shaft.
+        // Throttled, the indicated power is constant: the torque falls as 1/ω.
+        let slow = e.torques(150.0, 0.5, 1.0);
+        assert!(close(
+            slow.combustion * 150.0,
+            half.combustion * 200.0,
+            1e-12
+        ));
+        // Idle: 0.08 × 123.2 kW indicated, less than the 10.8 kW of friction at 200 rad/s.
         assert!(e.brake_power(200.0, 0.0, 1.0) < 0.0);
         assert!(e.brake_power(200.0, -1.0, 1.0) == e.brake_power(200.0, 0.0, 1.0));
     }
@@ -209,10 +250,10 @@ pub(crate) mod tests {
     #[test]
     fn engine_stops_firing_below_its_stall_speed() {
         let e = engine();
-        for speed in [-50.0, -1.0, 0.0, 15.0, 30.0] {
+        for speed in [-50.0, -1.0, 0.0, 10.0, 20.0] {
             assert_eq!(e.torques(speed, 1.0, 1.0).combustion, 0.0, "{speed}");
         }
-        assert!(e.torques(45.0, 1.0, 1.0).combustion > 0.0);
+        assert!(e.torques(30.0, 1.0, 1.0).combustion > 0.0);
         assert_eq!(e.torques(0.0, 1.0, 1.0).friction, 0.0);
         // Friction always opposes the rotation.
         assert!(e.torques(10.0, 1.0, 1.0).friction > 0.0);
@@ -228,7 +269,8 @@ pub(crate) mod tests {
         let mut previous = e.torques(-100.0, 1.0, 1.0);
         for i in 1..=40_000 {
             let t = e.torques(-100.0 + f64::from(i) * 0.01, 1.0, 1.0);
-            assert!((t.combustion - previous.combustion).abs() < 0.5);
+            // Steepest at the firing ramp: 1.5 / ω_stall × 1.1 × 625 N·m per rad/s.
+            assert!((t.combustion - previous.combustion).abs() < 0.6);
             assert!((t.friction - previous.friction).abs() < 0.5);
             previous = t;
         }
@@ -238,7 +280,10 @@ pub(crate) mod tests {
     fn rejects_unphysical_engines() {
         let point = |speed, power| EnginePoint { speed, power };
         let good = vec![point(120.0, 75e3), point(200.0, 108e3)];
-        let new = |c: Vec<EnginePoint>, k, idle, stall| InlineEngine::new(c, k, idle, stall);
+        let new = |c: Vec<EnginePoint>, k, idle, stall| {
+            let friction = scaled(&c, k);
+            InlineEngine::new(c, friction, idle, stall)
+        };
         assert_eq!(
             new(good[..1].to_vec(), 0.1, 0.1, 30.0),
             Err(EngineError::TooFewPoints)
@@ -262,7 +307,11 @@ pub(crate) mod tests {
         );
         assert_eq!(
             new(good.clone(), -0.1, 0.1, 30.0),
-            Err(EngineError::BadFrictionFraction)
+            Err(EngineError::BadFriction)
+        );
+        assert_eq!(
+            InlineEngine::new(good.clone(), good[..1].to_vec(), 0.1, 30.0),
+            Err(EngineError::BadFriction)
         );
         assert_eq!(
             new(good.clone(), 0.1, 1.0, 30.0),

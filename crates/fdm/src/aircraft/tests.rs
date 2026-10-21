@@ -5,6 +5,7 @@ use std::f64::consts::PI;
 use glam::{DQuat, DVec3, EulerRot};
 
 use super::*;
+use crate::aero::body::SlenderBody;
 use crate::aero::polar::{Polar, PolarPoint, viterna_cd_max};
 use crate::aero::surface::{
     ControlChannel, InducedModel, LiftingSurface, Strip, StripControl, flap_effectiveness,
@@ -150,7 +151,8 @@ fn biplane() -> Aircraft {
             hub: DVec3::new(1.8, 0.0, 0.0),
             thrust_axis: DVec3::X,
             right_handed: true,
-            p_factor: 0.2,
+            p_factor: 0.7,
+            normal_force: 0.3,
         },
     )
     .unwrap();
@@ -173,6 +175,15 @@ fn biplane() -> Aircraft {
             drag("struts_left", 0.07, DVec3::new(0.1, -2.5, -0.35)),
             drag("undercarriage", 0.1, DVec3::new(0.6, 0.0, 1.0)),
         ],
+        vec![SlenderBody {
+            name: "fuselage".into(),
+            position: DVec3::new(-0.8, 0.0, 0.0),
+            volume: 3.0,
+            apparent_mass: 0.9,
+            plan_area: 4.0,
+            side_area: 5.0,
+            crossflow_drag: 0.8,
+        }],
         Some(Propulsion {
             propeller,
             engine: engine(),
@@ -361,6 +372,7 @@ fn rejects_inconsistent_aircraft() {
             mass,
             a.lifting.clone(),
             vec![],
+            vec![],
             a.propulsion.clone(),
             downwash,
             travel,
@@ -440,4 +452,157 @@ fn flight_stays_finite_and_deterministic() {
         );
     }
     assert_eq!(run(), (s, t));
+}
+
+// --- Aerodynamicist review of 2026-10-21: what the assembly must not lose ---------------
+
+const FULL: PilotControls = PilotControls {
+    roll: 0.0,
+    pitch: 0.0,
+    yaw: 0.0,
+    throttle: 1.0,
+};
+
+#[test]
+fn total_loads_are_the_sum_of_the_components() {
+    // Engine running, sideslip and rates: every component, thrust included, must be in
+    // the total, with the slipstream and the downwash where they belong.
+    let a = biplane();
+    let mut state = flying(40.0, 0.08, 200.0);
+    state.velocity_body.y = 3.0;
+    state.angular_velocity_body = DVec3::new(0.2, -0.1, 0.15);
+    state.aux[AUX_DOWNWASH] = 0.02;
+    let d = a.evaluate(&state, &FULL, &SEA_LEVEL);
+    let (v, w, rho) = (d.air_velocity, state.angular_velocity_body, d.density);
+    let p = a.propulsion().unwrap();
+    let prop = p.propeller.loads(v, w, state.rotor_speed, rho);
+    let slip = p.propeller.slipstream(&prop, rho);
+    let blown = |r: DVec3| slip.local_flow(r);
+    let downwash = downwash_velocity(v, 0.02);
+    let lifting = a
+        .lifting
+        .loads(v, w, rho, &ControlDeflections::default(), |i, r| {
+            if i == 2 {
+                blown(r) + downwash
+            } else {
+                blown(r)
+            }
+        });
+    let mut expected = lifting.wrench + prop.wrench;
+    for item in &a.drag {
+        expected += item.loads(v, w, rho, blown);
+    }
+    for body in &a.bodies {
+        expected += body.loads(v, w, rho, blown);
+    }
+    assert!(
+        (d.loads.wrench.force - expected.force).length() < 1e-9,
+        "{:?} {expected:?}",
+        d.loads
+    );
+    assert!((d.loads.wrench.moment - expected.moment).length() < 1e-9);
+    assert!(prop.thrust > 0.0);
+}
+
+#[test]
+fn propeller_sees_the_absolute_rotor_speed_and_the_engine_the_relative_one() {
+    let a = biplane();
+    let mut state = flying(40.0, 0.05, 200.0);
+    state.angular_velocity_body = DVec3::new(1.5, 0.0, 0.0);
+    let d = a.evaluate(&state, &FULL, &SEA_LEVEL);
+    assert!((d.shaft_speed - (200.0 - 1.5)).abs() < 1e-12);
+    let p = a.propulsion().unwrap();
+    let absolute = p.propeller.loads(
+        d.air_velocity,
+        state.angular_velocity_body,
+        200.0,
+        d.density,
+    );
+    assert_eq!(d.propeller.unwrap(), absolute);
+    assert_eq!(
+        d.engine,
+        p.engine
+            .torques(200.0 - 1.5, 1.0, d.density / crate::constants::RHO0)
+    );
+}
+
+#[test]
+fn closing_the_throttle_slows_the_rotor_and_altitude_reduces_the_power() {
+    let a = biplane();
+    let state = RigidBodyState {
+        rotor_speed: 220.0,
+        ..RigidBodyState::default()
+    };
+    let idle = a.evaluate(&state, &GLIDE, &SEA_LEVEL).loads.rotor;
+    assert!(
+        idle.engine - idle.propeller - idle.friction < 0.0,
+        "{idle:?}"
+    );
+
+    let low = a.evaluate(&flying(45.0, 0.05, 200.0), &FULL, &SEA_LEVEL);
+    let mut high_state = flying(45.0, 0.05, 200.0);
+    high_state.position_ned.z = -3_000.0;
+    let high = a.evaluate(&high_state, &FULL, &SEA_LEVEL);
+    let sigma = high.density / low.density;
+    let low_altitude_density = crate::atmosphere::isa(1_000.0).density;
+    assert!((low.density - low_altitude_density).abs() < 1e-12);
+    // Full throttle: the indicated torque follows the density.
+    let ratio = high.engine.combustion / low.engine.combustion;
+    assert!((ratio - sigma).abs() < 1e-12, "{ratio} vs {sigma}");
+}
+
+#[test]
+fn slipstream_blows_on_the_drag_items_and_the_wings() {
+    // With the engine running, the loads differ from the same state computed without
+    // slipstream, and a drag item inside the tube drags more (aerodynamicist review:
+    // removing the slipstream from either went unnoticed).
+    let a = biplane();
+    let state = flying(30.0, 0.08, 220.0);
+    let d = a.evaluate(&state, &FULL, &SEA_LEVEL);
+    let (v, w, rho) = (d.air_velocity, state.angular_velocity_body, d.density);
+    let p = a.propulsion().unwrap();
+    let prop = p.propeller.loads(v, w, state.rotor_speed, rho);
+    let slip = p.propeller.slipstream(&prop, rho);
+    let fuselage = &a.drag[0];
+    let blown = fuselage
+        .loads(v, w, rho, |r| slip.local_flow(r))
+        .force
+        .length();
+    let free = fuselage.loads(v, w, rho, |_| DVec3::ZERO).force.length();
+    assert!(blown > 1.2 * free, "{blown} vs {free}");
+    let unblown = a
+        .lifting
+        .loads(v, w, rho, &ControlDeflections::default(), |_, _| {
+            DVec3::ZERO
+        })
+        .wrench;
+    let blown_lifting = a
+        .lifting
+        .loads(v, w, rho, &ControlDeflections::default(), |_, r| {
+            slip.local_flow(r)
+        })
+        .wrench;
+    assert!((blown_lifting.force - unblown.force).length() > 100.0);
+}
+
+#[test]
+fn downwash_stays_in_the_plane_of_symmetry_and_fades_backwards() {
+    for v in [
+        DVec3::new(40.0, 0.0, 3.0),
+        DVec3::new(40.0, 8.0, 3.0),
+        DVec3::new(30.0, -6.0, -2.0),
+    ] {
+        let d = downwash_velocity(v, 0.05);
+        assert_eq!(d.y, 0.0);
+        let symmetric = DVec3::new(v.x, 0.0, v.z);
+        let forward = v.x / v.length();
+        assert!((d.length() - 0.05 * symmetric.length() * forward).abs() < 1e-12);
+        assert!(d.dot(symmetric).abs() < 1e-9, "perpendicular to the flow");
+        assert!(d.z > 0.0, "downwards for positive downwash");
+    }
+    assert_eq!(
+        downwash_velocity(DVec3::new(-30.0, 0.0, 5.0), 0.05),
+        DVec3::ZERO
+    );
+    assert_eq!(downwash_velocity(DVec3::ZERO, 0.05), DVec3::ZERO);
 }

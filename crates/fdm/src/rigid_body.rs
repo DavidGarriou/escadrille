@@ -222,15 +222,19 @@ impl Default for RigidBodyState {
     }
 }
 
-/// Time derivative of a [`RigidBodyState`].
-#[derive(Debug, Clone, Copy)]
-struct StateDerivative {
-    position: DVec3,
-    attitude: DQuat,
-    velocity: DVec3,
-    angular_velocity: DVec3,
-    rotor_speed: f64,
-    aux: [f64; AUX_STATES],
+/// Time derivative of a [`RigidBodyState`] (used by the integrator, the trim and the
+/// linearisation of `fdm_lab`).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct StateDerivative {
+    /// NED frame, m/s.
+    pub position: DVec3,
+    pub attitude: DQuat,
+    /// Body axes, m/s².
+    pub velocity: DVec3,
+    /// Body axes, rad/s².
+    pub angular_velocity: DVec3,
+    pub rotor_speed: f64,
+    pub aux: [f64; AUX_STATES],
 }
 
 impl RigidBodyState {
@@ -275,7 +279,8 @@ impl RigidBodyState {
         }
     }
 
-    fn derivative(&self, mass: &MassProperties, loads: &Loads) -> StateDerivative {
+    /// Time derivative of the state under `loads` (gravity added here).
+    pub fn derivative(&self, mass: &MassProperties, loads: &Loads) -> StateDerivative {
         let v = self.velocity_body;
         let w = self.angular_velocity_body;
         let unit_attitude = self.attitude.normalize();

@@ -24,6 +24,8 @@ serde = { version = "1.0.229", features = ["derive"] }
 ron = "0.12.2"
 clap = { version = "4.6.7", features = ["derive"] }
 thiserror = "2.0.21"
+# Tools only (CLAUDE.md, M1 plan): eigenvalues of the linearised flight model.
+nalgebra = { version = "0.35.0", default-features = false, features = ["std"] }
 
 [workspace.lints.rust]
 unsafe_code = "forbid"

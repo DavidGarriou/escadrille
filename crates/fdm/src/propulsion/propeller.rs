@@ -17,15 +17,26 @@
 //! `fdm_lab` computes them): stopped propeller with the flow from ahead (β = 90°) or
 //! from behind (β = −90°), and propeller turning backwards in still air (β = ±180°).
 //!
-//! P-factor: at an inflow angle, the blade moving with the cross flow works harder and
-//! the thrust line shifts towards it (after JSBSim's `p_factor`): the shift is
-//! `p_factor` × sine of the inflow angle × cos β (E:). The cos β factor, the share of
-//! the blade speed in the reference speed, makes the shift vanish when the propeller
-//! stops and reverse when it turns backwards, since the asymmetry comes from rotation.
+//! Energy: anchors and table must never let the propeller give more power than it
+//! receives, Q Ω − T V_a ≥ 0, i.e. C_Q* cos β / 0.35 − C_T* sin β ≥ 0 over the whole
+//! circle (checked by [`Propeller::new`]; inside the table it is η ≤ 1).
 //!
-//! Known limits (E:): no propeller normal force (Ribner, NACA Report 819, 1945), which
-//! slightly destabilises in pitch and yaw; the slipstream is axial only (no swirl) and
-//! runs straight back along the thrust axis.
+//! Cross flow V⊥ (inflow angle, yaw rate at the hub):
+//! - **P-factor**: the blade moving with the cross flow works harder and the thrust line
+//!   shifts towards it (after JSBSim's `p_factor`). The asymmetry is proportional to
+//!   V⊥ / (blade speed), so the shift is `p_factor` × V⊥ V_blade / V_r² (E:): it vanishes
+//!   at rest and when the propeller stops, and reverses when it turns backwards
+//!   (aerodynamicist review of 2026-10-21: a shift growing like the sine of the inflow
+//!   angle saturated at low speed).
+//! - **Normal force** (Ribner, *Propellers in yaw*, NACA Report 819, 1945): an in-plane
+//!   force opposing the cross flow, ½ ρ V_r A c_n V⊥, with `normal_force` = c_n (C: from
+//!   a blade-element calculation, or E:). Ahead of the centre of gravity it destabilises
+//!   in pitch and yaw.
+//!
+//! Slipstream (momentum theory): axial speed and swirl, the swirl from the torque,
+//! r v_θ = Q / ṁ far downstream and half that at the disc, with the same law along the
+//! axis as the axial speed and a solid-body core near the hub (E:). It runs straight
+//! back along the thrust axis (E:).
 
 use std::f64::consts::{FRAC_PI_2, PI};
 
@@ -41,8 +52,12 @@ const K07: f64 = 0.7 * PI;
 /// stream (E:, avoids load jumps when a strip sits on the edge).
 const SLIPSTREAM_EDGE: f64 = 0.1;
 
-/// Below this inflow speed, m/s, there is no P-factor shift.
-const MIN_INFLOW_SPEED: f64 = 1e-3;
+/// Radius of the slipstream's swirl core, as a fraction of the tube radius (E:: the hub
+/// and blade roots carry little load).
+const SWIRL_CORE: f64 = 0.25;
+
+/// Step of the energy check of the coefficients over the whole circle, rad.
+const ENERGY_CHECK_STEP: f64 = 0.1 * PI / 180.0;
 
 /// One point of the propeller table.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -85,8 +100,10 @@ pub struct PropellerGeometry {
     /// Normal rotation is right-handed about the thrust axis (clockwise seen from the
     /// cockpit of a tractor); otherwise left-handed.
     pub right_handed: bool,
-    /// Sideways shift of the thrust line per unit sine of the inflow angle, m (E:).
+    /// P-factor: shift of the thrust line per unit of V⊥ V_blade / V_r², m (E:).
     pub p_factor: f64,
+    /// Normal-force coefficient c_n: in-plane force ½ ρ V_r A c_n V⊥ (C: or E:).
+    pub normal_force: f64,
 }
 
 /// Why a propeller was rejected.
@@ -101,6 +118,8 @@ pub enum PropellerError {
     NoStaticThrust,
     /// An anchor has the wrong sign (see [`QuadrantAnchors`]).
     BadAnchors,
+    /// Somewhere on the circle, the propeller would give more power than it receives.
+    CreatesEnergy,
     BadGeometry,
 }
 
@@ -177,15 +196,28 @@ impl Propeller {
             && g.thrust_axis.is_finite()
             && (g.thrust_axis.length() - 1.0).abs() < 1e-9
             && g.p_factor.is_finite()
-            && g.p_factor >= 0.0)
+            && g.p_factor >= 0.0
+            && g.normal_force.is_finite()
+            && g.normal_force >= 0.0)
         {
             return Err(PropellerError::BadGeometry);
         }
-        Ok(Self {
+        let propeller = Self {
             geometry,
             table,
             anchors,
-        })
+        };
+        let steps = (2.0 * PI / ENERGY_CHECK_STEP).ceil() as i32;
+        let creates_energy = (0..=steps).any(|i| {
+            let beta = -PI + f64::from(i) * ENERGY_CHECK_STEP;
+            let c = propeller.coefficients(beta);
+            // (Q Ω − T V_a) / (½ ρ V_r³ A), with Ω = 2 V_r cos β / (0.7 D).
+            c.cq * beta.cos() / 0.35 - c.ct * beta.sin() < -1e-12
+        });
+        if creates_energy {
+            return Err(PropellerError::CreatesEnergy);
+        }
+        Ok(propeller)
     }
 
     pub fn geometry(&self) -> &PropellerGeometry {
@@ -281,22 +313,19 @@ impl Propeller {
         let thrust = c.ct * force_scale;
         let torque = c.cq * force_scale * g.diameter;
 
-        let speed = v.length();
-        let reference_speed = (axial * axial + blade * blade).sqrt();
-        let offset = if speed > MIN_INFLOW_SPEED {
+        let reference_sq = axial * axial + blade * blade;
+        let (offset, normal) = if reference_sq > 0.0 {
             let sense = if g.right_handed { 1.0 } else { -1.0 };
-            // cos β; zero when neither the blades nor the axial flow move.
-            let rotation = if reference_speed > 0.0 {
-                blade / reference_speed
-            } else {
-                0.0
-            };
-            cross_flow.cross(axis) * (sense * g.p_factor * rotation / speed)
+            let offset = cross_flow.cross(axis) * (sense * g.p_factor * blade / reference_sq);
+            let normal = -cross_flow
+                * (0.5 * density * reference_sq.sqrt() * self.disc_area() * g.normal_force);
+            (offset, normal)
         } else {
-            DVec3::ZERO
+            (DVec3::ZERO, DVec3::ZERO)
         };
         PropellerLoads {
-            wrench: Wrench::force_at(axis * thrust, g.hub + offset),
+            wrench: Wrench::force_at(axis * thrust, g.hub + offset)
+                + Wrench::force_at(normal, g.hub),
             thrust,
             torque,
             axial_speed: axial,
@@ -314,32 +343,50 @@ impl Propeller {
             // Windmilling (braking) states are outside simple momentum theory.
             0.0
         };
+        // Angular momentum flux: Q = ṁ r v_θ far downstream.
+        let mass_flow = density * self.disc_area() * (free_stream + induced);
+        let swirl = if induced > 0.0 {
+            loads.torque / mass_flow
+        } else {
+            0.0
+        };
         Slipstream {
             hub: self.geometry.hub,
             axis: self.geometry.thrust_axis,
+            rotation_axis: self.rotation_axis(),
             radius: 0.5 * self.geometry.diameter,
             free_stream,
             induced,
+            swirl,
         }
     }
 }
 
-/// Axial slipstream from Froude's momentum theory (`modele-aero.md`): induced speed
-/// v_i at the disc, v(x) = v_i (1 + x / √(x² + R²)) at a distance x behind it (2 v_i far
-/// downstream), in a stream tube that contracts so as to conserve the mass flow.
+/// Slipstream from Froude's momentum theory (`modele-aero.md`): induced speed v_i at the
+/// disc, v(x) = v_i (1 + x / √(x² + R²)) at a distance x behind it (2 v_i far
+/// downstream), in a stream tube that contracts so as to conserve the mass flow; swirl
+/// r v_θ = K (1 + x / √(x² + R²)) / 2, with K = Q / ṁ, turning with the propeller.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Slipstream {
     hub: DVec3,
     axis: DVec3,
+    rotation_axis: DVec3,
     radius: f64,
     free_stream: f64,
     induced: f64,
+    /// K = r v_θ far downstream, m²/s.
+    swirl: f64,
 }
 
 impl Slipstream {
     /// Induced axial speed at the disc, m/s.
     pub fn induced_speed(&self) -> f64 {
         self.induced
+    }
+
+    /// r v_θ of the swirl far downstream, m²/s (positive: turning with the propeller).
+    pub fn swirl(&self) -> f64 {
+        self.swirl
     }
 
     /// Induced axial speed at `distance` behind the disc (negative ahead of it), m/s.
@@ -368,7 +415,21 @@ impl Slipstream {
         let edge = (radial / self.tube_radius(distance) - (1.0 - SLIPSTREAM_EDGE))
             / (2.0 * SLIPSTREAM_EDGE);
         let weight = 1.0 - smoothstep(edge);
-        -self.axis * (self.axial_speed_at(distance) * weight)
+        let along_axis = self.axial_speed_at(distance) / (2.0 * self.induced);
+        // Free vortex outside the core, solid-body rotation inside.
+        let core = SWIRL_CORE * self.tube_radius(distance);
+        let circulation = self.swirl * along_axis;
+        let tangential = if radial > 0.0 {
+            let speed = if radial >= core {
+                circulation / radial
+            } else {
+                circulation * radial / (core * core)
+            };
+            self.rotation_axis.cross(d - self.axis * along) * (speed / radial)
+        } else {
+            DVec3::ZERO
+        };
+        (-self.axis * self.axial_speed_at(distance) + tangential) * weight
     }
 }
 

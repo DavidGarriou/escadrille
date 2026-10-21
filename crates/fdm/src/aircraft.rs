@@ -10,10 +10,14 @@
 //! after l_t / V. The delay is modelled as a first-order lag, the auxiliary state
 //! [`AUX_DOWNWASH`]: dε/dt = (factor × C_L − ε) V / l_t. It gives the classical
 //! M_α̇ damping. The downwash velocity ε V is applied to the tail strips, opposite to the
-//! lift direction of the plane of symmetry.
+//! lift direction of the plane of symmetry, and fades out when flying backwards.
+//!
+//! The fuselage is a slender body ([`SlenderBody`]): side force and destabilising Munk
+//! moments.
 
 use glam::DVec3;
 
+use crate::aero::body::SlenderBody;
 use crate::aero::drag::DragItem;
 use crate::aero::surface::ControlDeflections;
 use crate::aero::system::LiftingSystem;
@@ -86,6 +90,7 @@ pub struct Aircraft {
     mass: MassProperties,
     lifting: LiftingSystem,
     drag: Vec<DragItem>,
+    bodies: Vec<SlenderBody>,
     propulsion: Option<Propulsion>,
     downwash: Option<Downwash>,
     travel: ControlTravel,
@@ -113,6 +118,7 @@ impl Aircraft {
         mass: MassProperties,
         lifting: LiftingSystem,
         drag: Vec<DragItem>,
+        bodies: Vec<SlenderBody>,
         propulsion: Option<Propulsion>,
         downwash: Option<Downwash>,
         travel: ControlTravel,
@@ -151,6 +157,7 @@ impl Aircraft {
             mass,
             lifting,
             drag,
+            bodies,
             propulsion,
             downwash,
             travel,
@@ -186,6 +193,19 @@ impl Aircraft {
         controls: &PilotControls,
         env: &dyn Environment,
     ) -> Diagnostics {
+        self.evaluate_deflected(state, &self.deflections(controls), controls.throttle, env)
+    }
+
+    /// Same as [`Self::evaluate`] with the control-surface deflections given directly
+    /// (rad, not limited to the travel): for the trim solver, which must not see the
+    /// commands saturate.
+    pub fn evaluate_deflected(
+        &self,
+        state: &RigidBodyState,
+        deflections: &ControlDeflections,
+        throttle: f64,
+        env: &dyn Environment,
+    ) -> Diagnostics {
         let position = state.position_ned;
         let atmosphere = env.atmosphere(position);
         let density = atmosphere.density;
@@ -200,30 +220,19 @@ impl Aircraft {
                     .propeller
                     .loads(air_velocity, omega, state.rotor_speed, density);
                 let slipstream = p.propeller.slipstream(&loads, density);
-                let engine = p
-                    .engine
-                    .torques(shaft_speed, controls.throttle, density / RHO0);
+                let engine = p.engine.torques(shaft_speed, throttle, density / RHO0);
                 (Some(loads), Some(slipstream), engine)
             }
             None => (None, None, EngineTorques::default()),
         };
         let blown = |r: DVec3| slipstream.map_or(DVec3::ZERO, |s| s.local_flow(r));
 
-        // Downwash velocity at the tail, opposite to the lift of the plane of symmetry.
         let downwash = state.aux[AUX_DOWNWASH];
-        let symmetric = DVec3::new(air_velocity.x, 0.0, air_velocity.z);
-        let symmetric_speed = symmetric.length();
-        let downwash_velocity = if symmetric_speed > MIN_DOWNWASH_SPEED {
-            let lift_direction = DVec3::new(symmetric.z, 0.0, -symmetric.x) / symmetric_speed;
-            -lift_direction * (downwash * symmetric_speed)
-        } else {
-            DVec3::ZERO
-        };
+        let downwash_velocity = downwash_velocity(air_velocity, downwash);
         let is_tail = |i: usize| self.downwash.as_ref().is_some_and(|d| d.tail.contains(&i));
-        let deflections = self.deflections(controls);
         let lifting = self
             .lifting
-            .loads(air_velocity, omega, density, &deflections, |i, r| {
+            .loads(air_velocity, omega, density, deflections, |i, r| {
                 if is_tail(i) {
                     blown(r) + downwash_velocity
                 } else {
@@ -234,6 +243,9 @@ impl Aircraft {
         let mut wrench = lifting.wrench;
         for item in &self.drag {
             wrench += item.loads(air_velocity, omega, density, blown);
+        }
+        for body in &self.bodies {
+            wrench += body.loads(air_velocity, omega, density, blown);
         }
         if let Some(p) = &propeller {
             wrench += p.wrench;
@@ -294,6 +306,20 @@ impl Aircraft {
     ) -> RigidBodyState {
         step_rk4(state, &self.mass, dt, |s| self.loads(s, controls, env))
     }
+}
+
+/// Downwash velocity at the tail for a downwash angle ε: ε V opposite to the lift
+/// direction of the plane of symmetry, sideslip excluded, and none when flying backwards
+/// (the tail is then upstream of the wings): weighted by max(0, u / V).
+fn downwash_velocity(air_velocity: DVec3, downwash: f64) -> DVec3 {
+    let symmetric = DVec3::new(air_velocity.x, 0.0, air_velocity.z);
+    let speed = symmetric.length();
+    if speed <= MIN_DOWNWASH_SPEED {
+        return DVec3::ZERO;
+    }
+    let lift_direction = DVec3::new(symmetric.z, 0.0, -symmetric.x) / speed;
+    let forward = (air_velocity.x / air_velocity.length()).max(0.0);
+    -lift_direction * (downwash * speed * forward)
 }
 
 #[cfg(test)]

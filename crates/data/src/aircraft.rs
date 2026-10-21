@@ -12,6 +12,7 @@ use std::collections::BTreeMap;
 use std::f64::consts::PI;
 use std::path::Path;
 
+use escadrille_fdm::aero::body::SlenderBody;
 use escadrille_fdm::aero::drag::DragItem;
 use escadrille_fdm::aero::polar::viterna_cd_max;
 use escadrille_fdm::aero::surface::{
@@ -162,10 +163,33 @@ pub struct DragSpec {
     pub position_m: [f64; 3],
 }
 
+/// Fuselage as a slender body (`escadrille_fdm::aero::body`).
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct FuselageSpec {
+    /// Centroid of the projected areas.
+    pub position_m: [f64; 3],
+    pub volume_m3: f64,
+    /// k₂ − k₁ (Lamb, from the fineness ratio).
+    pub apparent_mass: f64,
+    pub plan_area: Area,
+    pub side_area: Area,
+    /// η C_dc.
+    pub crossflow_drag: f64,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct PowerPoint {
     pub speed: RotationSpeed,
     pub power: Power,
+}
+
+/// Friction and pumping power of the engine.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub enum FrictionSpec {
+    /// A fraction k of the brake power curve: the k of the altitude law σ − k (1 − σ).
+    Fraction(f64),
+    /// Measured by motoring the engine.
+    Curve(Vec<PowerPoint>),
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -173,8 +197,7 @@ pub struct InlineEngineSpec {
     pub name: String,
     /// Sea-level, full-throttle brake power.
     pub power_curve: Vec<PowerPoint>,
-    /// Friction power over brake power: the k of the altitude law σ − k (1 − σ).
-    pub friction_fraction: f64,
+    pub friction: FrictionSpec,
     pub idle_throttle: f64,
     pub stall_speed: RotationSpeed,
 }
@@ -199,8 +222,10 @@ pub struct PropellerSpec {
     pub diameter: Length,
     pub hub_m: [f64; 3],
     pub rotation: Rotation,
-    /// P-factor shift of the thrust line, m (E:).
+    /// P-factor: shift of the thrust line per unit of V⊥ V_blade / V_r², m (E:).
     pub p_factor_m: f64,
+    /// Normal-force coefficient c_n (Ribner): in-plane force ½ ρ V_r A c_n V⊥.
+    pub normal_force: f64,
     /// Propeller, crankshaft and everything turning with them, kg·m².
     pub rotor_inertia_kg_m2: f64,
 }
@@ -228,6 +253,8 @@ pub struct AircraftFile {
     pub downwash: Option<DownwashSpec>,
     #[serde(default)]
     pub parasite_drag: Vec<DragSpec>,
+    #[serde(default)]
+    pub fuselage: Option<FuselageSpec>,
     pub engine: EngineSpec,
     pub propeller: PropellerSpec,
     pub travel: TravelSpec,
@@ -591,21 +618,27 @@ impl AircraftData {
                 thrust_axis: DVec3::X,
                 right_handed,
                 p_factor: p.p_factor_m,
+                normal_force: p.normal_force,
             },
         )
         .map_err(|e| self.invalid(format!("propeller: {e:?}")))?;
         let EngineSpec::Inline(e) = &f.engine;
-        let curve = e
-            .power_curve
-            .iter()
-            .map(|p| EnginePoint {
-                speed: p.speed.si(),
-                power: p.power.si(),
-            })
-            .collect();
+        let points = |curve: &[PowerPoint], scale: f64| -> Vec<EnginePoint> {
+            curve
+                .iter()
+                .map(|p| EnginePoint {
+                    speed: p.speed.si(),
+                    power: p.power.si() * scale,
+                })
+                .collect()
+        };
+        let friction = match &e.friction {
+            FrictionSpec::Fraction(k) => points(&e.power_curve, *k),
+            FrictionSpec::Curve(curve) => points(curve, 1.0),
+        };
         let engine = InlineEngine::new(
-            curve,
-            e.friction_fraction,
+            points(&e.power_curve, 1.0),
+            friction,
             e.idle_throttle,
             e.stall_speed.si(),
         )
@@ -616,10 +649,24 @@ impl AircraftData {
             elevator: f.travel.elevator.si(),
             rudder: f.travel.rudder.si(),
         };
+        let bodies = f
+            .fuselage
+            .iter()
+            .map(|b| SlenderBody {
+                name: "fuselage".into(),
+                position: vec3(b.position_m) - cg,
+                volume: b.volume_m3,
+                apparent_mass: b.apparent_mass,
+                plan_area: b.plan_area.si(),
+                side_area: b.side_area.si(),
+                crossflow_drag: b.crossflow_drag,
+            })
+            .collect();
         let aircraft = Aircraft::new(
             mass,
             lifting,
             drag,
+            bodies,
             Some(Propulsion { propeller, engine }),
             downwash,
             travel,

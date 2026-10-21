@@ -97,6 +97,14 @@ Aircraft(
         (name: "struts_left", cd: 0.07, reference_area: M2(1.0), position_m: (-0.3, -2.5, -0.45)), // E: synthetic
     ],
 
+    fuselage: Some((
+        position_m: (-1.3, 0.0, 0.0),                                  // E: synthetic
+        volume_m3: 3.0,                                                // E: synthetic
+        apparent_mass: 0.9,                                            // E: synthetic
+        plan_area: M2(4.0), side_area: M2(5.0),                        // E: synthetic
+        crossflow_drag: 0.8,                                           // E: synthetic
+    )),
+
     engine: Inline((
         name: "synthetic inline",
         power_curve: [
@@ -105,9 +113,12 @@ Aircraft(
             (speed: Rpm(1910.0), power: Kw(108.0)),                    // E: synthetic
             (speed: Rpm(2200.0), power: Kw(112.0)),                    // E: synthetic
         ],
-        friction_fraction: 0.1,                                        // E: synthetic
-        idle_throttle: 0.05,                                           // E: synthetic
-        stall_speed: Rpm(290.0),                                       // E: synthetic
+        friction: Curve([
+            (speed: Rpm(1150.0), power: Kw(7.5)),                      // E: synthetic
+            (speed: Rpm(2200.0), power: Kw(11.2)),                     // E: synthetic
+        ]),
+        idle_throttle: 0.08,                                           // E: synthetic
+        stall_speed: Rpm(190.0),                                       // E: synthetic
     )),
 
     propeller: (
@@ -115,7 +126,8 @@ Aircraft(
         diameter: M(2.5),                                              // E: synthetic
         hub_m: (1.0, 0.0, 0.0),                                        // E: synthetic
         rotation: Clockwise,
-        p_factor_m: 0.2,                                               // E: synthetic
+        p_factor_m: 0.7,                                               // E: synthetic
+        normal_force: 0.3,                                             // E: synthetic
         rotor_inertia_kg_m2: 1.2,                                      // E: synthetic
     ),
 
