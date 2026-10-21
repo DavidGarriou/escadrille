@@ -598,3 +598,38 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - l'effet du décalage horizontal sur le partage de la charge (Munk, rapport 151).
 
   La déflexion de l'aile sur l'empennage, qui demande un retard, va dans l'assemblage de l'avion : c'est la prochaine tâche.
+
+## 2026-10-21 — Session 3, suite (cloud)
+
+### Reprise : « Continue la dernière session »
+- **Q** Le joueur demande de reprendre la session précédente.
+- **⚠** Les deux relectures en arrière-plan ont été **coupées par la limite de débit de l'API**, sans perte :
+  - l'aérodynamicien, au milieu de sa revue de l'étape 4 ; il en était aux erreurs volontaires sur le module `propulsion` ;
+  - l'historien, au milieu de sa quatrième passe ; il ajoutait des témoignages à `spad7.md`, notamment la version de Mortane de l'épisode du 23 septembre 1916.
+
+  Leur travail est conservé et elles seront relancées là où elles se sont arrêtées.
+- **A** Instantané intermédiaire de `docs/recherche/spad7.md` (quatrième passe en cours) commité tel quel.
+
+### Assemblage de l'avion complet (`aircraft.rs`)
+- **A** Nouveau module `aircraft` d'`escadrille_fdm`. `Aircraft::evaluate` calcule en un seul endroit les efforts d'un état, dans cet ordre :
+  1. données de l'air (vent, densité) ;
+  2. hélice, traction et souffle ;
+  3. moteur ;
+  4. surfaces portantes : souffle sur toutes, déflexion de l'aile sur l'empennage ;
+  5. traînées parasites, dans le souffle.
+
+  `Aircraft::step` intègre le tout par RK4.
+- **A** **Déflexion retardée** : ε = facteur × C_L des ailes, qui atteint l'empennage avec un retard l_t / V. Ce retard est modélisé par un premier ordre, sous forme d'un **état auxiliaire** intégré avec le corps rigide (nouveaux champs `RigidBodyState::aux` et `Loads::aux_rates`). C'est ce qui donne l'amortissement classique dû à la variation d'incidence (M_α̇), utile pour les modes propres de l'étape 6. Le test de trajectoire figée au bit près passe toujours, sans changement.
+- **A** Commandes du pilote dans [−1, 1] et gaz dans [0, 1], convertis en braquages par les débattements de l'avion.
+- **⚠** Un nouveau test (plané symétrique sans moteur) a révélé un **vrai défaut** de l'étape 4 : l'effet P s'appliquait hélice arrêtée. Correction : le décalage est multiplié par cos β, la part de la rotation dans la vitesse de référence. Il s'annule hélice arrêtée et s'inverse en rotation inverse (E:). Au premier essai, cette correction divisait 0 par 0 dans un cas limite (hélice arrêtée sans écoulement axial), que le test de robustesse a attrapé.
+- **A** Tests, sur un biplan synthétique (chiffres ronds, aucune donnée historique) :
+  - repos ;
+  - avion porté par le vent ;
+  - plané symétrique sans effort latéral ;
+  - couple de réaction du moteur ;
+  - sens des commandes ;
+  - retard et effet de la déflexion ;
+  - souffle sur la profondeur à basse vitesse ;
+  - refus des incohérences ;
+  - 20 s de vol jusqu'au décrochage puis une glissade sur la queue, sans NaN et identiques au bit près sur deux exécutions.
+- **A** Résultat : **106 tests sur 106**, clippy et rustfmt propres. La section « Assemblage de l'avion » est ajoutée à `modele-aero.md`.
