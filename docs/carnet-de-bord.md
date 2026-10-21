@@ -664,3 +664,29 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** `format-avion.md` est réécrit pour décrire le schéma réel, avec le seuil de confiance : pour le M1, les essais A, B et C bloquent la validation.
 - **A** Résultat : **138 tests sur 138** dans tout l'espace de travail, `just check` vert.
 - **A** Prochaine étape : les fichiers `spad7` (avion, profil, hélice, essais), remplis **depuis les fiches**, quand l'historien aura terminé sa quatrième passe. Ensuite l'étape 6, `fdm_lab` : trim, essais, modes propres, tracés.
+
+### Quatrième passe de l'historien : premières confiances B sur les performances
+- **R** Résultats (fiches `spad7.md`, `hispano-suiza-8a.md`, `profil-spad7.md`) :
+  - **passent en B** :
+    - vitesse du 150 ch, 192 km/h (altitude non tranchée) ;
+    - vitesses du 180 ch, 212 km/h en palier bas et 203 km/h à 3 000 m (à 703 kg) ;
+    - masse à vide de 499 kg, surface alaire de 17,85 m² et envergure de 7,82 m, confirmées ;
+    - hauteur ;
+    - régime de référence du 8Ab, 2 100 tr/min ;
+    - loi d'altitude mesurée en vol sur S.E.5 (R&M 462), sous réserve de l'OCR ;
+  - **passe en A** : la convention britannique K_L = C_L/2 ;
+  - **montées** : elles restent en C, les colonnes du tableau de 1919 étant illisibles à l'OCR ;
+  - **contradiction sur la cote du 8Ab, expliquée** : le moteur du rapport NACA 46 suit la convention américaine (180 hp à 1 700 tr/min) ; le moteur français est donné à 2 000 tr/min en régime normal et 2 100 au maximum ;
+  - **pour l'aérodynamicien** :
+    - σ de Prandtl ≈ 0,54 pour le S.VII (C), d'après NACA TN 182 lu sur l'image du PDF ;
+    - écartement 1,27 m (C) ; décalages horizontal et angulaire non trouvés ;
+    - τ et δ non trouvés ;
+    - aucun décrochage négatif du RAF 15 dans les sources (point le plus négatif mesuré : −6°) ;
+    - le tableau RAF 15 du rapport 233 commence à −4,5°, et non à −1,5° comme indiqué plus haut ;
+  - **témoignages** : aucun nouveau trait de vol confirmé par deux témoignages indépendants. Ajouts : la version de Mortane de l'épisode du 23 septembre 1916, Rickenbacker, *Flugsport* 1917, le surnom de « Spad allemand » donné à l'Albatros.
+- **A** Téléchargés pour lui :
+  - NACA TR 460 et TR 669, pour τ et δ ;
+  - *The effect of staggering a biplane* (1921) ;
+  - les deux numéros de *Flight* de février 1919, dont les pages des tableaux officiels sont **rendues en images** (150 dpi), lisibles directement. La page 205 montre le tableau des avions français avec les lignes « Spa. 7C1 Hispano 8Aa » et « 8Ab ».
+- **⚠** Le volume I du rapport technique britannique de 1917-1918 n'existe pas sur archive.org, et l'OCR d'*Aerial Age* du 2 juillet 1917 non plus.
+- **A** Historien relancé pour une cinquième passe courte : lire ces images pour faire passer en A les vitesses, les montées et le plafond du tableau officiel.
