@@ -1,0 +1,26 @@
+// Synthetic propeller for the data tests: not historical data.
+Propeller(
+    name: "synthetic",
+    source: "test fixture",
+    points: [
+        //! E: textbook-like table, C_T = 0.11 (1 − (J/1.05)²), C_P = 0.07 (1 − ½ (J/1.25)²)
+        (j: 0.0, ct: 0.110000, cp: 0.070000),
+        (j: 0.1, ct: 0.109002, cp: 0.069776),
+        (j: 0.2, ct: 0.106009, cp: 0.069104),
+        (j: 0.3, ct: 0.101020, cp: 0.067984),
+        (j: 0.4, ct: 0.094036, cp: 0.066416),
+        (j: 0.5, ct: 0.085057, cp: 0.064400),
+        (j: 0.6, ct: 0.074082, cp: 0.061936),
+        (j: 0.7, ct: 0.061111, cp: 0.059024),
+        (j: 0.8, ct: 0.046145, cp: 0.055664),
+        (j: 0.9, ct: 0.029184, cp: 0.051856),
+        (j: 1.0, ct: 0.010227, cp: 0.047600),
+        (j: 1.1, ct: -0.010726, cp: 0.042896),
+        (j: 1.2, ct: -0.033673, cp: 0.037744),
+    ],
+    anchors: (
+        stopped: (ct: -0.09, cq: -0.01),            // E: synthetic
+        reversed_flow: (ct: 0.09, cq: 0.01),        // E: synthetic
+        reversed_rotation: (ct: -0.03, cq: -0.006), // E: synthetic
+    ),
+)

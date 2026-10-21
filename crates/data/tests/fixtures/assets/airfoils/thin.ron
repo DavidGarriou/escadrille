@@ -1,0 +1,32 @@
+// Synthetic thin aerofoil for the data tests: not historical data.
+Airfoil(
+    name: "thin (synthetic)",
+    source: "test fixture",
+    convention: Absolute,
+    moment_reference: QuarterChord,
+    test_wing: None,
+    points: [
+        //! E: textbook thin aerofoil, C_L = 2πα up to 14°, then a stall to 80 % at 20°
+        (alpha: Deg(-20.0), cl: -1.228217, cd: 0.072923, cm: -0.05),
+        (alpha: Deg(-18.0), cl: -1.330569, cd: 0.061348, cm: -0.05),
+        (alpha: Deg(-16.0), cl: -1.432920, cd: 0.050991, cm: -0.05),
+        (alpha: Deg(-14.0), cl: -1.535272, cd: 0.041853, cm: -0.05),
+        (alpha: Deg(-12.0), cl: -1.315947, cd: 0.033932, cm: -0.05),
+        (alpha: Deg(-10.0), cl: -1.096623, cd: 0.027231, cm: -0.05),
+        (alpha: Deg(-8.0), cl: -0.877298, cd: 0.021748, cm: -0.05),
+        (alpha: Deg(-6.0), cl: -0.657974, cd: 0.017483, cm: -0.05),
+        (alpha: Deg(-4.0), cl: -0.438649, cd: 0.014437, cm: -0.05),
+        (alpha: Deg(-2.0), cl: -0.219325, cd: 0.012609, cm: -0.05),
+        (alpha: Deg(0.0), cl: 0.000000, cd: 0.012000, cm: -0.05),
+        (alpha: Deg(2.0), cl: 0.219325, cd: 0.012609, cm: -0.05),
+        (alpha: Deg(4.0), cl: 0.438649, cd: 0.014437, cm: -0.05),
+        (alpha: Deg(6.0), cl: 0.657974, cd: 0.017483, cm: -0.05),
+        (alpha: Deg(8.0), cl: 0.877298, cd: 0.021748, cm: -0.05),
+        (alpha: Deg(10.0), cl: 1.096623, cd: 0.027231, cm: -0.05),
+        (alpha: Deg(12.0), cl: 1.315947, cd: 0.033932, cm: -0.05),
+        (alpha: Deg(14.0), cl: 1.535272, cd: 0.041853, cm: -0.05),
+        (alpha: Deg(16.0), cl: 1.432920, cd: 0.050991, cm: -0.05),
+        (alpha: Deg(18.0), cl: 1.330569, cd: 0.061348, cm: -0.05),
+        (alpha: Deg(20.0), cl: 1.228217, cd: 0.072923, cm: -0.05),
+    ],
+)

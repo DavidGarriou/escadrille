@@ -1,17 +1,28 @@
 # Format des fichiers avion
 
-**Les valeurs ci-dessous sont des emplacements vides (0.0), pas des données.** Le schéma exact vit dans `crates/data` ; ce fichier en donne l'esprit et doit être mis à jour quand le schéma change.
+**Les valeurs ci-dessous sont des emplacements vides (0.0), pas des données.** Le schéma exact vit dans `crates/data` (`aircraft.rs`, `airfoil.rs`, `propeller.rs`, `essais.rs`) ; ce fichier en donne l'esprit et doit être mis à jour quand le schéma change. Un exemple complet et chargé par les tests : `crates/data/tests/fixtures/assets/` (biplan synthétique).
 
 ## Règles
 
-- **Quantités issues d'une source** (performances, puissances, masses, dimensions principales) : unité d'origine **typée**, convertie en SI au chargement par `crates/data`. Exemples : `Kmh(..)`, `Mph(..)`, `Ms(..)`, `M(..)`, `Ft(..)`, `Hp(..)`, `Ps(..)`, `Kw(..)`, `Kg(..)`, `Lb(..)`, `L(..)`, `ImpGal(..)`. On recopie ainsi la valeur telle qu'elle est écrite dans la source, sans erreur de conversion à la main.
-- **Géométrie détaillée** (positions de bandes, de câbles, de roues) : mètres, repère corps.
-- **Chaque valeur numérique est suivie d'un commentaire d'origine** :
+- **Quantités issues d'une source** (performances, puissances, masses, dimensions principales) : unité d'origine **typée**, convertie en SI au chargement par `crates/data` (`units.rs`). On recopie ainsi la valeur telle qu'elle est écrite dans la source, sans erreur de conversion à la main. Unités disponibles :
+  - longueurs : `M`, `Cm`, `Mm`, `Ft`, `In`, `FtIn(pieds, pouces)` ;
+  - surfaces : `M2`, `Ft2` ;
+  - masses : `Kg`, `Lb` ;
+  - vitesses : `Ms`, `Kmh`, `Mph`, `Kt`, `FtMin` ;
+  - puissances : `W`, `Kw`, `Hp` (cheval anglo-saxon, 745,7 W), `Ps` et `Ch` (cheval-vapeur, 735,5 W) ;
+  - volumes : `L`, `ImpGal`, `UsGal` ;
+  - angles : `Deg`, `Rad` ;
+  - régimes : `Rpm`, `RadS` ;
+  - durées : `S`, `Min`, `MinS(minutes, secondes)`.
+- **Géométrie détaillée** (positions de bandes, de câbles, de roues) : mètres, repère corps (x avant, y droite, z bas), **depuis un point de référence** (`datum`) décrit dans le fichier. Le chargeur calcule le centre de gravité pour un chargement donné et y ramène toutes les positions.
+- **Chaque ligne qui contient un nombre se termine par un commentaire d'origine** :
   - `// S:<réf>` source, référence à la section « Sources » de la fiche `docs/recherche/<id>.md` ;
   - `// C:<méthode>` calculé (formule, outil, à partir de quelles valeurs) ;
   - `// E:<justification>` ESTIMÉ.
-- La validation (`crates/data`, lancée par `just test`) refuse un fichier où une valeur n'a pas d'origine.
-- **Inertie** (`inertia_empty_kg_m2`) : avion **à vide, rotor compris et bloqué**, calculée **au centre de gravité à vide** (`cg_empty_m`), en axes corps (x avant, y droite, z bas). Produit d'inertie : `ixz` = ∫ x z dm, le tenseur contenant −ixz (convention de Stevens et Lewis). Certaines sources utilisent le signe opposé : le vérifier et le noter. L'inertie axiale du rotor (moteur, hélice, cylindres d'un rotatif) est donnée à part, avec l'axe de rotation et le sens vu du pilote ; le FDM la retire de la cellule (`modele-aero.md`).
+  - Un commentaire `//! S:…` (ou `C:`, `E:`) sur sa propre ligne couvre tout un bloc, par exemple un tableau, jusqu'à la prochaine ligne vide.
+- La validation (`crates/data`, lancée par `just test`) refuse un fichier où un nombre n'a pas d'origine, en donnant les numéros de ligne. Les nombres dans les chaînes et les identifiants (`"S1"`, `spad7`) ne comptent pas.
+- **Inertie** (`inertia_empty_kg_m2`) : avion **à vide, rotor compris et bloqué**, calculée **au centre de gravité à vide** (`cg_empty_m`), en axes corps. Produit d'inertie : `ixz` = ∫ x z dm, le tenseur contenant −ixz (convention de Stevens et Lewis). Certaines sources utilisent le signe opposé : le vérifier et le noter. L'inertie axiale du rotor (`rotor_inertia_kg_m2` : hélice, vilebrequin, et cylindres d'un rotatif) est donnée à part ; le FDM la retire de la cellule (`modele-aero.md`). Pilote, carburant et charges sont des masses ponctuelles ajoutées par le théorème de Huygens.
+- **Gouvernes** : leur signe n'est **pas** dans les données. Le chargeur le déduit de la géométrie (une commande positive doit donner le moment positif du pilote), ce qui supprime une source d'erreur.
 
 ## `assets/aircraft/<id>/aircraft.ron`
 
@@ -20,63 +31,103 @@ Aircraft(
     id: "spad7",
     name: "SPAD S.VII C.1",
     research: "docs/recherche/spad7.md",
-    service: (from: "1916-09", to: "1918-11"),          // S:
+    datum: "bord d'attaque de l'emplanture du plan inférieur, dans l'axe",
 
     mass: (
         empty: Kg(0.0),                                   // S:
-        pilot: Kg(80.0),                                  // E: pilote équipé, valeur commune à tous les avions
-        fuel: (capacity: L(0.0), density_kg_per_l: 0.72, position_m: (0.0, 0.0, 0.0)), // S: / E:
         cg_empty_m: (0.0, 0.0, 0.0),                      // C: depuis la fiche (centrage)
-        inertia_empty_kg_m2: (ixx: 0.0, iyy: 0.0, izz: 0.0, ixz: 0.0), // C: fdm_lab inertia (estimation par composants)
+        inertia_empty_kg_m2: (ixx: 0.0, iyy: 0.0, izz: 0.0, ixz: 0.0), // C: estimation par composants
+        pilot: Kg(80.0),                                  // E: pilote équipé, valeur commune à tous les avions
+        pilot_m: (0.0, 0.0, 0.0),                         // C:
+        fuel: (capacity: L(0.0), density_kg_per_l: 0.72, position_m: (0.0, 0.0, 0.0)), // S: / E:
+        payload: [(name: "vickers", mass: Kg(0.0), position_m: (0.0, 0.0, 0.0))], // S:
     ),
 
     surfaces: [
         (
             name: "upper_wing",
-            kind: Wing,
+            kind: Horizontal,                             // ou Vertical (dérive : portance vers la droite)
+            mirrored: true,                               // les panneaux décrivent la moitié droite
             panels: [(
-                root_m: (0.0, 0.0, 0.0), tip_m: (0.0, 0.0, 0.0),
-                chord_root_m: 0.0, chord_tip_m: 0.0,
-                incidence_rad: 0.0, twist_rad: 0.0, dihedral_rad: 0.0,
-                strips: 8,
+                root_m: (0.0, 0.0, 0.0), tip_m: (0.0, 0.0, 0.0), // ligne du quart de corde ; S: / C:
+                chord_root: M(0.0), chord_tip: M(0.0),    // S:
+                incidence: Deg(0.0),                      // S: (positif : bord d'attaque vers la portance)
+                twist: Some(Deg(0.0)),                    // S: vrillage saumon − emplanture (facultatif)
+                strips: 8,                                // E: discrétisation
             )],
-            airfoil: "airfoils/spad.ron",                 // polaires 360° et origine des données
-            controls: [(control: Aileron, span_from: 0.6, span_to: 1.0, chord_ratio: 0.25, travel_rad: (0.0, 0.0))],
+            airfoil: "airfoils/raf15.ron",                // depuis la racine des assets
+            span_efficiency: 0.0,                         // C: / E:
+            aspect_ratio: None,                           // par défaut envergure² / surface ; à donner pour une dérive (effet de plaque du fuselage)
+            controls: [(control: Aileron, panel: 0, span_from: 0.6, span_to: 1.0, chord_ratio: 0.25)], // S:
+            reference_area: Some(M2(0.0)),                // S: surface de la fiche, comparée aux bandes (±2 %)
         ),
-        // lower_wing, horizontal_tail (+ elevator), vertical_tail (+ rudder)
+        // lower_wing, tailplane (+ Elevator), fin (Vertical, + Rudder)
     ],
-    multiplane: Some((gap_m: 0.0, stagger_m: 0.0, decalage_rad: 0.0)), // S:
+    interference: [(planes: ("upper_wing", "lower_wing"), sigma: 0.0)], // C: Prandtl, NACA TN 182, écartement / envergure
+    downwash: Some((wings: ["upper_wing", "lower_wing"], tail: ["tailplane"], factor: 0.0, tail_arm: M(0.0))), // C:
 
     parasite_drag: [
-        (name: "interplane_struts", cd: 0.0, ref_area_m2: 0.0, position_m: (0.0, 0.0, 0.0)), // C: Hoerner
-        (name: "flying_wires",      cd: 0.0, ref_area_m2: 0.0, position_m: (0.0, 0.0, 0.0)), // C:
-        (name: "radiator",          cd: 0.0, ref_area_m2: 0.0, position_m: (0.0, 0.0, 0.0)), // E:
+        (name: "interplane_struts", cd: 0.0, reference_area: M2(0.0), position_m: (0.0, 0.0, 0.0)), // C: Hoerner
+        (name: "radiator",          cd: 0.0, reference_area: M2(0.0), position_m: (0.0, 0.0, 0.0)), // E:
     ],
 
     engine: Inline((
-        name: "Hispano-Suiza 8A",
-        rated_power: Hp(0.0),                             // S:
-        rated_rpm: 0.0,                                   // S:
-        power_curve: [(rpm: 0.0, factor: 0.0)],           // S: / E:
-        altitude_model: GaggFarrar,                       // C:
+        name: "Hispano-Suiza 8Aa",
+        power_curve: [(speed: Rpm(0.0), power: Ch(0.0))], // S: puissance au frein, pleins gaz, niveau de la mer
+        friction_fraction: 0.0,                           // S: / C: le k de la loi d'altitude σ − k (1 − σ)
+        idle_throttle: 0.0,                               // E:
+        stall_speed: Rpm(0.0),                            // E:
     )),
-    // ou : Rotary(( ..., blip_switch: true, mixture: true, rotating_inertia_kg_m2: 0.0 ))
+    // plus tard : Rotary(( ..., blip_switch: true, mixture: true ))
 
     propeller: (
+        table: "aircraft/spad7/propeller.ron",            // C_T(J), C_P(J) et points d'appui ; C: BEMT ou S:
         diameter: M(0.0),                                 // S:
-        rotation: Clockwise,                              // vue depuis le siège du pilote ; S:
-        table: "props/spad7.ron",                         // C_T(J), C_P(J) ; C: BEMT ou S:
-        inertia_kg_m2: 0.0,                               // C:
+        hub_m: (0.0, 0.0, 0.0),                           // S:
+        rotation: Clockwise,                              // vue de derrière l'hélice, vers l'avant (du poste pour un tracteur) ; S:
+        p_factor_m: 0.0,                                  // E:
+        rotor_inertia_kg_m2: 0.0,                         // C:
     ),
 
-    gear: [
-        (name: "left_wheel", kind: Wheel, position_m: (0.0, 0.0, 0.0), stiffness_n_per_m: 0.0, damping_n_s_per_m: 0.0, friction: 0.0), // E:
-        (name: "tailskid",   kind: Skid,  position_m: (0.0, 0.0, 0.0), stiffness_n_per_m: 0.0, damping_n_s_per_m: 0.0, friction: 0.0), // E:
+    travel: (aileron: Deg(0.0), elevator: Deg(0.0), rudder: Deg(0.0)), // S: / E:
+)
+```
+
+Prévus plus tard, hors du schéma actuel : train d'atterrissage (M2), limites structurales (M4), armes (M4).
+
+## `assets/airfoils/<id>.ron`
+
+```ron
+Airfoil(
+    name: "RAF 15",
+    source: "docs/recherche/profil-spad7.md, S2",
+    convention: Absolute,            // ou Halved : coefficients britanniques k = C/2
+    moment_reference: QuarterChord,  // ou LeadingEdge
+    test_wing: Some((aspect_ratio: 6.0, tau: 0.0, delta: 0.0)), // S: / C: maquette de soufflerie ; None pour un profil 2D
+    points: [
+        //! S: tableau de la source, page
+        (alpha: Deg(0.0), cl: 0.0, cd: 0.0, cm: 0.0),
     ],
+)
+```
 
-    limits: (load_factor_pos: 0.0, load_factor_neg: 0.0, never_exceed: Kmh(0.0)), // S: ou E:
+Le chargeur ramène les tableaux mesurés sur une maquette d'allongement fini à l'allongement infini (corrections de Glauert τ et δ), puisque le FDM ajoute lui-même l'angle induit. Le tableau doit dépasser le décrochage des deux côtés ; un décrochage négatif absent de la source s'ajoute explicitement, en `E:`.
 
-    weapons: [(gun: "vickers_303", position_m: (0.0, 0.0, 0.0), synchronized: true, rounds: 0)], // S:
+## Hélice (`propeller.ron`)
+
+```ron
+Propeller(
+    name: "…",
+    source: "…",
+    points: [
+        //! S: / C:
+        (j: 0.0, ct: 0.0, cp: 0.0),       // le tableau commence au point fixe J = 0
+    ],
+    anchors: (                            // quatre quadrants, voir modele-aero.md ; E: ou C: BEMT
+        stopped: (ct: 0.0, cq: 0.0),
+        reversed_flow: (ct: 0.0, cq: 0.0),
+        reversed_rotation: (ct: 0.0, cq: 0.0),
+    ),
 )
 ```
 
@@ -85,22 +136,22 @@ Aircraft(
 ```ron
 Essais(
     aircraft: "spad7",
-    conditions: (fuel_fraction: 1.0, ammo: Full, atmosphere: Isa, wind: None),
+    conditions: (fuel_fraction: 1.0),                     // S: ou E: chargement de l'essai d'époque
 
     quantitative: [
-        MaxLevelSpeed(altitude: M(0.0),  target: Kmh(0.0), tolerance_pct: 3.0, source: "S1", confidence: B),
-        ClimbTime(from: M(0.0), to: M(0.0), target_s: 0.0, tolerance_pct: 5.0, source: "S1", confidence: B),
-        StallSpeed(power: Idle,          target: Kmh(0.0), tolerance_pct: 5.0, source: "S2", confidence: C),
-        ServiceCeiling(target: M(0.0),   tolerance_pct: 5.0, source: "S1", confidence: B),
+        MaxLevelSpeed(altitude: M(0.0), target: Kmh(0.0), tolerance_pct: 3.0, source: "S1", confidence: B), // S:
+        ClimbTime(from: M(0.0), to: M(0.0), target: MinS(0, 0), tolerance_pct: 5.0, source: "S1", confidence: B), // S:
+        StallSpeed(power: Idle, target: Kmh(0.0), tolerance_pct: 5.0, source: "S2", confidence: C), // S:
+        Ceiling(climb_rate: FtMin(100.0), target: M(0.0), tolerance_pct: 5.0, source: "S1", confidence: B), // S:
     ],
 
-    // Manœuvre scriptée + assertion sur la télémétrie. Chaque attente cite une source.
+    // Comportements tirés des témoignages (section 6 de la fiche), scénarisés dans fdm_lab.
     qualitative: [
-        Scenario(name: "stall_power_off", script: "scenarios/stall_power_off.ron", expect: "wing_drop_deg < 30", source: "S4"),
+        (name: "stall_power_off", description: "…", source: "S4"),
     ],
 
-    robustness: [ZeroAirspeed, TailSlide, SpinEntryRecovery(turns: 3), Inverted(seconds: 10.0), MaxDive, HardLanding],
+    robustness: [ZeroAirspeed, TailSlide, SpinEntryRecovery(turns: 3), Inverted(seconds: 10.0), MaxDive],
 )
 ```
 
-Niveaux de confiance : **A** mesure primaire (rapport d'essai d'époque) ; **B** sources secondaires concordantes ; **C** déduit d'avions comparables ; **D** estimation de gameplay. Les essais de confiance C et D sont signalés mais ne bloquent pas la validation.
+Niveaux de confiance : **A** mesure primaire (rapport d'essai d'époque) ; **B** sources secondaires concordantes ; **C** déduit d'avions comparables ; **D** estimation de gameplay. Par défaut, les essais de confiance C et D sont signalés mais ne bloquent pas la validation ; le seuil se règle (`Confidence::blocks_validation`). Pour le M1, le joueur a validé la confiance C : les essais A, B et C bloquent, D reste indicatif.

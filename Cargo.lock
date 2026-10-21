@@ -2809,6 +2809,8 @@ dependencies = [
 name = "escadrille_data"
 version = "0.1.0"
 dependencies = [
+ "escadrille_fdm",
+ "glam",
  "ron",
  "serde",
  "thiserror 2.0.21",

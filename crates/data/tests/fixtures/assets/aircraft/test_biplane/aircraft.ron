@@ -1,0 +1,123 @@
+// Synthetic biplane for the data tests: round numbers of the right order, not
+// historical data (every value is E:).
+Aircraft(
+    id: "test_biplane",
+    name: "Test biplane",
+    research: "none (synthetic)",
+    datum: "lower wing root leading edge, on the aircraft axis",
+
+    mass: (
+        empty: Kg(500.0),                                         // E: synthetic
+        cg_empty_m: (-0.3, 0.0, 0.1),                             // E: synthetic
+        inertia_empty_kg_m2: (ixx: 900.0, iyy: 1100.0, izz: 1900.0, ixz: 30.0), // E: synthetic
+        pilot: Kg(80.0),                                          // E: synthetic
+        pilot_m: (-1.2, 0.0, -0.3),                               // E: synthetic
+        fuel: (capacity: L(100.0), density_kg_per_l: 0.72, position_m: (-0.4, 0.0, -0.4)), // E: synthetic
+        payload: [
+            (name: "gun", mass: Kg(15.0), position_m: (0.3, 0.0, -0.6)), // E: synthetic
+        ],
+    ),
+
+    surfaces: [
+        (
+            name: "upper",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [(
+                root_m: (-0.15, 0.0, -1.1), tip_m: (-0.15, 4.0, -1.1), // E: synthetic
+                chord_root: M(1.4), chord_tip: M(1.4),                 // E: synthetic
+                incidence: Deg(2.0),                                   // E: synthetic
+                strips: 6,                                             // E: discretisation
+            )],
+            airfoil: "airfoils/thin.ron",
+            span_efficiency: 0.85,                                     // E: synthetic
+            controls: [
+                (control: Aileron, span_from: 0.6, span_to: 1.0, chord_ratio: 0.25), // E: synthetic
+            ],
+            reference_area: Some(M2(11.2)),                            // E: synthetic
+        ),
+        (
+            name: "lower",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [(
+                root_m: (-0.35, 0.4, 0.2), tip_m: (-0.35, 3.8, 0.1),   // E: synthetic
+                chord_root: M(1.4), chord_tip: M(1.4),                 // E: synthetic
+                incidence: Deg(2.0),                                   // E: synthetic
+                strips: 6,                                             // E: discretisation
+            )],
+            airfoil: "airfoils/thin.ron",
+            span_efficiency: 0.85,                                     // E: synthetic
+        ),
+        (
+            name: "tailplane",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [(
+                root_m: (-4.9, 0.0, -0.1), tip_m: (-4.9, 1.5, -0.1),   // E: synthetic
+                chord_root: M(0.8), chord_tip: M(0.8),                 // E: synthetic
+                incidence: Deg(-1.0),                                  // E: synthetic
+                strips: 2,                                             // E: discretisation
+            )],
+            airfoil: "airfoils/thin_symmetric.ron",
+            span_efficiency: 0.85,                                     // E: synthetic
+            controls: [
+                (control: Elevator, span_from: 0.0, span_to: 1.0, chord_ratio: 0.4), // E: synthetic
+            ],
+        ),
+        (
+            name: "fin",
+            kind: Vertical,
+            mirrored: false,
+            panels: [(
+                root_m: (-5.1, 0.0, -0.2), tip_m: (-5.2, 0.0, -1.2),   // E: synthetic
+                chord_root: M(0.9), chord_tip: M(0.7),                 // E: synthetic
+                incidence: Deg(0.0),                                   // E: synthetic
+                strips: 2,                                             // E: discretisation
+            )],
+            airfoil: "airfoils/thin_symmetric.ron",
+            span_efficiency: 0.85,                                     // E: synthetic
+            aspect_ratio: Some(1.6),                                   // E: end-plate effect of the fuselage
+            controls: [
+                (control: Rudder, span_from: 0.0, span_to: 1.0, chord_ratio: 0.5), // E: synthetic
+            ],
+        ),
+    ],
+    interference: [(planes: ("upper", "lower"), sigma: 0.5)],          // E: synthetic
+    downwash: Some((
+        wings: ["upper", "lower"],
+        tail: ["tailplane"],
+        factor: 0.11,                                                  // E: synthetic
+        tail_arm: M(4.7),                                              // E: synthetic
+    )),
+
+    parasite_drag: [
+        (name: "fuselage", cd: 0.35, reference_area: M2(1.0), position_m: (-0.5, 0.0, 0.0)),      // E: synthetic
+        (name: "struts_right", cd: 0.07, reference_area: M2(1.0), position_m: (-0.3, 2.5, -0.45)), // E: synthetic
+        (name: "struts_left", cd: 0.07, reference_area: M2(1.0), position_m: (-0.3, -2.5, -0.45)), // E: synthetic
+    ],
+
+    engine: Inline((
+        name: "synthetic inline",
+        power_curve: [
+            (speed: Rpm(1150.0), power: Kw(75.0)),                     // E: synthetic
+            (speed: Rpm(1530.0), power: Kw(95.0)),                     // E: synthetic
+            (speed: Rpm(1910.0), power: Kw(108.0)),                    // E: synthetic
+            (speed: Rpm(2200.0), power: Kw(112.0)),                    // E: synthetic
+        ],
+        friction_fraction: 0.1,                                        // E: synthetic
+        idle_throttle: 0.05,                                           // E: synthetic
+        stall_speed: Rpm(290.0),                                       // E: synthetic
+    )),
+
+    propeller: (
+        table: "aircraft/test_biplane/propeller.ron",
+        diameter: M(2.5),                                              // E: synthetic
+        hub_m: (1.0, 0.0, 0.0),                                        // E: synthetic
+        rotation: Clockwise,
+        p_factor_m: 0.2,                                               // E: synthetic
+        rotor_inertia_kg_m2: 1.2,                                      // E: synthetic
+    ),
+
+    travel: (aileron: Deg(20.0), elevator: Deg(25.0), rudder: Deg(28.0)), // E: synthetic
+)
