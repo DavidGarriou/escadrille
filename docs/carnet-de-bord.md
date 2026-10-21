@@ -633,3 +633,34 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - refus des incohérences ;
   - 20 s de vol jusqu'au décrochage puis une glissade sur la queue, sans NaN et identiques au bit près sur deux exécutions.
 - **A** Résultat : **106 tests sur 106**, clippy et rustfmt propres. La section « Assemblage de l'avion » est ajoutée à `modele-aero.md`.
+
+### Relances et nouvelles sources
+- **A** Les deux relectures sont relancées là où elles s'étaient arrêtées. L'aérodynamicien relit en plus l'induction mutuelle, la déflexion retardée et l'assemblage de l'avion.
+- **A** Pour la question de l'interférence entre plans, deux rapports sont téléchargés depuis NTRS et confiés à l'historien :
+  - NACA TN 182, Prandtl, *Induced drag of multiplanes* (1924), qui donne le facteur σ en fonction du rapport écartement / envergure ;
+  - NACA TR 267, Hemke, *Drag of wings with end plates*, pour l'allongement effectif d'une dérive au contact du fuselage.
+
+### Étape 5 du M1 : schémas de données
+- **A** Le crate `escadrille_data` charge désormais `assets/aircraft/<id>/aircraft.ron`, avec les fichiers de profil et d'hélice auxquels il renvoie, ainsi que `essais.ron`.
+  - **Unités d'époque typées**, converties en SI au chargement : longueurs en pieds et pouces, livres, mph, nœuds, pieds par minute, chevaux anglo-saxons (`Hp`) et cheval-vapeur (`Ps`, `Ch`), gallons, tours par minute, durées en minutes et secondes. Les facteurs de conversion exacts sont testés.
+  - **Origine obligatoire** : toute ligne qui contient un nombre doit porter `// S:`, `// C:` ou `// E:`, et `//!` couvre tout un tableau. Sinon le fichier est **refusé**, avec les numéros de ligne fautifs.
+  - **Profils** : conversion des conventions d'époque, selon la revue de l'aérodynamicien :
+    - coefficients britanniques divisés par deux ;
+    - moment rapporté au bord d'attaque ;
+    - tableau mesuré sur maquette d'allongement 6, ramené à l'allongement infini par les corrections de Glauert τ et δ. Un test vérifie que l'on retrouve exactement le profil d'origine.
+  - **Assemblage** pour un chargement donné :
+    - masse, centre de gravité et inertie, avec pilote, carburant et armes en masses ponctuelles (théorème de Huygens, vérifié par une identité indépendante) ;
+    - surfaces découpées en bandes à partir de panneaux le long du quart de corde, avec incidence, vrillage et dièdre ; envergure mesurée d'un saumon à l'autre ;
+    - facteurs d'interférence de Prandtl et déflexion ;
+    - traînées, hélice et moteur.
+  - **Signe des gouvernes déduit de la géométrie** : une commande positive doit donner le moment positif du pilote, et les données ne peuvent donc pas se tromper de sens.
+  - **Contrôles** :
+    - surface comparée à celle de la fiche, à 2 % près ;
+    - gouverne qui ne couvre aucune bande ;
+    - nom de surface inconnu ;
+    - fraction de carburant hors limites.
+- **A** Les tests utilisent un biplan synthétique, dont chaque valeur est étiquetée `E:`.
+- **⚠** Le premier essai du plané symétrique a fait apparaître un moment de lacet. L'erreur était dans l'avion d'essai, pas dans le code : sa dérive avait un profil cambré. La dérive et l'empennage ont reçu un profil symétrique, comme sur un vrai avion.
+- **A** `format-avion.md` est réécrit pour décrire le schéma réel, avec le seuil de confiance : pour le M1, les essais A, B et C bloquent la validation.
+- **A** Résultat : **138 tests sur 138** dans tout l'espace de travail, `just check` vert.
+- **A** Prochaine étape : les fichiers `spad7` (avion, profil, hélice, essais), remplis **depuis les fiches**, quand l'historien aura terminé sa quatrième passe. Ensuite l'étape 6, `fdm_lab` : trim, essais, modes propres, tracés.
