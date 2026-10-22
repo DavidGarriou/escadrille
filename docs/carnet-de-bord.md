@@ -994,3 +994,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - trois vitesses maximales avec leur régime (A, ±4 % et ±3 %), trois temps de montée (A, ±5 %), le plafond théorique (A) et le décrochage de Tallman (D) ;
   - huit comportements du § 6.2, dont cinq manœuvres pilotées.
 - **A** En cours : l'aérodynamicien calcule les traînées parasites élément par élément, le fuselage en corps élancé, la déflexion, les allongements effectifs, l'effet P et le ralenti.
+- **⚠** Le calcul de l'aérodynamicien s'est arrêté sur la limite de débit de l'API (429), puis le processus de la session a redémarré. Il a repris où il s'était arrêté après la levée de la limite.
