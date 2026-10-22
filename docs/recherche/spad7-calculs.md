@@ -86,3 +86,34 @@ Résultat : +5 à +6,4 % de traction selon J ; le rendement maximal passe de 0,7
 Résultat : 499,2 kg, centre de gravité à vide à x = −0,313 m (26 % de la corde depuis le bord d'attaque) et z = −0,406 m ; inertie au centre de gravité à vide (785 ; 778 ; 1 360) kg·m², ixz = 40 kg·m². L'inertie n'a aucun recoupement mesuré : le NACA TR 467 (rayons de giration mesurés d'avions de l'époque), proposé par l'aérodynamicien, reste à lire.
 
 **Chargement des essais de S46** (charge totale 451 lb, lue sur l'image, `spad7.md` § 3) : pilote 176 lb ; armement 88 lb ; divers 11 lb ; essence et huile 176 lb. L'huile est mise à part (8 kg, E: environ 2 h à 2,8 L/h de H20 plus le contenu du circuit) ; il reste 71,8 kg d'essence, soit 99,7 L à 0,72 kg/L, c'est-à-dire **74 % des 135 L** du réservoir (contenance C, S13 vue en résumé). Masse totale : 703,5 kg (S46 : 1 551 lb).
+
+## 5. Valeurs aérodynamiques (aérodynamicien, 2026-10-22)
+
+Calculées par l'aérodynamicien sur la géométrie du § 3 et contrôlées avec le modèle lui-même, **sans réglage** (12 campagnes d'essai dans un dossier de travail). Origine détaillée dans les commentaires de `aircraft.ron`.
+
+- **Traînées parasites**, élément par élément (Hoerner) : radiateur frontal 26 %, câbles 24 %, train et roues 12 %, frottement du fuselage 9 %, renvois d'ailerons 7 %, poste 7 %, mâts 6 %, divers 9 %. Somme en écoulement libre : 0,687 m².
+  - **Câbles ronds** toronnés : rien n'atteste des câbles profilés sur le S.VII. Variantes : doublés à lattes (type S.XI) 0,124 m² au lieu de 0,165 ; profilés 0,059 m².
+  - **Pas de facteur 3/5** de S43 : il a été mesuré sans hélice, et Relf et Lavender (B.E.2c, ACA 1917-18 vol. II) trouvent les traînées additives.
+  - **Contrôle** : en palier à 192 km/h et 2 000 m, le modèle complet a un f équivalent de 0,91 m², profils compris, contre 0,94 à 0,98 m² déduits de S46. L'écart, de 3 à 7 %, reste dans l'incertitude de cette cible.
+- **Fuselage en corps élancé** :
+  - 14 stations relevées sur le dessin : longueur 5,14 m, volume 2,93 m³, finesse 4,87 ;
+  - volume « potentiel » de 0,95 m³ par la méthode de Multhopp (DATCOM), k₂ − k₁ = 0,83 (Lamb) ;
+  - aires de dessus 3,30 m² et de côté 4,50 m², η C_dc = 0,75.
+- **Déflexion** :
+  - `factor` 0,125 : deux nappes planes dans le plan de Trefftz ; monoplan équivalent, 0,122 ;
+  - bras de 3,96 m.
+- **Allongements** :
+  - ailes, e = 0,92. C'est δ du TR 416, préféré à τ parce que les cibles de montée dépendent de la traînée induite ;
+  - plan fixe, e = 0,80 (pente de Helmbold) ;
+  - dérive, allongement effectif 1,5 (plaque partielle, Hemke) et e = 0,61 (pente DATCOM de 1,9/rad).
+- **Empennages sans flèche** : le chargeur oriente les bandes selon la ligne du quart de corde ; une ligne en flèche aurait gonflé la dérive de 0,90 à 1,51 m² et fait décrocher la dérive trop tôt. Les cordes du dessin sont reportées sur une ligne droite, au quart de la corde moyenne.
+- **Profil d'empennage** (`assets/airfoils/spad_empennage.ron`) : RAF 15 sans cambrure, maximum plafonné à C_L 0,85 (profil symétrique mince), branche négative en miroir.
+- **Hélice** :
+  - effet P de 1,1 m, par éléments de pale sur la géométrie de D' (Report 301, fig. 5) au J de montée ;
+  - force normale de 0,038, pour J de 0,6 à 0,76, plus 10 % de remontée devant les ailes.
+- **Moteur** :
+  - ralenti 0,045 (environ 500 tr/min au point fixe), calage à 200 tr/min ;
+  - **loi d'altitude `Pressure(0.93)`** : R&M 462 mesure une puissance **au frein** en (p/p₀)^1,04. Le modèle applique l'exposant à la puissance indiquée, puis retranche le frottement. Converti avec le frottement du Report 46, l'exposant vaut 0,93 (à ±0,6 % de 1 000 à 5 000 m, vérifié ici). Avec 1,04, le frottement aurait été compté deux fois : la documentation est corrigée.
+- **Débattements** : ±20°, ±25° et ±30° (E:, aucune source SPAD).
+- **Calages** : 2,3° (plan supérieur) et 1,8° (plan inférieur), d'après le critère « fuselage horizontal à 170 km/h et 2 000 m ». Vérifié par le trim : incidence du fuselage 0,015°.
+- **Hauteur du moyeu** : 0,38 m au-dessus du bord d'attaque inférieur, d'après la relecture du dessin par l'aérodynamicien (0,36 à 0,41 m ; j'avais lu 0,30). Le moteur, le radiateur et l'hélice du bilan de masses ont suivi.

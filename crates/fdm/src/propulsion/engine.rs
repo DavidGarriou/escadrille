@@ -60,8 +60,11 @@ pub enum EngineError {
 pub enum AltitudeLaw {
     /// Proportional to the density ratio σ = ρ / ρ₀ (with friction: Gagg-Farrar).
     Density,
-    /// Proportional to (p / p₀)ⁿ, independent of the temperature (flight measurement of
-    /// a Hispano-Suiza 150 hp, R&M 462: n ≈ 1.04).
+    /// Proportional to (p / p₀)ⁿ, independent of the temperature. The exponent applies to
+    /// the indicated power, friction being taken off afterwards: a measured law of the
+    /// *brake* power must be converted with the engine's friction curve (R&M 462 measures
+    /// a brake power in (p / p₀)^1.04 on a 150 hp Hispano-Suiza; with the friction of
+    /// NACA Report 46, the indicated exponent is about 0.93, aerodynamicist's review).
     Pressure(f64),
 }
 

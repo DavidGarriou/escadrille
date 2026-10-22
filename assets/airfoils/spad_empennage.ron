@@ -1,0 +1,40 @@
+// Tail section of the SPAD VII: thin symmetric section, biconvex like the S.XI tailplane
+// (S49 of spad7.md). The RAF 15 measured at full-scale Reynolds number (NACA Report 233,
+// table XXX) brought to a straight mean line, its maximum capped at that of a thin
+// symmetric section and mirrored. Method: docs/recherche/spad7-calculs.md § 5.
+Airfoil(
+    name: "Empennage du SPAD (RAF 15 sans cambrure, maximum plafonné)",
+    source: "profil-spad7.md : A15 (NACA Report 233, tableau XXX), A26 (TR 416) ; spad7-calculs.md § 5",
+    convention: Absolute,
+    moment_reference: QuarterChord,
+    test_wing: Some((
+        aspect_ratio: 6.857, // C: TR 416 effective ratio of the closed 60 in tunnel, as for spad.ron
+        tau: 0.175,          // S: TR 416, fig. 11, aspect ratio 6
+        delta: 0.05,         // S: TR 416, fig. 11, aspect ratio 6
+    )),
+    points: [
+        //! C: Report 233 table XXX moved by +2.25° (measured zero-lift incidence of the RAF 15, raw) and C_m brought to 0 (straight mean line), up to 8.25°; the negative half is the exact mirror
+        //! E: maximum capped at C_L 0.85 near 11.25° (thin symmetric section of 5 to 7 %, maximum 0.8 to 0.9 at Re 1 to 3 × 10⁶, order of an NACA 0006: aerodynamicist), then a gentle fall; drag and nose-down moment past it
+        (alpha: Deg(-20.0), cl: -0.72, cd: 0.220, cm: 0.10),
+        (alpha: Deg(-16.25), cl: -0.74, cd: 0.150, cm: 0.08),
+        (alpha: Deg(-13.25), cl: -0.80, cd: 0.090, cm: 0.03),
+        (alpha: Deg(-11.25), cl: -0.85, cd: 0.0477, cm: 0.0),
+        (alpha: Deg(-8.25), cl: -0.629, cd: 0.0280, cm: 0.0),
+        (alpha: Deg(-6.75), cl: -0.507, cd: 0.0205, cm: 0.0),
+        (alpha: Deg(-5.25), cl: -0.398, cd: 0.0154, cm: 0.0),
+        (alpha: Deg(-3.75), cl: -0.285, cd: 0.0119, cm: 0.0),
+        (alpha: Deg(-2.25), cl: -0.166, cd: 0.0088, cm: 0.0),
+        (alpha: Deg(-0.75), cl: -0.052, cd: 0.0084, cm: 0.0),
+        (alpha: Deg(0.0), cl: 0.0, cd: 0.0084, cm: 0.0),
+        (alpha: Deg(0.75), cl: 0.052, cd: 0.0084, cm: 0.0),
+        (alpha: Deg(2.25), cl: 0.166, cd: 0.0088, cm: 0.0),
+        (alpha: Deg(3.75), cl: 0.285, cd: 0.0119, cm: 0.0),
+        (alpha: Deg(5.25), cl: 0.398, cd: 0.0154, cm: 0.0),
+        (alpha: Deg(6.75), cl: 0.507, cd: 0.0205, cm: 0.0),
+        (alpha: Deg(8.25), cl: 0.629, cd: 0.0280, cm: 0.0),
+        (alpha: Deg(11.25), cl: 0.85, cd: 0.0477, cm: 0.0),
+        (alpha: Deg(13.25), cl: 0.80, cd: 0.090, cm: -0.03),
+        (alpha: Deg(16.25), cl: 0.74, cd: 0.150, cm: -0.08),
+        (alpha: Deg(20.0), cl: 0.72, cd: 0.220, cm: -0.10),
+    ],
+)

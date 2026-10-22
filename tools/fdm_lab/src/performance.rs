@@ -264,6 +264,9 @@ pub struct Stall {
     pub trim: Trim,
 }
 
+/// Starting speeds of the stall sweep, m/s.
+const STALL_START_SPEEDS: [f64; 5] = [40.0, 30.0, 50.0, 60.0, 25.0];
+
 /// Stall speed at idle: the lowest speed of a steady glide, sweeping the angle of attack
 /// up to the stall (or to the end of the elevator travel).
 pub fn stall_speed(
@@ -289,8 +292,21 @@ pub fn stall_speed_at(
     let mut alpha = 0.05;
     while alpha < 0.45 {
         guess.alpha = alpha;
-        let Ok(trim) = solve_robust(aircraft, env, guess, AT_ALPHA) else {
-            break;
+        // Until a first steady flight is found, try several starting speeds, then the
+        // next incidence; past it, each solution starts the next one.
+        let trim = if best.is_some() {
+            solve_robust(aircraft, env, guess, AT_ALPHA).ok()
+        } else {
+            STALL_START_SPEEDS.iter().find_map(|&speed| {
+                solve_robust(aircraft, env, Flight { speed, ..guess }, AT_ALPHA).ok()
+            })
+        };
+        let Some(trim) = trim else {
+            if best.is_some() {
+                break;
+            }
+            alpha += 0.005;
+            continue;
         };
         if trim.commands(aircraft).pitch.abs() > 1.0 {
             if let Some(b) = best.as_mut() {

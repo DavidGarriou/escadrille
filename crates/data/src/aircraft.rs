@@ -201,7 +201,8 @@ pub enum FrictionSpec {
 pub enum AltitudeLawSpec {
     /// Proportional to the density ratio.
     Density,
-    /// Proportional to the pressure ratio to this power.
+    /// Indicated power proportional to the pressure ratio to this power (not the exponent
+    /// of a measured brake-power law: see `AltitudeLaw::Pressure`).
     Pressure(f64),
 }
 

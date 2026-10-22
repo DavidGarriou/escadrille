@@ -11,19 +11,19 @@ Masses(
         (
             name: "moteur Hispano-Suiza 8Aa, à sec",
             mass: Lb(447.0),                              // C: mean of the 150 hp Hispano dry masses, H19 p. 203 (440 and 455 lb) and H20 (445 lb), hispano-suiza-8a.md § 6
-            position_m: (0.18, 0.0, -0.40),               // E: crankshaft on the thrust line (z −0.30), cylinders above it; engine from the propeller flange (x 0.75) back about 1.15 m
+            position_m: (0.18, 0.0, -0.48),               // E: crankshaft on the thrust line (z −0.38), cylinders above it; engine from the propeller flange (x 0.75) back about 1.15 m
             shape: Box(size_m: (1.25, 0.80, 0.80)),       // E: overall size of a 150 hp V8 Hispano
         ),
         (
             name: "radiateur frontal et eau",
             mass: Kg(40.0),                               // E: radiator about 20 kg and some 20 L of water in the circuit
-            position_m: (0.55, 0.0, -0.30),               // E: radiator in the nose behind the propeller, water spread back into the engine
+            position_m: (0.55, 0.0, -0.38),               // E: radiator in the nose behind the propeller, water spread back into the engine
             shape: Box(size_m: (0.40, 0.75, 0.75)),       // E: circular radiator opening of 0.71 m (spad7-calculs.md § 3)
         ),
         (
             name: "hélice et moyeu",
             mass: Kg(22.0),                               // E: wooden two-bladed propeller of 2.45 m, 20 to 25 kg (aerodynamicist)
-            position_m: (0.78, 0.0, -0.30),               // C: hub on the 1917 drawing (spad7-calculs.md § 3)
+            position_m: (0.78, 0.0, -0.38),               // C: hub on the 1917 drawing, 0.36 to 0.41 m above the lower leading edge (aerodynamicist's reading; spad7-calculs.md § 3)
             shape: Own(ixx: 6.6, iyy: 3.3, izz: 3.3),     // C: m R² / 5 about the shaft; half of it about the other axes, averaged over a turn of the two blades
         ),
         (

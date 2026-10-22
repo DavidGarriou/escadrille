@@ -1,0 +1,179 @@
+// SPAD S.VII C.1 with the Hispano-Suiza 8Aa of 150 ch (player's decision of 2026-10-22).
+// Research: docs/recherche/spad7.md, hispano-suiza-8a.md, profil-spad7.md. Every C: and E:
+// value is justified in docs/recherche/spad7-calculs.md; the aerodynamic estimates
+// (drag, fuselage, downwash, efficiencies, propeller) are the aerodynamicist's of
+// 2026-10-22, computed on the geometry of the 1917 drawing (spad7-calculs.md § 3).
+Aircraft(
+    id: "spad7",
+    name: "SPAD S.VII C.1 (Hispano-Suiza 8Aa, 150 ch)",
+    research: "docs/recherche/spad7.md",
+    datum: "bord d'attaque du plan inférieur, dans l'axe de l'avion (point virtuel)",
+
+    mass: (
+        empty: Lb(1100.0),                                            // S: S46 p. 205, both 7C1 lines, and S47 p. 237 (spad7.md § 3)
+        cg_empty_m: (-0.313, 0.0, -0.448),                            // C: fdm_lab inertia spad7 (masses.ron)
+        inertia_empty_kg_m2: (ixx: 784.0, iyy: 778.0, izz: 1360.0, ixz: 28.0), // C: fdm_lab inertia spad7 (masses.ron)
+        pilot: Lb(176.0),                                             // S: S46 crew load (p. 204-205)
+        pilot_m: (-1.15, 0.0, -0.37),                                 // C: seat behind the cockpit opening of the drawing, about 0.45 m above the floor
+        fuel: (capacity: L(135.0), density_kg_per_l: 0.72, position_m: (-0.95, 0.0, -0.15)), // C: 135 L in all (S13, seen in summary); E: density; main tank under the seat (S13)
+        payload: [
+            (name: "armement (Vickers et munitions)", mass: Lb(88.0), position_m: (-0.10, 0.0, -0.75)), // S: S46 armament load; E: gun on the cowling, ammunition box behind the engine
+            (name: "huile", mass: Kg(8.0), position_m: (0.15, 0.0, -0.20)),                            // E: about 2 h at 2.8 L/h (H20) plus the circuit, inside the 176 lb of petrol and oil of S46
+            (name: "divers", mass: Lb(11.0), position_m: (-1.0, 0.0, -0.5)),                           // S: S46 sundries; E: position near the cockpit
+        ],
+    ),
+
+    surfaces: [
+        (
+            name: "upper_wing",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [(
+                root_m: (-0.3025, 0.0, -1.27), tip_m: (-0.3025, 3.91, -1.27), // C: quarter chord of the 1.21 m chord, no stagger (vertical struts on the 1917 drawing); S: span 7.82 m (spad7.md § 2.1), gap 4 ft 2 in (S48)
+                chord_root: M(1.21), chord_tip: M(1.21),                       // C: published area (A) over the gross rectangle, ratio 0.94 of the SPAD family (spad7-calculs.md § 3)
+                incidence: Deg(2.3),                                           // C: fuselage level at 170 km/h and 2 000 m (aerodynamicist's criterion), decalage +0.5° of the XIII (S15)
+                strips: 8,                                                     // E: discretisation
+            )],
+            airfoil: "airfoils/spad.ron",
+            span_efficiency: 0.92,                                             // C: 1/(1 + δ) = 0.952 (TR 416) × 0.979 fuselage gap × 0.985 cut-out and rounded tips
+            controls: [
+                (control: Aileron, span_from: 0.5, span_to: 1.0, chord_ratio: 0.32), // C: upper plane only, 1.95 × 0.44 m on the drawing (S48: upper plane)
+            ],
+        ),
+        (
+            name: "lower_wing",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [(
+                root_m: (-0.3025, 0.40, 0.0), tip_m: (-0.3025, 3.91, 0.0),    // C: from the side of the fuselage (0.80 m wide) to the tip; equal spans (S48, S16)
+                chord_root: M(1.21), chord_tip: M(1.21),                       // C: as the upper plane
+                incidence: Deg(1.8),                                           // C: fuselage level at 170 km/h and 2 000 m
+                strips: 8,                                                     // E: discretisation
+            )],
+            airfoil: "airfoils/spad.ron",
+            span_efficiency: 0.92,                                             // C: as the upper plane
+        ),
+        (
+            name: "tailplane",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [(
+                root_m: (-4.26, 0.0, -0.70), tip_m: (-4.26, 1.405, -0.70),    // C: unswept quarter chord at the mean aerodynamic chord (the loader widens swept strips); span 2.81 m and height on the drawing
+                chord_root: M(1.14), chord_tip: M(0.50),                       // C: drawing, area kept
+                incidence: Deg(0.0),                                           // C: horizontal on the drawing; S.XI tailplane at 0° (S49)
+                strips: 3,                                                     // E: discretisation
+            )],
+            airfoil: "airfoils/spad_empennage.ron",
+            span_efficiency: 0.80,                                             // C: Helmbold lift slope at aspect ratio 3.4 reproduced by the lifting line
+            controls: [
+                (control: Elevator, span_from: 0.0, span_to: 1.0, chord_ratio: 0.44), // C: elevator 1.00 of 2.30 m² on the drawing
+            ],
+            reference_area: Some(M2(2.30)),                                    // C: digitised outline of the drawing
+        ),
+        (
+            name: "fin",
+            kind: Vertical,
+            mirrored: false,
+            panels: [
+                (
+                    root_m: (-4.8825, 0.0, -0.31), tip_m: (-4.8825, 0.0, -0.70), // C: rudder below the tailplane, down to the bottom of the fuselage (drawing)
+                    chord_root: M(0.53), chord_tip: M(0.53),                     // C: drawing
+                    incidence: Deg(0.0),                                         // E: no offset
+                    strips: 1,                                                   // E: discretisation
+                ),
+                (
+                    root_m: (-4.353, 0.0, -0.70), tip_m: (-4.353, 0.0, -1.40),  // C: fin and rudder above the tailplane, unswept quarter chord at the mean chord (drawing)
+                    chord_root: M(1.61), chord_tip: M(0.39),                     // C: drawing
+                    incidence: Deg(0.0),                                         // E: no offset
+                    strips: 3,                                                   // E: discretisation
+                ),
+            ],
+            airfoil: "airfoils/spad_empennage.ron",
+            span_efficiency: 0.61,                                             // C: reproduces the DATCOM and Helmbold slope of 1.9 per radian (sweep of the real outline about 40°)
+            aspect_ratio: Some(1.5),                                           // E: geometric 1.31 with a partial end plate of tailplane and fuselage (Hemke, TR 267); range 1.3 to 1.7
+            controls: [
+                (control: Rudder, panel: 0, span_from: 0.0, span_to: 1.0, chord_ratio: 1.0),  // C: all rudder below the tailplane
+                (control: Rudder, panel: 1, span_from: 0.0, span_to: 1.0, chord_ratio: 0.46), // C: 0.323 m² of rudder over 0.70 m of height
+            ],
+            reference_area: Some(M2(0.90)),                                    // C: fin 0.37 + rudder 0.53 m² on the drawing
+        ),
+    ],
+    interference: [(planes: ("upper_wing", "lower_wing"), sigma: 0.54)],      // C: Prandtl, NACA TN 182 table I, gap / span 0.162 (spad7.md § 2.4)
+    downwash: Some((
+        wings: ["upper_wing", "lower_wing"],
+        tail: ["tailplane"],
+        factor: 0.125,                                                         // C: two flat vortex sheets in the Trefftz plane, 2S/(πb²) = 0.187 × 0.84 (tail at mid-gap) × 0.86 (near wake) × 0.915 (DATCOM); equivalent monoplane 0.122
+        tail_arm: M(3.96),                                                     // C: wing quarter chord (x −0.30) to the tailplane mean-chord quarter chord (x −4.26)
+    )),
+
+    // Element by element (Hoerner); no 3/5 interference factor (S43 had no propeller; the
+    // drag of the B.E.2c parts added up, Relf and Lavender 1917). Round stranded wires: no
+    // source shows streamlined wires on the S.VII. Check: equivalent f of 0.91 m² in level
+    // flight at 2 000 m, profiles included, against 0.94 to 0.98 m² from S46 (not tuned).
+    parasite_drag: [
+        (name: "radiateur frontal", cd: 0.45, reference_area: M2(0.396), position_m: (0.62, 0.0, -0.38)),               // E: internal flow (radiator and cowl losses, exit about half the opening) 0.30-0.35 plus nose and louvres; C: circular opening 0.71 m (drawing)
+        (name: "fuselage (frottement)", cd: 0.0047, reference_area: M2(13.5), position_m: (-1.50, 0.0, -0.47)),         // C: Schlichting turbulent Cf at Re 1.7e7 × Hoerner form factor 1.20 × 1.25 (E: fabric, stringers, louvres) plus the tail post; wetted area of the drawing stations
+        (name: "poste, tête du pilote et pare-brise", cd: 0.45, reference_area: M2(0.10), position_m: (-1.15, 0.0, -1.08)), // E: helmeted head 0.045 m², 60 % sheltered, windscreen and cavity
+        (name: "Vickers", cd: 0.75, reference_area: M2(0.020), position_m: (-0.05, 0.0, -1.02)),                       // E: frontal area of box, jacket and sight
+        (name: "échappements et bossages", cd: 1.0, reference_area: M2(0.015), position_m: (-0.60, 0.0, -0.49)),      // E: two pipes 1.6 m × 0.06 m seen in profile, plus bulges
+        (name: "cabane", cd: 1.0, reference_area: M2(0.010), position_m: (-0.40, 0.0, -1.12)),                        // E: 4 struts of 0.43 m (front view), fittings and bracing
+        (name: "train", cd: 1.0, reference_area: M2(0.047), position_m: (0.0, 0.0, 0.45)),                            // C: 4 streamlined legs, faired axle as on the S.XI, rubber cord and guides, +10 % interference
+        (name: "roue droite", cd: 0.30, reference_area: M2(0.060), position_m: (0.12, 0.76, 0.78)),                  // E: 700 × 75 wheel with covered spokes, plus hub; S: track 5 ft (S48)
+        (name: "roue gauche", cd: 0.30, reference_area: M2(0.060), position_m: (0.12, -0.76, 0.78)),                 // E: as the right wheel
+        (name: "béquille", cd: 1.0, reference_area: M2(0.006), position_m: (-4.30, 0.0, -0.10)),                      // E:
+        (name: "haubans et guignols d'empennage", cd: 1.0, reference_area: M2(0.015), position_m: (-4.40, 0.0, -0.65)), // E: 4 bracing wires of 0.8 m, horns, cables
+        (name: "mâts extérieurs droits", cd: 0.133, reference_area: M2(0.084), position_m: (-0.40, 3.00, -0.635)),     // C: 2 struts 0.035 × 1.20 m, streamlined fineness 3 (cd 0.11 at Re 3e5), fittings; y read on the front view
+        (name: "mâts extérieurs gauches", cd: 0.133, reference_area: M2(0.084), position_m: (-0.40, -3.00, -0.635)),   // C: as the right struts
+        (name: "mâts intermédiaires droits", cd: 0.177, reference_area: M2(0.060), position_m: (-0.40, 1.70, -0.635)), // C: 0.025 m thick (E:), same method, plus the collar where the wires cross
+        (name: "mâts intermédiaires gauches", cd: 0.177, reference_area: M2(0.060), position_m: (-0.40, -1.70, -0.635)), // C: as the right struts
+        (name: "renvois d'ailerons droits", cd: 1.15, reference_area: M2(0.021), position_m: (-0.75, 3.00, -0.635)),   // E: round rod 15 mm × 1.25 m, bellcrank and horn (S48: outside linkage)
+        (name: "renvois d'ailerons gauches", cd: 1.15, reference_area: M2(0.021), position_m: (-0.75, -3.00, -0.635)), // E: as the right linkage
+        (name: "câbles intérieurs droits", cd: 1.03, reference_area: M2(0.0216), position_m: (-0.40, 0.75, -0.65)),    // C: 8 flying wires 4.5 mm doubled in tandem, 4 landing 3.5 mm, 4 incidence 3 mm; cd 1.2 stranded at Re 1e4, +12 % turnbuckles; 27 % of the length within 1.2 m of the axis (in the slipstream)
+        (name: "câbles intérieurs gauches", cd: 1.03, reference_area: M2(0.0216), position_m: (-0.40, -0.75, -0.65)),  // C: as the right inner wires
+        (name: "câbles extérieurs droits", cd: 1.03, reference_area: M2(0.0583), position_m: (-0.40, 2.05, -0.65)),    // C: the other 73 % of the wire length
+        (name: "câbles extérieurs gauches", cd: 1.03, reference_area: M2(0.0583), position_m: (-0.40, -2.05, -0.65)),  // C: as the right outer wires
+    ],
+
+    fuselage: Some((
+        position_m: (-1.55, 0.0, -0.47),                                       // C: centroid of the side (x −1.59) and plan (x −1.48) areas, fuselage axis
+        volume_m3: 0.95,                                                       // C: Multhopp (DATCOM): π/4 w² weighted by the upwash ahead of the wings, nil across them, (x/l_h)(1 − dε/dα) behind: k Vol = 0.79 m³ divided by k₂ − k₁
+        apparent_mass: 0.83,                                                   // C: Lamb, ellipsoid of fineness 4.87 (length 5.14 m on the drawing)
+        plan_area: M2(3.30), side_area: M2(4.50),                              // C: drawing, minus the part under the tailplane (plan) and without the tail (side)
+        crossflow_drag: 0.75,                                                  // E: η 0.61 (Allen and Perkins, fineness 4.9) × C_dc 1.2 (rounded rectangular section)
+    )),
+
+    engine: Inline((
+        name: "Hispano-Suiza 8Aa",
+        power_curve: [
+            //! C: shape of NACA Report 46 (180 hp Hispano, table 1, sea level, full throttle; hispano-suiza-8a.md § 3.1) scaled to the 175 hp at 1 700 rpm « maximum power permitted » of the 8Aa (S46); 1 300 rpm from mechanical efficiency × indicated power
+            (speed: Rpm(1300.0), power: Hp(130.2)),
+            (speed: Rpm(1500.0), power: Hp(154.3)),
+            (speed: Rpm(1700.0), power: Hp(175.0)),
+            (speed: Rpm(1900.0), power: Hp(185.3)),
+            (speed: Rpm(2100.0), power: Hp(196.6)),
+        ],
+        friction: Curve([
+            //! C: friction power of NACA Report 46 (same bore, stroke and family), about constant with altitude
+            (speed: Rpm(1300.0), power: Hp(13.1)),
+            (speed: Rpm(1500.0), power: Hp(14.7)),
+            (speed: Rpm(1700.0), power: Hp(16.0)),
+            (speed: Rpm(1900.0), power: Hp(20.0)),
+            (speed: Rpm(2100.0), power: Hp(25.0)),
+        ]),
+        altitude_law: Pressure(0.93),                                          // C: R&M 462 flight measurement on a 150 hp Hispano, brake power in (p/p₀)^1.04, converted to the indicated power with the friction above (±0.6 % from 1 000 to 5 000 m)
+        idle_throttle: 0.045,                                                  // C: about 500 rpm at a standstill on the ground with the propeller's C_P(0) (E: idling 450 to 500 rpm)
+        stall_speed: Rpm(200.0),                                               // E: magneto ignition, full firing from 400 rpm
+    )),
+
+    propeller: (
+        table: "aircraft/spad7/propeller.ron",
+        diameter: M(2.45),                                                     // C: three documents out of four for the 150 ch (hispano-suiza-8a.md § 7.1)
+        hub_m: (0.78, 0.0, -0.38),                                             // C: 1917 drawing, hub 0.36 to 0.41 m above the lower leading edge (aerodynamicist's reading)
+        rotation: Clockwise,                                                   // C: clockwise seen by the pilot, five concordant clues (hispano-suiza-8a.md § 7.3)
+        p_factor_m: 1.1,                                                       // C: blade elements on the D' geometry (Report 301, fig. 5): 1.16 to 1.68 m with frozen inflow at the climbing J, × 0.75 for the induced-velocity feedback
+        normal_force: 0.038,                                                   // C: blade elements, c_n 0.034 to 0.038 for J 0.6 to 0.76, × 1.1 for the upwash ahead of the wings
+        rotor_inertia_kg_m2: 7.0,                                              // C: wooden propeller of 22 kg (E:), m R² / 5 = 6.6, plus 0.3 to 0.6 of crankshaft
+    ),
+
+    travel: (aileron: Deg(20.0), elevator: Deg(25.0), rudder: Deg(30.0)),      // E: usual period throws, no SPAD source (the XIII manual, S38, still to be found)
+)
