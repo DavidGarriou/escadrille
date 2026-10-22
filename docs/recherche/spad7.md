@@ -1,8 +1,8 @@
 # SPAD S.VII C.1 — fiche de recherche
 
 - Identifiant : `spad7` (même nom que `assets/aircraft/spad7/`)
-- Dernière mise à jour : 2026-10-21
-- État : **en cours** (quatrième passe). Sont désormais sourcés par des documents d'époque lus :
+- Dernière mise à jour : 2026-10-22
+- État : **en cours** (sixième passe). Sont désormais sourcés par des documents d'époque lus :
   - le profil « Spad » (B) ;
   - les polaires du RAF 15 (A pour ce profil) ;
   - la courbe de puissance et la loi d'altitude du Hispano de 180 hp (B pour un 8Ab) ;
@@ -10,6 +10,7 @@
   - des lois d'interférence biplan (C pour le SPAD) ;
   - **quatrième passe** : des **vitesses en palier, des masses, une surface et des cotes du S.VII** lues dans *Flight* (1917 et 1919), dont deux tableaux officiels américains d'avions français et italiens ;
   - **cinquième passe (2026-10-21)** : ces tableaux ont été **lus sur l'image des pages**. Les vitesses en palier à 2 000, 3 000, 4 000 et 5 000 m, les temps de montée, les plafonds théoriques et les régimes moteur des deux versions passent en **A** (§ 5). Plusieurs lectures OCR de la quatrième passe étaient fausses ; elles sont corrigées et signalées au journal.
+  - **sixième passe (2026-10-22)** : la réserve de lecture sur la ligne du 8Aa (119,5 et 111,5 mph) est **levée** par un contrôle interne du tableau (§ 0) ; les facteurs τ et δ de l'aile rectangulaire sont trouvés dans le NACA TR 416 (`profil-spad7.md` § 4.2).
 - Fiches liées : [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (moteur et hélice), [`profil-spad7.md`](profil-spad7.md) (profil d'aile)
 - Contexte de jeu visé : escadrille SPA 3 (« Cigognes », Groupe de Combat 12), Flandres, été 1917
 
@@ -50,6 +51,15 @@
 **Cinquième passe (2026-10-21) : lecture sur l'image [LU-IMG].** Le coordinateur a fourni les pages 199 à 207 du numéro du 13 février 1919 et 237-238 du numéro du 20 février 1919, en images PNG à 150 dpi, tirées des PDF d'archive.org. Chaque chiffre cité comme [LU-IMG] a été lu sur l'image.
 - **Règle de lecture du tableau S46**, établie sur l'image : le régime moteur de chaque ligne est imprimé **sous** la ligne, en face de la puissance et de chaque vitesse. Contrôle : sur toutes les lignes voisines (Nieuport, Breguet, Voisin, SPAD XIII), le nombre de régimes imprimés sous une ligne égale exactement le nombre de vitesses de cette ligne. En quatrième passe, j'avais attribué à tort au 180 ch les régimes de la ligne du 150 ch.
 - **Limite** : la ligne « Spa. 7C1 / Hispano 8Aa » est la **première de la page 205**, en haut de la feuille, et elle est pâle. Elle reste lisible, mais les chiffres 3 et 5 y sont les plus incertains. L'OCR d'archive.org y lisait systématiquement des 3 là où l'image montre des 5 (431 pour 451, 1 530 pour 1 550, 119,3 pour 119,5). La résolution fournie ne permet pas mieux.
+
+**Sixième passe (2026-10-22) : réserve levée [LU-IMG + contrôle C].** Le coordinateur a fourni le haut de la p. 205 à 300 dpi (4 013 × 2 700 px, `f19190213-p205-300dpi-15.png`).
+- **Limite de l'outil.** L'image m'est affichée réduite de moitié (2 000 px de large), soit la **même résolution effective** qu'en cinquième passe, autour de 150 dpi. Ma lecture directe est inchangée : « 119·5 », « 111·5 », « 451 », « 1550 ». Elle ne suffirait pas seule à lever le doute.
+- **Contrôle interne décisif pour les vitesses** (C, fait ici sur les p. 204-205) :
+  - le tableau « in service » arrondit **toutes** ses vitesses au demi-mph. J'ai relevé 85 autres vitesses dans ce tableau (68 p. 204, 17 en haut de la p. 205, dont la ligne du 8Ab : 132, 126, 124·5, 116) : toutes sont des entiers ou des demis ;
+  - à l'inverse, le tableau « under test », plus bas sur la p. 205, donne des dixièmes (110·6, 118·7, 126·4, 113·2, 133·7…) ;
+  - une valeur « 119·3 » ou « 111·3 » serait donc la **seule exception** du tableau. **119,5 et 111,5 mph sont confirmés.**
+- **Masses** : 451 = 176 + 176 + 88 + 11 et 1 100 + 451 = 1 551 ≈ 1 550, contrôles déjà notés en cinquième passe (§ 3).
+- **Conséquence sur la précision** : l'arrondi au demi-mph de l'imprimé ajoute une incertitude de ±0,25 mph, soit **±0,4 km/h**, sur chaque vitesse du tableau « in service ». Elle remplace la réserve de lecture de ±0,3 km/h.
 
 ## 1. Identification et contexte
 
@@ -193,6 +203,8 @@ Source : S15 [RÉSUMÉ], *This Day in Aviation*, d'après l'exemplaire 17956 ess
 **Traînée induite de la cellule : le facteur σ de Prandtl (S61, quatrième passe) [LU, tableaux vérifiés sur l'image]**
 
 Source : L. Prandtl, NACA TN 182 (1924), traduction d'un article des *Technische Berichte* de Göttingen (vol. III, n° 7, p. 309-315).
+
+**Attention à la notation** (sixième passe) : le NACA TR 416 emploie aussi la lettre σ, mais pour un tout autre facteur, celui de la traînée induite d'une aile **rectangulaire**. Dans nos fiches, ce dernier est noté **δ** (`profil-spad7.md` § 4.2). Ici, σ désigne seulement le facteur biplan de Prandtl.
 - **Hypothèses** (p. 1, 5-6) : portance de chaque plan répartie en demi-ellipse le long de l'envergure ; plans sans décalage horizontal ; G = écartement vertical ; b₁, b₂ = envergures ; r = b₂/b₁ ; q = ρV²/2 (pression dynamique, définie p. 12 par l'exemple numérique).
 - **Formules** (p. 6 et 9) : traînée propre d'un plan D₁₁ = L₁²/(π q b₁²) ; traînée mutuelle D₁₂ = D₂₁ = σ L₁ L₂ /(π q b₁ b₂) ; traînée induite totale du biplan D = [L₁²/b₁² + 2σ L₁L₂/(b₁b₂) + L₂²/b₂²]/(π q) (équation 7).
 - **Décalage horizontal** (p. 9) : il ne change pas la traînée induite **totale**. Avec un décalage positif, la traînée du plan supérieur diminue et celle du plan inférieur augmente d'autant.
@@ -298,8 +310,8 @@ Conséquence possible (C, raisonnement, à faire émerger et non à scripter) : 
 
 | Essai | Valeur | Conditions (altitude, masse) | Source | Confiance |
 |---|---|---|---|---|
-| Vitesse en palier à **2 000 m** | **192 km/h (119,5 mph)** à 1 720 tr/min | 703 kg (1 550 lb) ; puissance maximale autorisée 175 hp à 1 700 tr/min | S46, p. 205, ligne 8Aa [LU-IMG] ; 192 km/h aussi dans S5 [RÉSUMÉ] | **A** (relevée de B). Dernier chiffre lu « 5 » sur une ligne pâle (l'OCR lisait « 3 ») : ±0,3 km/h |
-| Vitesse en palier à **3 000 m** | **179 km/h (111,5 mph)** à 1 680 tr/min | idem | S46 [LU-IMG] | **A**, même réserve de lecture |
+| Vitesse en palier à **2 000 m** | **192 km/h (119,5 mph)** à 1 720 tr/min | 703 kg (1 550 lb) ; puissance maximale autorisée 175 hp à 1 700 tr/min | S46, p. 205, ligne 8Aa [LU-IMG] ; 192 km/h aussi dans S5 [RÉSUMÉ] | **A** (relevée de B). Lecture « 5 » confirmée en sixième passe par l'arrondi au demi-mph de tout le tableau (§ 0) ; arrondi d'impression ±0,4 km/h |
+| Vitesse en palier à **3 000 m** | **179 km/h (111,5 mph)** à 1 680 tr/min | idem | S46 [LU-IMG] | **A** ; lecture confirmée de même (§ 0), ±0,4 km/h |
 | Vitesse en palier à **4 000 m** | **174 km/h (108 mph)** à 1 640 tr/min | idem | S46 [LU-IMG] | **A** |
 | Vitesse à 5 000 m | non donnée (« .. ») | — | S46 | — |
 | Vitesse max (valeur mal attribuée) | 212 km/h (132 mph) à 2 000 m | S9 l'attribue au 150 ch | S9 [RÉSUMÉ] | **Réattribuée au 180 ch** (§ 5.2) |
@@ -551,7 +563,7 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 **Lues en quatrième passe [LU-OCR]** : texte OCR d'archive.org téléchargé par le coordinateur le 2026-10-20 et lu comme des données. Pour *Flight*, l'identifiant archive.org est `Flight_International_Magazine_AAAA-MM-JJ-pdf`, à l'adresse `https://archive.org/details/<identifiant>`. Les pages sont la pagination imprimée, repérée dans l'OCR (à ±1 page près quand un article chevauche deux pages).
 - **S46** — « French Aeroplanes in Service at the Front » et « French Aeroplanes under Test », tableaux compilés par le service aéronautique américain, publiés par *Automotive Industries* (New York ; numéro non identifié, début 1919), reproduits dans *Flight*, vol. 11, 13 février 1919, p. 201-207 (présentation p. 199, « Some interesting statistics »). Même numéro : « Complete technical specifications of important American and foreign aeroplane engines » et tableaux de performances des moteurs. Identifiant `Flight_International_Magazine_1919-02-13-pdf`. Primaire (compilation officielle). OCR désordonné ; **lu sur l'image en cinquième passe** (complément ci-dessous). Le tableau des avions français occupe les p. 204-205.
 - **S47** — « Comparative Chart of Aeroplanes in the Italian Service », même origine américaine, *Flight*, 20 février 1919, **p. 237** (présentation p. 238, « More statistics » ; la p. 238 porte le tableau des avions américains). `Flight_International_Magazine_1919-02-20-pdf`. Primaire (compilation). **[LU-IMG]** en cinquième passe : ligne « Spad One Seater, flat-winged ».
-- **Complément à S46 (cinquième passe)** : pages lues sur l'image [LU-IMG], images PNG à 150 dpi des pages 199 à 207 tirées du PDF de l'item `Flight_International_Magazine_1919-02-13-pdf`, fournies par le coordinateur le 2026-10-21. Les en-têtes du tableau des avions sont p. 204 ; les deux lignes « Spa. 7C1 » sont en tête de la p. 205 ; les tableaux des moteurs sont p. 201 (caractéristiques), 202 (accessoires) et 203 (consommations, masses, puissances estimées en altitude).
+- **Complément à S46 (cinquième passe)** : pages lues sur l'image [LU-IMG], images PNG à 150 dpi des pages 199 à 207 tirées du PDF de l'item `Flight_International_Magazine_1919-02-13-pdf`, fournies par le coordinateur le 2026-10-21. Les en-têtes du tableau des avions sont p. 204 ; les deux lignes « Spa. 7C1 » sont en tête de la p. 205 ; les tableaux des moteurs sont p. 201 (caractéristiques), 202 (accessoires) et 203 (consommations, masses, puissances estimées en altitude). **Sixième passe** : haut de la p. 205 en image à 300 dpi (`f19190213-p205-300dpi-15.png`, 4 013 × 2 700 px), fourni par le coordinateur le 2026-10-22, tiré du même PDF.
 - **S63** — F. H. Norton (Langley), « The Effect of Staggering a Biplane », NACA Technical Note n° 70, septembre 1921 (essais du MIT de 1918). NTRS 19930080864, https://ntrs.nasa.gov/citations/19930080864, téléchargé par le coordinateur le 2026-10-21. **[LU]** : p. 1-3 et figure 1 sur l'image. Primaire.
 - **S48** — « The Spad Scout », d'après *Aerial Age Weekly* (New York, vol. 5, n° 17, 2 juillet 1917, p. 569, selon S56), reproduit dans *Flight*, rubrique « From other lands », 16 août 1917, p. 840-841. `Flight_International_Magazine_1917-08-16-pdf`. Secondaire d'époque (presse) ; cotes dites « approximatives ».
 - **S49** — « The Spad Two-Seater, 200 h.p. Hispano-Suiza engine », traduction d'un rapport allemand « apparemment officiel » publié par *Flugsport* le 10 avril 1918, *Flight*, 16 mai 1918, p. 527-529. `Flight_International_Magazine_1918-05-16-pdf`. Primaire (examen d'un appareil capturé), sur le **S.XI**.
@@ -647,11 +659,11 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 | — | *Bibliography of Aeronautics* 1917-1921 (P. Brockett) | `bibliographyofa191721broc` | **Fait (quatrième passe)** : S56 |
 | — | *Technical Report of the ACA* 1917-18, vol. II | `technicalreport1917aero_2` | **Fait (quatrième passe)** : volume II (hélices, vraie grandeur) ; rien sur le SPAD lui-même, mais R&M 462, 324 et 492 (S60 ; `hispano-suiza-8a.md`, `profil-spad7.md`) |
 | — | Images des pages de *Flight* du 13 février 1919 (p. 199-207) et du 20 février 1919 (p. 237-238) | `Flight_International_Magazine_1919-02-13-pdf` ; `…-02-20-pdf` | **Fait (cinquième passe)** |
-| 1 | Image à **plus haute résolution** (300 dpi ou plus) du **haut de la p. 205** de *Flight* du 13 février 1919 | même item | Lever le doute sur les chiffres 3 et 5 de la ligne pâle du 8Aa (119,5 ou 119,3 mph ; 111,5 ou 111,3 mph) ; enjeu faible (±0,3 km/h) |
+| — | Image à 300 dpi du **haut de la p. 205** de *Flight* du 13 février 1919 | même item | **Fait (sixième passe)** : 119,5 et 111,5 mph confirmés par contrôle interne (§ 0). Facultatif : un **recadrage** de cette image (environ x = 900 à 3 000 et y = 0 à 200 en pixels de l'original), qui serait affiché sans réduction, pour une lecture directe à pleine résolution |
 | 1 | *Automotive Industries*, numéro de janvier ou février 1919 contenant les tableaux repris par *Flight* (S46, S47) | à chercher (collection *Automotive Industries* sur archive.org ou HathiTrust) | Original américain des tableaux, sans doute mieux imprimé ; peut-être des notes sur les conditions d'essai |
 | 2 | *Aerial Age Weekly*, vol. 5, n° 17, 2 juillet 1917, p. 569 : texte OCR et dessin | **absent d'archive.org** selon le coordinateur | Original de S48 ; moins urgent depuis la lecture de S46 |
 | 2 | *Technical Report of the ACA* 1917-18, **vol. I** (maquettes) | **absent d'archive.org** selon le coordinateur ; piste : Bibliothèques numériques de la Défense (`bibliotheques-numeriques.defense.gouv.fr`), qui signalent les volumes II et III de la série, ou les archives ARC de Cranfield | RAF 14 aux incidences négatives ; effet biplan sur le RAF 15 ; découpe dans le plan supérieur |
-| 1 | NACA TR 416, Jacobs et Abbott, *The N.A.C.A. Variable-Density Wind Tunnel* (1932) | NTRS 19930091490 d'après le moteur de recherche, à confirmer | Formules de correction d'un modèle rectangulaire d'allongement 6 à l'allongement infini (τ, δ), auxquelles renvoient les TR 460 et 669 (`profil-spad7.md` § 4.2) |
+| — | NACA TR 416, Jacobs et Abbott, *The N.A.C.A. Variable-Density Wind Tunnel* (1932) | NTRS 19930091490 (confirmé) | **Fait (sixième passe)** : τ ≈ 0,175 et δ ≈ 0,05 à l'allongement 6 (`profil-spad7.md` § 4.2, A26). Facultatif : figure 11 (PDF p. 10) rendue à 300 dpi et recadrée, pour affiner la lecture (commande au § 5 de `profil-spad7.md`) |
 | 2 | *Flugsport* 1917-1918 | à chercher (archive.org, ou bibliothèques numériques allemandes) | Examen d'un **S.VII capturé** ; original du rapport sur le S.XI (S49) |
 | 2 | *Scientific American*, vol. 118, 2 février 1918, p. 107, « Spad pursuit biplane » | à chercher | Description d'époque avec diagramme |
 | 2 | *The Aeroplane*, 10 janvier 1917, p. 152 (« The Albatros-Spad ») et 2 mai 1917, p. 1129-1130 (usine Blériot-Spad d'Addlestone) | identifiants non relevés | Réputation ; production britannique |
@@ -715,3 +727,7 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 - **Surface.** S46 imprime 195 sq ft, mais sa charge alaire (8,08 lb/sq ft) a été calculée avec 192 sq ft, comme celle de S47 : **17,85 m² retenu, A** pour le chiffre ; définition toujours inconnue.
 - **Envergure 7,82 m et hauteur 2,20 m : A.**
 - **Décalage horizontal (question de l'aérodynamicien).** Toujours non sourcé pour le S.VII. Facteurs de portance en fonction du décalage d'après la TN 70 (MIT, 1918) ajoutés au § 2.4, en C pour le SPAD.
+
+**Sixième passe (2026-10-22 ; *Flight* p. 205 à 300 dpi, NACA TR 416)**
+- **Vitesses du 150 ch à 2 000 et 3 000 m : 119,5 et 111,5 mph confirmés**, soit 192 et 179 km/h. L'image à 300 dpi m'est affichée à la même résolution effective qu'en cinquième passe, donc ma lecture seule ne tranchait pas. Le contrôle décisif est interne : les 85 autres vitesses du tableau « in service » sont toutes arrondies au demi-mph, contre des dixièmes dans le tableau « under test ». La réserve de lecture (±0,3 km/h) est remplacée par l'arrondi d'impression (±0,4 km/h). **Confiance A maintenue** ; les cibles du § 5.4 ne changent pas.
+- **Facteurs τ et δ de l'aile rectangulaire** (question de l'aérodynamicien) : trouvés dans le TR 416, p. 312-314. À l'allongement 6, **τ ≈ 0,175 et δ ≈ 0,05**, lecture graphique à préciser ; ils confirment les valeurs de l'aérodynamicien. Détail et décision : `profil-spad7.md` § 4.2 et § 7. **Notation** : le TR 416 appelle σ ce facteur de traînée. Ce n'est pas le σ de Prandtl du § 2.4 ; dans nos fiches, il reste noté δ.

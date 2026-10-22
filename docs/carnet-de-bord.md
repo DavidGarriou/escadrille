@@ -813,3 +813,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   2. tracés **SVG** sans fichier de police : les visionneuses rendent le texte, mais Claude ne peut pas les regarder comme des images ;
   3. tracés **sans texte** : courbes seules, valeurs dans le rapport.
 - **A** **Fichiers du SPAD VII** : le processus `/nouvel-avion` est réservé à une invocation explicite du joueur. Proposition : lancer `/nouvel-avion spad7` quand la liste des estimations de l'aérodynamicien sera revenue.
+
+### Sixième passe de l'historien : corrections d'allongement et ligne du 150 ch
+- **R** **NACA TR 416** (Jacobs et Abbott, 1931), lu sur l'image des pages 312 à 314 :
+  - τ corrige l'angle induit, et le δ de l'aérodynamicien correspond au « σ » de ce rapport (traînée induite) ;
+  - pour l'**allongement 6**, lecture graphique de la figure 11 : **τ ≈ 0,175** (±0,01) et **δ ≈ 0,05** (±0,005). Les valeurs supposées par l'aérodynamicien sont confirmées ;
+  - formules exactes relevées, y compris la correction de paroi : c'est celle que le rapport 331 applique au rapport 233 (0,380° par unité de C_L). La chaîne de conversion des polaires du RAF 15 vers l'allongement infini devient applicable ;
+  - avertissement ajouté dans les fiches : le « σ » du TR 416 n'a rien à voir avec le σ de Prandtl du biplan.
+- **R** **Ligne du 8Aa** (*Flight*, p. 205) : la vitesse de 119,5 mph est **confirmée** par un contrôle interne, puisque le tableau arrondit toutes ses vitesses au demi-mph (85 autres valeurs vérifiées). L'incertitude devient ±0,4 km/h, la confiance reste A, et les cibles ne changent pas.
+- **A** Fiches `spad7.md` et `profil-spad7.md` commitées.
+- **⚠** Facultatif, non fait : un recadrage à 300 dpi de la figure 11 réduirait l'incertitude sur τ à ±0,003, sans enjeu pour le M1.

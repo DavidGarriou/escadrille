@@ -1,7 +1,7 @@
 # Profil d'aile du SPAD VII — fiche de recherche
 
 - Identifiant : `profil-spad7` (fichier de polaires visé : `airfoils/spad.ron`, voir `format-avion.md`)
-- Dernière mise à jour : 2026-10-21 (cinquième passe : TR 460 et TR 669 lus ; τ et δ toujours **non trouvés**, renvoi commun au TR 416 ; corrections de seconde approximation du TR 669 relevées au § 4.2. Quatrième passe : conventions des coefficients établies par un document britannique d'époque ; incidences négatives non trouvées ; § 2.3, 3.7, 4.2 et 4.5)
+- Dernière mise à jour : 2026-10-22 (sixième passe : **TR 416 lu** ; τ et δ trouvés, avec leurs formules, et relevés pour l'allongement 6 au § 4.2 ; le TR 416 nomme σ le facteur de traînée. Cinquième passe : TR 460 et TR 669 lus, renvoi commun au TR 416 ; corrections de seconde approximation du TR 669 relevées au § 4.2. Quatrième passe : conventions des coefficients établies par un document britannique d'époque ; incidences négatives non trouvées ; § 2.3, 3.7, 4.2 et 4.5)
 - État : **en cours**.
   - Un profil nommé **« Spad »** a été trouvé dans le NACA Report 93 (ordonnées et polaire du MIT de 1918). Confiance **B** pour le S.VII : le document ne précise pas de quel SPAD il s'agit.
   - Des polaires de **RAF 15** ont été mesurées par la NACA jusqu'au Reynolds de vraie grandeur. Confiance **A** pour ce profil, **C** comme substitut.
@@ -168,27 +168,63 @@ Contrôle (C, calcul fait ici) : entre −4° et −6°, la pente vaut environ 0
 Toutes les données ci-dessus sont des **maquettes d'allongement 6**. Formules de Prandtl, celles qu'utilise le Report 331 (A18, p. 592) : C_D0 = C_D − C_L²/(π·A), et α∞ = α − (C_L/(π·A))·(180/π), avec A = 6, en supposant une répartition elliptique (approximation).
 
 Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur les valeurs corrigées du Report 331, entre −1,48° et 6,24°) :
-- pente de la maquette ≈ 0,0747 par degré, soit ≈ 0,0967 par degré (5,5 par radian) en allongement infini ;
+- pente de la maquette ≈ 0,0747 par degré, soit ≈ 0,0967 par degré (5,5 par radian) en allongement infini avec la correction elliptique, et ≈ 0,102 par degré (5,84 par radian) avec le τ de l'aile rectangulaire (sixième passe, ci-dessous) ;
 - incidence de portance nulle ≈ −2,25° par interpolation (le Report 309 donne −1,6 à −2,0° à bas Reynolds) ;
 - C_L max ≈ 1,21, peu modifié par le passage en 2D.
 
-**Facteurs τ et δ d'une aile rectangulaire d'allongement 6 (quatrième passe) : non trouvés.**
-- Les formules demandées par l'aérodynamicien, α∞ = α − C_L(1 + τ)/(π·A) (en radians) et C_D∞ = C_D − C_L²(1 + δ)/(π·A), corrigent l'hypothèse elliptique pour une forme en plan rectangulaire.
-- **Aucun document disponible ne donne τ ni δ.** Le Report 331 calcule sa traînée de profil avec la formule elliptique pure, c'est-à-dire **δ = 0** (A18, p. 592) ; il en va de même pour les incidences corrigées. Les Reports 309 et 331 ne citent Glauert que pour la correction de paroi (le Report 331 rapporte que le coefficient de paroi passe de 0,125 à 0,137 pour une veine carrée, p. 592). Le Report 362 renvoie à Glauert, *The Elements of Aerofoil and Airscrew Theory* (Cambridge, 1926), non disponible. La TN 182 de Prandtl (`spad7.md` S61) suppose des répartitions elliptiques et ne donne pas non plus ces facteurs.
-- Les valeurs τ ≈ 0,17 et δ ≈ 0,05 avancées par l'aérodynamicien restent donc **non vérifiées**.
-- **Cinquième passe : TR 460 et TR 669 lus, sans τ ni δ.**
-  - Le **TR 460** (Jacobs, Ward et Pinkerton, 1933 ; A24) présente ses résultats « en allongement infini et en allongement 6 », corrigés « selon la méthode de la référence 8 », c'est-à-dire le **TR 416** (Jacobs et Abbott, *The N.A.C.A. Variable-Density Wind Tunnel*, 1932). Il ne reproduit pas les formules [LU-OCR, p. 2 et liste des références].
-  - Le **TR 669** (Jacobs et Abbott, 1939 ; A25) renvoie lui aussi au TR 416 pour la correction de paroi et le passage à l'allongement infini (annexe, p. 30). Il juge en revanche cette « première approximation » **insuffisante**, pour deux raisons : la théorie représente mal l'écoulement aux extrémités d'une aile **rectangulaire**, et chaque section ne travaille pas au C_L moyen de l'aile.
-  - Il applique donc une **seconde correction** (annexe, p. 30, lue sur l'image) [LU] : c_l max = 1,07 × C_L max (1,04 si le maximum est très arrondi) ; pente de section a₀ = 0,96 × a₀′ ; incidence de section α₀ = α₀′ + 0,39 C_L (en degrés) ; traînée de profil c_d0 = C_D0 + 0,0016 C_L², plus un petit terme en (t − 6) × 0,0002 / 3, où t est l'épaisseur en pour cent. Le sens de l'inégalité qui borne ce dernier terme est mal lisible sur l'image. Les grandeurs primées sont celles de la première approximation.
-  - **Portée** (C) : ces facteurs complètent la méthode du TR 416 sur des maquettes rectangulaires de 5 × 30 in de la soufflerie à densité variable. Ils ne s'appliquent tels quels qu'à des données réduites par cette méthode. Mais ils donnent un **ordre de grandeur** de l'écart entre le traitement elliptique et une aile rectangulaire d'allongement 6 : +7 % sur le C_L max, −4 % sur la pente, +0,39° par unité de C_L sur l'incidence, +0,0016 C_L² sur la traînée de profil.
-- **Document restant à obtenir** : NACA TR 416 (NTRS 19930091490 d'après le moteur de recherche, à confirmer), pour τ et δ eux-mêmes. À défaut, le livre de Glauert (1926).
+**Facteurs τ et δ d'une aile rectangulaire d'allongement 6 : trouvés dans le TR 416 (sixième passe) [LU sur l'image]**
 
-**Sensibilité** (C, calcul fait ici avec les valeurs **non vérifiées** τ = 0,17 et δ = 0,05, pour l'aérodynamicien) :
-- incidence induite à C_L = 1,0 et A = 6 : 3,04° en elliptique, 3,56° avec τ, soit **0,52°** d'écart ; 0,26° à C_L = 0,5 ;
-- traînée induite à C_L = 1,0 : 0,0531 en elliptique, 0,0557 avec δ, soit **0,0027** d'écart, c'est-à-dire 13 à 27 % d'une traînée de profil de 0,02 à 0,01 ; 0,0007 à C_L = 0,5 ;
-- pente en allongement infini du RAF 15 (pente de maquette 4,28 par radian) : 5,54 par radian en elliptique, 5,83 avec τ, soit **+5 %**.
+Historique : introuvables en quatrième passe ; en cinquième passe, les TR 460 (A24) et 669 (A25) renvoyaient tous deux au TR 416 sans reproduire les formules. Le Report 331, lui, calcule ses traînées de profil et ses incidences avec la formule elliptique pure, c'est-à-dire **δ = 0** (A18, p. 592).
 
-À forte portance, l'écart de traînée dépasse la dispersion entre souffleries des traînées minimales du RAF 15 (0,0138 à 0,0147, Report 309, § 3.3). L'emploi de τ et δ mérite donc une source avant d'être figé dans les données.
+Source : **A26**, Jacobs et Abbott, NACA Report No. 416 (1932), p. 312-314 (PDF p. 8-10). L'OCR NTRS et l'extraction pdftotext rendent les formules illisibles : formules et figure ont été **lues sur l'image des pages**.
+
+- **Quel facteur porte sur quoi** (p. 312, liste des symboles, paraphrasée) :
+  - **τ** corrige l'**incidence induite** ;
+  - **σ** corrige la **traînée induite** ;
+  - tous deux tiennent compte de l'écart à la répartition elliptique de la portance que produit une forme en plan **rectangulaire**.
+- **Notation.** Le **δ** de l'aérodynamicien (notation de Glauert) est le **σ du TR 416**. Ce σ n'a **rien à voir** avec le facteur σ de Prandtl pour la traînée mutuelle des deux plans d'un biplan (`spad7.md` § 2.4). Dans nos fiches et nos données, on garde **δ** pour la forme en plan, et σ pour Prandtl seulement.
+- **Réduction des essais en soufflerie fermée** (p. 312). Angles en degrés ; indice T pour les valeurs mesurées en soufflerie ; D est le diamètre de la veine, b l'envergure, S la surface et R l'allongement de la maquette.
+  - Correction de paroi seule : α = α_T + (C_L·S / 2πD²) × 57,3 et C_D = C_DT + C_L²·S / 2πD².
+  - Passage direct à l'allongement infini, à partir des données **non corrigées** de la paroi, avec un allongement effectif R_e = R / [1 − ½ (b/D)²] : α₀ = α_T − (C_L / π·R_e)(1 + τ) × 57,3 et C_D0 = C_DT − (C_L² / π·R_e)(1 + σ).
+  - Le coefficient ½ de R_e est mal lisible à la résolution dont je dispose. C'est celui qu'impose la combinaison des deux formules de paroi avec l'incidence induite elliptique (C, calcul fait ici).
+- **De la section à l'aile finie** (p. 313-314) :
+  - α = α₀ + (C_L / πR)(1 + τ) × 57,3, que le rapport écrit aussi α = α₀ + (18,24 / R)·C_L·(1 + τ) ;
+  - pente (par degré) a = a₀ / [1 + (a₀ / πR)(1 + τ) × 57,3] ;
+  - C_D = C_D0 + (C_L² / πR)(1 + σ).
+  
+  τ et σ sont nuls pour une aile elliptique sans vrillage effectif. Pour une aile rectangulaire, ils sont donnés par la **figure 11** (p. 314, « Correction factors for rectangular airfoils ») en fonction de l'allongement géométrique b²/S, de 3 à 9. τ se lit sur l'échelle de gauche (0,10 à 0,24), σ sur celle de droite (0,02 à 0,09).
+- **Exemple chiffré du rapport** (p. 314) : aile rectangulaire en Clark Y, allongement 8 : **τ = 0,22** et **σ = 0,074**, d'où α = α₀ + 2,780 C_L et C_D = C_D0 + 0,0427 C_L². Contrôle (C) : 18,24 × 1,22 / 8 = 2,78 et 1,074 / (8π) = 0,0427. Le calcul confirme que τ porte sur l'angle et σ sur la traînée.
+- **Allongement 6, lu sur la figure 11** :
+  - **τ ≈ 0,175** (lecture entre 0,17 et 0,18) ;
+  - **δ (σ du TR 416) ≈ 0,05** (lecture entre 0,045 et 0,055).
+  
+  **Méthode et limite** : je n'ai pas de terminal pour lancer `pdftoppm` ; la page m'est rendue à environ 100 dpi. Les deux courbes sont presque droites. Je les ai repérées entre leur départ, à l'allongement 3 (τ ≈ 0,10 à 0,11 ; σ ≈ 0,02), et le point d'allongement 8, que le texte donne en chiffres. **Précision : ±0,01 sur τ, ±0,005 sur δ.** Confiance **A** pour la source et les formules ; les deux valeurs sont une lecture graphique, à confirmer sur une image à 300 dpi (§ 5).
+- **Les valeurs avancées par l'aérodynamicien (τ ≈ 0,17 ; δ ≈ 0,05) sont donc confirmées** à la précision de lecture près.
+
+**Application aux données du RAF 15** (C, calcul fait ici, R = 6) :
+- **Report 331**, déjà corrigé de la paroi, donc en air libre à R = 6 :
+  - α₀ = α − 3,04·C_L·(1 + τ) ≈ α − 3,57 C_L (en degrés) ;
+  - C_D0 = C_D − 0,0531·C_L²·(1 + δ) ≈ C_D − 0,0557 C_L².
+  
+  Les C_D0 elliptiques du tableau du § 3.2 baissent donc de 0,0027 C_L² : de 0,0095 à 0,0084 à 6,24° (C_L = 0,629) et de 0,0317 à 0,0278 à 15,46° (C_L = 1,209).
+- **Report 233**, données brutes : on peut appliquer directement la formule du TR 416. La veine fait 5 ft de diamètre, soit D = 60 in, dans la soufflerie d'origine de 1923 (A26, p. 305) comme dans la soufflerie à veine fermée remaniée, achevée en décembre 1930 (A26, p. 305 pour l'historique ; description de la veine vers p. 306-307 [LU-OCR]). Avec b = 30 in, R_e = 6 / 0,875 = 6,86, d'où α₀ = α_T − 2,66·C_L·(1 + τ).
+  - Les deux chemins diffèrent d'environ τ × 0,38 ≈ 0,07° par unité de C_L, parce que le TR 416 applique aussi (1 + τ) au terme de paroi. L'écart est inférieur à la précision de lecture de τ.
+  - **Contrôle** : le terme de paroi du TR 416 (S = 150 in², D = 60 in) vaut 0,380° par unité de C_L. C'est exactement la correction que le Report 331 applique aux incidences du Report 233 : 0,06° à C_L = 0,166, 0,46° à C_L = 1,209 (§ 3.2). Les deux rapports emploient donc la même correction de paroi.
+- **Sensibilité** (τ = 0,175, δ = 0,05) :
+  - incidence induite à C_L = 1,0 : 3,04° en elliptique, 3,57° pour l'aile rectangulaire, soit **0,53°** d'écart (0,27° à C_L = 0,5) ;
+  - traînée induite à C_L = 1,0 : 0,0531 en elliptique, 0,0557 pour l'aile rectangulaire, soit **0,0027** d'écart, 13 à 27 % d'une traînée de profil de 0,02 à 0,01 (0,0007 à C_L = 0,5) ;
+  - pente du RAF 15 en allongement infini, à partir d'une pente de maquette de 4,28 par radian : 5,54 par radian en elliptique, **5,84** avec τ, soit **+5 %**.
+  
+  À forte portance, l'écart de traînée dépasse la dispersion entre souffleries des traînées minimales du RAF 15 (0,0138 à 0,0147, Report 309, § 3.3). Il fallait donc une source : c'est chose faite.
+
+**Seconde approximation du TR 669** (cinquième passe ; A25, annexe p. 30, lue sur l'image) [LU] :
+- Le TR 669 juge la méthode du TR 416 (qu'il appelle « première approximation ») **insuffisante**, pour deux raisons : la théorie représente mal l'écoulement aux extrémités d'une aile rectangulaire, et chaque section ne travaille pas au C_L moyen de l'aile.
+- Il ajoute donc une seconde correction. Les grandeurs primées sont celles de la première approximation :
+  - c_l max = 1,07 × C_L max (1,04 si le maximum est très arrondi) ;
+  - pente de section a₀ = 0,96 × a₀′ ;
+  - incidence de section α₀ = α₀′ + 0,39 C_L (en degrés) ;
+  - traînée de profil c_d0 = C_D0 + 0,0016 C_L², plus un petit terme en (t − 6) × 0,0002 / 3, où t est l'épaisseur en pour cent. Le sens de l'inégalité qui borne ce dernier terme est mal lisible sur l'image.
+- **Portée** (C) : avec le TR 416 en main, la chaîne complète devient possible : Report 233 ou 331, puis réduction du TR 416 (τ, δ), puis seconde correction du TR 669. Cette dernière a été établie sur des essais des années 1930 dans la soufflerie reconstruite. Son application aux mesures de 1926-1927 de la soufflerie d'origine reste **C**. Ordre de grandeur : +7 % sur le C_L max, −4 % sur la pente, +0,39° par unité de C_L sur l'incidence, +0,0016 C_L² sur la traînée de profil.
 
 ### 4.3 Justification
 - Le « Spad » est le seul profil trouvé qui porte ce nom dans un document d'époque. Sa finesse (5,4 %) concorde avec la réputation de profil mince.
@@ -210,14 +246,14 @@ Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur 
 | Report 309 (A16), RAF 15 dans cinq souffleries | modernes (« deux fois les anciens L_c, D_c ») | **centre de poussée** en fraction de corde depuis le bord d'attaque ; moments pris au bord d'attaque à Langley, à 1/8 in sous le bord d'attaque au Bureau of Standards | colonnes non corrigées **et** corrigées de la paroi | pages des symboles et p. 9-10 [LU] |
 | Report 304 (A4), Sperry Messenger en vol | modernes, **avion complet** (traînée parasite comprise) | — | — | A21 |
 
-**À retenir** : tout coefficient britannique d'époque ou du Report 93 doit être **doublé** ; tout moment du Report 331 doit être **ramené au quart de corde** (C_M¼ ≈ C_M,BA + C_L/4, contrôle du § 3.2) avant d'être comparé au Report 233.
+**À retenir** : tout coefficient britannique d'époque ou du Report 93 doit être **doublé** ; tout moment du Report 331 doit être **ramené au quart de corde** (C_M¼ ≈ C_M,BA + C_L/4, contrôle du § 3.2) avant d'être comparé au Report 233. Sixième passe : les traînées de profil et les incidences « infinies » du Report 331 sont **elliptiques** ; pour une maquette rectangulaire d'allongement 6, retrancher encore environ 0,0027 C_L² à la traînée et 0,53° × C_L à l'incidence (τ et δ du TR 416, § 4.2).
 
 ## 5. Ce qu'il faudrait pour aller plus loin
 1. **Numériser la planche n° 49 du Report 93** (p. 291) : L_c, D_c, centre de poussée en fonction de l'incidence. C'est le plus urgent.
 2. **Identifier le SPAD mesuré au MIT** en 1918 : rapports d'essais du MIT de 1917-1918, ou bibliographie aéronautique de 1917-1921 (`spad7.md` § 9.6).
 3. ***Flugsport* 1919** (A8) et **Eiffel 1919** (A5) : forme et polaires françaises ou allemandes du profil SPAD.
 4. **Relevé de nervure sur un S.VII original** (Musée de l'Air, S.254, etc. ; `spad7.md` P17).
-5. **τ et δ** : les Reports 460 et 669 sont lus (cinquième passe) et renvoient au **NACA TR 416** (NTRS 19930091490 selon le moteur de recherche, à confirmer), à télécharger. À défaut, H. Glauert, *The Elements of Aerofoil and Airscrew Theory*, Cambridge University Press, 1926.
+5. **τ et δ** : **fait en sixième passe** (TR 416, NTRS 19930091490 confirmé). Reste à **affiner la lecture de la figure 11** (p. 314, PDF p. 10), que je n'ai vue qu'à environ 100 dpi. Commande proposée pour la session principale : `pdftoppm -r 300 -f 10 -l 10 -x 280 -y 270 -W 1000 -H 1180 -png 19930091490.pdf tr416-fig11`. Le cadre, estimé ici, couvre le quart supérieur gauche de la page, où se trouve la figure ; l'image recadrée garde ainsi sa pleine résolution à l'affichage. Enjeu : passer de ±0,01 à ±0,003 environ sur τ. Pour l'origine théorique des formules, le TR 416 renvoie au NACA TR 352 (Jacobs et Anderson, 1929), sa référence 5 (piste, non lu).
 6. **Incidences négatives** : volume I du *Technical Report of the ACA* 1917-18, **absent d'archive.org** selon le coordinateur. Pistes : les Bibliothèques numériques de la Défense, qui signalent d'autres volumes de la série, ou les archives ARC de Cranfield. On y trouverait le RAF 14 aux incidences négatives, l'effet biplan sur le RAF 15 et la comparaison du RAF 15 avec un profil Albatros.
 
 ## 6. Sources (consultées le 2026-10-20)
@@ -243,6 +279,9 @@ Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur 
 - **A24** — E. N. Jacobs, K. E. Ward et R. M. Pinkerton, « The Characteristics of 78 Related Airfoil Sections from Tests in the Variable-Density Wind Tunnel », NACA Report No. 460, 1933. NTRS 19930091108, https://ntrs.nasa.gov/citations/19930091108. **[LU-OCR]** : méthode, p. 2, et références (la n° 8 est le TR 416). Primaire.
 - **A25** — E. N. Jacobs et I. H. Abbott, « Airfoil Section Data Obtained in the N.A.C.A. Variable-Density Tunnel as Affected by Support Interference and Other Corrections », NACA Report No. 669, 1939. NTRS 19930091744, https://ntrs.nasa.gov/citations/19930091744. **[LU]** : annexe, p. 30-31, sur l'image du PDF. Primaire.
 - Norton, NACA TN 70 (1921), effet du décalage d'un biplan : voir `spad7.md` S63 et § 2.4.
+
+**Lu en sixième passe** (NTRS, PDF, OCR NTRS et extraction pdftotext fournis par le coordinateur le 2026-10-22)
+- **A26** — E. N. Jacobs et I. H. Abbott, « The N.A.C.A. Variable-Density Wind Tunnel », NACA Report No. 416, Langley, texte daté du 23 novembre 1931, publié en 1932, p. 305-314. NTRS 19930091490, https://ntrs.nasa.gov/citations/19930091490 (identifiant confirmé par la page de titre du PDF). **[LU]** : formules de réduction p. 312 (PDF p. 8), formules d'application et renvoi à la figure 11 p. 313 (PDF p. 9), figure 11 et exemple chiffré p. 314 (PDF p. 10), tous lus sur l'image ; historique de la soufflerie p. 305 [LU-OCR]. Primaire.
 
 ### 6.2 Vues seulement en résumé de recherche ou pistes (inchangées depuis la première passe)
 - **A3** — NACA Reports 182, 244 et 286 (suites de la série) [RÉSUMÉ].
@@ -275,4 +314,10 @@ Ordres de grandeur pour le RAF 15 à Re = 3,58 × 10⁶ (C, calcul fait ici sur 
 - **2026-10-21 (passe 4) — Tableau des conventions** (§ 4.5) dressé pour chaque source utilisée. Point de vigilance : le C_M du Report 331 est au bord d'attaque, celui du Report 233 au quart de corde.
 - **2026-10-21 (passe 4) — τ et δ.** Non trouvés. **Aucune valeur retenue** : les valeurs τ = 0,17 et δ = 0,05 restent celles de l'aérodynamicien, **non vérifiées**. Les données d'allongement infini du § 4.2 restent en correction elliptique (τ = δ = 0), comme dans le Report 331. Sensibilité chiffrée pour aider la décision (§ 4.2).
 - **2026-10-21 (passe 5) — τ et δ.** Toujours **non trouvés** : TR 460 et TR 669 renvoient au TR 416. Retenu comme **information** (C pour le SPAD) : la seconde correction du TR 669, qui chiffre l'écart entre aile rectangulaire d'allongement 6 et section. Ne pas l'appliquer aux données des Reports 233 et 331 sans avoir le TR 416, puisqu'elle complète une première correction qui n'est pas celle de ces rapports.
+- **2026-10-22 (passe 6) — τ et δ : trouvés.** Le TR 416 (A26) donne les formules (p. 312-314) et la figure 11 (p. 314).
+  - τ porte sur l'incidence induite. Le facteur de traînée induite, que le rapport nomme **σ**, est le **δ** de l'aérodynamicien. On garde δ dans nos fiches pour éviter la confusion avec le σ biplan de Prandtl.
+  - **Retenu pour l'allongement 6 : τ = 0,175 et δ = 0,05**, lus sur la figure (fourchettes 0,17 à 0,18 et 0,045 à 0,055). Le point d'allongement 8 donné en chiffres par le texte (0,22 et 0,074) ancre la lecture.
+  - Confiance **A** pour la source et les formules. Les valeurs sont une **lecture graphique à ±0,01 et ±0,005**, à affiner sur une image à 300 dpi (§ 5). Elles confirment les valeurs de l'aérodynamicien (0,17 et 0,05).
+  - **Conséquences** : les C_D0 et incidences elliptiques du Report 331 peuvent désormais être ramenés à une aile rectangulaire (§ 4.2). La chaîne Report 233 → TR 416 → TR 669 devient applicable, en **C** pour sa dernière étape, établie sur des essais plus récents.
+  - Contrôle : la correction de paroi du TR 416 est identique à celle que le Report 331 applique aux mesures du Report 233 (0,380° par unité de C_L).
 - **2026-10-21 (passe 4) — Incidences négatives.** Le Report 233 descend à −4,5° (et non −1,5°) ; le point le plus négatif mesuré pour le RAF 15 est −6° (Report 309, bas Reynolds), sans décrochage. **Décrochage négatif : non sourcé.** La branche au-delà de −6° sera une extrapolation `E:`.
