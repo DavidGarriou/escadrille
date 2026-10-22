@@ -897,3 +897,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - piqué tenu à −80° : 376 km/h, moment rappelant, ressource en 4,3 s avec 265 m perdus.
 - **A** Rapport : nouvelle section « Essais qualitatifs » (attendu, source, observé). Ces essais **ne bloquent pas** la validation : comparer l'observé à l'attendu revient au joueur et à l'aérodynamicien. Seules des valeurs non finies feraient échouer la campagne. `format-avion.md` et `modele-aero.md` sont à jour.
 - **A** 176 tests réussis, `just check` sans erreur. Revue de l'aérodynamicien demandée.
+- **⚠** La revue de l'aérodynamicien s'est arrêtée sur la limite de débit de l'API (429), puis le processus de la session a redémarré. Elle a repris là où elle s'était arrêtée après la levée de la limite. **Q** du joueur : « Continue ». **R** : reprise de la revue, puis traitement de ses retours.
