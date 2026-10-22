@@ -796,3 +796,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Reste à faire pour l'étape 6 :
   - les **tracés PNG**, en attente d'une décision du joueur sur la police de caractères (question ci-dessous) ;
   - les fichiers de données du **SPAD VII**, à remplir depuis les fiches.
+
+### Robustesse et relectures
+- **A** **Tests de robustesse** (étape 7 du plan), lus dans `essais.ron` : vitesse nulle, glissade sur la queue, vrille (entrée puis sortie), vol sur le dos, piqué à 60° pleins gaz (variante d'après le RAE).
+  - Un scénario est réussi si la simulation reste finie et dans des bornes physiques ; ce que fait l'avion est rapporté sans être jugé.
+  - Un échec bloque la validation.
+  - Les cinq passent sur le biplan synthétique. Lâché à l'arrêt, il repart en avant (196 km/h après 15 s). Après une glissade sur la queue, il a repris une assiette de piqué. **163 tests sur 163**, `just check` vert.
+- **A** Relectures lancées en arrière-plan :
+  - **aérodynamicien** : confirmation des corrections de l'étape 4, relecture du trim, des performances, des modes et de la convergence ; avis sur la phugoïde longue et l'oscillation latérale lente du biplan synthétique ; liste des données du SPAD à estimer ou calculer, avec la méthode pour chacune ;
+  - **historien** : facteurs τ et δ pour l'allongement 6 dans le rapport NACA 416 ; relecture de la ligne du 8Aa sur l'image à 300 dpi.
+- **⚠** Les fichiers de données du SPAD VII (`assets/aircraft/spad7/`) relèvent du processus `/nouvel-avion`, réservé à une invocation explicite du joueur. Claude ne le reproduit pas par d'autres moyens et attend que le joueur le lance.
