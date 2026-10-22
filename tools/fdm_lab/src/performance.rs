@@ -220,7 +220,7 @@ pub fn ceiling(
     }
 }
 
-/// Lowest steady speed, engine at idle.
+/// Lowest steady speed at a throttle setting.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Stall {
     pub speed: f64,
@@ -238,8 +238,20 @@ pub fn stall_speed(
     env: &dyn Environment,
     altitude: f64,
 ) -> Result<Stall, PerformanceError> {
-    let mut guess = Flight::guess(altitude, 40.0, 0.0);
-    guess.flight_path = -0.1;
+    stall_speed_at(aircraft, env, altitude, 0.0)
+}
+
+/// Stall speed at a throttle setting: the lowest speed of a steady straight flight
+/// (a glide at idle, a climb at full throttle), sweeping the angle of attack up to the
+/// stall (or to the end of the elevator travel).
+pub fn stall_speed_at(
+    aircraft: &Aircraft,
+    env: &dyn Environment,
+    altitude: f64,
+    throttle: f64,
+) -> Result<Stall, PerformanceError> {
+    let mut guess = Flight::guess(altitude, 40.0, throttle);
+    guess.flight_path = if throttle > 0.5 { 0.1 } else { -0.1 };
     let mut best: Option<Stall> = None;
     let mut alpha = 0.05;
     while alpha < 0.45 {
@@ -311,6 +323,19 @@ mod tests {
         let h = ceiling(&a, &STILL_AIR, target).unwrap().altitude;
         let rate = best_climb(&a, &STILL_AIR, h).unwrap().rate;
         assert!((rate - target).abs() < 0.01, "ceiling {h} m, rate {rate}");
+    }
+
+    #[test]
+    fn power_lowers_the_stall_speed() {
+        // Thrust carries part of the weight and the slipstream adds lift.
+        let a = biplane();
+        let idle = stall_speed(&a, &STILL_AIR, 500.0).unwrap();
+        let full = stall_speed_at(&a, &STILL_AIR, 500.0, 1.0).unwrap();
+        assert!(full.speed < idle.speed, "{full:?} {idle:?}");
+        assert!(
+            full.trim.flight.climb_rate() > 0.0,
+            "a climb at full throttle"
+        );
     }
 
     #[test]

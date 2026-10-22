@@ -95,16 +95,25 @@ pub struct Conditions {
 /// What the aircraft does is reported against the scenario's description, not judged.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub enum Manoeuvre {
-    /// From the maximum level speed at `altitude`, full throttle, a loop pulled at
-    /// `load_factor` without exceeding the stall incidence, wings held in the plane.
-    Loop { altitude: Length, load_factor: f64 },
-    /// From level flight at 1.3 times the idle stall speed, engine at idle, the stick
-    /// eased back to the stop: speed at the break, nose drop, wing drop, height lost.
+    /// From level flight at `speed` (default: the maximum level speed) at `altitude`,
+    /// full throttle, a loop pulled at `load_factor` without exceeding the stall
+    /// incidence, wings held in the plane.
+    Loop {
+        altitude: Length,
+        #[serde(default)]
+        speed: Option<Speed>,
+        load_factor: f64,
+    },
+    /// From level flight at 1.3 times the idle stall speed, engine at idle, the speed
+    /// reduced by a knot per second until the stall: speed at the break, nose and wing
+    /// drop with the controls held, height lost in the recovery.
     PowerOffStall { altitude: Length },
     /// Best glide ratio, engine at idle.
     Glide { altitude: Length },
-    /// From the maximum level speed at `altitude`, a dive at `angle` (negative), full
-    /// throttle and elevator neutral for `seconds`, then a pull-out at `load_factor`.
+    /// From the maximum level speed at `altitude`, a dive held at `angle` (−90° to 0°)
+    /// at full throttle for `seconds`, the pitching moment with the elevator neutral
+    /// recorded; from there, the elevator released to neutral for a few seconds, and
+    /// separately a pull-out at `load_factor`.
     Dive {
         altitude: Length,
         angle: Angle,
@@ -136,9 +145,81 @@ pub struct EssaisFile {
     pub robustness: Vec<Robustness>,
 }
 
-/// Loads `assets/aircraft/<id>/essais.ron`, checking that every number has an origin.
+/// Shortest held dive, s: its first two seconds are the entry.
+pub const MIN_DIVE_SECONDS: f64 = 5.0;
+
+impl Manoeuvre {
+    /// Why the manoeuvre cannot be flown, if it cannot.
+    pub fn check(&self) -> Result<(), String> {
+        let altitude = |a: &Length| {
+            if a.si() >= 0.0 {
+                Ok(())
+            } else {
+                Err(format!("altitude négative : {:.0} m", a.si()))
+            }
+        };
+        let pull = |n: f64| {
+            if n > 1.0 {
+                Ok(())
+            } else {
+                Err(format!(
+                    "facteur de charge de ressource {n} : il faut plus de 1"
+                ))
+            }
+        };
+        match self {
+            Self::Loop {
+                altitude: a,
+                speed,
+                load_factor,
+            } => {
+                altitude(a)?;
+                pull(*load_factor)?;
+                match speed {
+                    Some(v) if v.si() <= 0.0 => {
+                        Err("vitesse d'entrée nulle ou négative".to_owned())
+                    }
+                    _ => Ok(()),
+                }
+            }
+            Self::PowerOffStall { altitude: a } | Self::Glide { altitude: a } => altitude(a),
+            Self::Dive {
+                altitude: a,
+                angle,
+                seconds,
+                load_factor,
+            } => {
+                altitude(a)?;
+                pull(*load_factor)?;
+                let degrees = angle.si().to_degrees();
+                if !(-90.0..0.0).contains(&degrees) {
+                    return Err(format!("angle de piqué {degrees:.0}° : entre −90° et 0°"));
+                }
+                if *seconds < MIN_DIVE_SECONDS {
+                    return Err(format!(
+                        "piqué de {seconds} s : au moins {MIN_DIVE_SECONDS} s"
+                    ));
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
+/// Loads `assets/aircraft/<id>/essais.ron`, checking that every number has an origin and
+/// that every manoeuvre can be flown.
 pub fn load_essais(assets: &Path, id: &str) -> Result<EssaisFile, DataError> {
-    load_checked(&assets.join("aircraft").join(id).join("essais.ron"))
+    let path = assets.join("aircraft").join(id).join("essais.ron");
+    let file: EssaisFile = load_checked(&path)?;
+    for scenario in &file.qualitative {
+        if let Some(m) = &scenario.manoeuvre {
+            m.check().map_err(|message| DataError::Invalid {
+                origin: path.display().to_string(),
+                message: format!("scénario {} : {message}", scenario.name),
+            })?;
+        }
+    }
+    Ok(file)
 }
 
 #[cfg(test)]
@@ -179,7 +260,7 @@ mod tests {
             conditions: (fuel_fraction: 1.0),
             quantitative: [],
             qualitative: [
-                (name: "loop", description: "easy loop", source: "T1", manoeuvre: Some(Loop(altitude: M(2000.0), load_factor: 3.5))),
+                (name: "loop", description: "easy loop", source: "T1", manoeuvre: Some(Loop(altitude: M(2000.0), speed: Some(Kmh(150.0)), load_factor: 3.5))),
                 (name: "dive", description: "holds a dive", source: "T2", manoeuvre: Some(Dive(altitude: M(3000.0), angle: Deg(-80.0), seconds: 20.0, load_factor: 4.0))),
                 (name: "ground", description: "swings left", source: "T8"),
             ],
@@ -191,5 +272,33 @@ mod tests {
         };
         assert!((angle.si() + 80f64.to_radians()).abs() < 1e-12);
         assert!(file.qualitative[2].manoeuvre.is_none());
+        assert!(
+            file.qualitative
+                .iter()
+                .flat_map(|q| &q.manoeuvre)
+                .all(|m| m.check().is_ok())
+        );
+    }
+
+    #[test]
+    fn manoeuvres_that_cannot_be_flown_are_refused() {
+        let refused = [
+            "Loop(altitude: M(1000.0), load_factor: 0.9)",
+            "Loop(altitude: M(1000.0), speed: Some(Kmh(0.0)), load_factor: 3.0)",
+            "Glide(altitude: M(-10.0))",
+            "Dive(altitude: M(3000.0), angle: Deg(-95.0), seconds: 20.0, load_factor: 4.0)",
+            "Dive(altitude: M(3000.0), angle: Deg(10.0), seconds: 20.0, load_factor: 4.0)",
+            "Dive(altitude: M(3000.0), angle: Deg(-80.0), seconds: 1.0, load_factor: 4.0)",
+        ];
+        for text in refused {
+            let m: Manoeuvre = from_ron_str(text, "test").unwrap();
+            assert!(m.check().is_err(), "{text}");
+        }
+        let vertical: Manoeuvre = from_ron_str(
+            "Dive(altitude: M(3000.0), angle: Deg(-90.0), seconds: 20.0, load_factor: 4.0)",
+            "test",
+        )
+        .unwrap();
+        assert!(vertical.check().is_ok());
     }
 }

@@ -198,7 +198,7 @@ pub fn markdown(r: &Report) -> String {
         let _ = writeln!(t, "\n## Essais qualitatifs\n");
         let _ = writeln!(
             t,
-            "Comportements tirés des témoignages, pilotés par un pilote simple aux mêmes commandes que le joueur. Ils ne bloquent pas la validation : comparer l'observé à l'attendu revient au joueur et à l'aérodynamicien.\n"
+            "Comportements tirés des témoignages, pilotés par un pilote simple aux mêmes commandes que le joueur. Ils ne bloquent pas la validation, sauf valeurs non finies : comparer l'observé à l'attendu revient au joueur et à l'aérodynamicien.\n"
         );
         let _ = writeln!(t, "| Scénario | Attendu | Source | Observé |");
         let _ = writeln!(t, "|---|---|---|---|");

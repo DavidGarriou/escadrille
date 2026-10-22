@@ -163,10 +163,11 @@ Essais(
     ],
 
     // Comportements tirés des témoignages (section 6 de la fiche), pilotés par fdm_lab
-    // (pilote scripté aux mêmes commandes que le joueur) ; rapportés, jamais bloquants.
+    // (pilote scripté aux mêmes commandes que le joueur) ; rapportés, jamais bloquants
+    // sauf valeurs non finies.
     qualitative: [
         (name: "boucle", description: "boucle aisée, sans décrochage au sommet", source: "T1",
-            manoeuvre: Some(Loop(altitude: M(2000.0), load_factor: 3.5))),           // E: traction d'un pilote d'époque
+            manoeuvre: Some(Loop(altitude: M(2000.0), speed: Some(Kmh(170.0)), load_factor: 3.5))), // S: vitesse de croisière ; E: traction d'un pilote d'époque
         (name: "decrochage", description: "abattée nette et départ en roulis", source: "T9",
             manoeuvre: Some(PowerOffStall(altitude: M(1000.0)))),                    // E:
         (name: "plane", description: "plané plus pentu que celui d'un Nieuport", source: "T9",
@@ -180,10 +181,10 @@ Essais(
 )
 ```
 
-Manœuvres qualitatives (`fdm_lab/src/qualitative.rs`) : départ cap au nord, ailes horizontales, air calme. Le pilote tire un facteur de charge sans dépasser l'incidence de décrochage moins 2° (anticipée sur sa vitesse de variation), garde les ailes dans le plan vertical aux ailerons et le dérapage nul à la direction.
-- `Loop` : depuis la vitesse maximale en palier, pleins gaz ; bouclée ou non, sommet (hauteur, vitesse), décrochage éventuel.
-- `PowerOffStall` : depuis le palier à 1,3 fois la vitesse de décrochage au ralenti, gaz réduits, manche ramené de 5 % par seconde ; vitesse à l'abattée, abattée et inclinaison dans les 3 s, hauteur perdue jusqu'au retour en plané normal.
+Manœuvres qualitatives (`fdm_lab/src/qualitative.rs`), vérifiées au chargement (facteur de charge > 1, piqué entre −90° et 0° et d'au moins 5 s) : départ cap au nord, ailes horizontales, air calme. Le pilote vise un facteur de charge sans dépasser l'incidence de décrochage (à la manette de la manœuvre) moins 2°, anticipée sur sa vitesse de variation ; il garde les ailes dans le plan vertical aux ailerons et annule le dérapage à la direction (proportionnel et intégral).
+- `Loop` (`speed` facultative, vitesse maximale en palier par défaut) : pleins gaz ; bouclée quand le **vecteur vitesse** a tourné d'un tour sans sortir du plan (inclinaison < 45°) ; sommet (hauteur, vitesse, rapport à V_s), part du temps sur la limite d'incidence, marge au décrochage.
+- `PowerOffStall` : depuis le palier à 1,3 V_s, gaz réduits, vitesse diminuée d'**un nœud par seconde** (pratique des essais de certification) jusqu'au départ : abattée (le nez plonge) ou départ en roulis (inclinaison > 30°). Ensuite, l'avion seul (manche tenu, ailerons et palonnier au neutre) jusqu'à ce que le nez cesse de plonger (3 s au plus) : abattée, inclinaison et son côté, cap ; puis le pilote rétablit. Vitesses vraie et équivalente, dérapage au décrochage, décélération mesurée.
 - `Glide` : finesse maximale au ralenti.
-- `Dive` : piqué tenu à l'angle donné, pleins gaz, puis ressource ; vitesse et régime maximaux, signe du moment de tangage profondeur au neutre (rappelant ou engagement), hauteur perdue.
+- `Dive` : piqué tenu à l'angle donné (pente mesurée dans le plan vertical, valable jusqu'à −90°), pleins gaz ; signe du moment de tangage profondeur au neutre ; puis deux branches depuis la fin du piqué : profondeur relâchée au neutre 3 s (la pente remonte : rappelant ; elle s'accentue : engagement), et ressource jusqu'à une trajectoire horizontale. Chiffres du piqué établi (après 2 s).
 
 Niveaux de confiance : **A** mesure primaire (rapport d'essai d'époque) ; **B** sources secondaires concordantes ; **C** déduit d'avions comparables ; **D** estimation de gameplay. Par défaut, les essais de confiance C et D sont signalés mais ne bloquent pas la validation ; le seuil se règle (`Confidence::blocks_validation`). Pour le M1, le joueur a validé la confiance C : les essais A, B et C bloquent, D reste indicatif.

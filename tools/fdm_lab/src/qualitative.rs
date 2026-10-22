@@ -1,64 +1,92 @@
 //! Qualitative scenarios of `essais.ron` (M1 plan, step 6): behaviours from the pilots'
 //! testimonies (fiche, section 6), flown by a simple scripted pilot with the player's
 //! commands. The outcome is what the aircraft did, set beside the expected behaviour of
-//! the scenario: testimonies are not measurements, so nothing here blocks the validation
-//! (the shape of a behaviour is for the player and the aerodynamicist to judge).
+//! the scenario: testimonies are not measurements, so these scenarios never block the
+//! validation, except when the simulation produces non-finite values (the shape of a
+//! behaviour is for the player and the aerodynamicist to judge).
 //!
 //! Every manoeuvre starts heading north, wings level, in still air.
 
-use std::f64::consts::TAU;
+use std::f64::consts::{PI, TAU};
 
 use escadrille_data::essais::{Manoeuvre, Scenario};
 use escadrille_fdm::aero::polar::wrap_angle;
 use escadrille_fdm::aircraft::{Aircraft, PilotControls};
+use escadrille_fdm::atmosphere::isa;
 use escadrille_fdm::constants::G0;
 use escadrille_fdm::environment::Environment;
 use escadrille_fdm::rigid_body::RigidBodyState;
-use glam::DVec3;
+use glam::{DVec3, EulerRot};
 
-use crate::performance::{PerformanceError, Stall, max_level_speed, stall_speed};
+use crate::performance::{PerformanceError, max_level_speed, stall_speed, stall_speed_at};
 use crate::trim::{Flight, LEVEL_AT_SPEED, PATH_AT_SPEED, Trim, solve_robust};
 
-/// Integration step, s (ADR 0005: 120 Hz with two substeps).
-const DT: f64 = 1.0 / 240.0;
+const DEG: f64 = PI / 180.0;
 
-/// Pilot's elevator: proportional and integral gains on the normalised margin (E:, a
+/// Settings of the scripted pilot (E:, a period pilot's feel, not a measurement).
+#[derive(Debug, Clone, Copy)]
+struct Pilot {
+    /// Integration step, s.
+    dt: f64,
+    /// How far ahead the pilot anticipates the incidence, s (feel of the controls).
+    lead: f64,
+    /// Margin kept below the stall incidence, rad (the buffet warns the pilot).
+    margin: f64,
+}
+
+/// The pilot of the reports: 120 Hz with two substeps (ADR 0005), incidence anticipated
+/// by 0.3 s, 2° kept below the stall.
+const PILOT: Pilot = Pilot {
+    dt: 1.0 / 240.0,
+    lead: 0.3,
+    margin: 2.0 * DEG,
+};
+
+/// Pilot's elevator (E:): proportional and integral gains on the normalised margin (a
 /// brisk but smooth pull, reaching the load factor in about a second), load-factor error
-/// that counts as a full margin, and how far ahead the pilot anticipates the incidence
-/// (E:, feel of the controls and of the buffet).
+/// that counts as a full margin, and incidence margin that counts as much.
 const PULL_GAIN: f64 = 0.4;
 const PULL_INTEGRAL: f64 = 1.5;
 const LOAD_SCALE: f64 = 2.0;
-const ALPHA_LEAD: f64 = 0.3;
+const ALPHA_SCALE: f64 = 5.0 * DEG;
 
-/// Angle-of-attack margin that counts as much as [`LOAD_SCALE`], rad (E:).
-const ALPHA_SCALE: f64 = 5.0 * std::f64::consts::PI / 180.0;
-
-/// Margin the pilot keeps below the stall incidence, rad (E:, the buffet warns him).
-const PILOT_MARGIN: f64 = 2.0 * std::f64::consts::PI / 180.0;
-
-/// Time in which the pilot brings the flight path back to the dive angle, s (E:).
+/// Time in which the pilot brings the flight path back to the wanted one, s (E:).
 const PATH_TIME: f64 = 1.0;
 
 /// Pilot's ailerons and rudder (E:): full aileron for half a radian of bank, damped by
-/// the roll rate; full rudder for about 15° of sideslip.
+/// the roll rate; full rudder for about 15° of sideslip, and an integral that removes a
+/// steady sideslip in a couple of seconds.
 const ROLL_GAIN: f64 = 2.0;
 const ROLL_DAMPING: f64 = 0.5;
 const YAW_GAIN: f64 = 4.0;
+const YAW_INTEGRAL: f64 = 2.0;
 
-/// Power-off stall: entry speed over the idle stall speed (the usual 1.3, E:), rate at
-/// which the stick is eased back, per second of full travel (E:, about a knot per
-/// second of deceleration), nose-down pitch rate that marks the break (E:), pilot's
-/// reaction time before recovering (E:) and window in which the nose and wing drops are
-/// measured (E:).
+/// Power-off stall (E:): entry speed over the idle stall speed (the usual 1.3), speed
+/// reduction (a knot per second, the practice of modern certification tests), time in
+/// which a speed error is corrected, nose-down pitch rate and bank that mark the break,
+/// longest time the controls are held after it, time at the stick's stop without a
+/// break before giving up.
 const STALL_ENTRY: f64 = 1.3;
-const STALL_STICK_RATE: f64 = 0.05;
-const BREAK_PITCH_RATE: f64 = 3.0 * std::f64::consts::PI / 180.0;
-const REACTION: f64 = 1.0;
-const DROP_WINDOW: f64 = 3.0;
+const DECELERATION: f64 = 0.5144;
+const SPEED_TIME: f64 = 2.0;
+const BREAK_PITCH_RATE: f64 = 3.0 * DEG;
+const DEPARTURE_BANK: f64 = 30.0 * DEG;
+const HOLD_TIME: f64 = 3.0;
+const STOP_TIME: f64 = 10.0;
+
+/// Loop: bank out of the vertical plane beyond which it is no longer a loop (E:).
+const LOOP_PLANE_BANK: f64 = 45.0 * DEG;
+
+/// Dive: part of the dive taken as its entry, s; time the elevator is released to
+/// neutral (E:, the fiche's test); change of flight path below which the dive is
+/// neither stable nor divergent (E:).
+const DIVE_ENTRY: f64 = 2.0;
+const RELEASE_TIME: f64 = 3.0;
+const RELEASE_THRESHOLD: f64 = 1.0 * DEG;
 
 /// Longest time given to a manoeuvre, s.
 const LOOP_TIME: f64 = 60.0;
+const APPROACH_TIME: f64 = 120.0;
 const RECOVERY_TIME: f64 = 30.0;
 
 /// Search tolerance on the speed of best glide, m/s.
@@ -106,6 +134,16 @@ pub struct Observed {
     pub alpha: Option<(f64, f64)>,
     /// Flight-path angles between which the dive was held, rad.
     pub held_path: Option<(f64, f64)>,
+    /// After the stall, stick held, ailerons and rudder neutral: nose drop and the
+    /// largest bank, signed (positive
+    /// right wing down), rad.
+    pub stall_drop: Option<(f64, f64)>,
+    /// Mean speed reduction before the stall, m/s².
+    pub deceleration: Option<f64>,
+    /// Change of flight path with the elevator released in the held dive, rad
+    /// (positive: the dive flattens by itself).
+    pub release: Option<f64>,
+    pub glide_ratio: Option<f64>,
 }
 
 /// One instant of a manoeuvre.
@@ -113,19 +151,32 @@ pub struct Observed {
 struct Sample {
     time: f64,
     state: RigidBodyState,
+    /// Airspeed, m/s.
     speed: f64,
     alpha: f64,
     beta: f64,
     altitude: f64,
-    /// Flight-path angle, rad.
+    /// Flight-path angle, rad (−90° to 90°).
     flight_path: f64,
+    /// Flight-path angle in the initial vertical plane, unwrapped: a loop adds 2π.
+    plane_path: f64,
     /// Aerodynamic and propeller force along −z over the weight.
     load_factor: f64,
-    /// Nose angle above the horizon in the initial vertical plane, unwrapped, rad (a
-    /// loop adds 2π).
+    /// Same force along the airspeed, over the mass, m/s².
+    along: f64,
+    /// Nose angle above the horizon in the initial vertical plane, unwrapped.
     pitch: f64,
-    /// Bank out of that plane, rad (positive right wing down).
+    /// Bank out of that plane (positive right wing down): for loops and dives.
     roll: f64,
+    /// Euler angles (heading unwrapped): for flight near the horizontal, whatever the
+    /// heading.
+    elevation: f64,
+    bank: f64,
+    heading: f64,
+}
+
+fn unwrapped(raw: f64, previous: Option<f64>) -> f64 {
+    previous.map_or(raw, |p| p + wrap_angle(raw - p))
 }
 
 impl Sample {
@@ -135,27 +186,49 @@ impl Sample {
         time: f64,
         state: RigidBodyState,
         controls: &PilotControls,
-        previous_pitch: Option<f64>,
+        previous: Option<&Sample>,
     ) -> Self {
-        let v = state.velocity_body;
-        let speed = v.length();
-        let force = aircraft.loads(&state, controls, env).wrench.force;
+        let d = aircraft.evaluate(&state, controls, env);
+        let air = d.air_velocity;
+        let speed = air.length();
+        let force = d.loads.wrench.force;
+        let mass = aircraft.mass().mass();
+        let velocity = state.attitude * state.velocity_body;
+        let ground_speed = velocity.length();
         let nose = state.attitude * DVec3::X;
-        let raw = (-nose.z).atan2(nose.x);
         let (wing, belly) = (state.attitude * DVec3::Y, state.attitude * DVec3::Z);
-        let velocity_ned = state.attitude * v;
-        let ratio = |a: f64| if speed > 0.0 { a / speed } else { 0.0 };
+        let (yaw, elevation, bank) = state.attitude.to_euler(EulerRot::ZYX);
         Self {
             time,
             state,
             speed,
-            alpha: v.z.atan2(v.x),
-            beta: ratio(v.y).asin(),
+            alpha: air.z.atan2(air.x),
+            beta: if speed > 0.0 {
+                (air.y / speed).asin()
+            } else {
+                0.0
+            },
             altitude: -state.position_ned.z,
-            flight_path: ratio(-velocity_ned.z).asin(),
-            load_factor: -force.z / (aircraft.mass().mass() * G0),
-            pitch: previous_pitch.map_or(raw, |p| p + wrap_angle(raw - p)),
+            flight_path: if ground_speed > 0.0 {
+                (-velocity.z / ground_speed).asin()
+            } else {
+                0.0
+            },
+            plane_path: unwrapped(
+                (-velocity.z).atan2(velocity.x),
+                previous.map(|p| p.plane_path),
+            ),
+            load_factor: -force.z / (mass * G0),
+            along: if speed > 0.0 {
+                force.dot(air) / (speed * mass)
+            } else {
+                0.0
+            },
+            pitch: unwrapped((-nose.z).atan2(nose.x), previous.map(|p| p.pitch)),
             roll: (-belly.y).atan2(wing.y),
+            elevation,
+            bank,
+            heading: unwrapped(yaw, previous.map(|p| p.heading)),
         }
     }
 }
@@ -165,41 +238,56 @@ struct Flown {
     finite: bool,
 }
 
+impl Flown {
+    fn first(&self) -> Sample {
+        self.samples[0]
+    }
+
+    fn last(&self) -> Sample {
+        self.samples[self.samples.len() - 1]
+    }
+
+    fn max(&self, f: impl Fn(&Sample) -> f64) -> f64 {
+        self.samples.iter().map(f).fold(f64::MIN, f64::max)
+    }
+
+    fn min(&self, f: impl Fn(&Sample) -> f64) -> f64 {
+        self.samples.iter().map(f).fold(f64::MAX, f64::min)
+    }
+}
+
 /// Flies from `start` until the pilot returns `None` or `seconds` have passed.
 fn fly(
     aircraft: &Aircraft,
     env: &dyn Environment,
+    pilot: &Pilot,
     start: RigidBodyState,
     controls: PilotControls,
     seconds: f64,
-    mut pilot: impl FnMut(&Sample) -> Option<PilotControls>,
+    mut command: impl FnMut(&Sample) -> Option<PilotControls>,
 ) -> Flown {
     let mut samples = vec![Sample::new(aircraft, env, 0.0, start, &controls, None)];
-    let steps = (seconds / DT).round() as u32;
+    let steps = (seconds / pilot.dt).round() as u32;
     for i in 1..=steps {
         let last = samples[samples.len() - 1];
-        let Some(c) = pilot(&last) else { break };
-        let state = aircraft.step(&last.state, &c, env, DT);
+        let Some(c) = command(&last) else { break };
+        let state = aircraft.step(&last.state, &c, env, pilot.dt);
         let values = [
             state.velocity_body.to_array(),
             state.angular_velocity_body.to_array(),
             state.position_ned.to_array(),
         ];
-        if !(values.iter().flatten().all(|v| v.is_finite()) && state.rotor_speed.is_finite()) {
+        if !(values.iter().flatten().all(|v| v.is_finite())
+            && state.rotor_speed.is_finite()
+            && state.aux.iter().all(|v| v.is_finite()))
+        {
             return Flown {
                 samples,
                 finite: false,
             };
         }
-        let time = f64::from(i) * DT;
-        samples.push(Sample::new(
-            aircraft,
-            env,
-            time,
-            state,
-            &c,
-            Some(last.pitch),
-        ));
+        let time = f64::from(i) * pilot.dt;
+        samples.push(Sample::new(aircraft, env, time, state, &c, Some(&last)));
     }
     Flown {
         samples,
@@ -211,46 +299,91 @@ fn fly(
 /// proportional and integral on the smaller of the two normalised margins, the incidence
 /// anticipated by its rate. Faster than the entry speed, the pilot moves the stick less,
 /// as the elevator grows stronger with the dynamic pressure (gains scaled by it).
+#[derive(Debug, Clone)]
 struct Pull {
     alpha_limit: f64,
+    lead: f64,
+    dt: f64,
     base: f64,
     reference_speed: f64,
     integral: f64,
     last_alpha: Option<f64>,
+    /// Steps flown, and those on which the incidence limit was the tighter.
+    steps: u32,
+    limited: u32,
 }
 
 impl Pull {
-    fn new(alpha_limit: f64, base: f64, reference_speed: f64) -> Self {
+    fn new(pilot: &Pilot, alpha_limit: f64, base: f64, reference_speed: f64) -> Self {
         Self {
             alpha_limit,
+            lead: pilot.lead,
+            dt: pilot.dt,
             base,
             reference_speed,
             integral: 0.0,
             last_alpha: None,
+            steps: 0,
+            limited: 0,
         }
     }
 
     fn command(&mut self, s: &Sample, target: f64) -> f64 {
-        let rate = self.last_alpha.map_or(0.0, |a| (s.alpha - a) / DT);
+        let rate = self.last_alpha.map_or(0.0, |a| (s.alpha - a) / self.dt);
         self.last_alpha = Some(s.alpha);
-        let error = ((target - s.load_factor) / LOAD_SCALE)
-            .min((self.alpha_limit - s.alpha - ALPHA_LEAD * rate) / ALPHA_SCALE);
+        let load = (target - s.load_factor) / LOAD_SCALE;
+        let incidence = (self.alpha_limit - s.alpha - self.lead * rate) / ALPHA_SCALE;
+        self.steps += 1;
+        if incidence < load {
+            self.limited += 1;
+        }
+        let error = load.min(incidence);
         let scale = (self.reference_speed / s.speed.max(1.0)).powi(2).min(1.0);
         // The integral stays within what the stick can add (no wind-up at the stops).
-        self.integral = (self.integral + scale * PULL_INTEGRAL * error * DT)
+        self.integral = (self.integral + scale * PULL_INTEGRAL * error * self.dt)
             .clamp(-1.0 - self.base, 1.0 - self.base);
         (self.base + scale * PULL_GAIN * error + self.integral).clamp(-1.0, 1.0)
     }
+
+    /// Part of the time spent on the incidence limit.
+    fn limited_fraction(&self) -> f64 {
+        f64::from(self.limited) / f64::from(self.steps.max(1))
+    }
 }
 
-/// Ailerons holding the wings in the initial vertical plane.
-fn wings_level(s: &Sample) -> f64 {
-    (-ROLL_GAIN * s.roll - ROLL_DAMPING * s.state.angular_velocity_body.x).clamp(-1.0, 1.0)
+/// Load factor that brings the flight path to `wanted` in [`PATH_TIME`], wings level:
+/// V dγ/dt = g (n − cos γ).
+fn path_load_factor(s: &Sample, path: f64, wanted: f64) -> f64 {
+    path.cos() + s.speed * (wanted - path) / (PATH_TIME * G0)
 }
 
-/// Rudder keeping the sideslip small, around the trim's rudder.
-fn coordinated(s: &Sample, base: f64) -> f64 {
-    (base + YAW_GAIN * s.beta).clamp(-1.0, 1.0)
+/// Ailerons levelling the wings (bank measured as suits the manoeuvre).
+fn wings_level(bank: f64, s: &Sample) -> f64 {
+    (-ROLL_GAIN * bank - ROLL_DAMPING * s.state.angular_velocity_body.x).clamp(-1.0, 1.0)
+}
+
+/// Rudder nulling the sideslip: proportional and integral around a trim value.
+#[derive(Debug, Clone)]
+struct Rudder {
+    base: f64,
+    dt: f64,
+    integral: f64,
+}
+
+impl Rudder {
+    fn new(pilot: &Pilot, base: f64) -> Self {
+        Self {
+            base,
+            dt: pilot.dt,
+            integral: 0.0,
+        }
+    }
+
+    fn command(&mut self, s: &Sample) -> f64 {
+        self.integral = (self.integral + YAW_INTEGRAL * s.beta * self.dt)
+            .clamp(-1.0 - self.base, 1.0 - self.base);
+        (self.base + YAW_GAIN * s.beta + self.integral).clamp(-1.0, 1.0)
+    }
 }
 
 fn deg(angle: f64) -> f64 {
@@ -261,96 +394,144 @@ fn kmh(speed: f64) -> f64 {
     speed * 3.6
 }
 
+fn rpm(rotor_speed: f64) -> f64 {
+    rotor_speed * 30.0 / PI
+}
+
+/// Equivalent airspeed, km/h.
+fn eas_kmh(speed: f64, altitude: f64) -> f64 {
+    kmh(speed * isa(altitude).sigma().sqrt())
+}
+
 fn error(e: PerformanceError) -> String {
     format!("{e:?}")
 }
 
-/// Incidence the pilot does not go past: a little below that of the idle stall (lowest
-/// steady speed).
-fn alpha_limit(stall: &Stall) -> f64 {
-    stall.alpha - PILOT_MARGIN
-}
-
-/// Loop from the maximum level speed at full throttle.
+/// Loop at full throttle from level flight.
 fn flown_loop(
     aircraft: &Aircraft,
     env: &dyn Environment,
+    pilot: &Pilot,
     altitude: f64,
+    speed: Option<f64>,
     load_factor: f64,
 ) -> Result<Observed, String> {
-    let stall = stall_speed(aircraft, env, altitude).map_err(error)?;
-    let trim = max_level_speed(aircraft, env, altitude).map_err(error)?;
+    // The incidence limit of the manoeuvre's throttle setting.
+    let stall = stall_speed_at(aircraft, env, altitude, 1.0).map_err(error)?;
+    let trim = match speed {
+        None => max_level_speed(aircraft, env, altitude).map_err(error)?,
+        Some(v) => solve_robust(
+            aircraft,
+            env,
+            Flight::guess(altitude, v, 0.6),
+            LEVEL_AT_SPEED,
+        )
+        .map_err(|e| format!("pas de palier à {:.0} km/h : {e:?}", kmh(v)))?,
+    };
     let c0 = trim.commands(aircraft);
-    let start = trim.flight.state();
-    let mut pull = Pull::new(alpha_limit(&stall), c0.pitch, trim.flight.speed);
-    let pitch0 = trim.flight.pitch();
-    let flown = fly(aircraft, env, start, c0, LOOP_TIME, |s| {
-        (s.pitch - pitch0 < TAU).then(|| PilotControls {
-            pitch: pull.command(s, load_factor),
-            roll: wings_level(s),
-            yaw: coordinated(s, c0.yaw),
-            throttle: 1.0,
-        })
-    });
-    let samples = &flown.samples;
-    let entry = samples[0];
-    let last = samples[samples.len() - 1];
-    let top = samples
+    let limit = stall.alpha - pilot.margin;
+    let mut pull = Pull::new(pilot, limit, c0.pitch, trim.flight.speed);
+    let mut rudder = Rudder::new(pilot, c0.yaw);
+    let mut start_path = None;
+    let flown = fly(
+        aircraft,
+        env,
+        pilot,
+        trim.flight.state(),
+        c0,
+        LOOP_TIME,
+        |s| {
+            let p0 = *start_path.get_or_insert(s.plane_path);
+            (s.plane_path - p0 < TAU && s.roll.abs() < LOOP_PLANE_BANK).then(|| PilotControls {
+                pitch: pull.command(s, load_factor),
+                roll: wings_level(s.roll, s),
+                yaw: rudder.command(s),
+                throttle: 1.0,
+            })
+        },
+    );
+    let (entry, last) = (flown.first(), flown.last());
+    let p0 = entry.plane_path;
+    let top = flown
+        .samples
         .iter()
         .copied()
         .fold(entry, |a, b| if b.altitude > a.altitude { b } else { a });
-    let max = |f: fn(&Sample) -> f64| samples.iter().map(f).fold(f64::MIN, f64::max);
-    let stalled = samples
+    let out_of_plane = flown.max(|s| s.roll.abs()) >= LOOP_PLANE_BANK;
+    let completed = last.plane_path - p0 >= TAU && !out_of_plane;
+    let max_alpha = flown.max(|s| s.alpha);
+    let stalled = flown
+        .samples
         .iter()
         .find(|s| s.alpha > stall.alpha)
-        .map(|s| s.pitch - pitch0);
-    let completed = last.pitch - pitch0 >= TAU;
+        .map(|s| s.plane_path - p0);
+    let top_text = format!(
+        "sommet à +{:.0} m, à {:.0} km/h, soit {:.2} V_s (décrochage pleins gaz à 1 g : {:.0} km/h)",
+        top.altitude - entry.altitude,
+        kmh(top.speed),
+        top.speed / stall.speed,
+        kmh(stall.speed)
+    );
     let mut text = if completed {
         format!(
-            "**bouclée** en {:.1} s ; sommet à +{:.0} m, à {:.0} km/h (décrochage au ralenti : {:.0} km/h) ; sortie à {:+.0} m de l'entrée, {:.0} km/h",
+            "**bouclée** en {:.1} s ; {top_text} ; sortie à {:+.0} m de l'entrée, {:.0} km/h",
             last.time,
-            top.altitude - entry.altitude,
-            kmh(top.speed),
-            kmh(stall.speed),
             last.altitude - entry.altitude,
             kmh(last.speed)
         )
     } else {
         format!(
-            "**non bouclée** : rotation maximale {:.0}° en {:.0} s ; sommet à +{:.0} m, à {:.0} km/h (décrochage au ralenti : {:.0} km/h)",
-            deg(max(|s| s.pitch) - pitch0),
+            "**non bouclée** : trajectoire tournée de {:.0}° en {:.0} s{} ; {top_text}",
+            deg(flown.max(|s| s.plane_path) - p0),
             last.time,
-            top.altitude - entry.altitude,
-            kmh(top.speed),
-            kmh(stall.speed)
+            if out_of_plane {
+                " (sortie du plan vertical)"
+            } else {
+                ""
+            }
         )
     };
     text += &format!(
-        " ; entrée à {:.0} km/h, facteur de charge maximal {:.1} (consigne {load_factor:.1}), incidence maximale {:.1}° (décrochage {:.1}°), inclinaison hors du plan jusqu'à {:.0}°",
+        " ; entrée à {:.0} km/h, facteur de charge maximal {:.1} (consigne {load_factor:.1}), incidence maximale {:.1}° (limite du pilote {:.1}°, décrochage {:.1}°), sur la limite d'incidence {:.0} % du temps, inclinaison hors du plan jusqu'à {:.0}°",
         kmh(entry.speed),
-        max(|s| s.load_factor),
-        deg(max(|s| s.alpha)),
+        flown.max(|s| s.load_factor),
+        deg(max_alpha),
+        deg(limit),
         deg(stall.alpha),
-        deg(max(|s| s.roll.abs()))
+        100.0 * pull.limited_fraction(),
+        deg(flown.max(|s| s.roll.abs()))
     );
     text += &match stalled {
         Some(at) => format!(" ; **décroché** à {:.0}° de rotation", deg(at)),
-        None => " ; sans décrocher".to_owned(),
+        None => format!(
+            " ; sans décrocher (marge {:.1}°)",
+            deg(stall.alpha - max_alpha)
+        ),
     };
     Ok(Observed {
         text,
         finite: flown.finite,
         completed,
-        load_factor: Some((max(|s| s.load_factor), load_factor)),
-        alpha: Some((max(|s| s.alpha), stall.alpha)),
-        held_path: None,
+        load_factor: Some((flown.max(|s| s.load_factor), load_factor)),
+        alpha: Some((max_alpha, stall.alpha)),
+        ..Observed::default()
     })
+}
+
+/// How the stall showed itself.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Departure {
+    /// The nose dropped.
+    Nose,
+    /// A wing dropped past [`DEPARTURE_BANK`] before the nose.
+    Wing,
 }
 
 /// Power-off stall from level flight at 1.3 times the idle stall speed.
 fn flown_stall(
     aircraft: &Aircraft,
     env: &dyn Environment,
+    pilot: &Pilot,
     altitude: f64,
 ) -> Result<Observed, String> {
     let stall = stall_speed(aircraft, env, altitude).map_err(error)?;
@@ -367,45 +548,82 @@ fn flown_stall(
     let recovery = glide.commands(aircraft);
     let gamma_glide = glide.flight.flight_path;
 
-    // Approach: idle, wings held level, stick eased back to the stop. The break is the
-    // nose dropping past the stall incidence with the stick still back.
-    let mut stick = c0.pitch;
+    // Approach: idle, wings held level, the speed reduced by a knot per second with the
+    // elevator (no incidence limit) until the nose or a wing drops past the stall
+    // incidence.
+    let mut pull = Pull::new(pilot, f64::INFINITY, c0.pitch, entry_speed);
+    let mut rudder = Rudder::new(pilot, recovery.yaw);
     let mut beyond = false;
     let mut at_stop = None::<f64>;
-    let approach = fly(aircraft, env, level.flight.state(), c0, 120.0, |s| {
-        beyond |= s.alpha >= stall.alpha;
-        if beyond && s.state.angular_velocity_body.y < -BREAK_PITCH_RATE {
-            return None;
-        }
-        if at_stop.is_some_and(|t| s.time - t > 10.0) {
-            return None;
-        }
-        stick = (stick + STALL_STICK_RATE * DT).min(1.0);
-        if stick >= 1.0 && at_stop.is_none() {
-            at_stop = Some(s.time);
-        }
-        Some(PilotControls {
-            pitch: stick,
-            roll: wings_level(s),
-            yaw: coordinated(s, recovery.yaw),
-            throttle: 0.0,
-        })
-    });
-    let entry = approach.samples[0];
-    let at_break = approach.samples[approach.samples.len() - 1];
-    let max_alpha = approach
+    let mut departure = None;
+    let mut applied = c0;
+    let approach = fly(
+        aircraft,
+        env,
+        pilot,
+        level.flight.state(),
+        c0,
+        APPROACH_TIME,
+        |s| {
+            beyond |= s.alpha >= stall.alpha;
+            if beyond && s.state.angular_velocity_body.y < -BREAK_PITCH_RATE {
+                departure = Some(Departure::Nose);
+                return None;
+            }
+            if beyond && s.bank.abs() > DEPARTURE_BANK {
+                departure = Some(Departure::Wing);
+                return None;
+            }
+            if at_stop.is_some_and(|t| s.time - t > STOP_TIME) {
+                return None;
+            }
+            let wanted_speed = entry_speed - DECELERATION * s.time;
+            let acceleration = -DECELERATION + (wanted_speed - s.speed) / SPEED_TIME;
+            let path = ((s.along - acceleration) / G0).clamp(-1.0, 1.0).asin();
+            let stick = pull.command(s, path_load_factor(s, s.flight_path, path));
+            if stick >= 1.0 && at_stop.is_none() {
+                at_stop = Some(s.time);
+            }
+            applied = PilotControls {
+                pitch: stick,
+                roll: wings_level(s.bank, s),
+                yaw: rudder.command(s),
+                throttle: 0.0,
+            };
+            Some(applied)
+        },
+    );
+    let (entry, at_break) = (approach.first(), approach.last());
+    let max_alpha = approach.max(|s| s.alpha);
+    // Mean speed reduction from the settling of the throttle cut to the stall
+    // incidence (past it, the aircraft sinks rather than slows down).
+    let settled = approach.samples.iter().find(|s| s.time >= 2.0);
+    let stalling = approach
         .samples
         .iter()
-        .map(|s| s.alpha)
-        .fold(f64::MIN, f64::max);
-    let broke = beyond && at_break.state.angular_velocity_body.y < -BREAK_PITCH_RATE;
-    if !approach.finite || !broke {
+        .find(|s| s.alpha >= stall.alpha)
+        .unwrap_or(&at_break);
+    let deceleration = settled
+        .filter(|s| stalling.time > s.time)
+        .map(|s| (s.speed - stalling.speed) / (stalling.time - s.time));
+    let stall_text = format!(
+        "décrochage stabilisé au ralenti : {:.0} km/h ({:.0} km/h en vitesse équivalente), {:.1}°",
+        kmh(stall.speed),
+        eas_kmh(stall.speed, altitude),
+        deg(stall.alpha)
+    );
+    let Some(departure) = departure.filter(|_| approach.finite) else {
+        let what = if at_stop.is_some() {
+            format!(
+                "**pas de décrochage franc** : manche en butée {STOP_TIME:.0} s, l'avion s'enfonce à {:.0} km/h",
+                kmh(at_break.speed)
+            )
+        } else {
+            format!("**pas de décrochage en {APPROACH_TIME:.0} s**")
+        };
         let text = format!(
-            "**pas d'abattée** : manche en butée, l'avion s'enfonce à {:.0} km/h, incidence maximale {:.1}° (décrochage au ralenti {:.1}°, à {:.0} km/h){}",
-            kmh(at_break.speed),
+            "{what}, incidence maximale {:.1}° ({stall_text}){}",
             deg(max_alpha),
-            deg(stall.alpha),
-            kmh(stall.speed),
             if stall.elevator_limited {
                 " ; la profondeur ne suffit pas à décrocher l'aile en vol stabilisé"
             } else {
@@ -416,70 +634,115 @@ fn flown_stall(
             text,
             finite: approach.finite,
             alpha: Some((max_alpha, stall.alpha)),
+            deceleration,
             ..Observed::default()
         });
-    }
+    };
 
-    // At the break: controls held for the reaction time, then the glide's stick, wings
-    // levelled, until the flight path is back to the glide's.
+    // The aircraft alone: stick held as at the break, ailerons and rudder back to
+    // neutral (the coordinating rudder would follow the roll, which is pro-spin), until
+    // the nose has dropped and stopped dropping (or HOLD_TIME). The reference attitude
+    // is the highest of the last second before the break.
     let held = PilotControls {
-        pitch: stick,
-        roll: wings_level(&at_break),
-        yaw: coordinated(&at_break, recovery.yaw),
+        pitch: applied.pitch,
+        roll: recovery.roll,
+        yaw: recovery.yaw,
         throttle: 0.0,
     };
-    let after = fly(aircraft, env, at_break.state, held, RECOVERY_TIME, |s| {
-        if s.time < REACTION {
-            return Some(held);
-        }
-        if s.time > REACTION + 1.0 && s.flight_path >= gamma_glide {
-            return None;
-        }
-        Some(PilotControls {
-            pitch: recovery.pitch,
-            roll: wings_level(s),
-            yaw: coordinated(s, recovery.yaw),
-            throttle: 0.0,
-        })
+    let reference = approach
+        .samples
+        .iter()
+        .filter(|s| s.time >= at_break.time - 1.0)
+        .map(|s| s.elevation)
+        .fold(f64::MIN, f64::max);
+    let mut dropped = false;
+    let hold = fly(aircraft, env, pilot, at_break.state, held, HOLD_TIME, |s| {
+        let q = s.state.angular_velocity_body.y;
+        dropped |= q < 0.0;
+        (!(dropped && q >= 0.0 && s.time > 0.0)).then_some(held)
     });
-    // Pitch continues from the approach's unwrapped angle.
-    let offset = at_break.pitch - after.samples[0].pitch;
-    let window = after.samples.iter().filter(|s| s.time <= DROP_WINDOW);
-    let (lowest_nose, widest_bank) = window.fold((f64::MAX, 0.0_f64), |(n, b), s| {
-        (n.min(s.pitch + offset), b.max(s.roll.abs()))
-    });
-    let end = after.samples[after.samples.len() - 1];
+    let lowest_nose = hold.min(|s| s.elevation);
+    let q_min = hold.min(|s| s.state.angular_velocity_body.y);
+    let bank = hold
+        .samples
+        .iter()
+        .map(|s| s.bank)
+        .fold(0.0_f64, |b, x| if x.abs() > b.abs() { x } else { b });
+    let held_end = hold.last();
+
+    // The pilot recovers: the glide's stick, wings levelled, until the flight path is
+    // back to the glide's.
+    let mut rudder = Rudder::new(pilot, recovery.yaw);
+    let after = fly(
+        aircraft,
+        env,
+        pilot,
+        held_end.state,
+        held,
+        RECOVERY_TIME,
+        |s| {
+            if s.time > 1.0 && s.flight_path >= gamma_glide {
+                return None;
+            }
+            Some(PilotControls {
+                pitch: recovery.pitch,
+                roll: wings_level(s.bank, s),
+                yaw: rudder.command(s),
+                throttle: 0.0,
+            })
+        },
+    );
+    let end = after.last();
     let recovered = end.flight_path >= gamma_glide;
+    let side = if bank > 0.0 { "droite" } else { "gauche" };
+    let what = match departure {
+        Departure::Nose => format!(
+            "abattée de {:.0}° (assiette {:+.0}° → {:+.0}°, jusqu'à {:.0}°/s), inclinaison jusqu'à {:.0}° à {side}",
+            deg(reference - lowest_nose),
+            deg(reference),
+            deg(lowest_nose),
+            deg(-q_min),
+            deg(bank.abs())
+        ),
+        Departure::Wing => format!(
+            "**départ en roulis à {side}** : inclinaison jusqu'à {:.0}°, le nez baissant de {:.0}°",
+            deg(bank.abs()),
+            deg(reference - lowest_nose)
+        ),
+    };
+    let lost = at_break.altitude - end.altitude;
+    let recovery_text = if recovered {
+        format!(
+            "remis en plané normal ({:.1}°) {:.1} s après le décrochage, {lost:.0} m perdus",
+            deg(gamma_glide),
+            held_end.time + end.time
+        )
+    } else {
+        format!(
+            "**pas revenu en plané normal en {:.0} s** ({lost:.0} m perdus)",
+            held_end.time + end.time
+        )
+    };
     let text = format!(
-        "abattée de {:.0}° en {DROP_WINDOW:.0} s (assiette {:+.0}° → {:+.0}°), inclinaison jusqu'à {:.0}° ; décroche à {:.0} km/h et {:.1}° d'incidence (en vol stabilisé : {:.0} km/h) après {:.0} s de manche tiré depuis {:.0} km/h ; {}",
-        deg(at_break.pitch - lowest_nose),
-        deg(at_break.pitch),
-        deg(lowest_nose),
-        deg(widest_bank),
-        kmh(at_break.speed),
-        deg(at_break.alpha),
-        kmh(stall.speed),
-        at_break.time,
+        "{what}, cap {:+.0}°, manche tenu, ailerons et palonnier au neutre, {:.1} s ; incidence de décrochage atteinte à {:.0} km/h ({:.0} km/h en vitesse équivalente), dérapage {:+.1}°, après {:.0} s de décélération depuis {:.0} km/h (mesurée {:.2} m/s²), départ {:.1} s plus tard à {:.1}° d'incidence ; {stall_text} ; {recovery_text}",
+        deg(held_end.heading - hold.first().heading),
+        held_end.time,
+        kmh(stalling.speed),
+        eas_kmh(stalling.speed, stalling.altitude),
+        deg(stalling.beta),
+        stalling.time,
         kmh(entry.speed),
-        if recovered {
-            format!(
-                "remis en plané normal ({:.1}°) en {:.1} s, {:.0} m perdus",
-                deg(gamma_glide),
-                end.time,
-                at_break.altitude - end.altitude
-            )
-        } else {
-            format!(
-                "**pas revenu en plané normal en {RECOVERY_TIME:.0} s** ({:.0} m perdus)",
-                at_break.altitude - end.altitude
-            )
-        }
+        deceleration.unwrap_or(f64::NAN),
+        at_break.time - stalling.time,
+        deg(at_break.alpha)
     );
     Ok(Observed {
         text,
-        finite: approach.finite && after.finite,
+        finite: approach.finite && hold.finite && after.finite,
         completed: recovered,
         alpha: Some((max_alpha, stall.alpha)),
+        stall_drop: Some((reference - lowest_nose, bank)),
+        deceleration,
         ..Observed::default()
     })
 }
@@ -537,159 +800,234 @@ fn flown_glide(
 ) -> Result<Observed, String> {
     let best = best_glide(aircraft, env, altitude).map_err(error)?;
     let f = best.flight;
+    let ratio = 1.0 / (-f.flight_path).tan();
     let text = format!(
-        "finesse maximale {:.1} à {:.0} km/h (pente {:.1}°, descente {:.1} m/s), moteur au ralenti, hélice entraînée à {:.0} tr/min",
-        1.0 / (-f.flight_path).tan(),
+        "finesse maximale {ratio:.1} à {:.0} km/h (pente {:.1}°, descente {:.1} m/s), moteur au ralenti à {:.0} tr/min",
         kmh(f.speed),
         deg(f.flight_path),
         -f.climb_rate(),
-        f.rotor_speed * 30.0 / std::f64::consts::PI
+        rpm(f.rotor_speed)
     );
     Ok(Observed {
         text,
         finite: true,
         completed: true,
+        glide_ratio: Some(ratio),
         ..Observed::default()
     })
 }
 
-/// Dive held at `angle` and full throttle, then a pull-out. While the pilot holds the
-/// dive, the pitching moment the aircraft would have with the elevator neutral is
-/// recorded: nose-up means the dive is stable (the aircraft wants to pull out).
+/// Dive held at `angle` at full throttle, recording the pitching moment the aircraft
+/// would have with the elevator neutral (nose-up: the dive is stable, the aircraft wants
+/// to pull out); then, from the end of the held dive, two branches: the elevator
+/// released to neutral, and a pull-out to level flight.
 fn flown_dive(
     aircraft: &Aircraft,
     env: &dyn Environment,
+    pilot: &Pilot,
     altitude: f64,
     angle: f64,
     seconds: f64,
     load_factor: f64,
 ) -> Result<Observed, String> {
-    let stall = stall_speed(aircraft, env, altitude).map_err(error)?;
+    let stall = stall_speed_at(aircraft, env, altitude, 1.0).map_err(error)?;
     let trim = max_level_speed(aircraft, env, altitude).map_err(error)?;
     let c0 = trim.commands(aircraft);
     let mut entry = trim.flight;
     entry.flight_path = angle;
-    let mut pull = Pull::new(alpha_limit(&stall), c0.pitch, trim.flight.speed);
-    // (time, stick, pitching moment with the elevator neutral, speed)
+    let mut pull = Pull::new(
+        pilot,
+        stall.alpha - pilot.margin,
+        c0.pitch,
+        trim.flight.speed,
+    );
+    let mut rudder = Rudder::new(pilot, c0.yaw);
+    // (time, stick, pitching moment with the elevator neutral)
     let mut held = Vec::new();
-    let first = fly(aircraft, env, entry.state(), c0, seconds, |s| {
-        // Load factor that brings the path back to the dive angle in PATH_TIME.
-        let target = s.flight_path.cos() + s.speed * (angle - s.flight_path) / (PATH_TIME * G0);
+    let dive = fly(aircraft, env, pilot, entry.state(), c0, seconds, |s| {
+        let target = path_load_factor(s, s.plane_path, angle);
         let c = PilotControls {
             pitch: pull.command(s, target),
-            roll: wings_level(s),
-            yaw: coordinated(s, c0.yaw),
+            roll: wings_level(s.roll, s),
+            yaw: rudder.command(s),
             throttle: 1.0,
         };
         let neutral = PilotControls { pitch: 0.0, ..c };
         let moment = aircraft.loads(&s.state, &neutral, env).wrench.moment.y;
-        held.push((s.time, c.pitch, moment, s.speed));
+        held.push((s.time, c.pitch, moment));
         Some(c)
     });
-    let dive = &first.samples;
-    let (d0, d1) = (dive[0], dive[dive.len() - 1]);
-    let max =
-        |samples: &[Sample], f: fn(&Sample) -> f64| samples.iter().map(f).fold(f64::MIN, f64::max);
-    let min =
-        |samples: &[Sample], f: fn(&Sample) -> f64| samples.iter().map(f).fold(f64::MAX, f64::min);
-    // Settled part of the dive: after the first two seconds.
-    let settled: Vec<Sample> = dive.iter().copied().filter(|s| s.time >= 2.0).collect();
-    let tuck = held
-        .iter()
-        .find(|&&(t, _, moment, _)| t >= 2.0 && moment < 0.0)
-        .map(|&(_, _, _, speed)| speed);
+    let (d0, d1) = (dive.first(), dive.last());
+    let established = Flown {
+        samples: dive
+            .samples
+            .iter()
+            .copied()
+            .filter(|s| s.time >= DIVE_ENTRY)
+            .collect(),
+        finite: dive.finite,
+    };
+    let held_path = (
+        established.min(|s| s.plane_path),
+        established.max(|s| s.plane_path),
+    );
+    let settled: Vec<_> = held.iter().filter(|&&(t, ..)| t >= DIVE_ENTRY).collect();
+    let nose_down =
+        settled.iter().filter(|&&&(_, _, m)| m < 0.0).count() as f64 / settled.len().max(1) as f64;
     let late: Vec<f64> = held
         .iter()
         .filter(|&&(t, ..)| t >= seconds - 5.0)
-        .map(|&(_, stick, ..)| stick)
+        .map(|&(_, stick, _)| stick)
         .collect();
     let stick = late.iter().sum::<f64>() / late.len().max(1) as f64;
+    let moment_text = if nose_down == 0.0 {
+        "cabreur tout au long".to_owned()
+    } else if nose_down == 1.0 {
+        "**piqueur tout au long**".to_owned()
+    } else {
+        format!(
+            "cabreur sur {:.0} % du piqué établi, **piqueur sur {:.0} %**",
+            100.0 * (1.0 - nose_down),
+            100.0 * nose_down
+        )
+    };
     let mut text = format!(
-        "piqué tenu à {:.0}° pleins gaz pendant {seconds:.0} s (pente entre {:.0}° et {:.0}°) : vitesse maximale {:.0} km/h, régime maximal {:.0} tr/min, facteur de charge {:.1} à {:.1}, {:.0} m perdus ; manche à {stick:+.2} pour tenir la pente ; profondeur au neutre, {}",
+        "piqué tenu à {:.0}° pleins gaz pendant {seconds:.0} s (pente entre {:.0}° et {:.0}° une fois établi) : vitesse maximale {:.0} km/h, régime maximal {:.0} tr/min, facteur de charge établi {:.2} à {:.2}, {:.0} m perdus ; manche à {stick:+.2} pour tenir la pente ; moment de tangage profondeur au neutre {moment_text}",
         deg(angle),
-        deg(min(&settled, |s| s.flight_path)),
-        deg(max(&settled, |s| s.flight_path)),
-        kmh(max(dive, |s| s.speed)),
-        max(dive, |s| s.state.rotor_speed) * 30.0 / std::f64::consts::PI,
-        min(dive, |s| s.load_factor),
-        max(dive, |s| s.load_factor),
-        d0.altitude - d1.altitude,
-        match tuck {
-            None => "moment cabreur tout au long (rappelant)".to_owned(),
-            Some(speed) => format!(
-                "**moment piqueur à partir de {:.0} km/h (engagement)**",
-                kmh(speed)
-            ),
-        }
+        deg(held_path.0),
+        deg(held_path.1),
+        kmh(dive.max(|s| s.speed)),
+        rpm(dive.max(|s| s.state.rotor_speed)),
+        established.min(|s| s.load_factor),
+        established.max(|s| s.load_factor),
+        d0.altitude - d1.altitude
     );
-    let held_path = Some((
-        min(&settled, |s| s.flight_path),
-        max(&settled, |s| s.flight_path),
-    ));
-    if !first.finite {
+    if !dive.finite {
         return Ok(Observed {
             text,
-            held_path,
+            held_path: Some(held_path),
             ..Observed::default()
         });
     }
 
-    let start = PilotControls {
+    // Branch 1: elevator released to neutral.
+    let mut released_rudder = rudder.clone();
+    let release = fly(
+        aircraft,
+        env,
+        pilot,
+        d1.state,
+        released_controls(&d1),
+        RELEASE_TIME,
+        |s| {
+            Some(PilotControls {
+                pitch: 0.0,
+                roll: wings_level(s.roll, s),
+                yaw: released_rudder.command(s),
+                throttle: 1.0,
+            })
+        },
+    );
+    let path_offset = d1.plane_path - release.first().plane_path;
+    let change = release.last().plane_path + path_offset - d1.plane_path;
+    let verdict = if change > RELEASE_THRESHOLD {
+        "le piqué se redresse seul (rappelant)"
+    } else if change < -RELEASE_THRESHOLD {
+        "**le piqué s'accentue (engagement)**"
+    } else {
+        "pente à peu près tenue (neutre)"
+    };
+    text += &format!(
+        " ; relâché au neutre {RELEASE_TIME:.0} s : pente {:.0}° → {:.0}°, {verdict}, facteur de charge jusqu'à {:.1}",
+        deg(d1.plane_path),
+        deg(d1.plane_path + change),
+        release.max(|s| s.load_factor)
+    );
+
+    // Branch 2: pull-out to a level flight path.
+    let pull_start = PilotControls {
         pitch: pull.command(&d1, load_factor),
-        roll: wings_level(&d1),
-        yaw: coordinated(&d1, c0.yaw),
+        roll: wings_level(d1.roll, &d1),
+        yaw: rudder.command(&d1),
         throttle: 1.0,
     };
-    let second = fly(aircraft, env, d1.state, start, RECOVERY_TIME, |s| {
-        (s.pitch < 0.0).then(|| PilotControls {
-            pitch: pull.command(s, load_factor),
-            roll: wings_level(s),
-            yaw: coordinated(s, c0.yaw),
-            throttle: 1.0,
-        })
-    });
-    let out = &second.samples;
-    let end = out[out.len() - 1];
-    text += &if end.pitch >= 0.0 {
+    let out = fly(
+        aircraft,
+        env,
+        pilot,
+        d1.state,
+        pull_start,
+        RECOVERY_TIME,
+        |s| {
+            (s.flight_path < 0.0).then(|| PilotControls {
+                pitch: pull.command(s, load_factor),
+                roll: wings_level(s.roll, s),
+                yaw: rudder.command(s),
+                throttle: 1.0,
+            })
+        },
+    );
+    let end = out.last();
+    let completed = end.flight_path >= 0.0;
+    let max_alpha = dive.max(|s| s.alpha).max(out.max(|s| s.alpha));
+    text += &if completed {
         format!(
-            " ; ressource à {load_factor:.1} de consigne : en palier en {:.1} s, {:.0} m perdus, facteur de charge maximal {:.1}, incidence maximale {:.1}°, à {:.0} km/h",
+            " ; ressource à {load_factor:.1} de consigne : trajectoire horizontale en {:.1} s, {:.0} m perdus, facteur de charge maximal {:.1}, incidence maximale {:.1}°, à {:.0} km/h",
             end.time,
             d1.altitude - end.altitude,
-            max(out, |s| s.load_factor),
-            deg(max(out, |s| s.alpha)),
+            out.max(|s| s.load_factor),
+            deg(out.max(|s| s.alpha)),
             kmh(end.speed)
         )
     } else {
         format!(
-            " ; **ressource non terminée en {RECOVERY_TIME:.0} s** (assiette {:+.0}°, {:.0} m perdus)",
-            deg(end.pitch),
+            " ; **ressource non terminée en {RECOVERY_TIME:.0} s** (pente {:+.0}°, {:.0} m perdus)",
+            deg(end.flight_path),
             d1.altitude - end.altitude
         )
     };
     Ok(Observed {
         text,
-        finite: second.finite,
-        completed: end.pitch >= 0.0,
-        load_factor: Some((max(out, |s| s.load_factor), load_factor)),
-        alpha: Some((
-            max(dive, |s| s.alpha).max(max(out, |s| s.alpha)),
-            stall.alpha,
-        )),
-        held_path,
+        finite: release.finite && out.finite,
+        completed,
+        load_factor: Some((out.max(|s| s.load_factor), load_factor)),
+        alpha: Some((max_alpha, stall.alpha)),
+        held_path: Some(held_path),
+        release: Some(change),
+        ..Observed::default()
     })
+}
+
+/// Controls of the first sample of the release branch (they only enter its figures).
+fn released_controls(s: &Sample) -> PilotControls {
+    PilotControls {
+        pitch: 0.0,
+        roll: wings_level(s.roll, s),
+        yaw: 0.0,
+        throttle: 1.0,
+    }
 }
 
 fn flown(
     aircraft: &Aircraft,
     env: &dyn Environment,
+    pilot: &Pilot,
     manoeuvre: &Manoeuvre,
 ) -> Result<Observed, String> {
     match *manoeuvre {
         Manoeuvre::Loop {
             altitude,
+            speed,
             load_factor,
-        } => flown_loop(aircraft, env, altitude.si(), load_factor),
-        Manoeuvre::PowerOffStall { altitude } => flown_stall(aircraft, env, altitude.si()),
+        } => flown_loop(
+            aircraft,
+            env,
+            pilot,
+            altitude.si(),
+            speed.map(|v| v.si()),
+            load_factor,
+        ),
+        Manoeuvre::PowerOffStall { altitude } => flown_stall(aircraft, env, pilot, altitude.si()),
         Manoeuvre::Glide { altitude } => flown_glide(aircraft, env, altitude.si()),
         Manoeuvre::Dive {
             altitude,
@@ -699,6 +1037,7 @@ fn flown(
         } => flown_dive(
             aircraft,
             env,
+            pilot,
             altitude.si(),
             angle.si(),
             seconds,
@@ -713,40 +1052,133 @@ pub fn run(aircraft: &Aircraft, env: &dyn Environment, scenario: &Scenario) -> Q
         name: scenario.name.clone(),
         description: scenario.description.clone(),
         source: scenario.source.clone(),
-        flown: scenario.manoeuvre.as_ref().map(|m| flown(aircraft, env, m)),
+        flown: scenario
+            .manoeuvre
+            .as_ref()
+            .map(|m| flown(aircraft, env, &PILOT, m)),
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
+    use escadrille_data::aircraft::{AircraftData, Loading, Rotation, load_aircraft};
     use escadrille_data::units::{Angle, Length};
+    use glam::DQuat;
 
     use super::*;
     use crate::trim::tests::{STILL_AIR, biplane};
 
+    /// The synthetic biplane, edited before it is built.
+    fn biplane_with(edit: impl FnOnce(&mut AircraftData)) -> Aircraft {
+        let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("../../crates/data/tests/fixtures/assets");
+        let mut data = load_aircraft(&assets, "test_biplane").unwrap();
+        edit(&mut data);
+        data.build(&Loading { fuel_fraction: 1.0 })
+            .unwrap()
+            .aircraft
+    }
+
+    fn fly_on(aircraft: &Aircraft, pilot: &Pilot, manoeuvre: Manoeuvre) -> Observed {
+        let o = flown(aircraft, &STILL_AIR, pilot, &manoeuvre).unwrap();
+        assert!(o.finite, "{o:?}");
+        o
+    }
+
     fn fly_one(manoeuvre: Manoeuvre) -> Observed {
-        let scenario = Scenario {
-            name: "test".to_owned(),
-            description: "test".to_owned(),
-            source: "test".to_owned(),
-            manoeuvre: Some(manoeuvre),
+        fly_on(&biplane(), &PILOT, manoeuvre)
+    }
+
+    const LOOP: Manoeuvre = Manoeuvre::Loop {
+        altitude: Length::M(2_000.0),
+        speed: None,
+        load_factor: 3.5,
+    };
+
+    fn dive(angle: f64) -> Manoeuvre {
+        Manoeuvre::Dive {
+            altitude: Length::M(3_000.0),
+            angle: Angle::Deg(angle),
+            seconds: 20.0,
+            load_factor: 4.0,
+        }
+    }
+
+    #[test]
+    fn bank_is_positive_right_wing_down() {
+        let a = biplane();
+        let state = RigidBodyState {
+            position_ned: DVec3::new(0.0, 0.0, -1_000.0),
+            attitude: DQuat::from_euler(EulerRot::ZYX, 0.0, 0.0, 30.0 * DEG),
+            velocity_body: DVec3::new(40.0, 0.0, 0.0),
+            rotor_speed: 150.0,
+            ..RigidBodyState::default()
         };
-        let outcome = run(&biplane(), &STILL_AIR, &scenario);
-        assert!(outcome.finite(), "{outcome:?}");
-        outcome.flown.unwrap().unwrap()
+        assert!((state.attitude * DVec3::Y).z > 0.0, "right wing down");
+        let s = Sample::new(&a, &STILL_AIR, 0.0, state, &PilotControls::default(), None);
+        assert!((s.roll - 30.0 * DEG).abs() < 1e-12, "{s:?}");
+        assert!((s.bank - 30.0 * DEG).abs() < 1e-12, "{s:?}");
+    }
+
+    #[test]
+    fn load_factor_matches_the_curvature_of_the_path() {
+        // A steady pull, wings level: n = cos γ + V γ̇ / g, measured independently of
+        // the pilot from the trajectory.
+        let a = biplane();
+        let trim = max_level_speed(&a, &STILL_AIR, 2_000.0).unwrap();
+        let c0 = trim.commands(&a);
+        let pull = PilotControls {
+            pitch: c0.pitch + 0.15,
+            ..c0
+        };
+        let flown = fly(
+            &a,
+            &STILL_AIR,
+            &PILOT,
+            trim.flight.state(),
+            pull,
+            2.0,
+            |_| Some(pull),
+        );
+        let s = &flown.samples;
+        let mut checked = 0;
+        for i in 1..s.len() - 1 {
+            if s[i].time < 0.5 {
+                continue;
+            }
+            let rate = (s[i + 1].plane_path - s[i - 1].plane_path) / (2.0 * PILOT.dt);
+            let kinematic = s[i].plane_path.cos() + s[i].speed * rate / G0;
+            assert!(
+                (s[i].load_factor - kinematic).abs() < 0.05 + 0.03 * kinematic.abs(),
+                "{} vs {kinematic} at {} s",
+                s[i].load_factor,
+                s[i].time
+            );
+            checked += 1;
+        }
+        assert!(checked > 100 && flown.max(|s| s.load_factor) > 2.0);
     }
 
     #[test]
     fn the_pilot_pulls_the_loop_at_its_load_factor_without_stalling() {
-        let o = fly_one(Manoeuvre::Loop {
-            altitude: Length::M(2_000.0),
-            load_factor: 3.5,
-        });
+        let o = fly_one(LOOP);
         assert!(o.completed, "{o:?}");
         let (n, target) = o.load_factor.unwrap();
         assert!((n - target).abs() < 0.1 * target, "{o:?}");
         let (alpha, stall) = o.alpha.unwrap();
         assert!(alpha < stall, "the pilot keeps below the stall: {o:?}");
+        assert!(o.text.contains("sans décrocher"), "{o:?}");
+    }
+
+    #[test]
+    fn without_anticipation_the_loop_stalls() {
+        let careless = Pilot { lead: 0.0, ..PILOT };
+        let o = fly_on(&biplane(), &careless, LOOP);
+        let (alpha, stall) = o.alpha.unwrap();
+        assert!(alpha > stall, "{o:?}");
+        assert!(o.text.contains("**décroché**"), "{o:?}");
     }
 
     #[test]
@@ -755,6 +1187,7 @@ mod tests {
         // before the top: the outcome must say so rather than claim a loop.
         let o = fly_one(Manoeuvre::Loop {
             altitude: Length::M(2_000.0),
+            speed: None,
             load_factor: 1.2,
         });
         assert!(!o.completed, "{o:?}");
@@ -762,18 +1195,67 @@ mod tests {
     }
 
     #[test]
-    fn the_power_off_stall_breaks_past_the_stall_incidence_and_recovers() {
+    fn halving_the_time_step_does_not_change_the_loop() {
+        let a = biplane();
+        let fine = Pilot {
+            dt: 0.5 * PILOT.dt,
+            ..PILOT
+        };
+        let figures = |pilot: &Pilot| {
+            let o = fly_on(&a, pilot, LOOP);
+            (o.load_factor.unwrap().0, o.alpha.unwrap().0)
+        };
+        let (coarse, fine) = (figures(&PILOT), figures(&fine));
+        assert!(
+            (coarse.0 - fine.0).abs() < 0.01 * fine.0,
+            "{coarse:?} {fine:?}"
+        );
+        assert!(
+            (coarse.1 - fine.1).abs() < 0.01 * fine.1,
+            "{coarse:?} {fine:?}"
+        );
+    }
+
+    #[test]
+    fn the_power_off_stall_breaks_at_a_knot_per_second_and_recovers() {
         let o = fly_one(Manoeuvre::PowerOffStall {
             altitude: Length::M(1_000.0),
         });
         let (alpha, stall) = o.alpha.unwrap();
         assert!(alpha >= stall, "{o:?}");
+        let deceleration = o.deceleration.unwrap();
+        assert!(
+            (deceleration - DECELERATION).abs() < 0.2 * DECELERATION,
+            "{o:?}"
+        );
+        let (drop, _) = o.stall_drop.unwrap();
+        assert!(drop > 0.0, "{o:?}");
         assert!(o.completed, "back to a normal glide: {o:?}");
-        assert!(o.text.starts_with("abattée"), "{o:?}");
     }
 
     #[test]
-    fn best_glide_is_the_shallowest() {
+    fn the_wing_drop_comes_from_the_propeller() {
+        // The airframe is symmetric: turning the propeller the other way mirrors the
+        // departure.
+        let stall = Manoeuvre::PowerOffStall {
+            altitude: Length::M(1_000.0),
+        };
+        let right = fly_one(stall.clone()).stall_drop.unwrap();
+        let mirrored = biplane_with(|d| d.file.propeller.rotation = Rotation::CounterClockwise);
+        let left = fly_on(&mirrored, &PILOT, stall).stall_drop.unwrap();
+        assert!(right.1.abs() > 1.0 * DEG, "{right:?}");
+        assert!(
+            (right.1 + left.1).abs() < 0.01 * right.1.abs(),
+            "{right:?} {left:?}"
+        );
+        assert!(
+            (right.0 - left.0).abs() < 0.01 * right.0,
+            "{right:?} {left:?}"
+        );
+    }
+
+    #[test]
+    fn best_glide_is_the_shallowest_and_flies_its_ratio() {
         let a = biplane();
         let best = best_glide(&a, &STILL_AIR, 1_000.0).unwrap();
         assert!(best.flight.flight_path < 0.0, "{best:?}");
@@ -781,32 +1263,54 @@ mod tests {
             let other = glide_at(&a, &STILL_AIR, 1_000.0, best.flight.speed + dv).unwrap();
             assert!(other.flight.flight_path < best.flight.flight_path, "{dv}");
         }
-        assert!(
-            fly_one(Manoeuvre::Glide {
-                altitude: Length::M(1_000.0)
-            })
-            .text
-            .contains("finesse maximale")
+        // Distance over height lost in a free glide from the trim.
+        let ratio = fly_one(Manoeuvre::Glide {
+            altitude: Length::M(1_000.0),
+        })
+        .glide_ratio
+        .unwrap();
+        let c = best.commands(&a);
+        let flown = fly(&a, &STILL_AIR, &PILOT, best.flight.state(), c, 10.0, |_| {
+            Some(c)
+        });
+        let (start, end) = (
+            flown.first().state.position_ned,
+            flown.last().state.position_ned,
         );
+        let free = (end.x - start.x) / (end.z - start.z);
+        assert!((free - ratio).abs() < 0.01 * ratio, "{free} vs {ratio}");
     }
 
     #[test]
     fn the_dive_is_held_then_pulled_out_at_the_load_factor() {
-        let angle = -80f64.to_radians();
-        let o = fly_one(Manoeuvre::Dive {
-            altitude: Length::M(3_000.0),
-            angle: Angle::Deg(-80.0),
-            seconds: 20.0,
-            load_factor: 4.0,
+        for angle in [-80.0, -90.0] {
+            let o = fly_one(dive(angle));
+            let (low, high) = o.held_path.unwrap();
+            let wanted = angle * DEG;
+            assert!(
+                (low - wanted).abs() < 2.0 * DEG && (high - wanted).abs() < 2.0 * DEG,
+                "{angle}: {o:?}"
+            );
+            assert!(o.completed, "back to level flight: {o:?}");
+            let (n, target) = o.load_factor.unwrap();
+            assert!((n - target).abs() < 0.1 * target, "{o:?}");
+        }
+    }
+
+    #[test]
+    fn released_in_the_dive_the_stable_biplane_pulls_out_and_a_nose_heavy_one_tucks() {
+        // Elevator neutral: the synthetic biplane's tail (−1° incidence) pitches it up;
+        // set at +3°, the tail gives a nose-down moment at zero lift and the dive steepens.
+        let stable = fly_one(dive(-60.0));
+        assert!(stable.release.unwrap() > RELEASE_THRESHOLD, "{stable:?}");
+        assert!(stable.text.contains("cabreur tout au long"), "{stable:?}");
+        let nose_heavy = biplane_with(|d| {
+            let tail = d.file.surfaces.iter_mut().find(|s| s.name == "tailplane");
+            tail.unwrap().panels[0].incidence = Angle::Deg(3.0);
         });
-        let (low, high) = o.held_path.unwrap();
-        assert!(
-            (low - angle).abs() < 2f64.to_radians() && (high - angle).abs() < 2f64.to_radians(),
-            "{o:?}"
-        );
-        assert!(o.completed, "back to level flight: {o:?}");
-        let (n, target) = o.load_factor.unwrap();
-        assert!((n - target).abs() < 0.1 * target, "{o:?}");
+        let tucking = fly_on(&nose_heavy, &PILOT, dive(-60.0));
+        assert!(tucking.release.unwrap() < -RELEASE_THRESHOLD, "{tucking:?}");
+        assert!(tucking.text.contains("**piqueur"), "{tucking:?}");
     }
 
     #[test]

@@ -7,7 +7,7 @@ use escadrille_data::essais::{Confidence, EssaisFile, PowerSetting, Quantitative
 use escadrille_fdm::aircraft::Aircraft;
 use escadrille_fdm::environment::Environment;
 
-use crate::performance::{ceiling, max_level_speed, stall_speed, time_to_climb};
+use crate::performance::{ceiling, max_level_speed, stall_speed_at, time_to_climb};
 
 /// Altitude of the stall-speed test, m (low, clear of the ground effect, E:).
 const STALL_TEST_ALTITUDE: f64 = 100.0;
@@ -154,23 +154,20 @@ pub fn run(
                 source,
                 confidence,
             } => {
-                let (label, computed, remark) = match power {
-                    PowerSetting::Idle => match stall_speed(aircraft, env, STALL_TEST_ALTITUDE) {
+                let (label, throttle) = match power {
+                    PowerSetting::Idle => ("Vitesse de décrochage (moteur au ralenti)", 0.0),
+                    PowerSetting::Full => ("Vitesse de décrochage (pleins gaz)", 1.0),
+                };
+                let (computed, remark) =
+                    match stall_speed_at(aircraft, env, STALL_TEST_ALTITUDE, throttle) {
                         Ok(s) => (
-                            "Vitesse de décrochage (moteur au ralenti)",
                             Ok(s.speed),
                             s.elevator_limited.then(|| {
                                 "limitée par la butée de profondeur : l'aile ne décroche pas en vol stabilisé".to_owned()
                             }),
                         ),
-                        Err(e) => ("Vitesse de décrochage (moteur au ralenti)", Err(format!("{e:?}")), None),
-                    },
-                    PowerSetting::Full => (
-                        "Vitesse de décrochage (pleins gaz)",
-                        Err("décrochage pleins gaz : pas encore calculé".to_owned()),
-                        None,
-                    ),
-                };
+                        Err(e) => (Err(format!("{e:?}")), None),
+                    };
                 push(
                     label.to_owned(),
                     Unit::Speed,
@@ -226,7 +223,8 @@ mod tests {
     #[test]
     fn targets_are_compared_within_their_tolerance() {
         // Synthetic targets (not historical): the first near the model, the second far
-        // off but only confidence D, the third far off and blocking.
+        // off but only confidence D, the third far off and blocking, the fourth beyond
+        // what the aircraft can do (nothing computed).
         let text = r#"Essais(
             aircraft: "test_biplane",
             conditions: (fuel_fraction: 1.0),
@@ -234,19 +232,32 @@ mod tests {
                 MaxLevelSpeed(altitude: M(1000.0), target: Kmh(168.0), tolerance_pct: 3.0, source: "test", confidence: B),
                 MaxLevelSpeed(altitude: M(1000.0), target: Kmh(250.0), tolerance_pct: 3.0, source: "test", confidence: D),
                 StallSpeed(power: Full, target: Kmh(80.0), tolerance_pct: 5.0, source: "test", confidence: C),
+                Ceiling(climb_rate: Ms(50.0), target: M(5000.0), tolerance_pct: 5.0, source: "test", confidence: C),
             ],
         )"#;
         let essais: EssaisFile = from_ron_str(text, "test").unwrap();
         let outcomes = run(&biplane(), &STILL_AIR, &essais, Confidence::C);
-        assert_eq!(outcomes.len(), 3);
+        assert_eq!(outcomes.len(), 4);
         assert!(
             outcomes[0].passed() && outcomes[0].blocking,
             "{:?}",
             outcomes[0]
         );
         assert!(!outcomes[1].passed() && !outcomes[1].blocking);
-        assert!(outcomes[2].computed.is_none() && outcomes[2].note.is_some());
-        assert!(!validated(&outcomes), "an uncomputed blocking target fails");
+        assert!(
+            outcomes[2].computed.is_some(),
+            "full-throttle stall computed"
+        );
+        assert!(!outcomes[2].passed() && outcomes[2].blocking);
+        assert!(
+            !validated(&outcomes[..3]),
+            "a blocking target out of tolerance fails"
+        );
+        assert!(outcomes[3].computed.is_none() && outcomes[3].note.is_some());
+        assert!(
+            !validated(&[outcomes[0].clone(), outcomes[3].clone()]),
+            "an uncomputed blocking target fails"
+        );
         assert!(validated(&outcomes[..2]));
     }
 }
