@@ -12,6 +12,10 @@
 //!   with Glauert's corrections (*The Elements of Aerofoil and Airscrew Theory*, 1926):
 //!   α∞ = α − C_L (1 + τ) / (π A), C_D∞ = C_D − C_L² (1 + δ) / (π A). Applied to every
 //!   point, past the stall too (an approximation, E:).
+//!
+//! A table measured on one section can stand for a comparable one (C:): the whole curve
+//! is then moved by the difference of zero-lift incidence and of quarter-chord moment
+//! between the two mean lines (thin-aerofoil theory), slope, drag and stall kept.
 
 use escadrille_fdm::aero::polar::{Polar, PolarPoint};
 use serde::Deserialize;
@@ -50,6 +54,16 @@ pub struct TestWing {
     pub delta: f64,
 }
 
+/// From the measured section to the comparable one (C:, thin-aerofoil theory).
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct CamberCorrection {
+    /// Added to every incidence: zero-lift incidence of the target section minus that of
+    /// the measured one.
+    pub zero_lift_shift: Angle,
+    /// Added to every quarter-chord moment.
+    pub cm_shift: f64,
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename = "Airfoil")]
 pub struct AirfoilFile {
@@ -60,6 +74,8 @@ pub struct AirfoilFile {
     pub moment_reference: MomentReference,
     /// `None` for section (two-dimensional) data.
     pub test_wing: Option<TestWing>,
+    #[serde(default)]
+    pub camber_correction: Option<CamberCorrection>,
     pub points: Vec<AirfoilPoint>,
 }
 
@@ -79,7 +95,7 @@ impl AirfoilFile {
                 if self.moment_reference == MomentReference::LeadingEdge {
                     cm += 0.25 * (cl * alpha.cos() + cd * alpha.sin());
                 }
-                match self.test_wing {
+                let mut point = match self.test_wing {
                     Some(w) => {
                         let k = 1.0 / (std::f64::consts::PI * w.aspect_ratio);
                         PolarPoint {
@@ -90,7 +106,12 @@ impl AirfoilFile {
                         }
                     }
                     None => PolarPoint { alpha, cl, cd, cm },
+                };
+                if let Some(c) = self.camber_correction {
+                    point.alpha += c.zero_lift_shift.si();
+                    point.cm += c.cm_shift;
                 }
+                point
             })
             .collect()
     }
@@ -147,6 +168,7 @@ mod tests {
                 tau,
                 delta: 0.05,
             }),
+            camber_correction: None,
             points,
         }
     }
@@ -171,6 +193,21 @@ mod tests {
         let p = file.section_points()[4];
         assert_eq!(p.alpha, 0.0);
         assert_eq!(p.cd, 0.01);
+    }
+
+    #[test]
+    fn a_camber_correction_moves_the_whole_curve() {
+        let plain = measured(Convention::Absolute, MomentReference::QuarterChord);
+        let mut shifted = plain.clone();
+        shifted.camber_correction = Some(CamberCorrection {
+            zero_lift_shift: Angle::Deg(-0.6),
+            cm_shift: -0.0145,
+        });
+        for (a, b) in plain.section_points().iter().zip(shifted.section_points()) {
+            assert!((b.alpha - a.alpha + 0.6_f64.to_radians()).abs() < 1e-12);
+            assert_eq!((b.cl, b.cd), (a.cl, a.cd));
+            assert!((b.cm - a.cm + 0.0145).abs() < 1e-12);
+        }
     }
 
     #[test]

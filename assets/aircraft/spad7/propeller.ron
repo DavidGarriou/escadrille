@@ -1,0 +1,39 @@
+// Propeller of the SPAD VII 150 ch: the US Navy D' wooden propeller measured on the
+// VE-7 (NACA Report 301), taken as a comparable (hispano-suiza-8a.md § 7.4) and
+// converted from effective to propeller thrust. Method and numbers:
+// docs/recherche/spad7-calculs.md (§ 2).
+Propeller(
+    name: "Navy D' (P/D 0,8), comparable de l'hélice du S.VII",
+    source: "hispano-suiza-8a.md : H17 (NACA Report 301, tableau III, p. 20) ; spad7-calculs.md § 2",
+    points: [
+        //! C: NACA Report 301 table III, D' on the complete VE-7 (C_P as printed, J 0.10 to 1.10); C_T is the printed effective thrust plus the drag the VE-7 radiator (0.15 m², 0.3 m behind the disc) and fuselage (0.20 m², 1.5 m) took from the slipstream (E: drag areas; Froude slipstream as in the flight model), since the flight model computes that drag itself; J = 0 extrapolated linearly from J = 0.10 and 0.15
+        (j: 0.00, ct: 0.1403, cp: 0.0650),
+        (j: 0.10, ct: 0.1311, cp: 0.0668),
+        (j: 0.15, ct: 0.1265, cp: 0.0677),
+        (j: 0.20, ct: 0.1215, cp: 0.0683),
+        (j: 0.25, ct: 0.1165, cp: 0.0689),
+        (j: 0.30, ct: 0.1114, cp: 0.0690),
+        (j: 0.35, ct: 0.1063, cp: 0.0690),
+        (j: 0.40, ct: 0.1009, cp: 0.0689),
+        (j: 0.45, ct: 0.0956, cp: 0.0682),
+        (j: 0.50, ct: 0.0900, cp: 0.0671),
+        (j: 0.55, ct: 0.0838, cp: 0.0654),
+        (j: 0.60, ct: 0.0776, cp: 0.0631),
+        (j: 0.65, ct: 0.0713, cp: 0.0603),
+        (j: 0.70, ct: 0.0647, cp: 0.0570),
+        (j: 0.75, ct: 0.0579, cp: 0.0534),
+        (j: 0.80, ct: 0.0509, cp: 0.0497),
+        (j: 0.85, ct: 0.0445, cp: 0.0457),
+        (j: 0.90, ct: 0.0374, cp: 0.0416),
+        (j: 0.95, ct: 0.0307, cp: 0.0372),
+        (j: 1.00, ct: 0.0238, cp: 0.0325),
+        (j: 1.05, ct: 0.0170, cp: 0.0272),
+        (j: 1.10, ct: 0.0102, cp: 0.0216),
+    ],
+    anchors: (
+        //! C: blade-element estimate of the aerodynamicist for a two-bladed wooden propeller, P/D about 0.8, solidity about 0.08, energy-checked (review of 2026-10-22)
+        stopped: (ct: -0.065, cq: -0.008),
+        reversed_flow: (ct: 0.07, cq: 0.008),
+        reversed_rotation: (ct: -0.04, cq: -0.007),
+    ),
+)

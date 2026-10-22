@@ -2,7 +2,7 @@
 
 - Identifiant : `spad7` (même nom que `assets/aircraft/spad7/`)
 - Dernière mise à jour : 2026-10-22
-- État : **en cours** (sixième passe). Sont désormais sourcés par des documents d'époque lus :
+- État : **en cours** (septième passe). Sont désormais sourcés par des documents d'époque lus :
   - le profil « Spad » (B) ;
   - les polaires du RAF 15 (A pour ce profil) ;
   - la courbe de puissance et la loi d'altitude du Hispano de 180 hp (B pour un 8Ab) ;
@@ -11,6 +11,7 @@
   - **quatrième passe** : des **vitesses en palier, des masses, une surface et des cotes du S.VII** lues dans *Flight* (1917 et 1919), dont deux tableaux officiels américains d'avions français et italiens ;
   - **cinquième passe (2026-10-21)** : ces tableaux ont été **lus sur l'image des pages**. Les vitesses en palier à 2 000, 3 000, 4 000 et 5 000 m, les temps de montée, les plafonds théoriques et les régimes moteur des deux versions passent en **A** (§ 5). Plusieurs lectures OCR de la quatrième passe étaient fausses ; elles sont corrigées et signalées au journal.
   - **sixième passe (2026-10-22)** : la réserve de lecture sur la ligne du 8Aa (119,5 et 111,5 mph) est **levée** par un contrôle interne du tableau (§ 0) ; les facteurs τ et δ de l'aile rectangulaire sont trouvés dans le NACA TR 416 (`profil-spad7.md` § 4.2).
+  - **septième passe (2026-10-22), géométrie de détail** (§ 2.5) : **aucune cote chiffrée nouvelle du S.VII**. Apports : des descriptions qualitatives du S.VII (forme en plan, haubanage, fuselage, capot), des comparables chiffrés du SPAD XIII (empennage, ailerons, dérive ; tableau français de 1919 lu sur l'image) et du biplace S.XI, et une fourchette calculée de la corde (1,14 à 1,33 m, C). Empennage, gouvernes, débattements, décalage, calages, fuselage, roues et centrage du S.VII restent **non trouvés**.
 - Fiches liées : [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (moteur et hélice), [`profil-spad7.md`](profil-spad7.md) (profil d'aile)
 - Contexte de jeu visé : escadrille SPA 3 (« Cigognes », Groupe de Combat 12), Flandres, été 1917
 
@@ -60,6 +61,11 @@
   - une valeur « 119·3 » ou « 111·3 » serait donc la **seule exception** du tableau. **119,5 et 111,5 mph sont confirmés.**
 - **Masses** : 451 = 176 + 176 + 88 + 11 et 1 100 + 451 = 1 551 ≈ 1 550, contrôles déjà notés en cinquième passe (§ 3).
 - **Conséquence sur la précision** : l'arrondi au demi-mph de l'imprimé ajoute une incertitude de ±0,25 mph, soit **±0,4 km/h**, sur chaque vitesse du tableau « in service ». Elle remplace la réserve de lecture de ±0,3 km/h.
+
+**Septième passe (2026-10-22) : géométrie de détail.** Objet : les cotes de détail qui manquent pour écrire `aircraft.ron` (S.VII 150 ch, 8Aa, 703 kg). Méthode et bilan au § 2.5.
+- **Sources locales** relues comme des données, sans rien exécuter : tous les passages « Spad » des 208 numéros de *Flight* ; S48 relu en entier dans l'OCR ; S49 relu en entier, légendes du dessin coté comprises ; les lignes SPAD XIII et SPAD XI des tableaux S46 et S47 relues **sur l'image** (p. 204-205 et 237) ; la bibliographie de Brockett (S56) ; le volume II du rapport ACA 1917-18 ; les rapports NACA du dossier NTRS. En dehors du profil « Spad » du Report 93, aucun rapport NACA du dossier ne parle d'un SPAD.
+- **Web** : environ 35 requêtes en anglais, français, allemand, italien, tchèque et russe. Les pages visées restent hors d'atteinte de l'outil de lecture (échec DNS le 2026-10-22 pour thisdayinaviation.com, bibliotheques-numeriques.defense.gouv.fr et sites.ualberta.ca) : tout ce qui vient du web est **[RÉSUMÉ]**.
+- **Exclusion maintenue** : aucun chiffre de jeu (S39) ni de maquette du commerce n'est retenu.
 
 ## 1. Identification et contexte
 
@@ -131,7 +137,7 @@ Le n° **S.254** (« Vieux Charles » de Guynemer, conservé au Musée de l'Air)
 
 ## 2. Géométrie
 
-Quatrième passe : une description d'époque du S.VII (*Aerial Age*, reprise par *Flight* le 16 août 1917, S48) donne pour la première fois une **corde**, un **écartement**, une voie et des cotes d'empennage. L'article les dit **approximatives**, et sa corde contredit toutes les surfaces publiées (voir la ligne « Corde »). Décalage, calages, dièdre et gouvernes restent **non trouvés**. Les valeurs du SPAD XIII (§ 2.2) ne valent que comme **comparables** (confiance C au mieux) : Béchereau a dessiné le XIII comme une version agrandie du VII (S15, S21 [RÉSUMÉ]).
+Quatrième passe : une description d'époque du S.VII (*Aerial Age*, reprise par *Flight* le 16 août 1917, S48) donne pour la première fois une **corde**, un **écartement**, une voie et des cotes d'empennage. L'article les dit **approximatives**, et sa corde contredit toutes les surfaces publiées (voir la ligne « Corde »). Décalage, calages, dièdre et gouvernes restent **non trouvés**. Septième passe : le détail de ce qui a été cherché, trouvé et non trouvé est au § 2.5. Les valeurs du SPAD XIII (§ 2.2) ne valent que comme **comparables** (confiance C au mieux) : Béchereau a dessiné le XIII comme une version agrandie du VII (S15, S21 [RÉSUMÉ]).
 
 ### 2.1 SPAD S.VII
 
@@ -142,20 +148,26 @@ Quatrième passe : une description d'époque du S.VII (*Aerial Age*, reprise par
 | Surface alaire | 17,85 m² | m² | S6, S8, S10, S33 [RÉSUMÉ] ; 18 m² (S7). **Époque** : 192 sq ft = 17,84 m² (S47, p. 237) ; 195 sq ft = 18,12 m² sur les **deux** lignes de S46, libellé et colonne (p. 205) [LU-IMG]. Les « 193 sq ft » de la quatrième passe étaient une erreur d'OCR | **A** pour 17,85 m² ; **définition inconnue** | Contrôle (C) : la charge alaire imprimée dans **les deux** tableaux, 8,08 et 8,1 lb/sq ft, correspond à 1 550 lb sur 192 sq ft (8,07), et non sur 195 sq ft (7,95). Les deux tableaux ont donc calculé avec 192 sq ft ; le 195 de S46 est soit une coquille, soit une autre définition de la surface. Ce que la surface inclut n'est précisé nulle part |
 | Longueur | 6,08 m | m | S6, S7, S8 ; 6,10 m (S5) ; 6,15 m (S10) ; 19 ft 11 in (S14). **Époque** : 20 ft = 6,10 m (S46, S47) [LU-IMG] ; 20 ft 0 in (S48) | B | Les tableaux arrondissent au pied ou au dixième de pied ; écart de 2 cm, sans effet |
 | Hauteur | 2,20 m | m | S6 ; 2,35 m (S8) ; 2,12 m (S10) ; 7 ft 2 in (S14). **Époque** : 7,20 ft = 2,19 m (S46, deux lignes) et 7,2 ft (S47) [LU-IMG] | **A** (relevée de B) | Position de mesure (ligne de vol ou au sol) toujours non précisée |
-| Corde | **non tranchée** : 1,40 m selon S48, incompatible avec la surface | ft-in | S48 (1917) : 4 ft 7 in = 1,397 m pour les deux plans, « approximatif » [LU-OCR] | D pour 1,40 m | **Contradiction** (C, calcul) : 2 × 7,77 × 1,397 ≈ 21,7 m² bruts, contre 17,8 à 18,1 m² dans tous les documents. Une découpe au-dessus du pilote et la partie masquée par le fuselage n'expliquent pas 3,6 m². Avec la surface publiée et des envergures égales de 7,82 m, la corde moyenne serait d'environ 1,15 à 1,2 m (C). La corde de S48 coïncide avec celle du XIII (1,400 m) : coïncidence ou confusion, non tranché |
-| Écartement des plans | 1,27 m | ft-in | S48 (1917) : 4 ft 2 in, « approximatif » [LU-OCR] | C | Source unique, approximative. Rapport écartement/corde ≈ 0,91 avec 1,40 m, ≈ 1,06 avec 1,2 m (C) |
-| Décalage horizontal | non trouvé | — | — | — | |
-| Décalage angulaire, calages | non trouvé pour le VII | — | Comparable de la même famille : biplace S.XI, calage du plan supérieur 2,8° au centre et 2,5° au saumon, plan inférieur 1,5° (rapport allemand, S49) [LU-OCR] | C (famille) | À ne pas transposer sans plan : autre avion, autre cellule |
+| Corde | **non tranchée** : 1,40 m selon S48, incompatible avec la surface ; **fourchette calculée 1,14 à 1,33 m** (septième passe) | ft-in | S48 (1917) : 4 ft 7 in = 1,397 m pour les deux plans, « approximatif » [LU-OCR] | D pour 1,40 m ; **C** pour la fourchette | **Contradiction** (C, calcul) : 2 × 7,77 × 1,397 ≈ 21,7 m² bruts, contre 17,8 à 18,1 m² dans tous les documents. **Septième passe** (§ 2.5.2) : dans la famille SPAD, la surface publiée vaut de 0,89 à 0,94 fois le rectangle brut des deux plans (XIII, S46 et S15 ; S.XI, S49). Transposé au S.VII (17,85 m², envergures égales de 7,82 m), cela donne une corde de **1,22 à 1,33 m** ; 1,14 m si la surface publiée était le rectangle brut. Une corde de 1,40 m obligerait à exclure 3,9 à 4,0 m² de la surface, plus que sur le biplace S.XI, pourtant plus grand (2,95 m²). La corde de S48 coïncide avec celle du XIII (1,400 m) : coïncidence ou confusion, non tranché. **Choix de la valeur de travail : à l'aérodynamicien** (`E:` ou `C:` avec renvoi au § 2.5.2) |
+| Écartement des plans | 1,27 m | ft-in | S48 (1917) : 4 ft 2 in, « approximatif » [LU-OCR] | C | Source unique, approximative. Rapport écartement/corde ≈ 0,91 avec 1,40 m, ≈ 1,06 avec 1,2 m, ≈ 1,0 avec 1,25 m (C ; fourchette de corde au § 2.5.2). Septième passe : aucune autre source trouvée |
+| Décalage horizontal | **non trouvé** (septième passe : toujours rien pour le S.VII) | — | Comparables : S.XI, 0,40 m, soit environ 26 % de sa corde supérieure (S49 [LU-OCR] ; pourcentage C) ; XIII, plan inférieur « en arrière de 1¼° » (S15 [RÉSUMÉ]) | — | Exprimé en angle, le décalage du XIII ne se convertit pas sans connaître la convention. Si c'était l'inclinaison des mâts sur la verticale, il ne ferait que 1,181 × tan 1,25° ≈ 2,6 cm (C) : valeur qui paraît trop faible, d'où un doute sur la transcription. Le S.XI est un biplace d'une autre cellule. **Rien à transposer** |
+| Décalage angulaire, calages | **non trouvé** pour le VII | — | Comparables : biplace S.XI, plan supérieur 2,8° au centre et 2,5° au saumon, plan inférieur 1,5° (rapport allemand, S49) [LU-OCR] ; XIII, supérieur 1½°, inférieur 1° (S15 [RÉSUMÉ]) | C (famille) | Les deux comparables donnent un plan supérieur calé de 0,5 à 1,3° de plus que le plan inférieur (C). À ne pas transposer sans plan : autres cellules |
+| Forme en plan, flèche | deux plans « presque rectangulaires », extrémités droites et non inclinées, coins légèrement arrondis ; **aucune flèche mentionnée** | — | S48 (1917) [LU-OCR] ; XIII : ni flèche ni dièdre (S15 [RÉSUMÉ]) | C | Le biplace S.XI a une flèche de 3° par côté (« 174° », S49) : propre à ce type |
+| Découpe du plan supérieur | « profonde », au-dessus du siège du pilote | — | S48 [LU-OCR] | C (qualitatif) | Dimensions **non trouvées**. Elle entre sans doute dans l'écart entre surface publiée et rectangle brut (§ 2.5.2, C) |
 | Dièdre | non trouvé ; **indice** de dièdre nul | — | S47 (tableau italien 1919, p. 237) qualifie le SPAD monoplace de « flat-winged » [LU-IMG] ; XIII : 0° (S15) ; S.XI : pas de dièdre (S49) | C | « Flat-winged » s'entend sans doute « ailes sans dièdre » : interprétation, à confirmer |
 | Structure de voilure | une seule travée, avec des mâts intermédiaires au croisement des câbles de vol et d'atterrissage, reliés par une entretoise en tube d'acier | — | S48 (1917) : les câbles partent du fuselage vers les mâts extérieurs et se croisent aux mâts intermédiaires, où un tube d'acier relie les mâts intermédiaires avant et arrière ; S49 (rapport allemand, 1918) : les monoplaces ont des « mâts intérieurs divisés » ; S50 (1919) : schéma « familier des SPAD » [LU-OCR] ; S16, S42 [RÉSUMÉ] | **B** (qualitatif, trois descriptions d'époque) | Brevet britannique n° 100,632 de la Société Spad, « Strutting and staying of aerial machines », publié en décembre 1916 (S51) : piste pour le détail |
-| Ailerons | sur le plan supérieur seulement ; étroits, articulés sur un longeron auxiliaire à environ 9 in (0,23 m) en arrière du longeron arrière ; commande par bielles logées dans le plan inférieur et renvois au pied des mâts extérieurs | — | S48 (1917, déduction de l'auteur) ; S49 (même schéma décrit sur le S.XI, non compensés) [LU-OCR] ; S41 [RÉSUMÉ] | B (qualitatif) | Surfaces et débattements : non trouvés |
-| Empennage, gouvernes | gouvernail articulé à environ 10 in (0,25 m) au-delà de l'extrémité du fuselage ; dérive avançant de 12 in (0,30 m) devant le bord d'attaque du plan fixe ; plan fixe et profondeur « habituels » | in | S48 (1917) [LU-OCR] | C | Sur le S.XI de la même famille, le plan fixe est cambré sur ses deux faces, calé à 0°, profondeur en deux parties et guignols à l'intérieur du fuselage (S49) |
+| Ailerons | sur le plan supérieur seulement ; étroits, articulés sur un longeron auxiliaire à environ 9 in (0,23 m) en arrière du longeron arrière ; commande par bielles logées dans le plan inférieur et renvois au pied des mâts extérieurs | — | S48 (1917, déduction de l'auteur) ; S49 (même schéma décrit sur le S.XI, non compensés) [LU-OCR] ; S41 [RÉSUMÉ] | B (qualitatif) | **Septième passe** : le texte de S48 dit *about 9 ins. back of the main beam*. Lire « longeron arrière » est une interprétation du contexte (la phrase précédente parle de la surface située en arrière des longerons arrière), et l'auteur déduit cette disposition du dessin (*must be carried*) : ce n'est pas une mesure. Envergure, corde, surface et débattements du S.VII : **non trouvés**. Comparable XIII : 2,222 × 0,495 m par aileron (§ 2.2, C) |
+| Empennage, gouvernes | gouvernail articulé à environ 10 in (0,25 m) au-delà de l'extrémité du fuselage ; dérive avançant de 12 in (0,30 m) devant le bord d'attaque du plan fixe ; plan fixe et profondeur « habituels » | in | S48 (1917) [LU-OCR] | C | Sur le S.XI de la même famille, le plan fixe est cambré sur ses deux faces, calé à 0° par rapport au longeron supérieur, profondeur en deux parties et guignols à l'intérieur du fuselage et de la dérive ; le rapport dit ces surfaces « du type SPAD habituel » (S49). **Septième passe** : envergure et corde du plan fixe, corde de la profondeur, hauteur et cordes de la dérive et du gouvernail, surfaces, calage, bras de levier et débattements du S.VII : **non trouvés**. Comparables chiffrés du XIII au § 2.2 (C au mieux) |
+| Débattements des gouvernes | **non trouvés** | — | aucun SPAD (VII, XIII ou XI) dans les sources lues ou résumées | — | À estimer (`E:`) |
+| Fuselage | « exceptionnellement profond » ; fond arrondi sous les longerons inférieurs, comme les flancs et le dessus : section arrondie sur les quatre faces | — | S48 (1917) [LU-OCR] ; S49 (S.XI : quatre longerons, dessus et dessous arrondis par des couples et des lisses) [LU-OCR] | C (qualitatif) | Largeur et hauteur maximales, longueur du fuselage seul : **non trouvées** |
+| Capot et radiateur | capot avant en aluminium ; ouverture **circulaire** du radiateur, rappelant le capot d'un moteur rotatif ; bossages latéraux des carters d'arbres à cames ; perforations d'aération | — | S48 [LU-OCR] ; S49 (S.XI : radiateur à volets formant le nez) | C (qualitatif) | Diamètre et surface frontale du radiateur : **non trouvés** |
+| Positions du pilote, du moteur, du réservoir, de la mitrailleuse | moteur à l'avant derrière le radiateur ; mitrailleuse au-dessus du moteur ; réservoir principal sous le siège | — | S48 ; § 7 ; S13 [RÉSUMÉ] pour le réservoir ; S.XI : réservoir sous pression formant le siège (S49) | C (qualitatif) | **Aucune cote de position trouvée** |
 | Voie du train | 1,52 m | ft | S48 (1917) : 5 ft [LU-OCR] | C | XIII : 1,492 m (S15). Essieu coulissant dans des glissières, amortisseurs en sandow (S48) |
 | Profil | section nommée **« Spad »** dans le NACA Report 93 (MIT, 1918) : épaisseur ≈ 5,4 %, cambrure ≈ 3,8 %, intrados creux | % de corde | `profil-spad7.md` § 2 [LU] | **B** | Type de SPAD mesuré non précisé. Polaires : calcul calé sur le RAF 15 de vraie grandeur (A pour ce profil, C pour le SPAD) |
 
 ### 2.2 Comparable : SPAD S.XIII C.1 (cotes publiées d'après un exemplaire américain)
 
-Source : S15 [RÉSUMÉ], *This Day in Aviation*, d'après l'exemplaire 17956 essayé à McCook Field (projet P-154, 1921). Le rapport original (Air Service Information Circular vol. III n° 286, 1er octobre 1921) n'a pas été consulté (P12).
+Source : S15 [RÉSUMÉ], *This Day in Aviation*, d'après l'exemplaire 17956 essayé à McCook Field (projet P-154, 1921). Le rapport original (Air Service Information Circular vol. III n° 286, 1er octobre 1921) n'a pas été consulté (P12). Les numéros de paragraphe cités dans les résumés (1-10, 1-11, 4-3…) laissent penser que le site reprend la structure de la circulaire. Septième passe : ajout des cotes de S15 vues en résumé le 2026-10-22, et des deux lignes « Spa. 13C1 » du tableau français de 1919 (S46, p. 205), **lues sur l'image**. **Pour le S.VII, toutes ces valeurs sont des comparables : confiance C au mieux.**
 
 | Grandeur (XIII) | Valeur | Unité d'origine | Remarque |
 |---|---|---|---|
@@ -165,14 +177,34 @@ Source : S15 [RÉSUMÉ], *This Day in Aviation*, d'après l'exemplaire 17956 ess
 | Décalage | plan inférieur en arrière de 1¼° | degrés | Décalage exprimé en angle ; convention à vérifier |
 | Calage | supérieur 1½°, inférieur 1° | degrés | soit un décalage angulaire de +0,5° (C) |
 | Dièdre | 0° | degrés | |
-| Longueur du fuselage | 20 ft 4 in (6,198 m) | ft-in | |
-| Gouvernail de direction | hauteur 3 ft 10-5/8 in (1,184 m), corde maxi 2 ft 2 in (0,660 m) | ft-in | |
-| Dérive | « 2 feet, 7/8-inch (0.876 m) » | ft-in | **Incohérence** : 2 ft 7/8 in = 0,632 m. À vérifier |
-| Voie du train | 4 ft 10¾ in (1,492 m) | ft-in | |
-| Masses (XIII) | 1 464 lb à vide (664 kg), 2 036 lb en charge (924 kg) | lb | Exemplaire américain de 1921 |
+| Longueur hors tout | 20 ft 4 in (6,198 m) | ft-in | Libellée « longueur du fuselage » dans les passes précédentes. S46 imprime 20,35 ft dans sa colonne « Length » (longueur hors tout) : c'est donc la **longueur totale**, pas celle du fuselage seul (C). Longueur du fuselage seul : non trouvée |
+| Envergure, longueur, hauteur, surface (tableau français de 1919) | 26,3 ft (8,02 m) ; 20,35 ft (6,20 m) ; 7,55 ft (2,30 m) ; 215 sq ft (19,97 m²) | ft, sq ft | S46, p. 205, sur les **deux** lignes « Spa. 13C1 » (8Ba de 220 ch et 8BEc de 235 ch) [LU-IMG]. Envergure et longueur concordent avec S15 : deux sources indépendantes. Charge alaire imprimée 8,42 lb/sq ft, cohérente avec 1 815 lb sur 215 sq ft (8,44, C) |
+| Surface (McCook) | 227 sq ft (21,089 m²) | sq ft | S15 [RÉSUMÉ]. 5,6 % de plus que S46 : les deux documents officiels ne définissent pas la surface de la même façon (C). Voir § 2.5.2 |
+| Plan fixe horizontal | envergure 10 ft 2 in (3,099 m) ; corde maximale 1 ft 8¾ in (0,527 m) | ft-in | S15 [RÉSUMÉ]. Le résumé ne dit pas si cette corde comprend la profondeur. Rectangle englobant 3,099 × 0,527 = 1,63 m², borne haute (C). Profondeur : **aucune cote** dans le résumé |
+| Ailerons | plan supérieur seulement ; envergure 7 ft 3½ in (2,222 m) ; corde 1 ft 7½ in (0,495 m) | ft-in | S15 [RÉSUMÉ]. Envergure **par aileron** (lecture probable du texte). Rectangle englobant 1,10 m² par aileron, 2,20 m² pour les deux, soit environ 10 % de 21,09 m² (C) |
+| Gouvernail de direction | hauteur 3 ft 10-5/8 in (1,184 m), corde maxi 2 ft 2 in (0,660 m) | ft-in | Rectangle englobant 0,78 m², borne haute (C) |
+| Dérive | hauteur « 2 feet, 7/8-inch (0.876 m) » ; longueur maximale 3 ft 11¼ in (1,200 m) | ft-in | **Incohérence de hauteur** maintenue : 2 ft 7/8 in = 0,632 m, alors que 0,876 m = 2 ft 10½ in. La longueur de 1,200 m est cohérente (C). À vérifier sur l'original (P12) |
+| Voie du train | 4 ft 10¾ in (1,492 m) | ft-in | Roues : pneumatiques, sandows, béquille fixe (S15 [RÉSUMÉ]) ; dimensions des roues **non trouvées** |
+| Masses (XIII) | 1 464 lb à vide (664 kg), 2 036 lb en charge (924 kg) | lb | Exemplaire américain de 1921. Le moteur de cet essai serait un « Wright » de 220 hp : un article d'*Aerial Age* du 19 décembre 1921 s'intitule « Performance test of Spad 13 equipped with 220-horsepower Wright engine » (S56 [LU-OCR], titre seulement ; P25) |
+| Masses (tableau français de 1919) | 1 255 lb (569 kg) à vide ; 1 815 lb (823 kg) en charge | lb | S46 [LU-IMG]. Les composantes de la charge (242 + 176 + 132 + 11 = 561 lb) dépassent de 5 lb la charge totale imprimée (556 lb) ; 1 255 + 561 = 1 816 ≈ 1 815 (C) |
+| Envergure et hauteur (exemplaire « Smith IV », NASM) | 8,2 m (26 ft 11 in) ; 2,4 m | m | S65 [RÉSUMÉ]. **Diverge** de S15 et S46 (8,02 m) : mode de mesure inconnu ; non retenu |
+| Centrage, inertie, débattements | **non trouvés** | — | Seul indice : Meister le dit « lourd de la queue » (T8, qualitatif) |
+| Rapports S.VII / XIII dans le même tableau (S46) | envergure 0,977 ; longueur 0,983 ; hauteur 0,954 ; surface 0,893 (192/215) | — | C, calcul. La surface diminue plus que l'envergure : à définition égale, la corde du S.VII serait d'environ 0,893/0,977 ≈ 0,91 fois celle du XIII, soit environ 1,28 m (même hypothèse qu'au § 2.5.2) |
 
 ### 2.3 Traînées parasites (inventaire pour le modèle de vol)
 Éléments à modéliser, d'après les descriptions : mâts interplans **et mâts intermédiaires** (S16), câbles de vol et d'atterrissage, tringlerie d'ailerons extérieure à renvois (attestée sur le XIII), radiateur frontal du V8 à refroidissement liquide, train fixe, mitrailleuse au-dessus du moteur (§ 7), tête du pilote. **Aucune dimension ni aucun coefficient n'a été trouvé.** Tout devra être calculé (Hoerner) et marqué `C:`, ou estimé (`E:`) et justifié par l'aérodynamicien.
+
+**Septième passe : inventaire précisé** (toujours **sans aucune dimension** pour le S.VII) :
+
+| Élément | Ce qui est établi | Source, statut | Confiance | Non trouvé |
+|---|---|---|---|---|
+| Mâts | par côté, deux mâts extérieurs (avant et arrière) et deux mâts intermédiaires reliés par une entretoise en tube d'acier ; soit **4 mâts interplans et 4 mâts intermédiaires** pour l'avion | S48 [LU-OCR] ; S49 (« mâts intérieurs divisés » des monoplaces) ; décompte déduit (C) | B (disposition), C (décompte) | cordes, épaisseurs et sections des mâts ; mâts de cabane (nombre et forme : non décrits) |
+| Câbles | câbles partant des flancs du fuselage vers les mâts extérieurs, croisés aux mâts intermédiaires | S48 [LU-OCR] | B (disposition) | nombre exact, diamètres, **type** (câbles profilés de type « RAF wires » ou ronds) : non trouvé pour le S.VII. Comparable S.XI : câbles porteurs **doublés**, l'intervalle rempli de lattes de bois pour réduire la traînée ; câbles de retour simples (S49) |
+| Tringlerie d'ailerons | bielles logées dans le plan inférieur, renvois au pied des mâts extérieurs, biellettes verticales jusqu'aux ailerons | S48 ; S49 (S.XI) [LU-OCR] | B (qualitatif) | dimensions des biellettes extérieures |
+| Train | jambes fixes ; essieu coulissant dans des glissières orientées vers le haut et l'arrière, dans l'axe des jambes arrière ; sandows ; voie 5 ft | S48 [LU-OCR] | C | dimensions des roues et des jambes. Comparable S.XI : jambes en V en bois lamellé entoilé, demi-essieux entre deux tubes transversaux entoilés, débattement 125 mm (S49). La légende du dessin coté du S.XI porte une dimension de roues illisible dans l'OCR (« 700 × 7… ») : **à lire sur l'image** (§ 9.6) |
+| Radiateur et capot | ouverture circulaire dans un capot en aluminium ; bossages des arbres à cames ; perforations | S48 [LU-OCR] | C (qualitatif) | diamètre, surface frontale, volets éventuels sur le S.VII (le S.XI a des volets, S49) |
+| Fuselage | section arrondie sur les quatre faces, « exceptionnellement profond » | S48 [LU-OCR] | C (qualitatif) | largeur, hauteur, longueur seule, ouverture du poste |
+| Mitrailleuse, pare-brise | Vickers au-dessus du moteur (§ 7) | S5, S6 [RÉSUMÉ] | C | dimensions du pare-brise et du carénage |
 
 ### 2.4 Interférence biplan et stabilité : ce qui servira au modèle (troisième passe) [LU]
 
@@ -267,6 +299,71 @@ Conséquence possible (C, raisonnement, à faire émerger et non à scripter) : 
 
 **Ce qui manque** : le décalage, les calages et une corde fiable du S.VII ; l'écartement n'est connu que de façon approximative (1,27 m, S48, C). Sans eux, ces lois ne donnent aucun chiffre propre au SPAD. Le volume I du rapport ACA 1917-18 (non téléchargé, § 9.6) contient un essai d'« effet biplan sur le profil RAF 15 » et un essai sur l'effet d'une **découpe dans le plan supérieur** d'un biplan, cas du SPAD (titres lus dans la table des matières du volume II). Pour la cellule RAF 15, S45 cite des données expérimentales dans les ARC R&M 774, 816, 857 et 997 et le NACA TR 256 ; ce sont des pistes, non lues.
 
+### 2.5 Septième passe : géométrie de détail (2026-10-22)
+
+**Objet.** Réunir les cotes de détail qui manquent pour écrire `assets/aircraft/spad7/aircraft.ron` (S.VII 150 ch, Hispano-Suiza 8Aa, 703 kg) : empennage, gouvernes, cellule, fuselage, traînées, centrage. **Tout ce qui est marqué « non trouvé » ici est à estimer (`E:`) par l'aérodynamicien.** Méthode et sources fouillées : § 0.
+
+**Bilan.** Aucune cote chiffrée nouvelle du S.VII n'a été trouvée, ni dans les documents locaux ni sur le web. Cette passe apporte :
+- des **descriptions qualitatives** du S.VII tirées de S48 (relu en entier) : forme en plan, découpe, position relative des longerons, haubanage, section du fuselage, capot et radiateur, train ; elles sont reportées au § 2.1 et au § 2.3 ;
+- des **comparables chiffrés du SPAD XIII** : empennage horizontal, ailerons, dérive et surface de McCook (S15, en résumé) ; envergure, longueur, hauteur, surface et masses du tableau français de 1919 (S46, **lu sur l'image**). Ils sont au § 2.2 ;
+- des **comparables de famille** tirés du rapport allemand sur le biplace S.XI (S49), recoupé par S46 (§ 2.5.1) ;
+- un **contrôle par le calcul** qui encadre la corde du S.VII (§ 2.5.2).
+
+#### 2.5.1 Comparable de famille : biplace SPAD S.XI (S49 [LU-OCR], recoupé par S46 [LU-IMG])
+
+Avion examiné : n° B 6006, construit sous licence par Bernard en juillet 1917, Hispano de 200 hp à réducteur. **Autre cellule, autre masse** : ces valeurs ne servent qu'à connaître les habitudes de construction de Béchereau, jamais à remplir une cote du S.VII.
+
+| Grandeur (S.XI) | Valeur | Remarque |
+|---|---|---|
+| Envergures | supérieure 11,22 m ; inférieure 10,90 m | S46 (p. 204) : 36,8 ft = 11,22 m, concordant |
+| Cordes | supérieure 1,53 m ; inférieure 1,43 m | cordes **inégales** sur ce type |
+| Écartement | 1,335 m | |
+| Décalage horizontal | 0,40 m | environ 26 % de la corde supérieure (C) |
+| Calages | supérieur 2,8° au centre, 2,5° au saumon ; inférieur 1,5° | déjà au § 2.1 |
+| Flèche, dièdre | flèche des deux plans, « 174° » (soit 3° par côté, C) ; pas de dièdre | |
+| Surface totale | 29,8 m² (texte du rapport) | S46 : 323 sq ft = 30,0 m², écart 0,7 % (C) |
+| Construction des plans | longerons du plan supérieur plus rapprochés que ceux du plan inférieur ; mâts convergeant vers le haut ; plan inférieur échancré près du fuselage, plan supérieur découpé au centre ; nervures espacées de 190 mm (supérieur) et 175 mm (inférieur) | |
+| Empennage | surfaces « du type SPAD habituel » ; plan fixe traversant le fuselage, cambré sur ses deux faces, calé à 0° par rapport au longeron supérieur ; profondeur en deux parties articulée sur un tube d'acier ; guignols à l'intérieur du fuselage et de la dérive | **Indice de famille** le plus direct pour le S.VII, dont S48 dit l'empennage « habituel » |
+| Ailerons | non compensés, sur faux longerons du plan supérieur | |
+| Câbles et mâts | câbles porteurs doublés, carénés par des lattes de bois ; câbles de retour simples ; mâts en bois profilé, ferrures sur un tube d'acier intérieur | |
+| Train | jambes en V en bois lamellé entoilé ; demi-essieux entre deux tubes entoilés ; débattement 125 mm | |
+| Masses par élément (avion vide, eau comprise : 765 kg) | moteur 225,0 kg ; eau 33,0 kg ; ailes 167,9 kg ; profondeur et gouvernail 19,9 kg ; fuselage et reste 319,2 kg | La valeur est mal lue par l'OCR (« rg.9 ») ; elle est restituée par différence, 765 − 225,0 − 33,0 − 167,9 − 319,2 = 19,9, ce qui concorde avec le « .9 » lisible (C). Proportions de la masse à vide (C) : moteur 29 %, eau 4 %, ailes 22 %, empennage mobile 2,6 %, fuselage et reste 42 % |
+| Légendes du dessin coté | illisibles dans l'OCR : on devine une cote « Tail plane, 250 m/m … line of thrust », des surfaces par plan dont la somme ne retombe pas sur 29,8 m² à la lecture OCR, et une dimension de roues « 700 × 7… » | **Rien n'en est retenu** ; image de la page à demander (§ 9.6) |
+
+#### 2.5.2 La corde du S.VII : encadrement par les surfaces de la famille (C, calcul)
+
+**Principe.** Une surface publiée n'est presque jamais le rectangle brut « envergure × corde » des deux plans : on en retire la partie couverte par le fuselage, les échancrures et la découpe, et les conventions varient. Trois cas de la famille permettent de mesurer cet écart (calculs faits ici) :
+
+| Avion et document | Rectangle brut des deux plans | Surface publiée | Rapport | Partie exclue |
+|---|---|---|---|---|
+| XIII, tableau français (S46) | 2 × 8,020 × 1,400 = 22,46 m² (cotes S15) | 215 sq ft = 19,97 m² | 0,89 | 2,48 m² |
+| XIII, McCook (S15) | 22,46 m² | 227 sq ft = 21,09 m² | 0,94 | 1,37 m² |
+| S.XI, rapport allemand (S49) | 11,22 × 1,53 + 10,90 × 1,43 = 32,75 m² | 29,8 m² | 0,91 | 2,95 m² |
+
+**Application au S.VII** (17,85 m², envergures égales de 7,82 m) :
+- si la surface publiée était le rectangle brut : corde de **1,14 m** ;
+- en transposant la **proportion** exclue (rapport 0,94, 0,91 ou 0,89) : **1,22, 1,25 ou 1,28 m** ;
+- en transposant la **valeur absolue** exclue (1,37 à 2,95 m²) : **1,23 à 1,33 m** ;
+- avec l'envergure de S48 (7,77 m), toutes ces cordes augmentent de 0,6 % ;
+- recoupement par une autre voie, sous la même hypothèse de définition : dans le même tableau S46, la surface du S.VII vaut 0,893 fois celle du XIII, pour une envergure égale à 0,977 fois celle du XIII ; à définition égale, sa corde serait d'environ 0,91 × 1,40 ≈ **1,28 m** (§ 2.2).
+
+**Ce que cela dit de 1,40 m (S48).** Il faudrait exclure 3,9 à 4,0 m² de la surface (rapport 0,82), soit plus que sur le biplace S.XI, pourtant plus grand (2,95 m²). La valeur reste donc en **D**. Elle n'est pas impossible pour autant : la découpe du S.VII est dite « profonde » et la définition de sa surface est inconnue.
+
+**Conclusion.** Corde **plausible de 1,14 à 1,33 m** ; vers 1,25 à 1,28 m si la surface de 17,85 m² suit la convention des documents français de la famille. **Confiance C**. Le rapport écartement/corde serait alors voisin de 1,0 (1,27/1,25, C). Le facteur σ de Prandtl ne dépend pas de la corde (§ 2.4). L'écart de 5,6 % entre deux surfaces officielles du même XIII montre qu'on ne resserrera pas cette fourchette sans un plan coté (P1 à P3, P19) ou une mesure sur un appareil conservé (P17). **Le choix de la valeur de travail revient à l'aérodynamicien.**
+
+#### 2.5.3 Ce qui reste non trouvé pour le S.VII
+
+| Rubrique | Non trouvé | Meilleur comparable disponible |
+|---|---|---|
+| 1. Empennage | envergure et corde du plan fixe ; surfaces du plan fixe et de la profondeur ; corde de la profondeur ; hauteur, cordes et surfaces de la dérive et du gouvernail ; position par rapport aux ailes (bras de levier) ; calage du plan fixe | XIII (§ 2.2, C) ; calage de 0° sur le S.XI (famille, C) |
+| 2. Ailerons et gouvernes | envergure, corde et surface des ailerons ; **débattements de toutes les gouvernes** (pour aucun SPAD) | ailerons du XIII (§ 2.2, C) |
+| 3. Cellule | décalage horizontal ; calages ; corde réelle (fourchette C au § 2.5.2) ; envergure du plan inférieur (toujours non tranchée, § 2.1) ; dimensions de la découpe | calages du XIII et du S.XI (§ 2.1, C) |
+| 4. Fuselage | largeur et hauteur maximales ; longueur du fuselage seul ; dimensions du radiateur ; positions du pilote, du moteur, du réservoir et de la mitrailleuse | aucun (formes qualitatives seulement, § 2.1) |
+| 5. Traînées | dimensions des mâts ; nombre exact, diamètre et type des câbles ; roues ; jambes de train | S.XI (§ 2.5.1), qualitatif |
+| 6. Centrage et inertie | position du centre de gravité ; toute mesure d'inertie. Ni le rapport britannique n° 96 (P10), ni le rapport de McCook (P12), ni une notice n'ont pu être lus | répartition des masses du S.XI (§ 2.5.1), pour une estimation par composants (C) |
+
+Documents qui lèveraient ces manques : § 9.6 (lignes de la septième passe).
+
 ## 3. Masses et centrage
 
 | Grandeur | Valeur | Conditions | Source | Confiance | Remarque |
@@ -283,8 +380,8 @@ Conséquence possible (C, raisonnement, à faire émerger et non à scripter) : 
 | Carburant | 135 L au total : réservoir principal dans le fuselage sous le siège, réservoir d'appoint dans la partie centrale (cabane) | — | S13 [RÉSUMÉ] | C | 105 L dans une source de jeu (exclue, S39). Essence et huile : 80 kg (S46) ou 105 kg (S47) dans la charge des tableaux ; à 0,72 kg/L, 105 kg d'essence seule feraient environ 146 L (C). Contenances non lues |
 | Huile | non trouvé séparément | — | — | — | Comprise dans « essence et huile » (S46, S47) |
 | Munitions | non trouvé (nombre de cartouches) | — | — | — | Armement : 40 kg (88 lb) dans S46 ; armement et munitions : 25 kg (55 lb) dans S47 |
-| Centrage, et son évolution | non trouvé | — | — | — | |
-| Inertie | non trouvé | — | — | — | À estimer par composants (`fdm_lab inertia`) |
+| Centrage, et son évolution | **non trouvé** (septième passe) | — | Ni le rapport britannique n° 96 (P10), ni le rapport de McCook sur le XIII (P12, S15 en résumé), ni une notice SPAD n'ont pu être lus ; aucun résumé n'en cite un centrage. Seul indice, qualitatif et pour le XIII : « lourd de la queue » (T8) | — | À estimer (`E:`). Le centrage du JN-2 (S43) n'est pas transposable (§ 2.4) |
+| Inertie | **non trouvé** | — | Comparable de famille pour une estimation par composants : répartition de la masse à vide du biplace S.XI (moteur 29 %, eau 4 %, ailes 22 %, empennage mobile 2,6 %, fuselage et reste 42 %), S49 [LU-OCR], § 2.5.1 | C (famille) pour les proportions | À estimer par composants (`fdm_lab inertia`). Le S.XI a un moteur à réducteur de 225 kg et une cellule plus grande : proportions indicatives seulement. Positions du moteur, du pilote, du réservoir et de la mitrailleuse : non trouvées (§ 2.5.3) |
 
 ## 4. Moteur et hélice (résumé ; détail dans [`hispano-suiza-8a.md`](hispano-suiza-8a.md))
 - 150 ch : Hispano-Suiza 8Aa ; 180 ch : Hispano-Suiza 8Ab. V8 à refroidissement liquide, entraînement **direct** de l'hélice.
@@ -621,6 +718,12 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **S41** — The Aerodrome (forum), fil « Ailerons », https://theaerodrome.com/forum/threads/ailerons.69210/ ; Modeling Madness, présentation de la maquette du SPAD XIII, https://modelingmadness.com/review/w1/michaelsspad13preview.htm (pistes ; l'attribution exacte de chaque affirmation entre ces deux pages n'est pas certaine).
 - **S42** — CGTrader, « SPAD VII » (description d'un modèle 3D), https://www.cgtrader.com/3d-models/aircraft/military-aircraft/spad-vii (piste).
 
+**Septième passe (consultées en résumé le 2026-10-22)**
+- **S15 (complément)** — *This Day in Aviation*, mêmes pages que S15 (https://www.thisdayinaviation.com/tag/spad-s-xiii-c-1, https://thisdayinaviation.com/?p=49509, https://www.thisdayinaviation.com/tag/louis-bechereau/), revues en résumé le 2026-10-22 : plan fixe, ailerons, dérive, surface de 227 sq ft, train. Page toujours inaccessible à l'outil de lecture (échec DNS).
+- **S64** — Bibliothèques numériques de la Défense, notice bibliographique de J. M. Bruce, *Spad 13.C1*, éd. R. L. Rimell, Windsock Datafile n° 32, Albatros Productions, Berkhamsted, réimpression 2000, 36 p., ISBN 0-948414-39-1 (don de G. Magnier), https://bibliotheques-numeriques.defense.gouv.fr/document/b6ed97b4-3667-4988-83ce-ebdd94fbf370. Notice seulement ; l'ouvrage est un exemplaire papier (P24).
+- **S65** — Smithsonian, National Air and Space Museum, notice de l'objet « Spad XIII "Smith IV" », https://avpreservation.si.edu/object/nasm_A19200001000 (institutionnelle ; envergure 8,2 m et hauteur 2,4 m selon le résumé, mode de mesure inconnu).
+- **S37 (complément)** — La revue d'Aeroscale (https://aeroscale.kitmaker.net/review/4494) contient, selon le résumé du 2026-10-22, une bibliographie d'articles sur le SPAD 7 (P19 à P21).
+
 ### 9.3 Pistes bibliographiques [PISTE] (non consultées ; éditions à vérifier)
 - **P1** — J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8, Albatros Productions, 1988 (fiche de catalogue de libraire).
 - **P2** — T. Gronczewski et S. M. Fleischer, *Spad VII C.1*, Aviatik Vintage Aircraft n° 1, 2004 (14 pages de plans selon une revue).
@@ -642,6 +745,17 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **P17** — Appareils originaux de S.VII à mesurer : Musée de l'Air (S.254), San Diego Air & Space Museum (B9916), Canada Aviation and Space Museum (B9913), Museo Baracca de Lugo (S.2489), musée de Vigna di Valle (S.153).
 - **P18** — Original français du livre de Henry Bordeaux sur Guynemer (Plon, 1918 ; titre exact à vérifier).
 
+Ajoutées en septième passe (géométrie de détail) :
+- **P19** — *Cross & Cockade* (US), vol. 2, n° 1, 1961 : « Spad 7: 3 View Drawings » (d'après la bibliographie d'Aeroscale, S37 [RÉSUMÉ]). Numéros anciens vendus en téléchargement par la League of WWI Aviation Historians (overthefront.com).
+- **P20** — *Cross & Cockade* (US), vol. 15, n° 4, 1974 : dessins d'ensemble d'origine de Blériot Aéronautique (même source ; **type d'avion non confirmé**, peut-être le SPAD XIII).
+- **P21** — B. S. Kelsey, « The Real Spad », *Over the Front*, vol. 8, n° 2, p. 114-122 (même source ; une seconde recherche ne l'a pas retrouvé : référence à vérifier).
+- **P22** — « "Smith IV" Restored », *Over the Front*, vol. 2, n° 2, 1987 (SPAD XIII du NASM ; une restauration peut avoir donné lieu à des relevés).
+- **P23** — « SPAD S VII, S.1777: Whose Aircraft? », *Over the Front*, vol. 15, n° 3, 2000.
+- **P24** — J. M. Bruce, *Spad 13.C1*, Windsock Datafile n° 32 (S64). Avec P1 (Datafile n° 8, *Spad 7.C1*, plans d'Ian Stair au 1/48 et au 1/72 selon un résumé), source secondaire la plus probable des cotes d'empennage et de cellule.
+- **P25** — « Performance test of Spad 13 equipped with 220-horsepower Wright engine », *Aerial Age*, vol. 14, n° 15, 19 décembre 1921, p. 344-345 (S56 [LU-OCR], titre). Sans doute la publication de l'essai de McCook (P12).
+- **P26** — J. Fromentin, « Les avions Spad », *La Vie aérienne*, 1920, p. 1054-1055, 1080-1081 et 1097-1098 (pagination lue dans l'OCR de S56, à vérifier).
+- **P27** — Descriptions du biplace SPAD avec schémas : *Automotive Industries*, vol. 38, n° 25, 20 juin 1918, p. 1212-1214 ; *Aviation*, vol. 4, n° 10, 15 juin 1918, p. 674-675 (S56). Comparables de famille seulement.
+
 ### 9.4 Historique des escadrilles
 - Albin Denis, historiques des escadrilles (`http://albindenis.free.fr/Site_escadrille/escadrille003.htm`) : **inaccessible**, à consulter en priorité pour la SPA 3 (terrains, appareils, dates).
 
@@ -649,6 +763,8 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 albindenis.free.fr ; en.wikipedia.org ; fr.wikipedia.org ; it.wikisource.org ; catalog.hathitrust.org ; gallica.bnf.fr (403 selon le coordinateur) ; www.gutenberg.org (direct) ; projekt-gutenberg.org ; www.theaerodrome.com ; flyingmachines.ru ; www.avionslegendaires.net ; historynet.com ; www.flightglobal.com (archives de *Flight*) ; www.thisdayinaviation.com ; www.hydroretro.net ; digital.library.unt.edu ; bibliotheques-numeriques.defense.gouv.fr ; m-selig.ae.illinois.edu ; aergistal.github.io ; web.archive.org ; www.google.com. Seuls github.com, raw.githubusercontent.com et, par intermittence, api.github.com répondent.
 
 **Cas particulier** : archive.org et ntrs.nasa.gov répondent au `curl` du conteneur (coordinateur, 2026-10-20), mais **pas** à l'outil de lecture de l'historien (DNS en échec). Ils ne sont exploitables que par téléchargement préalable (§ 9.6).
+
+**Septième passe (2026-10-22)** : échec DNS de l'outil de lecture pour www.thisdayinaviation.com, bibliotheques-numeriques.defense.gouv.fr et sites.ualberta.ca (fichier `~khorne/archives/Issue4/hs-spad.pdf`, contenu inconnu, sans doute un article de modélisme).
 
 ### 9.6 Documents à télécharger en priorité (identifiants vérifiés par le moteur de recherche, contenu non lu)
 Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https://archive.org/download/<identifiant>/<identifiant>_djvu.txt` et, si possible, le PDF. Pour NTRS, l'adresse est `https://ntrs.nasa.gov/api/citations/<id>/downloads/<id>.pdf`.
@@ -673,6 +789,13 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 | 1 | ARC R&M 586 (juillet 1921), figure 10 | ni archive.org ni NTRS ; archives ARC de Cranfield (AERADE) | Courbe puissance/régime du Hispano de **150 ch** (aucune mesure lue pour le 8Aa) |
 | 2 | NACA Reports 220 et 292 | NTRS, identifiants non relevés | Essais en vol des hélices du VE-7 (`hispano-suiza-8a.md` § 9) |
 | 2 | ARC R&M 774, 816, 857, 901 et 997 ; NACA TR 256 | archives ARC (Cranfield) ; NTRS | Cellules biplans RAF 15 et méthode de Glauert (§ 2.4) |
+| 1 (7e passe) | Image à 300 dpi des **p. 840-841** de *Flight* du 16 août 1917 : dessin du S.VII repris d'*Aerial Age* (S48) ; l'OCR n'en restitue aucune légende | `Flight_International_Magazine_1917-08-16-pdf` | Forme en plan, découpe, décalage, proportions et position de l'empennage, mesurables en proportion de l'envergure connue (C : dessin de presse). Recadrage pleine résolution si le dessin est petit |
+| 1 (7e passe) | Image à 300 dpi des **p. 527-529** de *Flight* du 16 mai 1918 : dessin coté du biplace S.XI (S49) | `Flight_International_Magazine_1918-05-16-pdf` | Légendes illisibles dans l'OCR : position du plan fixe par rapport à l'axe de traction, surfaces par plan, dimension des roues (« 700 × … ») ; comparable de famille |
+| 1 (7e passe) | Air Service Information Circular vol. III n° 286 (1er octobre 1921), ou sa reprise dans *Aerial Age*, vol. 14, n° 15, 19 décembre 1921, p. 344-345 (P12, P25) | archive.org ou HathiTrust (identifiants à chercher) | Cotes complètes du XIII (profondeur, dérive, décalage dont la convention « 1¼° »), centrage éventuel |
+| 2 (7e passe) | *Scientific American*, vol. 118, 2 février 1918, p. 107, « Spad pursuit biplane » | archive.org (identifiant à chercher) | Schéma d'époque du SPAD |
+| 2 (7e passe) | P19 à P23 (*Cross & Cockade* US, *Over the Front*) | téléchargements payants (overthefront.com) | Plans à trois vues, dessins d'usine, relevés de restauration |
+| 2 (7e passe) | P1 et P24 (Windsock Datafiles 8 et 32) | ouvrages papier ; P24 est au fonds des Bibliothèques de la Défense (S64) | Cotes de cellule et d'empennage (secondaire) |
+| 2 (7e passe) | FranceArchives et SHD : notice de réglage du S.VII, fiches d'essais et de pesée du STAé | **cote non trouvée** ; recherche à faire sur francearchives.gouv.fr (mots-clés « SPAD », « STAé », « notice de réglage », « biplan monoplace ») ; seule notice SPAD repérée : celle du XIII (S38, Bibliothèques numériques de la Défense, `fc97b662-8b01-43a8-9698-6e0be5953006`) | Ce qu'on y cherche : calages, décalage, débattements, centrage |
 
 ## 10. Journal des décisions
 - **2026-10-20 — Sous-version pour la SPA 3, été 1917.** S5, S8 et S16 font du 8Ab de 180 ch le moteur des S.VII neufs à partir du printemps 1917 (« avril 1917 » pour S16). Guynemer juge le 150 ch insuffisant dès décembre 1916 (S1). Aucun état des appareils de la SPA 3 n'a été trouvé. **Retenu : S.VII 180 ch (8Ab), confiance C**, en sachant que la SPA 3 alignait sans doute encore des 150 ch et quelques SPAD XIII à partir de fin juillet 1917 (S18, S1). Ce choix sera à revoir dès que l'historique d'Albin Denis ou les journaux de marche seront accessibles.
@@ -731,3 +854,13 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 **Sixième passe (2026-10-22 ; *Flight* p. 205 à 300 dpi, NACA TR 416)**
 - **Vitesses du 150 ch à 2 000 et 3 000 m : 119,5 et 111,5 mph confirmés**, soit 192 et 179 km/h. L'image à 300 dpi m'est affichée à la même résolution effective qu'en cinquième passe, donc ma lecture seule ne tranchait pas. Le contrôle décisif est interne : les 85 autres vitesses du tableau « in service » sont toutes arrondies au demi-mph, contre des dixièmes dans le tableau « under test ». La réserve de lecture (±0,3 km/h) est remplacée par l'arrondi d'impression (±0,4 km/h). **Confiance A maintenue** ; les cibles du § 5.4 ne changent pas.
 - **Facteurs τ et δ de l'aile rectangulaire** (question de l'aérodynamicien) : trouvés dans le TR 416, p. 312-314. À l'allongement 6, **τ ≈ 0,175 et δ ≈ 0,05**, lecture graphique à préciser ; ils confirment les valeurs de l'aérodynamicien. Détail et décision : `profil-spad7.md` § 4.2 et § 7. **Notation** : le TR 416 appelle σ ce facteur de traînée. Ce n'est pas le σ de Prandtl du § 2.4 ; dans nos fiches, il reste noté δ.
+
+**Septième passe (2026-10-22 ; géométrie de détail pour `aircraft.ron`)**
+- **Résultat d'ensemble.** Aucune cote chiffrée nouvelle du S.VII. Empennage, ailerons, débattements, décalage, calages, dimensions du fuselage et du radiateur, mâts, câbles, roues, centrage et inertie restent **non trouvés** (§ 2.5.3). Ils seront estimés (`E:`) par l'aérodynamicien. **Je n'ai comblé aucun de ces manques** par une valeur de mémoire ou de jeu.
+- **Corde : fourchette, pas de choix.** Les surfaces publiées de la famille valent de 0,89 à 0,94 fois le rectangle brut des deux plans (XIII : S46 et S15 ; S.XI : S49). Transposé au S.VII, cela donne une corde de 1,14 à 1,33 m, vers 1,25 à 1,28 m avec la convention française (§ 2.5.2), **en C**. Les 1,40 m de S48 restent en **D** : il faudrait exclure 3,9 à 4,0 m² de la surface, plus que sur le S.XI. Je ne retiens **pas** de valeur unique : la convention de surface du S.VII est inconnue, et deux documents officiels diffèrent déjà de 5,6 % sur le XIII. Choix de la valeur de travail : à l'aérodynamicien, avec renvoi au § 2.5.2.
+- **Comparables du XIII ajoutés au § 2.2** : plan fixe 3,099 × 0,527 m, ailerons 2,222 × 0,495 m, dérive longue de 1,200 m, surface de 227 sq ft (S15, **résumé**, donc C au mieux pour le S.VII) ; envergure 8,02 m, longueur 6,20 m, hauteur 2,30 m et surface de 215 sq ft (S46, **lu sur l'image**). L'envergure et la longueur du XIII sont désormais confirmées par deux sources indépendantes. L'incohérence de hauteur de la dérive (0,632 ou 0,876 m) reste ouverte. Les 8,2 m du NASM (S65) sont notés, non retenus.
+- **Correction d'un libellé** : les 20 ft 4 in du XIII (S15) sont la **longueur hors tout**, comme le montre la colonne « Length » de S46, et non la longueur du fuselage seul.
+- **Précision sur S48 (ailerons)** : le texte dit « à environ 9 in derrière le longeron principal », et l'auteur le déduit du dessin. « Longeron arrière » est une lecture du contexte. La valeur ne donne pas la corde des ailerons.
+- **S.XI comme comparable de famille** (§ 2.5.1) : retenu pour les habitudes de construction (empennage « du type SPAD habituel », plan fixe calé à 0°, câbles porteurs doublés et carénés de bois, train) et pour la répartition des masses par élément, utile à une estimation d'inertie par composants. **Jamais** pour une cote du S.VII : autre cellule, cordes inégales, flèche de 3°, moteur à réducteur.
+- **Haubanage** : 4 mâts interplans et 4 mâts intermédiaires (décompte C déduit de S48 et S49). Le type des câbles (profilés ou ronds) du S.VII reste inconnu ; le S.XI montre des câbles doublés carénés de bois, ce qui n'est pas la même chose que des câbles profilés.
+- **Documents demandés** (§ 9.6, lignes « 7e passe ») : en priorité, les images à 300 dpi du dessin du S.VII (*Flight*, 16 août 1917, p. 840-841) et du dessin coté du S.XI (*Flight*, 16 mai 1918, p. 527-529), déjà disponibles dans les PDF d'archive.org ; puis la circulaire de McCook ou sa reprise dans *Aerial Age* (décembre 1921).
