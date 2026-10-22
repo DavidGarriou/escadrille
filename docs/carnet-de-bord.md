@@ -806,3 +806,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **aérodynamicien** : confirmation des corrections de l'étape 4, relecture du trim, des performances, des modes et de la convergence ; avis sur la phugoïde longue et l'oscillation latérale lente du biplan synthétique ; liste des données du SPAD à estimer ou calculer, avec la méthode pour chacune ;
   - **historien** : facteurs τ et δ pour l'allongement 6 dans le rapport NACA 416 ; relecture de la ligne du 8Aa sur l'image à 300 dpi.
 - **⚠** Les fichiers de données du SPAD VII (`assets/aircraft/spad7/`) relèvent du processus `/nouvel-avion`, réservé à une invocation explicite du joueur. Claude ne le reproduit pas par d'autres moyens et attend que le joueur le lance.
+
+### Questions posées au joueur
+- **A** **Police des tracés PNG** de `fdm_lab`. `plotters` a besoin d'une police pour écrire les axes. Sa police par défaut passe par `font-kit`, qui lie freetype et fontconfig en C, avec des licences hors de la liste du projet ; je l'écarte. Options proposées :
+  1. **recommandée** : `plotters` sans les options par défaut, avec son rendu de texte en Rust pur (`ab_glyph`, Apache-2.0), et la police **Go** (licence BSD-3-Clause, déjà dans la liste des licences de code acceptées) incluse dans `tools/fdm_lab`. Elle sert à l'outil seulement, n'est pas livrée avec le jeu, et sera inscrite dans `assets/LICENCES.md` ;
+  2. tracés **SVG** sans fichier de police : les visionneuses rendent le texte, mais Claude ne peut pas les regarder comme des images ;
+  3. tracés **sans texte** : courbes seules, valeurs dans le rapport.
+- **A** **Fichiers du SPAD VII** : le processus `/nouvel-avion` est réservé à une invocation explicite du joueur. Proposition : lancer `/nouvel-avion spad7` quand la liste des estimations de l'aérodynamicien sera revenue.
