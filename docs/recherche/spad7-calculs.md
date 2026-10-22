@@ -66,3 +66,23 @@ Résultat : +5 à +6,4 % de traction selon J ; le rendement maximal passe de 0,7
 | Poste | ouverture de 0,9 à 1,4 m derrière le bord d'attaque | pilote à x = −1,15 m | |
 
 **Repère des données** : origine au bord d'attaque du plan inférieur, dans l'axe (point virtuel, dans le fuselage) ; x vers l'avant, y à droite, z vers le bas ; ligne de traction horizontale (le dessin est tracé en ligne de vol, queue haute).
+
+## 4. Masses, centrage et chargement d'essai
+
+**Bilan à vide** (`assets/aircraft/spad7/masses.ron`, calculé par `fdm_lab inertia spad7`) : aucune masse de composant du S.VII n'est sourcée (`spad7.md` § 3). Dix composants comparables ou estimés, fermés sur la masse à vide de S46 (1 100 lb = 498,95 kg) par le reste du fuselage :
+
+| Composant | Masse | Origine |
+|---|---|---|
+| Moteur 8Aa à sec | 447 lb (202,8 kg) | moyenne des Hispano de 150 hp de H19 (440 et 455 lb) et de H20 (445 lb) |
+| Radiateur et eau | 40 kg | E: |
+| Hélice et moyeu | 22 kg | E: (20 à 25 kg) |
+| Plans supérieur et inférieur | 58 + 52 kg | 22 % de la masse à vide comme le S.XI (S49), au prorata des surfaces |
+| Mâts, câbles, renvois | 12 kg | E: |
+| Empennage | 15 kg | E: (19,9 kg pour les seules gouvernes du S.XI, plus grand) |
+| Train | 25 kg | E: |
+| Réservoir et circuits vides | 10 kg | E: |
+| Fuselage, capots, poste, commandes | 62,4 kg | fermeture sur 1 100 lb |
+
+Résultat : 499,2 kg, centre de gravité à vide à x = −0,313 m (26 % de la corde depuis le bord d'attaque) et z = −0,406 m ; inertie au centre de gravité à vide (785 ; 778 ; 1 360) kg·m², ixz = 40 kg·m². L'inertie n'a aucun recoupement mesuré : le NACA TR 467 (rayons de giration mesurés d'avions de l'époque), proposé par l'aérodynamicien, reste à lire.
+
+**Chargement des essais de S46** (charge totale 451 lb, lue sur l'image, `spad7.md` § 3) : pilote 176 lb ; armement 88 lb ; divers 11 lb ; essence et huile 176 lb. L'huile est mise à part (8 kg, E: environ 2 h à 2,8 L/h de H20 plus le contenu du circuit) ; il reste 71,8 kg d'essence, soit 99,7 L à 0,72 kg/L, c'est-à-dire **74 % des 135 L** du réservoir (contenance C, S13 vue en résumé). Masse totale : 703,5 kg (S46 : 1 551 lb).

@@ -966,3 +966,31 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   1. **`spad7` = S.VII 150 ch** (Hispano-Suiza 8Aa), une Vickers, 703 kg des essais officiels. Toutes ses cibles sont en confiance A. Le 180 ch, machine type de la SPA 3 à l'été 1917, viendra ensuite sous `spad7_180` : même cellule, autre moteur.
   2. **`fdm_lab inertia`** est écrit maintenant : centrage et inertie tirés d'un bilan de masses par composant, dans un fichier sourcé `masses.ron`. Les gains de l'instructeur et de l'IA, ainsi que la maquette 3D avec `asset_check`, attendent le M2, puisque le M1 n'a ni IA ni rendu.
   3. **Tracés** : `plotters` sans polices système, avec `ab_glyph` et la police Go (BSD-3-Clause) embarquée, dans `fdm_lab` seulement. La question de la police est donc close.
+
+### `/nouvel-avion spad7` : premières données et outils
+- **A** **Septième passe de l'historien** (géométrie de détail) : **aucune nouvelle cote mesurée du S.VII** dans les 208 numéros de *Flight* ni sur le web. Elle apporte :
+  - une fourchette de corde de 1,14 à 1,33 m, déduite de la famille SPAD ;
+  - des comparables du XIII et du S.XI ;
+  - deux corrections dans la fiche.
+- **A** **Dessin trois vues de *Flight* du 16 août 1917**, téléchargé depuis archive.org et mesuré sur l'image à 600 points par pouce. Mis à l'échelle par l'envergure et la longueur officielles (S46), les deux vues concordent à 0,3 %.
+  - Ce qu'il donne : écartement de 1,26 m (S48 : 1,27) ; **décalage nul** (mâts verticaux) ; ailerons de 1,95 × 0,44 m sur le plan supérieur ; plan fixe de 2,81 m d'envergure et 2,30 m² dont profondeur 1,00 m² ; dérive 0,37 m² et gouvernail 0,53 m² ; hauteur du fuselage, position de l'hélice, des roues et du poste.
+  - **⚠** Il reprend la corde de 1,40 m de l'article, incompatible avec la surface officielle. **D** Corde retenue **1,21 m** (méthode de l'aérodynamicien, surface A), conflit signalé pour la revue. Tout est dans `docs/recherche/spad7-calculs.md` § 3.
+- **A** **Profil** `assets/airfoils/spad.ron` :
+  - base : le RAF 15 du Report 233 recopié tel quel ;
+  - passage à l'allongement infini par le TR 416, avec l'allongement effectif de la soufflerie fermée (6,86) ;
+  - **recalage sur la ligne moyenne du « Spad » par la théorie du profil mince** (−0,60° et −0,0145 sur C_m), nouveau champ `camber_correction`. La théorie retrouve le RAF 15 mesuré à 0,3° près ;
+  - branche négative estimée.
+- **A** **Hélice** `propeller.ron` :
+  - base : la D' du Report 301, de 2,45 m de diamètre ;
+  - **la traction « effective » est ramenée à la traction de l'hélice** : +5 à 6 %, en rajoutant la traînée de souffle du VE-7, que notre modèle recalcule lui-même ;
+  - lu sur l'image de l'hélice I : aux J de croisière, les ailes laissent la traction effective inchangée, mais ajoutent 3 à 5 % de puissance absorbée. Ce C_P est gardé.
+- **A** **Bilan de masses** `masses.ron` (dix composants fermés sur les 1 100 lb de S46) et commande **`fdm_lab inertia`**. Centre de gravité à vide à 26 % de la corde. Un test d'intégration vérifiera que `aircraft.ron` concorde avec le bilan.
+- **A** **Tracés PNG** dans `fdm_lab` : `plotters` avec la police Go embarquée (BSD-3-Clause, inscrite au registre des licences) ; `cargo deny` accepte les licences. Le rapport d'essais montre :
+  - la vitesse maximale, le régime, le taux et le temps de montée en fonction de l'altitude, cibles historiques en points ;
+  - l'historique de chaque essai qualitatif : vitesse, angles, facteur de charge, commandes.
+
+  Règles de la skill `dataviz` : un axe par panneau, couleurs catégorielles validées.
+- **A** `essais.ron` du SPAD écrit :
+  - trois vitesses maximales avec leur régime (A, ±4 % et ±3 %), trois temps de montée (A, ±5 %), le plafond théorique (A) et le décrochage de Tallman (D) ;
+  - huit comportements du § 6.2, dont cinq manœuvres pilotées.
+- **A** En cours : l'aérodynamicien calcule les traînées parasites élément par élément, le fuselage en corps élancé, la déflexion, les allongements effectifs, l'effet P et le ralenti.
