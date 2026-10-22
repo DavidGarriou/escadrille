@@ -14,8 +14,8 @@ use fdm_lab::campaign::{self, validated};
 use fdm_lab::modes::{Mode, lateral, linearise, longitudinal, static_stability};
 use fdm_lab::performance::max_level_speed;
 use fdm_lab::report::{Cruise, Report, markdown, time_step_change};
-use fdm_lab::robustness;
 use fdm_lab::trim::{Flight, LEVEL_AT_SPEED, Trim, solve_robust};
+use fdm_lab::{qualitative, robustness};
 
 #[derive(Debug, Parser)]
 #[command(version, about = "Headless flight-test laboratory for Panache blanc")]
@@ -140,6 +140,11 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
         .iter()
         .map(|scenario| robustness::run(aircraft, &STILL_AIR, scenario))
         .collect();
+    let qualitative: Vec<_> = essais
+        .qualitative
+        .iter()
+        .map(|scenario| qualitative::run(aircraft, &STILL_AIR, scenario))
+        .collect();
     let time_step = cruise
         .as_ref()
         .map(|c| time_step_change(aircraft, &STILL_AIR, &c.trim, c.commands, 1.0 / 240.0));
@@ -152,6 +157,7 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
         accepted,
         outcomes: &outcomes,
         robustness: &robustness,
+        qualitative: &qualitative,
         cruise,
         time_step_change: time_step,
     };
@@ -180,8 +186,13 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
     for o in &robustness {
         println!("{:<40} {}", o.name, if o.passed { "ok" } else { "ÉCHEC" });
     }
+    for o in &qualitative {
+        println!("{:<40} {}", o.name, o.observed());
+    }
     println!("rapport : {}", path.display());
-    Ok(validated(&outcomes) && robustness.iter().all(|o| o.passed))
+    Ok(validated(&outcomes)
+        && robustness.iter().all(|o| o.passed)
+        && qualitative.iter().all(|o| o.finite()))
 }
 
 fn main() -> ExitCode {
@@ -265,6 +276,7 @@ mod tests {
             "{report}"
         );
         assert!(report.contains("Convergence en pas de temps"));
+        assert!(report.contains("## Essais qualitatifs"), "{report}");
         assert!(ok, "{report}");
         let _ = std::fs::remove_dir_all(&out);
     }

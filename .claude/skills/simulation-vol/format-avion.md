@@ -162,13 +162,28 @@ Essais(
         Ceiling(climb_rate: FtMin(100.0), target: M(0.0), tolerance_pct: 5.0, source: "S1", confidence: B), // S:
     ],
 
-    // Comportements tirés des témoignages (section 6 de la fiche), scénarisés dans fdm_lab.
+    // Comportements tirés des témoignages (section 6 de la fiche), pilotés par fdm_lab
+    // (pilote scripté aux mêmes commandes que le joueur) ; rapportés, jamais bloquants.
     qualitative: [
-        (name: "stall_power_off", description: "…", source: "S4"),
+        (name: "boucle", description: "boucle aisée, sans décrochage au sommet", source: "T1",
+            manoeuvre: Some(Loop(altitude: M(2000.0), load_factor: 3.5))),           // E: traction d'un pilote d'époque
+        (name: "decrochage", description: "abattée nette et départ en roulis", source: "T9",
+            manoeuvre: Some(PowerOffStall(altitude: M(1000.0)))),                    // E:
+        (name: "plane", description: "plané plus pentu que celui d'un Nieuport", source: "T9",
+            manoeuvre: Some(Glide(altitude: M(1000.0)))),                            // E:
+        (name: "pique", description: "tient un piqué quasi vertical à pleine puissance", source: "T6",
+            manoeuvre: Some(Dive(altitude: M(3000.0), angle: Deg(-80.0), seconds: 20.0, load_factor: 4.0))), // S: / E:
+        (name: "embardee", description: "part à gauche au décollage", source: "T8"), // sans manœuvre : listé, pas simulé (M2)
     ],
 
     robustness: [ZeroAirspeed, TailSlide, SpinEntryRecovery(turns: 3), Inverted(seconds: 10.0), MaxDive],
 )
 ```
+
+Manœuvres qualitatives (`fdm_lab/src/qualitative.rs`) : départ cap au nord, ailes horizontales, air calme. Le pilote tire un facteur de charge sans dépasser l'incidence de décrochage moins 2° (anticipée sur sa vitesse de variation), garde les ailes dans le plan vertical aux ailerons et le dérapage nul à la direction.
+- `Loop` : depuis la vitesse maximale en palier, pleins gaz ; bouclée ou non, sommet (hauteur, vitesse), décrochage éventuel.
+- `PowerOffStall` : depuis le palier à 1,3 fois la vitesse de décrochage au ralenti, gaz réduits, manche ramené de 5 % par seconde ; vitesse à l'abattée, abattée et inclinaison dans les 3 s, hauteur perdue jusqu'au retour en plané normal.
+- `Glide` : finesse maximale au ralenti.
+- `Dive` : piqué tenu à l'angle donné, pleins gaz, puis ressource ; vitesse et régime maximaux, signe du moment de tangage profondeur au neutre (rappelant ou engagement), hauteur perdue.
 
 Niveaux de confiance : **A** mesure primaire (rapport d'essai d'époque) ; **B** sources secondaires concordantes ; **C** déduit d'avions comparables ; **D** estimation de gameplay. Par défaut, les essais de confiance C et D sont signalés mais ne bloquent pas la validation ; le seuil se règle (`Confidence::blocks_validation`). Pour le M1, le joueur a validé la confiance C : les essais A, B et C bloquent, D reste indicatif.

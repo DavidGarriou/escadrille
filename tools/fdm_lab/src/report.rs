@@ -11,6 +11,7 @@ use escadrille_fdm::rigid_body::RigidBodyState;
 
 use crate::campaign::{Outcome, validated};
 use crate::modes::{Mode, StaticStability};
+use crate::qualitative::QualitativeOutcome;
 use crate::robustness::RobustnessOutcome;
 use crate::trim::Trim;
 
@@ -33,6 +34,7 @@ pub struct Report<'a> {
     pub accepted: Confidence,
     pub outcomes: &'a [Outcome],
     pub robustness: &'a [RobustnessOutcome],
+    pub qualitative: &'a [QualitativeOutcome],
     pub cruise: Option<Cruise>,
     /// Largest relative change when the time step is halved.
     pub time_step_change: Option<f64>,
@@ -82,7 +84,10 @@ pub fn markdown(r: &Report) -> String {
     }
 
     let _ = writeln!(t, "\n## Essais quantitatifs\n");
-    let verdict = if validated(r.outcomes) && r.robustness.iter().all(|o| o.passed) {
+    let verdict = if validated(r.outcomes)
+        && r.robustness.iter().all(|o| o.passed)
+        && r.qualitative.iter().all(|o| o.finite())
+    {
         "**validé**"
     } else {
         "**non validé**"
@@ -186,6 +191,26 @@ pub fn markdown(r: &Report) -> String {
         for o in r.robustness {
             let result = if o.passed { "réussi" } else { "**échec**" };
             let _ = writeln!(t, "| {} | {result} | {} |", o.name, o.details);
+        }
+    }
+
+    if !r.qualitative.is_empty() {
+        let _ = writeln!(t, "\n## Essais qualitatifs\n");
+        let _ = writeln!(
+            t,
+            "Comportements tirés des témoignages, pilotés par un pilote simple aux mêmes commandes que le joueur. Ils ne bloquent pas la validation : comparer l'observé à l'attendu revient au joueur et à l'aérodynamicien.\n"
+        );
+        let _ = writeln!(t, "| Scénario | Attendu | Source | Observé |");
+        let _ = writeln!(t, "|---|---|---|---|");
+        for o in r.qualitative {
+            let _ = writeln!(
+                t,
+                "| {} | {} | {} | {} |",
+                o.name,
+                o.description,
+                o.source,
+                o.observed()
+            );
         }
     }
 

@@ -5,6 +5,7 @@
 pub mod campaign;
 pub mod modes;
 pub mod performance;
+pub mod qualitative;
 pub mod report;
 pub mod robustness;
 pub mod trim;

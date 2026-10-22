@@ -9,5 +9,16 @@ Essais(
         ClimbTime(from: M(0.0), to: M(1000.0), target: MinS(3, 30), tolerance_pct: 10.0, source: "test", confidence: D), // E: synthetic
         Ceiling(climb_rate: FtMin(100.0), target: M(5600.0), tolerance_pct: 5.0, source: "test", confidence: D), // E: synthetic
     ],
+    qualitative: [
+        (name: "loop", description: "loops easily at full throttle", source: "test",
+            manoeuvre: Some(Loop(altitude: M(2000.0), load_factor: 3.5))),           // E: synthetic
+        (name: "stall", description: "drops its nose at the stall", source: "test",
+            manoeuvre: Some(PowerOffStall(altitude: M(1000.0)))),                    // E: synthetic
+        (name: "glide", description: "glides steeply", source: "test",
+            manoeuvre: Some(Glide(altitude: M(1000.0)))),                            // E: synthetic
+        (name: "dive", description: "holds a steep dive", source: "test",
+            manoeuvre: Some(Dive(altitude: M(3000.0), angle: Deg(-80.0), seconds: 20.0, load_factor: 4.0))), // E: synthetic
+        (name: "ground", description: "swings left on take-off", source: "test"),
+    ],
     robustness: [ZeroAirspeed, TailSlide, SpinEntryRecovery(turns: 3), Inverted(seconds: 10.0), MaxDive], // E: synthetic
 )
