@@ -954,3 +954,7 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Le test de la boucle borne désormais le dépassement d'incidence du pilote, au lieu de dépendre d'une marge de 0,3° au décrochage.
 - **⚠** Signalé par la revue : `StallSpeed(power: Full)` est maintenant calculé et bloquant. Sa définition (vitesse stabilisée minimale pleins gaz, en montée) est notée dans `format-avion.md`. **D** Aucune cible du SPAD ne s'en sert (la fiche n'a pas de décrochage moteur), et l'avis de l'historien sera demandé avant d'en écrire une.
 - **A** 184 tests réussis, `just check` sans erreur.
+
+### Ce qu'il faut tester maintenant
+- **Q** « Rappelle-moi ce qu'il faut tester maintenant. »
+- **R** Rien à tester manette en main : le M1 est sans rendu, et le premier vol à la manette viendra au M2. L'essai du joueur qui clôt le M1 consiste à lire le rapport d'essais du SPAD et ses tracés, puis à dire si l'avion « ressemble » aux témoignages. Il faut d'abord deux choses : `/nouvel-avion spad7`, et la décision sur la police des tracés. En attendant, essai facultatif : faire tourner `fdm_lab` sur le biplan synthétique, sur la machine du joueur, et donner un avis sur la lisibilité du rapport.
