@@ -898,3 +898,47 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Rapport : nouvelle section « Essais qualitatifs » (attendu, source, observé). Ces essais **ne bloquent pas** la validation : comparer l'observé à l'attendu revient au joueur et à l'aérodynamicien. Seules des valeurs non finies feraient échouer la campagne. `format-avion.md` et `modele-aero.md` sont à jour.
 - **A** 176 tests réussis, `just check` sans erreur. Revue de l'aérodynamicien demandée.
 - **⚠** La revue de l'aérodynamicien s'est arrêtée sur la limite de débit de l'API (429), puis le processus de la session a redémarré. Elle a repris là où elle s'était arrêtée après la levée de la limite. **Q** du joueur : « Continue ». **R** : reprise de la revue, puis traitement de ses retours.
+
+### Revue des essais qualitatifs par l'aérodynamicien, et corrections
+- **R** Verdict « à corriger », **rien de bloquant**. Ce qui va : le commit est propre, diviser dt par deux ne change rien, les repères et les signes sont justes. Le problème : plusieurs mesures décrivaient **autant le pilote scripté que l'avion**.
+  - **Pente** calculée par asin, qui ne voit pas au-delà de −90° : un piqué « vertical » faisait pousser le pilote jusqu'à −13 g, sans que rien ne le signale. La ressource s'arrêtait sur l'assiette alors que l'avion descendait encore.
+  - **Décrochage** :
+    - l'abattée de 33° comprenait la poussée du pilote ; l'avion seul fait environ 16° ;
+    - un départ en roulis était décrit comme « l'avion s'enfonce » ;
+    - le résultat changeait de nature avec la vitesse à laquelle on tire le manche ;
+    - la direction purement proportionnelle laissait 2,5° de dérapage.
+  - **Boucle** : « sans décrocher » dépendait du réglage du pilote (sans anticipation, il décroche), et « bouclée » ne regardait que le nez.
+  - **Piqué** : la doc ne correspondait pas au code ; la détection d'« engagement » reposait sur un seul échantillon ; les chiffres incluaient la mise en place.
+  - **Doc** : « jamais bloquant » contredisait le code, qui échoue sur des valeurs non finies.
+- **A** Corrections (commit `a425f72`) :
+  - pente mesurée dans le plan vertical, valable jusqu'à −90° ; ressource jusqu'à une trajectoire horizontale ;
+  - décrochage à **un nœud par seconde**, comme dans les essais de certification ; départ par abattée ou par l'aile (inclinaison > 30°) ; ensuite l'avion seul (manche tenu, ailerons et palonnier au neutre) ; abattée mesurée sur l'assiette vraie ; dérapage, vitesses vraie et équivalente au décrochage ;
+  - direction avec intégrale ;
+  - boucle jugée sur le vecteur vitesse et sur le plan, vitesse d'entrée en paramètre, limite d'incidence prise pleins gaz ; le rapport montre la limite du pilote, le temps passé dessus et la marge ;
+  - piqué : profondeur **relâchée au neutre** 3 s comme le demande la fiche ;
+  - manœuvres vérifiées au chargement.
+- **A** **Nouveau** : vitesse de décrochage à n'importe quelle manette. La cible `StallSpeed(power: Full)` de la campagne, « pas encore calculée » jusqu'ici, est maintenant calculée.
+- **⚠** En corrigeant, deux pièges trouvés au premier essai :
+  - garder **toutes** les commandes après le départ, y compris la direction qui suit le roulis, faisait vriller l'avion. Ailerons et palonnier sont remis au neutre ;
+  - l'assiette dans le plan vertical n'a plus de sens quand le cap a tourné de 106° : elle donnait une abattée de 138°. Le décrochage utilise l'assiette vraie (48°).
+- **R** Biplan synthétique, données non historiques :
+  - décrochage à 1 kt/s : **départ en roulis à droite**, 1,9 s après l'incidence de décrochage, atteinte à 68 km/h avec un dérapage de −0,3°. L'avion laissé seul part en vrille naissante (86° d'inclinaison, cap +106° en 3 s). En inversant l'hélice, il part à gauche : le côté vient bien de l'hélice ;
+  - boucle bouclée, sommet à 0,66 V_s, marge de 0,3° au décrochage, 93 % du temps sur la limite d'incidence : une boucle « juste », pas « aisée » ;
+  - piqué à −80° relâché : il remonte à −35° en 3 s (rappelant).
+- **A** Tests ajoutés, suggérés par la revue :
+  - facteur de charge comparé à la courbure de la trajectoire ;
+  - signe de l'inclinaison ;
+  - boucle sans anticipation, qui décroche ;
+  - convergence en dt ;
+  - départ en roulis inversé avec l'hélice ;
+  - finesse vérifiée en plané libre ;
+  - piqué vertical ;
+  - empennage calé à +3°, qui s'engage au relâché.
+
+  184 tests réussis, `just check` sans erreur.
+- **D** Laissés pour plus tard, faute d'enjeu avant les données du SPAD :
+  - gains du pilote normalisés par avion ;
+  - compteur d'inversions du manche ;
+  - tracés temporels, en attente de la décision sur la police.
+
+  Contre-vérification demandée à l'aérodynamicien.
