@@ -14,6 +14,7 @@ use fdm_lab::campaign::{self, validated};
 use fdm_lab::modes::{Mode, lateral, linearise, longitudinal};
 use fdm_lab::performance::max_level_speed;
 use fdm_lab::report::{Cruise, Report, markdown, time_step_change};
+use fdm_lab::robustness;
 use fdm_lab::trim::{Flight, LEVEL_AT_SPEED, Trim, solve_robust};
 
 #[derive(Debug, Parser)]
@@ -133,6 +134,11 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
                 trim,
             }
         });
+    let robustness: Vec<_> = essais
+        .robustness
+        .iter()
+        .map(|scenario| robustness::run(aircraft, &STILL_AIR, scenario))
+        .collect();
     let time_step = cruise
         .as_ref()
         .map(|c| time_step_change(aircraft, &STILL_AIR, &c.trim, c.commands, 1.0 / 240.0));
@@ -144,6 +150,7 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
         fuel_fraction: essais.conditions.fuel_fraction,
         accepted,
         outcomes: &outcomes,
+        robustness: &robustness,
         cruise,
         time_step_change: time_step,
     };
@@ -169,8 +176,11 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
             }
         );
     }
+    for o in &robustness {
+        println!("{:<40} {}", o.name, if o.passed { "ok" } else { "ÉCHEC" });
+    }
     println!("rapport : {}", path.display());
-    Ok(validated(&outcomes))
+    Ok(validated(&outcomes) && robustness.iter().all(|o| o.passed))
 }
 
 fn main() -> ExitCode {

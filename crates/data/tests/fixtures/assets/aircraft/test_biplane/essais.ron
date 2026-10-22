@@ -9,5 +9,5 @@ Essais(
         ClimbTime(from: M(0.0), to: M(1000.0), target: MinS(3, 30), tolerance_pct: 10.0, source: "test", confidence: D), // E: synthetic
         Ceiling(climb_rate: FtMin(100.0), target: M(5600.0), tolerance_pct: 5.0, source: "test", confidence: D), // E: synthetic
     ],
-    robustness: [ZeroAirspeed, TailSlide],
+    robustness: [ZeroAirspeed, TailSlide, SpinEntryRecovery(turns: 3), Inverted(seconds: 10.0), MaxDive], // E: synthetic
 )

@@ -6,4 +6,5 @@ pub mod campaign;
 pub mod modes;
 pub mod performance;
 pub mod report;
+pub mod robustness;
 pub mod trim;

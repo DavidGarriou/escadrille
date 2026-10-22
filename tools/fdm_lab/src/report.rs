@@ -11,6 +11,7 @@ use escadrille_fdm::rigid_body::RigidBodyState;
 
 use crate::campaign::{Outcome, validated};
 use crate::modes::Mode;
+use crate::robustness::RobustnessOutcome;
 use crate::trim::Trim;
 
 /// Steady flight with its eigenmodes, for the report.
@@ -30,6 +31,7 @@ pub struct Report<'a> {
     pub fuel_fraction: f64,
     pub accepted: Confidence,
     pub outcomes: &'a [Outcome],
+    pub robustness: &'a [RobustnessOutcome],
     pub cruise: Option<Cruise>,
     /// Largest relative change when the time step is halved.
     pub time_step_change: Option<f64>,
@@ -79,7 +81,7 @@ pub fn markdown(r: &Report) -> String {
     }
 
     let _ = writeln!(t, "\n## Essais quantitatifs\n");
-    let verdict = if validated(r.outcomes) {
+    let verdict = if validated(r.outcomes) && r.robustness.iter().all(|o| o.passed) {
         "**validé**"
     } else {
         "**non validé**"
@@ -150,6 +152,20 @@ pub fn markdown(r: &Report) -> String {
         let _ = writeln!(t, "|---|---|---|---|---|---|");
         mode_rows(&mut t, &c.longitudinal);
         mode_rows(&mut t, &c.lateral);
+    }
+
+    if !r.robustness.is_empty() {
+        let _ = writeln!(t, "\n## Robustesse\n");
+        let _ = writeln!(
+            t,
+            "Réussi : la simulation reste finie (pas de NaN) et dans des bornes physiques. Ce que fait l'avion est rapporté, pas jugé.\n"
+        );
+        let _ = writeln!(t, "| Scénario | Résultat | Déroulement |");
+        let _ = writeln!(t, "|---|---|---|");
+        for o in r.robustness {
+            let result = if o.passed { "réussi" } else { "**échec**" };
+            let _ = writeln!(t, "| {} | {result} | {} |", o.name, o.details);
+        }
     }
 
     if let Some(change) = r.time_step_change {
