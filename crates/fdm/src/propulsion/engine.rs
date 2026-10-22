@@ -13,7 +13,9 @@
 //! indicated power is about constant and the torque falls as 1/ω, which gives a stable
 //! idle and engine braking in a dive (aerodynamicist review of 2026-10-21). Indicated
 //! power P_i = σ min(P₀(ω) + P_f(ω), θ P_i,max), with θ = idle + (1 − idle) × lever
-//! (E:, linear) and P_i,max the largest full-throttle indicated power of the curves.
+//! (E:, linear) and P_i,max the largest full-throttle indicated power of the curves. The
+//! corner of the min is rounded (C¹, ±5 %, E:) so that the trim can be solved; above the
+//! corner the throttle has no effect, which is real (manifold at ambient pressure).
 //!
 //! Outside the measured curves (E:), the torque is held constant below the first point and
 //! the power above the last one, so that full throttle stays the largest power. Below the stall
@@ -137,7 +139,8 @@ impl InlineEngine {
         let firing = smoothstep(shaft_speed / self.stall_speed - 1.0);
         let combustion = if firing > 0.0 {
             let full = (brake + friction) * speed;
-            let indicated = density_ratio.max(0.0) * full.min(theta * self.max_indicated);
+            let available = theta * (1.0 + THROTTLE_BLEND) * self.max_indicated;
+            let indicated = density_ratio.max(0.0) * full * smooth_min_ratio(available / full);
             indicated / speed * firing
         } else {
             0.0
@@ -152,6 +155,24 @@ impl InlineEngine {
     pub fn brake_power(&self, shaft_speed: f64, throttle: f64, density_ratio: f64) -> f64 {
         let t = self.torques(shaft_speed, throttle, density_ratio);
         (t.combustion - t.friction) * shaft_speed
+    }
+}
+
+/// Half-width of the C¹ blend between the throttle-limited and the full-throttle
+/// regimes, as a fraction of the power (E:). The throttle's available power is raised by
+/// as much, so that full throttle still gives exactly the full-throttle curve.
+const THROTTLE_BLEND: f64 = 0.05;
+
+/// min(x, 1) with its corner rounded over 1 ± [`THROTTLE_BLEND`] (C¹): the trim solver
+/// of `fdm_lab` cannot work across a corner.
+fn smooth_min_ratio(x: f64) -> f64 {
+    let w = THROTTLE_BLEND;
+    if x <= 1.0 - w {
+        x
+    } else if x >= 1.0 + w {
+        1.0
+    } else {
+        x - (x - (1.0 - w)).powi(2) / (4.0 * w)
     }
 }
 
@@ -231,7 +252,7 @@ pub(crate) mod tests {
         let full = e.torques(200.0, 1.0, 1.0);
         let half = e.torques(200.0, 0.5, 1.0);
         // θ = 0.08 + 0.92 × 0.5 of the largest indicated power, 1.1 × 112 kW.
-        let throttled = 0.54 * 1.1 * 112e3 / 200.0;
+        let throttled = 0.54 * 1.05 * 1.1 * 112e3 / 200.0;
         assert!(close(half.combustion, throttled, 1e-12));
         assert!(close(full.combustion, 1.1 * 108e3 / 200.0, 1e-12));
         assert_eq!(half.friction, full.friction);

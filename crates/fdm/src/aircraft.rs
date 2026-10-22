@@ -176,6 +176,11 @@ impl Aircraft {
         self.propulsion.as_ref()
     }
 
+    /// Control-surface deflections for full commands.
+    pub fn travel(&self) -> ControlTravel {
+        self.travel
+    }
+
     /// Control surface deflections for the pilot's commands.
     pub fn deflections(&self, controls: &PilotControls) -> ControlDeflections {
         let c = |v: f64| v.clamp(-1.0, 1.0);
