@@ -853,3 +853,24 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
   Elle servira au processus `/nouvel-avion`.
 - **A** Ces points sont traités avant de lancer `/nouvel-avion`.
+
+### Corrections de la revue de `fdm_lab`
+- **A** Les huit points importants de l'aérodynamicien sont traités (commit `284cc2c`) :
+  - **manette des gaz** : saturation progressive du papillon, g(s) = s/(1 + s²)^½, au lieu du minimum arrondi. Plus de zone morte : le trim à la vitesse maximale retrouve les pleins gaz ;
+  - **loi d'altitude** choisie dans les données : `Density` (σ) ou `Pressure(n)` ((p/p₀)ⁿ, R&M 462 : n ≈ 1,04 pour le SPAD) ;
+  - **rotation du souffle** conservée le long des lignes de courant : nulle devant le disque, entière juste derrière ;
+  - **données** : régime cible facultatif avec une vitesse maximale, force normale de l'hélice refusée au-delà de 0,1, biplan synthétique corrigé (force normale 0,035, inertie du rotor 6 kg·m²) ;
+  - **`fdm_lab`** : plafond par pas et bissection, extrapolé comme à l'époque quand la montée ne se résout plus ; décrochage = dernière descente que la profondeur tient ; marge statique, N_v et L_v dans le rapport ; régime comparé à la cible ; **vrille détectée** (décrochée et en lacet) au lieu de compter les tours de cap.
+- **R** Biplan synthétique après corrections : modes classiques (roulis hollandais 4,8 s, ζ = 0,26 ; spirale qui double en 38 s), marge statique 8,2 %, stable de route (N_v > 0) et effet de dièdre (L_v < 0) ; il vrille vraiment, à 78° d'incidence ; plafond 5 608 m.
+- **A** 169 tests réussis, `just check` sans erreur.
+
+### Documents de référence du modèle de vol à jour
+- **A** `modele-aero.md` (skill `simulation-vol`) décrit maintenant ce que fait le code, puisque `/nouvel-avion` s'appuie dessus :
+  - angle induit résolu exactement et induction mutuelle des biplans ;
+  - fuselage en corps élancé (Munk et écoulement transversal) ;
+  - déflexion retardée ;
+  - hélice : contrôle d'énergie, points d'appui calculés, effet P, force normale de Ribner, rotation du souffle ;
+  - moteur : courbe de frottement, lois d'altitude, loi des gaz, inertie du rotor ;
+  - méthodes de `fdm_lab` (trim, performances, modes, marge statique, robustesse, convergence).
+- **A** `format-avion.md` suit le schéma actuel : bloc `fuselage`, `friction: Curve(…)` ou `Fraction(k)`, `altitude_law`, `normal_force`, régime cible dans `MaxLevelSpeed`.
+- **D** Tout est prêt pour le SPAD VII. Reste au joueur à lancer **`/nouvel-avion spad7`** (ce processus lui est réservé) ; la liste des données à estimer de l'aérodynamicien servira de guide. La question de la police des tracés reste ouverte.

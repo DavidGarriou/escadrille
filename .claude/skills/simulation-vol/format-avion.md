@@ -66,15 +66,28 @@ Aircraft(
     interference: [(planes: ("upper_wing", "lower_wing"), sigma: 0.0)], // C: Prandtl, NACA TN 182, écartement / envergure
     downwash: Some((wings: ["upper_wing", "lower_wing"], tail: ["tailplane"], factor: 0.0, tail_arm: M(0.0))), // C:
 
-    parasite_drag: [
+    parasite_drag: [                                      // traînées axiales, dans le souffle de l'hélice
+        (name: "fuselage",          cd: 0.0, reference_area: M2(1.0), position_m: (0.0, 0.0, 0.0)), // C: contrôle de traînée globale
         (name: "interplane_struts", cd: 0.0, reference_area: M2(0.0), position_m: (0.0, 0.0, 0.0)), // C: Hoerner
         (name: "radiator",          cd: 0.0, reference_area: M2(0.0), position_m: (0.0, 0.0, 0.0)), // E:
     ],
 
+    // Fuselage en corps élancé (couple de Munk et écoulement transversal, modele-aero.md) ;
+    // facultatif, mais sans lui les stabilités de route et longitudinale sont surestimées.
+    fuselage: Some((
+        position_m: (0.0, 0.0, 0.0),                      // C: centre des aires projetées
+        volume_m3: 0.0,                                   // C: depuis les plans
+        apparent_mass: 0.0,                               // C: k₂ − k₁ de Lamb selon la finesse (≈ 0,9 pour une finesse de 6)
+        plan_area: M2(0.0), side_area: M2(0.0),           // C: vues de dessus et de côté
+        crossflow_drag: 0.0,                              // C: η C_dc (Allen et Perkins, NACA Report 1048)
+    )),
+
     engine: Inline((
         name: "Hispano-Suiza 8Aa",
         power_curve: [(speed: Rpm(0.0), power: Ch(0.0))], // S: puissance au frein, pleins gaz, niveau de la mer
-        friction_fraction: 0.0,                           // S: / C: le k de la loi d'altitude σ − k (1 − σ)
+        friction: Curve([(speed: Rpm(0.0), power: Hp(0.0))]), // S: puissance de frottement mesurée en entraînant le moteur
+        // ou friction: Fraction(0.0),                    // C: le k de Gagg-Farrar, P_f = k P₀
+        altitude_law: Pressure(1.04),                     // S: c = (p/p₀)ⁿ ; ou Density (c = σ)
         idle_throttle: 0.0,                               // E:
         stall_speed: Rpm(0.0),                            // E:
     )),
@@ -85,8 +98,9 @@ Aircraft(
         diameter: M(0.0),                                 // S:
         hub_m: (0.0, 0.0, 0.0),                           // S:
         rotation: Clockwise,                              // vue de derrière l'hélice, vers l'avant (du poste pour un tracteur) ; S:
-        p_factor_m: 0.0,                                  // E:
-        rotor_inertia_kg_m2: 0.0,                         // C:
+        p_factor_m: 0.0,                                  // E: décalage de la ligne de poussée par unité de V⊥ V_pale / V_r²
+        normal_force: 0.0,                                // C: c_n de Ribner, 0,03 à 0,05 pour une bipale en bois (refusé au-delà de 0,1)
+        rotor_inertia_kg_m2: 0.0,                         // C: hélice ≈ m R² / 5, plus le vilebrequin
     ),
 
     travel: (aileron: Deg(0.0), elevator: Deg(0.0), rudder: Deg(0.0)), // S: / E:
@@ -123,7 +137,7 @@ Propeller(
         //! S: / C:
         (j: 0.0, ct: 0.0, cp: 0.0),       // le tableau commence au point fixe J = 0
     ],
-    anchors: (                            // quatre quadrants, voir modele-aero.md ; E: ou C: BEMT
+    anchors: (                            // quatre quadrants, voir modele-aero.md ; E: ou C: BEMT ; le chargeur refuse une hélice qui crée de l'énergie
         stopped: (ct: 0.0, cq: 0.0),
         reversed_flow: (ct: 0.0, cq: 0.0),
         reversed_rotation: (ct: 0.0, cq: 0.0),
@@ -140,6 +154,9 @@ Essais(
 
     quantitative: [
         MaxLevelSpeed(altitude: M(0.0), target: Kmh(0.0), tolerance_pct: 3.0, source: "S1", confidence: B), // S:
+        // avec le régime relevé au même essai (contrôle hélice et moteur ensemble) :
+        MaxLevelSpeed(altitude: M(0.0), target: Kmh(0.0), tolerance_pct: 3.0,
+            rpm: Some((target: Rpm(0.0), tolerance_pct: 3.0)), source: "S1", confidence: A), // S:
         ClimbTime(from: M(0.0), to: M(0.0), target: MinS(0, 0), tolerance_pct: 5.0, source: "S1", confidence: B), // S:
         StallSpeed(power: Idle, target: Kmh(0.0), tolerance_pct: 5.0, source: "S2", confidence: C), // S:
         Ceiling(climb_rate: FtMin(100.0), target: M(0.0), tolerance_pct: 5.0, source: "S1", confidence: B), // S:
