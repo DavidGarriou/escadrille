@@ -823,3 +823,33 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** **Ligne du 8Aa** (*Flight*, p. 205) : la vitesse de 119,5 mph est **confirmée** par un contrôle interne, puisque le tableau arrondit toutes ses vitesses au demi-mph (85 autres valeurs vérifiées). L'incertitude devient ±0,4 km/h, la confiance reste A, et les cibles ne changent pas.
 - **A** Fiches `spad7.md` et `profil-spad7.md` commitées.
 - **⚠** Facultatif, non fait : un recadrage à 300 dpi de la figure 11 réduirait l'incertitude sur τ à ±0,003, sans enjeu pour le M1.
+
+### Revue de `fdm_lab` par l'aérodynamicien
+- **R** Verdict « à corriger », **rien de bloquant**.
+  - Les corrections de l'étape 4 sont confirmées par ses erreurs volontaires : effet P, Ribner, énergie, moteur, déflexion et assemblage, toutes détectées.
+  - Le trim est juste : ses huit équations suffisent.
+  - Les méthodes de performances sont saines.
+- **R** Points importants :
+  1. **L'oscillation latérale du biplan synthétique venait d'une donnée** : `normal_force` de 0,3, soit 8 à 9 fois trop. Un calcul par éléments de pale donne environ 0,035. L'avion était **instable de route**, et non « faiblement stable » comme je l'avais écrit. Avec 0,04, le roulis hollandais (4,9 s) et la spirale reviennent, et le test doit les exiger.
+  2. La phugoïde longue s'explique par une **marge statique de 3,2 %** seulement. En figeant à la fois le rotor et la déflexion, on étudie un autre avion. Proposition : afficher la marge statique, N_v et L_v dans le rapport.
+  3. La **zone morte de la manette des gaz est un artefact** du minimum dans la loi : 22 % de la course ne sert à rien à la vitesse maximale. Un papillon sature progressivement. Loi proposée : P_i = σ·P_pg(ω)·g(s)/g(s₁), avec g(s) = s/(1 + s²)^½.
+  4. Le **plafond est biaisé vers le bas** d'environ 2 %, parce qu'un échec du trim est pris pour « ne monte plus ». Il faut extrapoler le taux, comme on le faisait à l'époque.
+  5. **Loi d'altitude du moteur** : la mesure en vol d'un Hispano de 150 ch (R&M 462) donne P ∝ (p/p₀)^1,04, plus pessimiste que la loi en densité de 4 à 9 % entre 2 000 et 5 000 m. Il faut un choix dans les données.
+  6. `modele-aero.md` et `format-avion.md` sont **périmés**, et `/nouvel-avion` va s'appuyer dessus.
+  7. Il faut un **régime moteur cible** dans `MaxLevelSpeed` : le tableau de 1919 donne 1 720, 1 680 et 1 640 tr/min, contrôle fort du couple hélice-moteur.
+  8. Le **scénario de vrille** est réussi alors que l'avion ne vrille pas : il part en spirale engagée. Il faut détecter la vrille.
+- **R** Suggestions :
+  - rotation du souffle nulle en amont du disque et entière juste derrière (conservation de r·v_θ) ;
+  - inertie du rotor plus réaliste, environ 6 kg·m² ;
+  - corrections dans le trim, le décrochage et la convergence ;
+  - neuf erreurs volontaires que les tests ne voient pas.
+- **R** **Liste des données du SPAD VII à estimer ou calculer**, avec méthode et source pour chacune. Exemples :
+  - corde ≈ 1,21 m (C:) ;
+  - calages, critère « fuselage horizontal en croisière » ;
+  - déflexion par les abaques du NACA TR 648 ;
+  - centrage et inertie par composants ;
+  - hélice D' mise à l'échelle, traction effective corrigée ;
+  - traînée parasite élément par élément, avec un contrôle (et non un réglage) : f ≈ 0,94 à 0,98 m² déduit du tableau de 1919.
+
+  Elle servira au processus `/nouvel-avion`.
+- **A** Ces points sont traités avant de lancer `/nouvel-avion`.
