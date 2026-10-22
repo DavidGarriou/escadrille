@@ -2,7 +2,7 @@
 
 - Identifiant : `spad7` (même nom que `assets/aircraft/spad7/`)
 - Dernière mise à jour : 2026-10-22
-- État : **en cours** (septième passe). Sont désormais sourcés par des documents d'époque lus :
+- État : **en cours** (huitième passe). Sont désormais sourcés par des documents d'époque lus :
   - le profil « Spad » (B) ;
   - les polaires du RAF 15 (A pour ce profil) ;
   - la courbe de puissance et la loi d'altitude du Hispano de 180 hp (B pour un 8Ab) ;
@@ -12,6 +12,7 @@
   - **cinquième passe (2026-10-21)** : ces tableaux ont été **lus sur l'image des pages**. Les vitesses en palier à 2 000, 3 000, 4 000 et 5 000 m, les temps de montée, les plafonds théoriques et les régimes moteur des deux versions passent en **A** (§ 5). Plusieurs lectures OCR de la quatrième passe étaient fausses ; elles sont corrigées et signalées au journal.
   - **sixième passe (2026-10-22)** : la réserve de lecture sur la ligne du 8Aa (119,5 et 111,5 mph) est **levée** par un contrôle interne du tableau (§ 0) ; les facteurs τ et δ de l'aile rectangulaire sont trouvés dans le NACA TR 416 (`profil-spad7.md` § 4.2).
   - **septième passe (2026-10-22), géométrie de détail** (§ 2.5) : **aucune cote chiffrée nouvelle du S.VII**. Apports : des descriptions qualitatives du S.VII (forme en plan, haubanage, fuselage, capot), des comparables chiffrés du SPAD XIII (empennage, ailerons, dérive ; tableau français de 1919 lu sur l'image) et du biplace S.XI, et une fourchette calculée de la corde (1,14 à 1,33 m, C). Empennage, gouvernes, débattements, décalage, calages, fuselage, roues et centrage du S.VII restent **non trouvés**.
+  - **huitième passe (2026-10-22), fiabilité des performances du 150 ch** (§ 5.5) : les vitesses de S46 forment deux groupes incompatibles à 3-4 % près (192 km/h à 2 000 m d'un côté, 179 et 174 km/h à 3 000 et 4 000 m de l'autre) ; la série de montée du STAé citée par S11 n'est pas indépendante de S46 ; le plafond « théorique » est une extrapolation. Nouvelles cibles avec tolérances au § 5.5.6, qui remplace le § 5.4 pour le 150 ch.
 - Fiches liées : [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (moteur et hélice), [`profil-spad7.md`](profil-spad7.md) (profil d'aile)
 - Contexte de jeu visé : escadrille SPA 3 (« Cigognes », Groupe de Combat 12), Flandres, été 1917
 
@@ -25,7 +26,7 @@
 - **[PISTE]** : référence bibliographique repérée, non consultée.
 
 **Conséquences.**
-- Les performances sont plafonnées à la **confiance C**. Les deux séries de mesures d'époque (STAé et rapport britannique n° 96) ne sont connues que par un forum vu en résumé.
+- Les performances sont plafonnées à la **confiance C**. Les deux séries de mesures d'époque (STAé et rapport britannique n° 96) ne sont connues que par un forum vu en résumé. *(Dépassé : depuis la cinquième passe, les performances sont lues dans les tableaux S46 et S47 ; leur fiabilité est discutée au § 5.5.)*
 - Une géométrie ou une masse n'obtient **B** que si plusieurs sources secondaires concordent, même vues en résumé.
 - **Exclusion** : les chiffres des jeux et simulateurs (IL-2 *Flying Circus*, *Rise of Flight*, *Wings of Glory*) ne sont pas retenus comme sources (S39). Ils sont dérivés et alimentent les forums en boucle.
 - Aucune lacune n'est comblée de mémoire. Quand une valeur manque, c'est écrit « non trouvé ».
@@ -66,6 +67,12 @@
 - **Sources locales** relues comme des données, sans rien exécuter : tous les passages « Spad » des 208 numéros de *Flight* ; S48 relu en entier dans l'OCR ; S49 relu en entier, légendes du dessin coté comprises ; les lignes SPAD XIII et SPAD XI des tableaux S46 et S47 relues **sur l'image** (p. 204-205 et 237) ; la bibliographie de Brockett (S56) ; le volume II du rapport ACA 1917-18 ; les rapports NACA du dossier NTRS. En dehors du profil « Spad » du Report 93, aucun rapport NACA du dossier ne parle d'un SPAD.
 - **Web** : environ 35 requêtes en anglais, français, allemand, italien, tchèque et russe. Les pages visées restent hors d'atteinte de l'outil de lecture (échec DNS le 2026-10-22 pour thisdayinaviation.com, bibliotheques-numeriques.defense.gouv.fr et sites.ualberta.ca) : tout ce qui vient du web est **[RÉSUMÉ]**.
 - **Exclusion maintenue** : aucun chiffre de jeu (S39) ni de maquette du commerce n'est retenu.
+
+**Huitième passe (2026-10-22) : fiabilité des performances.** Objet : juger les performances d'époque du 150 ch sur leurs seuls mérites de sources et fixer les cibles d'essai (§ 5.5).
+- **Relu sur l'image** [LU-IMG] : p. 201 (présentation des tableaux), 204, 205 (150 et 300 dpi) et 206 du 13 février 1919 ; p. 237 et 238 du 20 février 1919. Le tableau britannique de la p. 206 (S66) et le tableau américain de la p. 238 (S67) servent de comparaison.
+- **Relu dans l'OCR** [LU-OCR] : R&M 462, § 18 à 21 et annexe II (réduction des performances à une base commune), dans le volume II du rapport ACA 1917-18, qui ne contient aucun essai de SPAD ; tous les passages « Spad » et « Heurt » des 208 numéros de *Flight*. Aucune autre mesure du S.VII que S46, S47 et S48.
+- **Web** : 9 requêtes en anglais, français, allemand et italien, toutes en résumé. Échec DNS le 2026-10-22 pour francearchives.gouv.fr, le portail du SHD, fr.geneawiki.com, beta.nationalarchives.gov.uk et enginehistory.org. Deux cotes d'archives nouvelles, vues en résumé seulement (S69, S70 ; § 5.5.7).
+- Les calculs de cohérence du § 5.5.3 sont des **ordres de grandeur** (C) sur une polaire supposée ; le calcul exact revient à l'aérodynamicien.
 
 ## 1. Identification et contexte
 
@@ -114,7 +121,7 @@ Le n° **S.254** (« Vieux Charles » de Guynemer, conservé au Musée de l'Air)
 | 4 sept. 1917 | Guynemer au terrain de **Saint-Pol-sur-Mer**, près de Dunkerque ; le terrain est partagé avec les Britanniques | S1 [LU] |
 | 5 et 10 sept. 1917 | Guynemer vole sur une « machine à deux mitrailleuses » (*two-gun machine*), donc un SPAD XIII ; il emprunte aussi les avions de Deullin et de Lagache, de type non précisé | S1 [LU] |
 | 11 sept. 1917 | Départ à 8 h 25 avec Bozon-Verduraz sur le *Vieux-Charles* (S1 [LU], journal d'escadrille cité) ; SPAD XIII S.504 « n° 2 » selon S19 [RÉSUMÉ] | S1, S19 |
-| fin sept. 1917 | Le capitaine Heurteaux, des Cigognes, blessé de deux balles en combat (nouvelle publiée à Paris le 30 septembre) | S55 [LU-OCR] |
+| sept. 1917, **date exacte non donnée** | Le capitaine Heurtaux (« Heurteaux » dans la presse britannique), des Cigognes, blessé en combat ; la nouvelle est publiée à Paris le 30 septembre (S55). *Flight* du 11 octobre précise qu'il essayait une machine neuve vers 21 900 ft près d'Ypres ; sa mitrailleuse enraye, il rompt en piqué, est touché au côté gauche et se pose sur un terrain britannique (S68). Les deux échos divergent (deux balles, puis une) ; l'altitude est un chiffre de presse. Huitième passe : la date « fin septembre » des passes précédentes était celle de la publication, pas celle de la blessure | S55, S68 [LU-OCR] |
 | 5 déc. 1917 | Biddle (SPA 73, même GC 12) remporte sa première victoire sur SPAD XIII près de Langemarck | S22 [RÉSUMÉ] |
 
 **Contradictions de personnel** (à vérifier avant tout texte de jeu sur ces hommes) :
@@ -134,6 +141,8 @@ Le n° **S.254** (« Vieux Charles » de Guynemer, conservé au Musée de l'Air)
 - Terrain de l'été 1917 : près de Dunkerque, Saint-Pol-sur-Mer nommément en septembre 1917 (S1). Les autres terrains de la Flandre (Bierne, Coudekerque…) ne sont **pas confirmés**.
 - Insigne : cigogne de la SPA 3 (voir § 8). La désignation « SPA 3 » est en usage en 1917 (date exacte de l'adoption contestée, § 1.4).
 - Le Rumpler ou le DFW de Poelkapelle et les circonstances de la mort de Guynemer : s'en tenir aux faits documentés (S1, S19), ton sobre.
+- « Vieux Charles » est un **nom porté par plusieurs avions** de Guynemer (§ 8), pas un numéro. Pour août-septembre 1917, ne pas l'assimiler au S.VII S.254 conservé au Musée de l'Air : S18 et S19 [RÉSUMÉ] placent Guynemer sur le SPAD XIII S.504 le 20 août et le 11 septembre, et S1 ne donne pas de numéro (huitième passe).
+- **Fin de carrière du S.VII** (huitième passe) : dans la compilation américaine de 1918 (S46, note de la p. 205), les deux lignes du S.VII n'ont pas l'astérisque des types encore livrés aux escadrilles ; elles font partie des types qui « figurent encore dans certaines escadrilles » mais ne sont plus fournis. Pour une mission de 1918 : S.VII possible, mais pas comme avion neuf (C ; date exacte de la compilation inconnue).
 
 ## 2. Géométrie
 
@@ -396,10 +405,10 @@ Documents qui lèveraient ces manques : § 9.6 (lignes de la septième passe).
 ## 5. Performances
 
 **Cinquième passe : le tableau officiel lu sur l'image (S46, *Flight*, 13 février 1919, p. 204-205) [LU-IMG].**
-- **Origine** : tableau « French Aeroplanes in Service at the Front », compilé par le service aéronautique américain, publié par *Automotive Industries* et repris par *Flight*, qui le juge « établi officiellement » (p. 199). Les altitudes rondes en pieds (6 500, 9 800, 13 100 et 16 400 ft) sont la conversion de 2 000, 3 000, 4 000 et 5 000 m : les données d'origine sont métriques, donc françaises (C).
+- **Origine** : tableau « French Aeroplanes in Service at the Front », compilé par le service aéronautique américain, publié par *Automotive Industries* et repris par *Flight*. *Flight* écrit seulement que ces tableaux « paraissent » établis officiellement et qu'il en serait « apparemment » redevable au ministère américain ; il nomme la revue *Automobile Industries* (présentation en tête de la **p. 201**, et non p. 199 comme écrit en cinquième passe ; correction de la huitième passe). Les altitudes rondes en pieds (6 500, 9 800, 13 100 et 16 400 ft) sont la conversion de 2 000, 3 000, 4 000 et 5 000 m : les données d'origine sont métriques, donc françaises (C).
 - **Colonnes** (en-têtes p. 204) : puissance maximale autorisée ; vitesse en palier en mph à 6 500, 9 800, 13 100 et 16 400 ft ; durée de montée jusqu'aux mêmes altitudes ; plafond **théorique** ; heures de vol à pleine puissance au niveau du sol ; armement ; répartition de la charge ; masses ; dimensions. Le régime est imprimé sous chaque ligne (§ 0).
 - **Lignes** (p. 205, en haut) : « Spad (195 sq. ft.), Spa. 7C1, Hispano 8Aa » et « Spad (195 sq. ft.), Spa. 7C1, Hispano 8Ab ». La seconde n'était pas à « 193 sq ft » : erreur d'OCR.
-- **Les deux séries de montée du STAé citées par le forum S11 se retrouvent à l'identique dans S46** pour le 150 ch : 6 min 40 s, 11 min 30 s, 19 min 30 s et un plafond théorique de 18 000 ft, soit les 5 500 m de S11 convertis. La transmission par forum est donc confirmée par un document d'époque indépendant.
+- **Les deux séries de montée du STAé citées par le forum S11 se retrouvent à l'identique dans S46** pour le 150 ch : 6 min 40 s, 11 min 30 s, 19 min 30 s et un plafond théorique de 18 000 ft, soit les 5 500 m de S11 convertis. La transmission par forum est donc fidèle. **Correction (huitième passe)** : l'identité des quatre chiffres montre une **origine commune** ; ce n'est pas une confirmation indépendante de la mesure (§ 5.5.1).
 
 **Tableau italien (S47, *Flight*, 20 février 1919, p. 237) [LU-IMG]** : « Spad One Seater, flat-winged », moteur « H.S. » de **140 hp** « normaux ». Ses colonnes sont explicites : vitesse au sol et à 6 500 ft (2 000 m), montées à 1 000, 2 000, 3 000 et 4 000 m. Toutes les sommes et tous les quotients de la ligne se vérifient (C). La puissance de 140 hp, inhabituelle, n'est pas expliquée ; la ligne est gardée comme **variante italienne**, sans l'attribuer au 8Aa ou au 8Ab.
 
@@ -456,6 +465,8 @@ Taux de montée moyens déduits (C) : 7,1 m/s de 0 à 2 000 m ; 4,8 m/s de 2 000
 Selon un fil de forum qui reprend un récit attribué à Frank Tallman, le décrochage moteur réduit d'un S.VII à moteur Wright-Hispano E de 180 ch se produit « vers 47 mph » (75,6 km/h, conversion C). Masse inconnue, fin des années 1950 ou années 1960 (S31 [RÉSUMÉ]). Confiance **D** : attribution incertaine, avion et moteur postérieurs.
 
 ### 5.4 Cibles proposées pour `essais.ron` (à valider par l'aérodynamicien)
+> **Huitième passe : pour le 150 ch, ce tableau est remplacé par le § 5.5.6** (confiance déclassée à 3 000 et 4 000 m, tolérances justifiées, plafond à vitesse ascensionnelle nulle). Pour le 180 ch, il reste valable avec les tolérances du § 5.5.6.
+
 Cinquième passe : **cibles de confiance A**, toutes tirées de S46, p. 205, lu sur l'image.
 
 | Version | Masse | `MaxLevelSpeed` | Montée | Plafond théorique | Contrôle secondaire (régime à pleins gaz) |
@@ -469,6 +480,121 @@ Précautions :
 - Pour le 180 ch, les montées dépendent directement de la masse, qui n'est qu'en B. Prévoir une variante à 740 kg (§ 3) pour voir la sensibilité.
 - Variante italienne (S47, « H.S. » de 140 hp, 703 kg) : 194 km/h à 2 000 m et une montée à 3 000 m en 9 min 50 s. Essai non bloquant, sous-version incertaine.
 - **Conséquence pour le M1** : la définition de « terminé » (cibles A et B dans les tolérances) est désormais **atteignable** pour les deux versions.
+
+### 5.5 Huitième passe : fiabilité des performances du S.VII 150 ch (2026-10-22)
+
+**Objet.** Juger les performances d'époque du 150 ch sur leurs seuls mérites de sources, puis fixer les cibles d'essai. **Pour le 150 ch, cette section remplace le tableau du § 5.4.** Documents relus et limites : § 0 (huitième passe).
+
+#### 5.5.1 D'où viennent les chiffres
+
+| Série | Transmission | Indépendance | Pour | Contre |
+|---|---|---|---|---|
+| **S46**, ligne « Spa. 7C1 / Hispano 8Aa » | essais français (mètres, km/h), compilation du service aéronautique américain, revue new-yorkaise (*Automobile Industries* selon *Flight*, sans doute *Automotive Industries*, C), puis *Flight* du 13 février 1919, p. 204-205 | série de référence | document d'époque ; colonnes définies ; régimes imprimés | troisième main ; *Flight* dit seulement que les tableaux « paraissent » officiels (p. 201) ; ni date, ni lieu, ni conditions d'essai. Les lignes du S.VII n'ont pas l'astérisque des types encore livrés (note p. 205) : la compilation date de 1918, les essais du 150 ch sans doute de 1916-1917 (C) |
+| « Résumé du STAé » cité par S11 | forum, vu en résumé | **aucune** à l'égard de S46 : mêmes quatre chiffres (6 min 40 s, 11 min 30 s, 19 min 30 s, 5 500 m), donc même origine (C) | prouve que le forum transmet fidèlement | ne confirme pas la mesure. Corrige le § 5, qui la disait confirmée par un document indépendant |
+| **Rapport britannique n° 96** (avril 1917) | forum S11, vu en résumé | **indépendant** : essai britannique, en pieds, plafond « estimé » par le rapport | seule série indépendante de S46 | chiffres non vérifiés [RÉSUMÉ] ; rapport non lu (P10) |
+| **S47**, ligne « Spad One Seater, flat-winged » | données italiennes, même compilation américaine, *Flight* du 20 février 1919, p. 237 | **partielle** : même masse totale que S46, à 1 lb près (1 551 et 1 550 lb), mais autre répartition de la charge et autres montées | vitesses au sol et à 2 000 m | sous-version incertaine (§ 5.5.4) ; série de montée irrégulière (§ 5.5.3) ; pas de plafond (colonne « Ceiling, Calc. » vide) |
+| **S48** (*Aerial Age*, juillet 1917, repris par *Flight*) | presse américaine | indépendante, valeurs dites approximatives | — | vitesses identiques à celles de la ligne du **180 ch** de S46 ; montée proche du 150 ch ; moteur annoncé de « 160 hp » : mélange de versions (C) |
+| S5 (192 km/h) | wiki | dérivée | — | S5 rattache 192 km/h au prototype SPAD V [RÉSUMÉ] (§ 5.5.5) |
+
+**Indices tirés du tableau S46 lui-même** (C, calculs faits ici) :
+- **Unités d'origine.** Les vitesses imprimées se retrouvent en convertissant des km/h entiers (192, 179 et 174 pour le 8Aa ; 212, 203, 200 et 187 pour le 8Ab), avec 1 mph ≈ 1,609 km/h et un arrondi au demi-mph ; 179 et 212 tombent à la limite de l'arrondi. Les originaux étaient donc sans doute des km/h entiers : l'origine française et les valeurs du § 5.1 sont confortées.
+- **Masse conventionnelle.** L'équipage (176 lb, 80 kg) et l'armement (88 lb, 40 kg) sont les mêmes pour tous les monoplaces du tableau. La charge du SPAD fait exactement 205 kg (80 + 80 + 40 + 5). S47 arrive aussi à 205 kg, réparti autrement (105 + 75 + 25). La masse de 703 kg est donc une **charge de référence**, pas la pesée de l'avion essayé.
+- **Colonnes dérivées recopiées.** La « charge par hp » vaut 9,04 lb/hp sur **les deux** lignes du S.VII. Elle ne correspond ni à 175 hp (8,86) ni à 205 hp (7,56), mais à environ 171 hp. Sur les deux lignes du XIII, la même colonne est calculée avec 220 hp et recopiée. C'est une raison de plus de garder les masses du 180 ch en B (§ 3).
+
+#### 5.5.2 Conditions de mesure
+
+| Condition | Ce que disent les documents | Conséquence |
+|---|---|---|
+| Début du chronométrage de la montée (lâcher des freins, décollage, passage à 0 m en vol) | **Rien**, ni dans S46 et S47, ni dans les tableaux britannique et américain voisins (S66, S67) | Inconnu. Calculer les deux conventions (§ 5.5.6) |
+| Atmosphère et définition de l'altitude | Rien. Altitudes françaises en mètres ronds, sans doute lues au barographe (C). L'atmosphère type n'existait pas. Côté britannique, l'usage de 1917 était de comparer les essais **à densité égale** ; R&M 462 (mars 1918 ; `hispano-suiza-8a.md`, H21) montre que cette réduction pénalise les essais faits par temps froid et propose de réduire en pression (§ 18 à 21 et annexe II) [LU-OCR] | Les altitudes de S46 et du rapport n° 96 ne sont peut-être pas définies de la même façon. Écart possible de quelques pour cent, **non chiffrable** sans les documents |
+| Masse | Charge de référence de 205 kg, total 703 kg (§ 5.5.1) | Masse réelle de l'avion essayé inconnue |
+| Moteur | 8Aa ; puissance maximale autorisée 175 hp à 1 700 tr/min ; régimes en palier (S46). S47 : « H.S. » de 140 hp « normaux » | Puissance réelle de l'exemplaire essayé inconnue |
+| Hélice | Non donnée | À estimer (`hispano-suiza-8a.md` § 7) |
+| Mesure de la vitesse | Méthode non donnée | — |
+| Version | S46 : 8Aa explicite ; S47 : incertaine | S47 en variante seulement |
+
+#### 5.5.3 Cohérence interne et entre tableaux
+
+**a) Vitesses du 150 ch dans S46** (192, 179 et 174 km/h à 2 000, 3 000 et 4 000 m).
+- **Question de l'aérodynamicien.** Si toute la traînée était de forme (puissance nécessaire ∝ σV³), passer de 192 km/h à 2 000 m à 179 km/h à 3 000 m demanderait **27 %** de puissance utile en moins (0,903 × 0,932³ ≈ 0,73 ; calcul refait). La mesure en vol R&M 462 ne donne que **12 %** de perte à régime égal ((p/p₀)^1,04 : 0,682/0,777 = 0,878), **14 %** avec la baisse de régime imprimée (1 720 puis 1 680 tr/min, à couple constant).
+- **Nuance.** La traînée induite croît avec l'altitude. Avec une traînée induite d'environ 12 % de la traînée totale à 2 000 m, la perte nécessaire tombe vers **21 %**. Hypothèses de cette estimation : κ ≈ 0,77 (§ 2.4), coefficient d'Oswald de 0,8 et rendement d'hélice de 0,70 à 0,75, tous deux supposés (E). La perte disponible n'est que de **14 à 17 %**, en comptant 1 à 3 % de rendement d'hélice perdu (E). L'incohérence demeure.
+- **En vitesse.** Avec la loi R&M 462 et ces hypothèses, 192 km/h à 2 000 m appellent **184 à 186 km/h à 3 000 m**. Inversement, 179 km/h à 3 000 m appellent environ **185 km/h à 2 000 m**. L'écart entre les valeurs imprimées est donc de **3 à 4 %**, soit 6 à 7 km/h.
+- Les valeurs à 3 000 et 4 000 m sont **cohérentes entre elles** : depuis 179 km/h, on attend 170 à 176 km/h à 4 000 m selon la part de traînée induite ; le tableau donne 174.
+- **Dans le même tableau**, entre 2 000 et 3 000 m, le 8Aa perd 6,7 % de vitesse et le 8Ab 4,5 %. Tous les autres monoplaces de S46 perdent de 0,7 à 2,3 % : XIII, 1,5 et 0,7 % ; Nieuport 24, 1,4 % ; Nieuport 28, 1,2 % ; Morane AI, 2,3 % ; monoplaces « à l'essai », de 1,0 à 1,9 %. Dans le tableau américain S67, le S.E.5 britannique à moteur Hispano perd 2,5 % entre 6 500 et 10 000 ft, avec pourtant une baisse de régime plus forte que celle du SPAD (2 080 puis 2 000 tr/min). **La ligne du 8Aa est la plus atypique des chasseurs du tableau.** Dans S67, seul le VE-7, avion d'entraînement plus lent, perd autant (5,8 %).
+- **Recoupement avec S47.** Depuis 192 km/h à 2 000 m, le même calcul attend environ **200 km/h au sol**, avec un régime au sol supposé de 1 760 tr/min (E). S47 donne 199 km/h au sol et 194 km/h à 2 000 m. **Trois valeurs forment donc un groupe cohérent (192 et 194 km/h à 2 000 m, 199 km/h au sol), et 179 et 174 km/h en forment un second, plus lent de 3 à 4 %.**
+- Ces calculs reposent sur une polaire et un rendement d'hélice supposés : ce sont des **ordres de grandeur** (C). Le calcul exact revient à l'aérodynamicien.
+
+**b) Vitesses du 180 ch** (pour mémoire). Par la même méthode, 212 km/h à 2 000 m appellent environ 205 km/h à 3 000 m, pour 203 imprimés : 1 % d'écart. La lecture de S48 (212 km/h « au niveau de la mer ») cadre moins bien : on attendrait alors environ 198 km/h à 3 000 m. La lecture de S46 (212 km/h à 2 000 m) est donc maintenue (C).
+
+**c) Montées du 150 ch.**
+- **S46.** Une vitesse ascensionnelle qui décroît linéairement avec l'altitude et s'annule entre 5 300 et 5 500 m reproduit les trois temps à ±2 % près (C). La série est régulière.
+- **Rapport n° 96** (S11 [RÉSUMÉ]) : 6 500 ft en 6,3 min, 10 000 ft en 11,5 min, 15 000 ft en 24,5 min. Ramené aux altitudes de S46 (C, interpolation), il est plus rapide de **4,5 % à 2 000 m, 2 % à 3 000 m et 2 à 6 % à 4 000 m**. Si les chiffres du forum sont exacts, deux essais indépendants, de deux pays, concordent donc à mieux de 6 % près.
+- **S47** : 1 000 m en 2 min, 2 000 m en 5 min 50 s, 3 000 m en 9 min 50 s. Cette série est **irrégulière**. La moyenne est de 8,3 m/s jusqu'à 1 000 m, puis de 4,3 et 4,2 m/s : une vitesse ascensionnelle presque constante de 1 000 à 3 000 m n'est pas vraisemblable pour un moteur atmosphérique (C). Le temps à 1 000 m est anormalement court sur d'autres lignes du même tableau (S.V.A. : 10 m/s, puis 5,9 ; Hanriot-Dupont : 7,7 m/s, puis 5,6) : c'est un trait du tableau, pas du SPAD. S47 est plus rapide que S46 de **12,5 % à 2 000 m et de 14,5 % à 3 000 m**.
+- **S48** (1917, « 160 hp ») : 9 300 ft en 10 min, soit 5 à 6 % mieux que S46 et le rapport n° 96 à la même altitude (C).
+
+**d) Plafond « théorique ».**
+- S46 ne le définit pas. Le tableau britannique du même numéro définit à part un **plafond pratique** (« service ceiling »), où la vitesse ascensionnelle tombe à 100 ft/min (S66). S47 intitule sa colonne de plafond « Ceiling, Calc. ». Le plafond « théorique » de S46 est donc, selon toute vraisemblance, l'altitude où la vitesse ascensionnelle s'annule, **obtenue par extrapolation ou par calcul**, et non atteinte en vol (interprétation C).
+- Extrapolations linéaires des montées de S46 (C) : 5 100 m à partir des tranches 2 000-4 000 m, 5 800 m à partir des tranches 0-3 000 m, 5 300 à 5 500 m sur l'ensemble. Le rapport n° 96 estimait 19 000 ft (5 791 m), « probablement un peu faible » (S11 [RÉSUMÉ]).
+- **Fourchette : 5 100 à 5 800 m.**
+
+**e) Régimes.** Ils sont réguliers (−40 tr/min par 1 000 m), sans anomalie visible. Ils accompagnent les vitesses de la même ligne et partagent donc leur incertitude à 3 000 et 4 000 m.
+
+**f) Endurance « à pleine puissance au niveau du sol »** (2 h 10). Cette grandeur est sans doute **calculée** à partir de l'essence emportée et de la consommation, et non mesurée en vol (C). Elle n'est pas une cible.
+
+#### 5.5.4 Ce que représente le « 140 hp » de S47
+
+- Le même moteur « H.S. » de 140 hp équipe dans S47 un hydravion F.B.A. C'est donc la **cote italienne** d'un type de Hispano, pas une puissance mesurée sur ce SPAD. La « charge par hp » de la ligne (11,0 = 1 551/140) est calculée avec elle.
+- La colonne « Normal h.p. » de S47 ne reprend pas les cotes françaises usuelles : elle donne par exemple 88 pour des Le Rhône et 143 pour des Salmson. Sa définition n'est pas imprimée.
+- 140 hp est la cote du premier Hispano 8A de 1915 (`hispano-suiza-8a.md` § 1, H1 [RÉSUMÉ]). Une cote « normale » à régime réduit est aussi plausible : le tableau américain des moteurs cote le Hispano de 150 hp à 150 hp « normaux » à 1 450 tr/min (p. 201).
+- Les premiers S.VII italiens (77a et 91a Squadriglie, mars à mai 1917, S24 [RÉSUMÉ]) sont antérieurs à la généralisation du 8Ab.
+- **Conclusion (C).** S47 décrit très probablement un S.VII de la **classe 150 ch** (8A ou 8Aa), pas un 180 ch. Mais il monte 12 à 15 % plus vite que la ligne française, et rien dans les documents lus ne l'explique : ni moteur exact, ni masse pesée, ni méthode italienne de mesure. S47 reste une **variante non bloquante**.
+
+#### 5.5.5 Valeurs calculées, extrapolées ou composites
+
+- **Extrapolés** : les plafonds « théorique » (S46) et « estimé » (rapport n° 96). **Calculée** : l'endurance au sol.
+- **Mesurées, selon toute apparence** : les vitesses et les montées. Leurs écarts irréguliers d'une altitude à l'autre plaident contre un calcul, qui donnerait une courbe lisse (C).
+- **Ligne composite possible** (piste, non vérifiée) : S5 rattache 192 km/h au prototype SPAD V [RÉSUMÉ]. Si la vitesse à 2 000 m de S46 venait d'un autre essai que les vitesses à 3 000 et 4 000 m et les montées, l'incohérence du § 5.5.3 a) s'expliquerait. Seuls les procès-verbaux d'essais (§ 5.5.7) peuvent trancher.
+
+#### 5.5.6 Cibles recommandées pour `essais.ron` (S.VII 150 ch, 8Aa, 703 kg)
+
+| Essai | Cible | Source | Confiance | Tolérance | Bloquant au M1 | Ce qui justifie la tolérance |
+|---|---|---|---|---|---|---|
+| `MaxLevelSpeed` à 2 000 m, avec régime | **192 km/h** ; 1 720 tr/min | S46 ; S47 concordant (194 km/h) | **A** | ±3 % ; régime ±3 % | oui | S46 et S47 diffèrent de 1 % ; arrondi négligeable ; vitesse au sol de S47 cohérente |
+| `MaxLevelSpeed` à 3 000 m, avec régime | **179 km/h** ; 1 680 tr/min | S46 seul | **B** (déclassée de A) | **±5 %** ; régime ±3 % | oui | source unique, incohérente de 3 à 4 % avec la valeur à 2 000 m (§ 5.5.3 a) |
+| `MaxLevelSpeed` à 4 000 m, avec régime | **174 km/h** ; 1 640 tr/min | S46 seul | **B** (déclassée de A) | **±5 %** ; régime ±3 % | oui | idem |
+| `ClimbTime` de 0 à 2 000 m | **6 min 40 s** | S46 ; rapport n° 96 plus rapide de 4,5 % (C) | **A** | ±5 % | oui | écart avec la seule série indépendante ; chronométrage et masse réelle inconnus |
+| `ClimbTime` de 0 à 3 000 m | **11 min 30 s** | S46 ; rapport n° 96 plus rapide de 2 % (C) | **A** | ±5 % | oui | idem |
+| `ClimbTime` de 0 à 4 000 m | **19 min 30 s** | S46 ; rapport n° 96 plus rapide de 2 à 6 % (C, interpolé) | **A** | ±7 % | oui | idem, plus la sensibilité croissante près du plafond |
+| `Ceiling` à vitesse ascensionnelle **nulle** | **5 486 m** (18 000 ft) | S46 (« théorique ») ; rapport n° 96 : 5 791 m estimés | **C** | ±7 % | oui (règle du M1 : C bloque) | extrapolation ; la tolérance couvre la fourchette de 5 100 à 5 800 m (§ 5.5.3 d) |
+| Contrôle : vitesse au sol | 199 km/h | S47 (« H.S. 140 hp ») | C (sous-version) | ±4 % | **non** : à reporter dans le rapport d'essai | sous-version incertaine ; cohérente avec 192 km/h à 2 000 m (C) |
+| Contrôle : montées italiennes | 2 000 m en 5 min 50 s ; 3 000 m en 9 min 50 s | S47 | C | — | **non** | série irrégulière ; à lire comme une borne optimiste |
+
+Au M1, seuls les essais de confiance D sont non bloquants (skill `simulation-vol`, `format-avion.md`). Pour les deux contrôles, la façon de les saisir revient à l'aérodynamicien (D avec un commentaire « valeur d'époque, sous-version incertaine », ou simple mention dans le rapport).
+
+**Consignes** (à valider par l'aérodynamicien) :
+1. **Ordre de calage.** Caler d'abord sur les montées et la vitesse à 2 000 m, puis contrôler 3 000 et 4 000 m. **Ne pas ajuster de coefficient** pour atteindre 179 km/h à 3 000 m au détriment des 192 km/h à 2 000 m ou des montées.
+2. **Diagnostic.** Si le modèle, calé sur les montées avec la loi R&M 462, donne de lui-même environ 185 km/h à 2 000 m, c'est le groupe 179-174 km/h qui l'emporte. Le signaler à l'historien plutôt que de forcer.
+3. **Chronométrage.** Calculer chaque montée de deux façons : depuis le lâcher des freins, décollage compris, et depuis 0 m en vol à la vitesse de meilleure montée. Déclarer l'essai réussi si la cible tombe dans l'intervalle formé par ces deux temps, élargi de la tolérance.
+4. **Plafond.** Utiliser `Ceiling` à vitesse ascensionnelle **nulle**, et non à 100 ft/min, valeur par défaut du format qui correspond au plafond pratique britannique. Si possible, extrapoler aussi comme à l'époque : prolonger jusqu'à zéro la droite des vitesses ascensionnelles du modèle entre 2 000 et 4 000 m, et rapporter les deux valeurs.
+5. **Masse.** 703 kg ; les 705 kg des ouvrages (0,3 % d'écart) sont sans effet. Rapporter la sensibilité des montées à ±10 kg.
+6. **Atmosphère.** Atmosphère type, marquée `E:` : les conditions des essais ne sont pas connues.
+7. **À ne pas utiliser comme cibles** : le temps à 1 000 m de S47, les valeurs de S48, l'endurance de 2 h 10.
+
+**180 ch.** Les cibles des § 5.2 et 5.4 restent valables, avec les mêmes tolérances : ±3 % en vitesse, ±5 % en montée jusqu'à 3 000 m, ±7 % à 4 000 m, et un plafond en C (±7 %, à vitesse ascensionnelle nulle). Sa série de montée est moins régulière que celle du 150 ch : selon les tranches, les extrapolations linéaires vont de 5 450 à 7 000 m (C), contre 6 523 m imprimés.
+
+#### 5.5.7 Points non vérifiables et documents à demander
+
+| Point | Ce qu'il faudrait | Où (adresse, cote) |
+|---|---|---|
+| Conditions des essais du STAé (chronométrage, atmosphère, masse pesée, hélice) ; ligne composite ou non | procès-verbaux d'essais du S.VII, 1916-1917 | **SHD, département Air, fonds Émile Dorand, DE 2012 ZL 245** : producteur indiqué, la Section technique de l'aéronautique militaire (1915-1918) ; procès-verbaux de la Commission d'examen des avions et moteurs nouveaux et notes du Service des essais selon la notice (S69 [RÉSUMÉ]). Télécharger l'**inventaire PDF de 2012** signalé sur la page geneawiki « SHD / Air - Série (DE)ZL » et y chercher « Spad », « 150 HP », « essais » ; puis rechercher sur francearchives.gouv.fr « Commission d'examen des avions » et « Spad » |
+| Rapport britannique n° 96, avril 1917 (P10) | le rapport lui-même | The National Archives (Kew), série AIR 1. Piste : **AIR 1/1196/204/5/2600**, rapports hebdomadaires sur les avions en essai à l'Aeroplane Experimental Station de Martlesham Heath, n° 1 à 119, 1916-1919 (S70 [RÉSUMÉ]) ; contenu non confirmé. Rechercher aussi « Spad » dans AIR 1 sur discovery.nationalarchives.gov.uk |
+| Original américain des tableaux S46 et S47, notes éventuelles sur les essais | numéro d'*Automotive Industries* de janvier ou février 1919 | déjà au § 9.6 (priorité 1) |
+| Signes de renvoi de l'en-tête de S46 (« Speed on the Level », « Theoretical Ceiling ») | lecture à pleine résolution | le PDF local `flight_1919-02-13.pdf`, p. 204, rendu à 300 dpi et recadré sur la ligne d'en-tête. À 150 dpi, je crois voir des signes de renvoi devant ces intitulés sans trouver leur note sur les p. 204-205 : **lecture incertaine** |
+| Méthode italienne (S47) | notes du tableau original ou fiches italiennes | original d'*Automotive Industries* ; G. Alegi et P. Varriale, *Italian SPADs at War* (P5) |
+
+#### 5.5.8 Relecture de la fiche (huitième passe)
+
+Corrections faites dans cette passe : page de la présentation de S46 (p. 201, et non p. 199) ; série du STAé non indépendante de S46 (§ 5) ; ligne Heurtaux du § 1.4 (date de publication prise pour celle de la blessure) ; deux points ajoutés au § 1.5 (nom « Vieux Charles » et fin de carrière du S.VII) ; mention « dépassé » au § 0 et sur deux entrées du journal du 2026-10-20 ; statut [LU-IMG] de la masse d'armement au § 7. Le détail est au journal des décisions.
 
 ## 6. Qualités de vol, témoignages et réputation
 
@@ -631,7 +757,7 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **Une** mitrailleuse Vickers de calibre .303 (7,7 mm), au-dessus du moteur, synchronisée pour tirer à travers le champ de l'hélice (S5, S6 [RÉSUMÉ]). Synchronisation **Birkigt** d'après une source spécialisée non identifiée dans le résumé : à vérifier.
 - Une deuxième mitrailleuse a été envisagée puis abandonnée, car elle dégradait les performances (S6 [RÉSUMÉ]). Un appareil britannique, doté d'une Lewis supplémentaire sur le plan supérieur, a été essayé à Martlesham Heath en mai 1917 : perte de performances jugée trop forte (S5 [RÉSUMÉ]).
 - Fusées pour l'attaque des ballons : six, sur des supports fixés aux mâts (trois de chaque côté), avec une plaque de tôle protégeant l'entoilage du plan inférieur sous les supports ; mise à feu électrique par un bouton dans le poste (S3 [LU], Escadrille Lafayette, 1917). Hall ne nomme pas le type de fusée : « Le Prieur » est à vérifier.
-- Nombre de cartouches : **non trouvé**. Masse de l'armement dans la charge d'essai : 40 kg (88 lb), une Vickers frontale (S46 [LU-OCR]).
+- Nombre de cartouches : **non trouvé**. Masse de l'armement dans la charge d'essai : 40 kg (88 lb), une Vickers frontale (S46 [LU-IMG]) ; valeur conventionnelle, commune à tous les monoplaces à une Vickers du tableau (§ 5.5.1).
 - Synchronisation, indice de famille : sur le biplace S.XI examiné par les Allemands, la Vickers du pilote est commandée par une tige poussée depuis l'arbre à cames droit, et la détente est sur le manche (S49 [LU-OCR]). Cela concorde avec une synchronisation mécanique de type Birkigt, **sans preuve pour le S.VII** (C).
 - *Aerial Age* (S48, 1917) écrit que les S.VII de l'Escadrille Lafayette portent « une et parfois deux » mitrailleuses Lewis ou Vickers. **Non retenu** : affirmation de presse isolée, contraire aux autres sources sur l'armement du S.VII.
 - Pour mémoire : Guynemer constate à l'automne 1916 que les enrayages de sa mitrailleuse viennent du froid, et trouve un remède (S1 [LU]).
@@ -658,7 +784,7 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - Rapports NACA sur le profil et le moteur : voir `profil-spad7.md` § 6.1 (A1, A4, A15 à A18, A21) et `hispano-suiza-8a.md` § 9 (H14 à H17).
 
 **Lues en quatrième passe [LU-OCR]** : texte OCR d'archive.org téléchargé par le coordinateur le 2026-10-20 et lu comme des données. Pour *Flight*, l'identifiant archive.org est `Flight_International_Magazine_AAAA-MM-JJ-pdf`, à l'adresse `https://archive.org/details/<identifiant>`. Les pages sont la pagination imprimée, repérée dans l'OCR (à ±1 page près quand un article chevauche deux pages).
-- **S46** — « French Aeroplanes in Service at the Front » et « French Aeroplanes under Test », tableaux compilés par le service aéronautique américain, publiés par *Automotive Industries* (New York ; numéro non identifié, début 1919), reproduits dans *Flight*, vol. 11, 13 février 1919, p. 201-207 (présentation p. 199, « Some interesting statistics »). Même numéro : « Complete technical specifications of important American and foreign aeroplane engines » et tableaux de performances des moteurs. Identifiant `Flight_International_Magazine_1919-02-13-pdf`. Primaire (compilation officielle). OCR désordonné ; **lu sur l'image en cinquième passe** (complément ci-dessous). Le tableau des avions français occupe les p. 204-205.
+- **S46** — « French Aeroplanes in Service at the Front » et « French Aeroplanes under Test », tableaux compilés par le service aéronautique américain, publiés par *Automotive Industries* (New York ; numéro non identifié, début 1919), reproduits dans *Flight*, vol. 11, 13 février 1919, p. 201-207 (présentation en tête de la p. 201, « Some interesting statistics », vérifiée sur l'image en huitième passe ; *Flight* y nomme la revue *Automobile Industries*). Même numéro : « Complete technical specifications of important American and foreign aeroplane engines » et tableaux de performances des moteurs. Identifiant `Flight_International_Magazine_1919-02-13-pdf`. Primaire (compilation officielle). OCR désordonné ; **lu sur l'image en cinquième passe** (complément ci-dessous). Le tableau des avions français occupe les p. 204-205.
 - **S47** — « Comparative Chart of Aeroplanes in the Italian Service », même origine américaine, *Flight*, 20 février 1919, **p. 237** (présentation p. 238, « More statistics » ; la p. 238 porte le tableau des avions américains). `Flight_International_Magazine_1919-02-20-pdf`. Primaire (compilation). **[LU-IMG]** en cinquième passe : ligne « Spad One Seater, flat-winged ».
 - **Complément à S46 (cinquième passe)** : pages lues sur l'image [LU-IMG], images PNG à 150 dpi des pages 199 à 207 tirées du PDF de l'item `Flight_International_Magazine_1919-02-13-pdf`, fournies par le coordinateur le 2026-10-21. Les en-têtes du tableau des avions sont p. 204 ; les deux lignes « Spa. 7C1 » sont en tête de la p. 205 ; les tableaux des moteurs sont p. 201 (caractéristiques), 202 (accessoires) et 203 (consommations, masses, puissances estimées en altitude). **Sixième passe** : haut de la p. 205 en image à 300 dpi (`f19190213-p205-300dpi-15.png`, 4 013 × 2 700 px), fourni par le coordinateur le 2026-10-22, tiré du même PDF.
 - **S63** — F. H. Norton (Langley), « The Effect of Staggering a Biplane », NACA Technical Note n° 70, septembre 1921 (essais du MIT de 1918). NTRS 19930080864, https://ntrs.nasa.gov/citations/19930080864, téléchargé par le coordinateur le 2026-10-21. **[LU]** : p. 1-3 et figure 1 sur l'image. Primaire.
@@ -677,6 +803,11 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **S60** — Royal Aircraft Factory, « The Terminal Velocity of S.E.5 », ARC R&M n° 492, avril 1917, dans *Technical Report of the Advisory Committee for Aeronautics for the Year 1917-18*, vol. II, HMSO, Londres, 1921, p. 712-713. archive.org `technicalreport1917aero_2`. Primaire (calcul de l'établissement d'essais).
 - **S61** — L. Prandtl, « Induced Drag of Multiplanes », NACA Technical Note n° 182, 1924 (traduction de *Technische Berichte*, vol. III, n° 7, p. 309-315). NTRS 19930080964, https://ntrs.nasa.gov/citations/19930080964, téléchargé par le coordinateur le 2026-10-21. **[LU]** : p. 1-2 et 5-13 sur l'image du PDF. Primaire (théorie).
 - **S62** — P. E. Hemke (Langley), « Drag of Wings with End Plates », NACA Report n° 267, p. 253 et suivantes. NTRS 19930091335, https://ntrs.nasa.gov/citations/19930091335, téléchargé le 2026-10-21. **[LU]** : résumé et p. 255-257 sur l'image. Primaire.
+
+**Lues en huitième passe (2026-10-22)**
+- **S66** — « Record of Performances of British Aeroplanes (From information supplied by the U.S. Government) », *Flight*, 13 février 1919, p. 206. Même item que S46. **[LU-IMG]** (PNG à 150 dpi). Utilisé pour la définition du plafond pratique (« service ceiling » à 100 ft/min, note du tableau) et comme comparaison. Primaire (compilation).
+- **S67** — « Record of Performance of American Planes », *Flight*, 20 février 1919, p. 238 (présentation « More statistics », même page). Même item que S47. **[LU-IMG]**. Utilisé pour la perte de vitesse en altitude de deux S.E.5 à moteur Hispano et du VE-7, avec leurs régimes. Primaire (compilation).
+- **S68** — « Wounded on Trial Trip » (Heurtaux), *Flight*, 11 octobre 1917, p. 1063. `Flight_International_Magazine_1917-10-11-pdf`. **[LU-OCR]**. Presse d'époque.
 
 ### 9.2 Vues seulement en résumé de recherche [RÉSUMÉ] (pages non ouvertes ; consultées le 2026-10-20)
 - **S5** — Wikipedia (en), « SPAD S.VII », https://en.wikipedia.org/wiki/SPAD_S.VII (wiki : piste).
@@ -723,6 +854,10 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **S64** — Bibliothèques numériques de la Défense, notice bibliographique de J. M. Bruce, *Spad 13.C1*, éd. R. L. Rimell, Windsock Datafile n° 32, Albatros Productions, Berkhamsted, réimpression 2000, 36 p., ISBN 0-948414-39-1 (don de G. Magnier), https://bibliotheques-numeriques.defense.gouv.fr/document/b6ed97b4-3667-4988-83ce-ebdd94fbf370. Notice seulement ; l'ouvrage est un exemplaire papier (P24).
 - **S65** — Smithsonian, National Air and Space Museum, notice de l'objet « Spad XIII "Smith IV" », https://avpreservation.si.edu/object/nasm_A19200001000 (institutionnelle ; envergure 8,2 m et hauteur 2,4 m selon le résumé, mode de mesure inconnu).
 - **S37 (complément)** — La revue d'Aeroscale (https://aeroscale.kitmaker.net/review/4494) contient, selon le résumé du 2026-10-22, une bibliographie d'articles sur le SPAD 7 (P19 à P21).
+
+**Huitième passe (consultées en résumé le 2026-10-22)**
+- **S69** — Service historique de la Défense, notice du « Fonds Émile Dorand - DE 2012 ZL », producteur : Section technique de l'aéronautique militaire (1915-1918) ; la notice cite des procès-verbaux de la Commission d'examen des avions et moteurs nouveaux et des notes du Service des essais (sans nommer le SPAD dans l'extrait vu). Pages : https://servicehistorique-admin.cnmosis.dirisi.defense.gouv.fr/en/node/707 ; geneawiki, « SHD / Air - Série (DE)ZL », https://fr.geneawiki.com/wiki/SHD_/_Air_-_S%C3%A9rie_(DE)ZL, qui donne l'article 2012 ZL 245 (1895-1922) et un inventaire PDF de 2012. Échec DNS de l'outil de lecture sur les deux pages.
+- **S70** — enginehistory.org, « UK National Archives at Kew » (https://enginehistory.org/References/UKNA/Eng-AIR.shtml), d'après un résumé : pièce **AIR 1/1196/204/5/2600**, rapports hebdomadaires sur la situation des avions en essai à l'Aeroplane Experimental Station de Martlesham Heath (n° 1 à 119, 1916-1919). Présence d'un SPAD non confirmée. Échec DNS de l'outil de lecture.
 
 ### 9.3 Pistes bibliographiques [PISTE] (non consultées ; éditions à vérifier)
 - **P1** — J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8, Albatros Productions, 1988 (fiche de catalogue de libraire).
@@ -795,6 +930,9 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 | 2 (7e passe) | *Scientific American*, vol. 118, 2 février 1918, p. 107, « Spad pursuit biplane » | archive.org (identifiant à chercher) | Schéma d'époque du SPAD |
 | 2 (7e passe) | P19 à P23 (*Cross & Cockade* US, *Over the Front*) | téléchargements payants (overthefront.com) | Plans à trois vues, dessins d'usine, relevés de restauration |
 | 2 (7e passe) | P1 et P24 (Windsock Datafiles 8 et 32) | ouvrages papier ; P24 est au fonds des Bibliothèques de la Défense (S64) | Cotes de cellule et d'empennage (secondaire) |
+| 1 (8e passe) | SHD, département Air : **inventaire PDF de 2012 du fonds Émile Dorand (DE 2012 ZL 245)**, puis les articles qui concernent les essais du SPAD 7 en 1916-1917 (S69) | lien de l'inventaire sur https://fr.geneawiki.com/wiki/SHD_/_Air_-_S%C3%A9rie_(DE)ZL ; notice SHD https://servicehistorique-admin.cnmosis.dirisi.defense.gouv.fr/en/node/707 | Procès-verbaux d'essais du STAé : début du chronométrage, atmosphère, masse pesée, hélice, date de chaque essai ; dire si la ligne 8Aa de S46 est composite (§ 5.5.5) |
+| 1 (8e passe) | The National Archives, **AIR 1/1196/204/5/2600** (Martlesham Heath, rapports n° 1 à 119, 1916-1919), et recherche « Spad » dans AIR 1 sur discovery.nationalarchives.gov.uk (S70) | cote vue en résumé seulement | Rapport d'essai n° 96 d'avril 1917 (P10) ou ses chiffres : montée, vitesses, plafond estimé, méthode de réduction |
+| 2 (8e passe) | Recadrage à 300 dpi de la **ligne d'en-tête de la p. 204** de *Flight* du 13 février 1919 | PDF local `flight_1919-02-13.pdf` | Signes de renvoi devant « Speed on the Level » et « Theoretical Ceiling » et leur note éventuelle (lecture incertaine à 150 dpi) |
 | 2 (7e passe) | FranceArchives et SHD : notice de réglage du S.VII, fiches d'essais et de pesée du STAé | **cote non trouvée** ; recherche à faire sur francearchives.gouv.fr (mots-clés « SPAD », « STAé », « notice de réglage », « biplan monoplace ») ; seule notice SPAD repérée : celle du XIII (S38, Bibliothèques numériques de la Défense, `fc97b662-8b01-43a8-9698-6e0be5953006`) | Ce qu'on y cherche : calages, décalage, débattements, centrage |
 
 ## 10. Journal des décisions
@@ -805,8 +943,8 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 - **2026-10-20 — Surface alaire.** 17,85 m² (S6, S8, S10, S33) contre 18 m² (S7, sans doute arrondi). **Retenu 17,85 m²** (B pour le chiffre). Ce qu'elle inclut est inconnu ; la corde moyenne apparente (environ 1,16 m, C) paraît faible et devra être recoupée.
 - **2026-10-20 — Masses.** 500 kg à vide et 705 kg au décollage pour le 150 ch (S9, et S5 qui cite Davilla et Soltan) : **retenu, B**. 510 et 740 kg (S6, S33) : motorisation non précisée, **notées sans attribution** ; leur emploi pour le 180 ch est une hypothèse (C).
 - **2026-10-20 — Vitesse maximale.** 192 km/h (150 ch) et 208 km/h (180 ch) (S5), sans altitude ; S5 rattache le 192 km/h au prototype SPAD V. Les 212 km/h à 2 000 m de S9 sont isolés : écartés (D). **Aucune valeur exploitable en confiance B.**
-- **2026-10-20 — Montée du 180 ch.** S12 : 3 000 m en 9 min 50 s ; S11 : 2 000 m en 4 min 40 s. Ensemble, ces deux chiffres impliqueraient une tranche de 2 000 à 3 000 m plus lente que celle du 150 ch : incohérent. **Retenu 9 min 50 s à 3 000 m (C)** ; les 4 min 40 s sont écartés (D).
-- **2026-10-20 — Plafond du 180 ch.** 6 200 m (S7, musée) contre 6 553 m (sites de jeux, S39). **Retenu 6 200 m (C)**, la source institutionnelle étant préférée.
+- **2026-10-20 — Montée du 180 ch.** S12 : 3 000 m en 9 min 50 s ; S11 : 2 000 m en 4 min 40 s. Ensemble, ces deux chiffres impliqueraient une tranche de 2 000 à 3 000 m plus lente que celle du 150 ch : incohérent. **Retenu 9 min 50 s à 3 000 m (C)** ; les 4 min 40 s sont écartés (D). *(Dépassé : cinquième passe, 4 min 40 s et 8 min 10 s lus dans S46 ; les 9 min 50 s sont ceux de la ligne italienne S47.)*
+- **2026-10-20 — Plafond du 180 ch.** 6 200 m (S7, musée) contre 6 553 m (sites de jeux, S39). **Retenu 6 200 m (C)**, la source institutionnelle étant préférée. *(Dépassé : cinquième passe, plafond théorique de 6 523 m lu dans S46 ; huitième passe, c'est une extrapolation, § 5.5.3 d.)*
 - **2026-10-20 — Données de jeux.** Les chiffres d'IL-2, de *Rise of Flight* et de *Wings of Glory* (S39) sont exclus comme sources ; la confusion qu'ils entretiennent est signalée.
 - **2026-10-20 — Sens de rotation de l'hélice.** Horaire vu du pilote (C). Détail et justification dans `hispano-suiza-8a.md`.
 - **2026-10-20 — Deuxième passe : aucune confiance relevée.** archive.org et NTRS ne sont pas lisibles par l'outil de l'historien (§ 0, § 9.5) ; ni Jane's 1917-1919, ni *Flight*, ni *The Aeroplane*, ni *L'Aérophile*, ni le rapport n° 96, ni les essais du STAé n'ont pu être consultés. Toutes les valeurs restent au niveau de la première passe. Les identifiants des documents à télécharger sont au § 9.6.
@@ -864,3 +1002,22 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 - **S.XI comme comparable de famille** (§ 2.5.1) : retenu pour les habitudes de construction (empennage « du type SPAD habituel », plan fixe calé à 0°, câbles porteurs doublés et carénés de bois, train) et pour la répartition des masses par élément, utile à une estimation d'inertie par composants. **Jamais** pour une cote du S.VII : autre cellule, cordes inégales, flèche de 3°, moteur à réducteur.
 - **Haubanage** : 4 mâts interplans et 4 mâts intermédiaires (décompte C déduit de S48 et S49). Le type des câbles (profilés ou ronds) du S.VII reste inconnu ; le S.XI montre des câbles doublés carénés de bois, ce qui n'est pas la même chose que des câbles profilés.
 - **Documents demandés** (§ 9.6, lignes « 7e passe ») : en priorité, les images à 300 dpi du dessin du S.VII (*Flight*, 16 août 1917, p. 840-841) et du dessin coté du S.XI (*Flight*, 16 mai 1918, p. 527-529), déjà disponibles dans les PDF d'archive.org ; puis la circulaire de McCook ou sa reprise dans *Aerial Age* (décembre 1921).
+
+**Huitième passe (2026-10-22 ; fiabilité des performances du 150 ch)**
+- **2026-10-22 — Cibles du 150 ch (remplacent, pour cette version, celles du § 5.4).** Détail et calculs au § 5.5.
+  - **Vitesse à 2 000 m.** Fourchette : 185 à 194 km/h. 192 km/h (S46) et 194 km/h (S47) sont imprimés ; environ 185 km/h se déduit des valeurs de S46 à 3 000 et 4 000 m avec la loi R&M 462 (C). **Retenu : 192 km/h, A, ±3 %.** Raisons : deux tableaux concordent à 1 % près, et la vitesse au sol de S47 (199 km/h) se raccorde à 192 km/h par le calcul (C).
+  - **Vitesses à 3 000 et 4 000 m.** 179 et 174 km/h sont **maintenus, mais déclassés en B, avec ±5 %**. Elles viennent d'une seule source, et elles sont incohérentes de 3 à 4 % avec la valeur à 2 000 m. Entre 2 000 et 3 000 m, la ligne du 8Aa perd 6,7 % de vitesse, contre 0,7 à 2,3 % pour tous les autres monoplaces du tableau. J'ignore laquelle des deux familles de valeurs est fausse ; la tolérance couvre l'écart. Le modèle ne doit pas être réglé pour atteindre 179 km/h au détriment de 192 km/h.
+  - **Montées.** 6 min 40 s, 11 min 30 s et 19 min 30 s : **A, ±5 %, ±5 % et ±7 %**. Fourchette : le rapport britannique n° 96, indépendant mais vu en résumé, est plus rapide de 2 à 6 % ; S47 est plus rapide de 12 à 15 %, mais sa série est irrégulière (C, non bloquante).
+  - **Plafond.** 5 486 m est un plafond **théorique**, c'est-à-dire extrapolé. **Retenu en C, ±7 %**, comme altitude où la vitesse ascensionnelle s'annule, et non à 100 ft/min. Fourchette : 5 100 à 5 800 m (extrapolations C ; 5 791 m estimés par le rapport n° 96).
+  - **S47** est classé « classe 150 ch, sous-version incertaine » (C) ; ses chiffres servent de contrôles non bloquants. Son « 140 hp » est la cote italienne d'un type de Hispano : le même moteur équipe un F.B.A. dans le même tableau.
+- **2026-10-22 — Correction : la série du STAé (S11) n'est pas indépendante de S46.** Ses quatre chiffres sont identiques à ceux de S46, donc d'origine commune. Le § 5 disait le contraire ; corrigé. La seule série indépendante reste le rapport britannique n° 96, connu par un forum.
+- **2026-10-22 — Conditions de mesure.** Le début du chronométrage, l'atmosphère de référence, la masse pesée, l'hélice et la méthode de mesure de la vitesse ne sont donnés par **aucun** document lu. La masse de 703 kg est une charge de référence (équipage et armement conventionnels, charge de 205 kg exactement), pas une pesée. Les tolérances ci-dessus en tiennent compte en partie. Consignes de calcul au § 5.5.6 : deux conventions de chronométrage, plafond à vitesse ascensionnelle nulle, sensibilité à la masse. **Aucune condition n'a été comblée de mémoire.**
+- **2026-10-22 — 180 ch.** La lecture de S46 (212 km/h à 2 000 m) cadre mieux par le calcul que celle de S48 (212 km/h au sol) : **maintenue** (C). Les colonnes dérivées des deux lignes du S.VII sont recopiées l'une de l'autre, ce qui confirme les masses du 180 ch en B. Mêmes tolérances que pour le 150 ch.
+- **2026-10-22 — Relecture et corrections dans la fiche.**
+  - Présentation de S46 : p. 201, et non p. 199. *Flight* dit que les tableaux « paraissent » officiels, ce que la fiche résumait trop fermement.
+  - § 1.4 : la blessure de Heurtaux était datée de « fin septembre 1917 », date de publication de la nouvelle. La date réelle n'est pas donnée ; S68 ajoute les circonstances.
+  - § 1.5 : deux points ajoutés, sur le nom « Vieux Charles », porté par plusieurs avions, et sur la fin des livraisons du S.VII dans la compilation de 1918.
+  - § 0, première passe : la phrase « performances plafonnées à C » est marquée dépassée.
+  - Journal du 2026-10-20 : entrées « Montée du 180 ch » et « Plafond du 180 ch » marquées dépassées.
+  - § 7 : masse d'armement en [LU-IMG], et signalée comme conventionnelle.
+- **2026-10-22 — Documents demandés** (§ 5.5.7 et § 9.6, lignes « 8e passe ») : en priorité, l'inventaire du fonds Émile Dorand au SHD (DE 2012 ZL 245) et la pièce AIR 1/1196/204/5/2600 des National Archives. Ces deux cotes n'ont été vues qu'en résumé.

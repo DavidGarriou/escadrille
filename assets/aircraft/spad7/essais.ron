@@ -10,18 +10,19 @@ Essais(
     conditions: (fuel_fraction: 0.739),                              // C: (79.8 − 8.0) kg of petrol over 135 L at 0.72 kg/L (spad7-calculs.md § 4)
 
     quantitative: [
-        //! S: S46 p. 205, line « Spa. 7C1, Hispano 8Aa »: level speeds in mph and engine speeds printed under the line, confidence A; tolerance ±4 % (the decrement 192 / 179 / 174 km/h is irregular: aerodynamicist, review of 2026-10-22), engine speed ±3 %
-        MaxLevelSpeed(altitude: M(2000.0), target: Mph(119.5), tolerance_pct: 4.0, rpm: Some((target: Rpm(1720.0), tolerance_pct: 3.0)), source: "S46", confidence: A),
-        MaxLevelSpeed(altitude: M(3000.0), target: Mph(111.5), tolerance_pct: 4.0, rpm: Some((target: Rpm(1680.0), tolerance_pct: 3.0)), source: "S46", confidence: A),
-        MaxLevelSpeed(altitude: M(4000.0), target: Mph(108.0), tolerance_pct: 4.0, rpm: Some((target: Rpm(1640.0), tolerance_pct: 3.0)), source: "S46", confidence: A),
+        //! S: S46 p. 205, line « Spa. 7C1, Hispano 8Aa », read on the page image; targets, confidences and tolerances of the historian's eighth pass (spad7.md § 5.5.6): 2 000 m in A ±3 % (S47 within 1 %), engine speed ±3 %
+        MaxLevelSpeed(altitude: M(2000.0), target: Mph(119.5), tolerance_pct: 3.0, rpm: Some((target: Rpm(1720.0), tolerance_pct: 3.0)), source: "S46", confidence: A),
+        //! S: S46 alone, inconsistent by 3 to 4 % with the 2 000 m speed: downgraded to B, ±5 % (spad7.md § 5.5.3 a, § 5.5.6)
+        MaxLevelSpeed(altitude: M(3000.0), target: Mph(111.5), tolerance_pct: 5.0, rpm: Some((target: Rpm(1680.0), tolerance_pct: 3.0)), source: "S46", confidence: B),
+        MaxLevelSpeed(altitude: M(4000.0), target: Mph(108.0), tolerance_pct: 5.0, rpm: Some((target: Rpm(1640.0), tolerance_pct: 3.0)), source: "S46", confidence: B),
 
-        //! S: S46 p. 205, times of climb, confidence A; measured from the take-off, so the model (airborne at best climb speed from sea level) should be a little quicker (bias of the order of half a minute, E:); tolerance ±5 %
+        //! S: S46 p. 205, times of climb, confidence A (spad7.md § 5.5.6): ±5 % to 3 000 m, ±7 % to 4 000 m; start of the timing unknown (brake release or 0 m in flight): the model times from 0 m in flight at the best climb speed (the take-off needs the ground model of M2)
         ClimbTime(from: M(0.0), to: M(2000.0), target: MinS(6.0, 40.0), tolerance_pct: 5.0, source: "S46", confidence: A),
         ClimbTime(from: M(0.0), to: M(3000.0), target: MinS(11.0, 30.0), tolerance_pct: 5.0, source: "S46", confidence: A),
-        ClimbTime(from: M(0.0), to: M(4000.0), target: MinS(19.0, 30.0), tolerance_pct: 5.0, source: "S46", confidence: A),
+        ClimbTime(from: M(0.0), to: M(4000.0), target: MinS(19.0, 30.0), tolerance_pct: 7.0, source: "S46", confidence: A),
 
-        //! S: S46 p. 205, theoretical ceiling (rate of climb nil) 18 000 ft, confidence A; tolerance ±5 %
-        Ceiling(climb_rate: Ms(0.0), target: Ft(18000.0), tolerance_pct: 5.0, source: "S46", confidence: A),
+        //! S: S46 p. 205, theoretical ceiling 18 000 ft at nil rate of climb, an extrapolation: confidence C, ±7 % covering 5 100 to 5 800 m (spad7.md § 5.5.3 d, § 5.5.6)
+        Ceiling(climb_rate: Ms(0.0), target: Ft(18000.0), tolerance_pct: 7.0, source: "S46", confidence: C),
 
         //! S: power-off stall « about 47 mph » of a S.VII with a 180 hp Wright-Hispano E, flown by Frank Tallman decades later, mass unknown (S31, seen in summary only): confidence D, reported but never blocking
         StallSpeed(power: Idle, target: Mph(47.0), tolerance_pct: 10.0, source: "S31", confidence: D),

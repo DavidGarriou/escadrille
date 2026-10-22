@@ -1037,3 +1037,30 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
     - effet Munk distinct en tangage et en lacet ;
     - efficacité des gouvernes à grand braquage (K′ de DATCOM).
 - **⚠** Limite du pilote scripté : sa direction oscille pendant la reprise du décrochage (période d'environ 2 s). Ses gains, réglés sur le biplan synthétique, devront être normalisés par avion avant de servir à l'IA.
+
+### Huitième passe de l'historien : fiabilité des performances du 150 ch
+- **R** Le tableau français (S46) est le seul à donner toute la série du 150 ch.
+  - **Vitesses** : elles forment deux groupes incompatibles à 3-4 % près. 192 km/h à 2 000 m (concordant avec S47) d'un côté, 179 et 174 km/h à 3 000 et 4 000 m de l'autre. Rien ne permet de dire lequel est faux.
+  - **Série « STAé » du forum** : elle n'est pas indépendante de S46 (mêmes chiffres). La seule série indépendante, le rapport britannique n° 96 vu en résumé, monte 2 à 6 % plus vite.
+  - **Conditions de mesure** : aucun document ne dit d'où partent les montées ni dans quelle atmosphère.
+  - **Plafond « théorique »** : c'est une extrapolation.
+  - **« 140 hp » de S47** : cote italienne d'un Hispano de la classe 150 ch ; sa série de montée est irrégulière.
+- **A** Cibles du § 5.5.6 de la fiche reportées dans `essais.ron` :
+  - 2 000 m : A, ±3 % ;
+  - 3 000 et 4 000 m : déclassées en B, ±5 % ;
+  - montées : A, ±5 %, et ±7 % à 4 000 m ;
+  - plafond à vitesse ascensionnelle nulle : C, ±7 %.
+
+  Les contrôles italiens ne sont pas saisis comme cibles : ce ne sont pas des estimations de jeu, donc pas des D. Ils restent cités dans les rapports.
+- **A** Relecture de la fiche par l'historien. Il a corrigé :
+  - la date de la blessure de Heurtaux ;
+  - « Vieux Charles », nom porté par plusieurs avions ;
+  - le S.VII de 1918, qui n'est plus un avion neuf ;
+  - la page de présentation de S46.
+- **R** Nouvel essai : rien ne change dans les résultats. La vitesse et le régime à 2 000 m passent. Restent en échec :
+  - les vitesses à 3 000 et 4 000 m (+7 %) ;
+  - les montées (−15 à −22 %) ;
+  - le plafond (+19 %).
+
+  **L'écart vient du modèle**, pas des sources : il monte trop bien.
+- **⚠** La consigne de l'historien de chronométrer les montées « depuis le lâcher des freins » demande le modèle de sol du M2. Pour l'instant, seule la convention « depuis 0 m en vol » est calculée.
