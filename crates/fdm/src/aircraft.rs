@@ -21,7 +21,6 @@ use crate::aero::body::SlenderBody;
 use crate::aero::drag::DragItem;
 use crate::aero::surface::ControlDeflections;
 use crate::aero::system::LiftingSystem;
-use crate::constants::RHO0;
 use crate::environment::Environment;
 use crate::propulsion::engine::{EngineTorques, InlineEngine};
 use crate::propulsion::propeller::{Propeller, PropellerLoads};
@@ -181,6 +180,11 @@ impl Aircraft {
         self.travel
     }
 
+    /// Wing downwash on the tail, and which surfaces are the wings.
+    pub fn downwash(&self) -> Option<&Downwash> {
+        self.downwash.as_ref()
+    }
+
     /// Control surface deflections for the pilot's commands.
     pub fn deflections(&self, controls: &PilotControls) -> ControlDeflections {
         let c = |v: f64| v.clamp(-1.0, 1.0);
@@ -225,7 +229,9 @@ impl Aircraft {
                     .propeller
                     .loads(air_velocity, omega, state.rotor_speed, density);
                 let slipstream = p.propeller.slipstream(&loads, density);
-                let engine = p.engine.torques(shaft_speed, throttle, density / RHO0);
+                let engine =
+                    p.engine
+                        .torques(shaft_speed, throttle, p.engine.charge_ratio(&atmosphere));
                 (Some(loads), Some(slipstream), engine)
             }
             None => (None, None, EngineTorques::default()),

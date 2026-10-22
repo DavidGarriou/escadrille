@@ -127,6 +127,28 @@ mod tests {
     }
 
     #[test]
+    fn sees_the_local_flow_and_its_own_rotation() {
+        // v = air + ω × r − local flow, at the centroid (aerodynamicist review: neither
+        // term was tested).
+        let body = fuselage();
+        let blown = body.loads(DVec3::new(30.0, 0.0, 0.0), DVec3::ZERO, RHO, |_| {
+            DVec3::new(0.0, 5.0, -2.0)
+        });
+        let equivalent = body.loads(DVec3::new(30.0, -5.0, 2.0), DVec3::ZERO, RHO, still);
+        assert_eq!(blown, equivalent);
+        // Yawing right moves the centroid, 0.5 m behind the centre of gravity, to the left.
+        let yawing = body.loads(
+            DVec3::new(30.0, 0.0, 0.0),
+            DVec3::new(0.0, 0.0, 0.5),
+            RHO,
+            still,
+        );
+        let sliding = body.loads(DVec3::new(30.0, -0.25, 0.0), DVec3::ZERO, RHO, still);
+        assert!((yawing.force - sliding.force).length() < 1e-12);
+        assert!((yawing.moment - sliding.moment).length() < 1e-12);
+    }
+
+    #[test]
     fn nothing_without_cross_flow_and_mirror_symmetric() {
         let body = fuselage();
         assert_eq!(

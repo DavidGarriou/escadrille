@@ -300,7 +300,8 @@ pub fn solve(
                 jacobian[(row, column)] = (rp[row] - rm[row]) / (2.0 * h);
             }
         }
-        if jacobian.iter().all(|v| v.is_finite()) && jacobian.column_iter().all(|c| c.norm() == 0.0)
+        if !jacobian.iter().all(|v| v.is_finite())
+            || jacobian.column_iter().any(|c| c.norm() == 0.0)
         {
             return Err(TrimError::Singular { flight });
         }
@@ -471,6 +472,20 @@ pub(crate) mod tests {
         let full = engine.torques(rotor, 1.0, sigma).combustion;
         assert!((trimmed - full).abs() < 1e-6 * full, "{again:?}");
         assert!((again.flight.speed - fast.flight.speed).abs() < 1e-9);
+    }
+
+    #[test]
+    fn state_follows_the_flight_variables() {
+        // Sideslip to the right: air from the right, positive v; climbing: the velocity
+        // points above the horizon by the flight-path angle.
+        let mut f = Flight::guess(1_000.0, 40.0, 0.5);
+        f.beta = 0.05;
+        f.flight_path = 0.1;
+        let s = f.state();
+        assert!((s.velocity_body.y - 40.0 * 0.05f64.sin()).abs() < 1e-12);
+        let v = s.velocity_ned();
+        assert!((-v.z / v.length() - 0.1f64.sin()).abs() < 1e-12, "{v:?}");
+        assert!((s.position_ned.z + 1_000.0).abs() < 1e-12);
     }
 
     #[test]

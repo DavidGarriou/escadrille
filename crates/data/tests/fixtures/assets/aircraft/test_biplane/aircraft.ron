@@ -117,7 +117,8 @@ Aircraft(
             (speed: Rpm(1150.0), power: Kw(7.5)),                      // E: synthetic
             (speed: Rpm(2200.0), power: Kw(11.2)),                     // E: synthetic
         ]),
-        idle_throttle: 0.08,                                           // E: synthetic
+        idle_throttle: 0.05,                                           // E: synthetic
+        altitude_law: Density,
         stall_speed: Rpm(190.0),                                       // E: synthetic
     )),
 
@@ -127,8 +128,8 @@ Aircraft(
         hub_m: (1.0, 0.0, 0.0),                                        // E: synthetic
         rotation: Clockwise,
         p_factor_m: 0.7,                                               // E: synthetic
-        normal_force: 0.3,                                             // E: synthetic
-        rotor_inertia_kg_m2: 1.2,                                      // E: synthetic
+        normal_force: 0.035,                                           // E: synthetic, blade-element order of magnitude (aerodynamicist)
+        rotor_inertia_kg_m2: 6.0,                                      // E: synthetic, wooden propeller of 2.5 m (aerodynamicist)
     ),
 
     travel: (aileron: Deg(20.0), elevator: Deg(25.0), rudder: Deg(28.0)), // E: synthetic

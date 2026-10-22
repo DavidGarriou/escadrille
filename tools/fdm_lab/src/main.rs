@@ -11,7 +11,7 @@ use escadrille_data::essais::{Confidence, Quantitative, load_essais};
 use escadrille_fdm::aircraft::Aircraft;
 use escadrille_fdm::environment::{Environment, StandardEnvironment};
 use fdm_lab::campaign::{self, validated};
-use fdm_lab::modes::{Mode, lateral, linearise, longitudinal};
+use fdm_lab::modes::{Mode, lateral, linearise, longitudinal, static_stability};
 use fdm_lab::performance::max_level_speed;
 use fdm_lab::report::{Cruise, Report, markdown, time_step_change};
 use fdm_lab::robustness;
@@ -131,6 +131,7 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
                 commands: trim.commands(aircraft),
                 longitudinal: longitudinal(&linear),
                 lateral: lateral(&linear),
+                stability: static_stability(aircraft, &linear),
                 trim,
             }
         });
@@ -210,6 +211,14 @@ fn main() -> ExitCode {
             let linear = linearise(&b.aircraft, &STILL_AIR, &trim);
             print_modes("Modes longitudinaux", &longitudinal(&linear));
             print_modes("Modes latéraux", &lateral(&linear));
+            if let Some(st) = static_stability(&b.aircraft, &linear) {
+                println!(
+                    "Marge statique {:.1} % ; N_v = {:+.1} N·m/(m/s) ; L_v = {:+.1} N·m/(m/s)",
+                    100.0 * st.static_margin,
+                    st.n_v,
+                    st.l_v
+                );
+            }
             Ok(true)
         }),
         Command::Essai {

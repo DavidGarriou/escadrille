@@ -20,7 +20,7 @@ use escadrille_fdm::aero::surface::{
 };
 use escadrille_fdm::aero::system::{LiftingSystem, MutualInduction};
 use escadrille_fdm::aircraft::{Aircraft, ControlTravel, Downwash, Propulsion};
-use escadrille_fdm::propulsion::engine::{EnginePoint, InlineEngine};
+use escadrille_fdm::propulsion::engine::{AltitudeLaw, EnginePoint, InlineEngine};
 use escadrille_fdm::propulsion::propeller::{Propeller, PropellerGeometry};
 use escadrille_fdm::rigid_body::{Inertia, MassProperties, Rotor};
 use glam::DVec3;
@@ -33,6 +33,10 @@ use crate::{DataError, load_checked};
 
 /// Tolerance on a surface's area against the area quoted by the research sheet.
 pub const AREA_TOLERANCE: f64 = 0.02;
+
+/// Largest plausible propeller normal-force coefficient c_n (Ribner and DATCOM give
+/// C_Nα ≈ 0.1 per radian; c_n is smaller).
+pub const MAX_NORMAL_FORCE: f64 = 0.1;
 
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct InertiaSpec {
@@ -192,12 +196,23 @@ pub enum FrictionSpec {
     Curve(Vec<PowerPoint>),
 }
 
+/// How the indicated power falls with altitude (`escadrille_fdm::propulsion::engine`).
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub enum AltitudeLawSpec {
+    /// Proportional to the density ratio.
+    Density,
+    /// Proportional to the pressure ratio to this power.
+    Pressure(f64),
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct InlineEngineSpec {
     pub name: String,
     /// Sea-level, full-throttle brake power.
     pub power_curve: Vec<PowerPoint>,
     pub friction: FrictionSpec,
+    /// Chosen from the engine's research sheet.
+    pub altitude_law: AltitudeLawSpec,
     pub idle_throttle: f64,
     pub stall_speed: RotationSpeed,
 }
@@ -224,7 +239,10 @@ pub struct PropellerSpec {
     pub rotation: Rotation,
     /// P-factor: shift of the thrust line per unit of V⊥ V_blade / V_r², m (E:).
     pub p_factor_m: f64,
-    /// Normal-force coefficient c_n (Ribner): in-plane force ½ ρ V_r A c_n V⊥.
+    /// Normal-force coefficient c_n (Ribner): in-plane force ½ ρ V_r A c_n V⊥. From
+    /// Ribner's C_Nα (per radian, on q∞ and the disc area): c_n = C_Nα J / √(J² + (0.7π)²).
+    /// About 0.03 to 0.05 for a two-bladed wooden propeller (blade-element estimate of the
+    /// aerodynamicist, 2026-10-22); more than [`MAX_NORMAL_FORCE`] is refused.
     pub normal_force: f64,
     /// Propeller, crankshaft and everything turning with them, kg·m².
     pub rotor_inertia_kg_m2: f64,
@@ -609,6 +627,12 @@ impl AircraftData {
             })
             .collect();
 
+        if p.normal_force.is_nan() || p.normal_force > MAX_NORMAL_FORCE {
+            return Err(self.invalid(format!(
+                "propeller: normal_force {} above {MAX_NORMAL_FORCE} (Ribner, DATCOM)",
+                p.normal_force
+            )));
+        }
         let propeller = Propeller::new(
             self.propeller.table(),
             self.propeller.anchors(),
@@ -636,11 +660,16 @@ impl AircraftData {
             FrictionSpec::Fraction(k) => points(&e.power_curve, *k),
             FrictionSpec::Curve(curve) => points(curve, 1.0),
         };
+        let altitude_law = match e.altitude_law {
+            AltitudeLawSpec::Density => AltitudeLaw::Density,
+            AltitudeLawSpec::Pressure(n) => AltitudeLaw::Pressure(n),
+        };
         let engine = InlineEngine::new(
             points(&e.power_curve, 1.0),
             friction,
             e.idle_throttle,
             e.stall_speed.si(),
+            altitude_law,
         )
         .map_err(|err| self.invalid(format!("engine {}: {err:?}", e.name)))?;
 

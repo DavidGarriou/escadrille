@@ -3,25 +3,31 @@
 //!
 //! Two sea-level curves against the shaft speed ω: full-throttle brake power P₀(ω) and
 //! friction power P_f(ω) (friction and pumping, measured by motoring the engine). The
-//! indicated power at full throttle, P₀ + P_f, scales with the density ratio σ; friction
-//! does not. At full throttle, P_b = σ (P₀ + P_f) − P_f: with P_f = k P₀ this is the
+//! indicated power at full throttle, P₀ + P_f, scales with the charge ratio c of the
+//! [`AltitudeLaw`] (the density ratio σ, or a power of the pressure ratio); friction does
+//! not. At full throttle, P_b = c (P₀ + P_f) − P_f: with c = σ and P_f = k P₀ this is the
 //! Gagg-Farrar law P_b / P₀ = σ − k (1 − σ), k = 1/7.55 in its usual form; the research
-//! sheet of each engine gives its friction (Hispano-Suiza 8A: measured, NACA Report 46,
-//! `docs/recherche/hispano-suiza-8a.md`).
+//! sheet of each engine gives its friction and its altitude law (Hispano-Suiza 8A:
+//! NACA Report 46 and R&M 462, `docs/recherche/hispano-suiza-8a.md`).
 //!
-//! Throttle: with the throttle closed, the carburettor limits the air flow, so the
-//! indicated power is about constant and the torque falls as 1/ω, which gives a stable
-//! idle and engine braking in a dive (aerodynamicist review of 2026-10-21). Indicated
-//! power P_i = σ min(P₀(ω) + P_f(ω), θ P_i,max), with θ = idle + (1 − idle) × lever
-//! (E:, linear) and P_i,max the largest full-throttle indicated power of the curves. The
-//! corner of the min is rounded (C¹, ±5 %, E:) so that the trim can be solved; above the
-//! corner the throttle has no effect, which is real (manifold at ambient pressure).
+//! Throttle: the throttle is an orifice in series with a volumetric engine. Nearly closed,
+//! the flow through it is choked: the indicated power is about constant and the torque
+//! falls as 1/ω, which gives a stable idle and engine braking in a dive. Opening it, the
+//! gain decreases continuously and vanishes only at full throttle (aerodynamicist reviews
+//! of 2026-10-21 and 22; an earlier min() left a dead zone of 22 % of the lever travel).
+//! With P_pg(ω) = P₀ + P_f the full-throttle indicated power, s = θ P_i,max / P_pg(ω)
+//! and s₁ its value at full throttle: P_i = c P_pg(ω) g(s) / g(s₁), g(s) = s / (1 + sⁿ)^(1/n),
+//! n = 2 (E:); θ = idle + (1 − idle) × lever (E:) and P_i,max the largest full-throttle
+//! indicated power of the curves. Full throttle gives exactly the curves.
 //!
 //! Outside the measured curves (E:), the torque is held constant below the first point and
 //! the power above the last one, so that full throttle stays the largest power. Below the stall
 //! speed the engine stops firing (it restarts when windmilled fast enough), with a C¹
 //! ramp up to twice the stall speed; friction fades linearly to zero at rest, which
 //! avoids a torque jump.
+
+use crate::atmosphere::AtmosphereState;
+use crate::constants::{P0, RHO0};
 
 /// One point of a sea-level power curve.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -41,10 +47,22 @@ pub enum EngineError {
     NonPositive,
     /// Friction curve: fewer than two points, not increasing in speed, or negative.
     BadFriction,
+    /// The exponent of a pressure law must be positive.
+    BadAltitudeLaw,
     BadIdleThrottle,
     /// The stall speed must be positive and the engine fully firing (twice the stall
     /// speed) before the start of the curve.
     BadStallSpeed,
+}
+
+/// How the indicated power falls with altitude.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum AltitudeLaw {
+    /// Proportional to the density ratio σ = ρ / ρ₀ (with friction: Gagg-Farrar).
+    Density,
+    /// Proportional to (p / p₀)ⁿ, independent of the temperature (flight measurement of
+    /// a Hispano-Suiza 150 hp, R&M 462: n ≈ 1.04).
+    Pressure(f64),
 }
 
 /// Engine torques on the crankshaft, N·m: the `engine` and `friction` terms of
@@ -63,8 +81,16 @@ pub struct InlineEngine {
     friction: Vec<EnginePoint>,
     idle_throttle: f64,
     stall_speed: f64,
+    altitude_law: AltitudeLaw,
     /// Largest full-throttle indicated power at sea level, W.
     max_indicated: f64,
+}
+
+/// Exponent n of the throttle saturation g(s) = s / (1 + sⁿ)^(1/n) (E:).
+const THROTTLE_SATURATION: f64 = 2.0;
+
+fn saturation(s: f64) -> f64 {
+    s / (1.0 + s.powf(THROTTLE_SATURATION)).powf(1.0 / THROTTLE_SATURATION)
 }
 
 /// Torque P(ω) / ω of a power curve: linear in power between points, constant torque
@@ -89,6 +115,7 @@ impl InlineEngine {
         friction: Vec<EnginePoint>,
         idle_throttle: f64,
         stall_speed: f64,
+        altitude_law: AltitudeLaw,
     ) -> Result<Self, EngineError> {
         let finite = |p: &EnginePoint| p.speed.is_finite() && p.power.is_finite();
         if curve.len() < 2 {
@@ -116,6 +143,11 @@ impl InlineEngine {
         if !(stall_speed > 0.0 && 2.0 * stall_speed <= curve[0].speed) {
             return Err(EngineError::BadStallSpeed);
         }
+        if let AltitudeLaw::Pressure(n) = altitude_law
+            && !(n.is_finite() && n > 0.0)
+        {
+            return Err(EngineError::BadAltitudeLaw);
+        }
         let max_indicated = curve
             .iter()
             .map(|p| p.power + torque_from(&friction, p.speed) * p.speed)
@@ -125,13 +157,22 @@ impl InlineEngine {
             friction,
             idle_throttle,
             stall_speed,
+            altitude_law,
             max_indicated,
         })
     }
 
+    /// Charge ratio c of the altitude law for the ambient air.
+    pub fn charge_ratio(&self, atmosphere: &AtmosphereState) -> f64 {
+        match self.altitude_law {
+            AltitudeLaw::Density => atmosphere.density / RHO0,
+            AltitudeLaw::Pressure(n) => (atmosphere.pressure / P0).max(0.0).powf(n),
+        }
+    }
+
     /// Torques at a shaft speed relative to the crankcase (rad/s), throttle lever
-    /// position (0 to 1) and density ratio σ = ρ / ρ₀.
-    pub fn torques(&self, shaft_speed: f64, throttle: f64, density_ratio: f64) -> EngineTorques {
+    /// position (0 to 1) and charge ratio ([`Self::charge_ratio`]).
+    pub fn torques(&self, shaft_speed: f64, throttle: f64, charge_ratio: f64) -> EngineTorques {
         let speed = shaft_speed.abs();
         let brake = torque_from(&self.curve, speed);
         let friction = torque_from(&self.friction, speed);
@@ -139,8 +180,9 @@ impl InlineEngine {
         let firing = smoothstep(shaft_speed / self.stall_speed - 1.0);
         let combustion = if firing > 0.0 {
             let full = (brake + friction) * speed;
-            let available = theta * (1.0 + THROTTLE_BLEND) * self.max_indicated;
-            let indicated = density_ratio.max(0.0) * full * smooth_min_ratio(available / full);
+            let s = theta * self.max_indicated / full;
+            let s_full = self.max_indicated / full;
+            let indicated = charge_ratio.max(0.0) * full * saturation(s) / saturation(s_full);
             indicated / speed * firing
         } else {
             0.0
@@ -152,27 +194,9 @@ impl InlineEngine {
     }
 
     /// Brake power delivered to the propeller, W.
-    pub fn brake_power(&self, shaft_speed: f64, throttle: f64, density_ratio: f64) -> f64 {
-        let t = self.torques(shaft_speed, throttle, density_ratio);
+    pub fn brake_power(&self, shaft_speed: f64, throttle: f64, charge_ratio: f64) -> f64 {
+        let t = self.torques(shaft_speed, throttle, charge_ratio);
         (t.combustion - t.friction) * shaft_speed
-    }
-}
-
-/// Half-width of the C¹ blend between the throttle-limited and the full-throttle
-/// regimes, as a fraction of the power (E:). The throttle's available power is raised by
-/// as much, so that full throttle still gives exactly the full-throttle curve.
-const THROTTLE_BLEND: f64 = 0.05;
-
-/// min(x, 1) with its corner rounded over 1 ± [`THROTTLE_BLEND`] (C¹): the trim solver
-/// of `fdm_lab` cannot work across a corner.
-fn smooth_min_ratio(x: f64) -> f64 {
-    let w = THROTTLE_BLEND;
-    if x <= 1.0 - w {
-        x
-    } else if x >= 1.0 + w {
-        1.0
-    } else {
-        x - (x - (1.0 - w)).powi(2) / (4.0 * w)
     }
 }
 
@@ -192,7 +216,14 @@ pub(crate) mod tests {
         let curve = [(120.0, 75e3), (160.0, 95e3), (200.0, 108e3), (230.0, 112e3)]
             .map(|(speed, power)| EnginePoint { speed, power })
             .to_vec();
-        InlineEngine::new(curve.clone(), scaled(&curve, 0.1), 0.08, 20.0).unwrap()
+        InlineEngine::new(
+            curve.clone(),
+            scaled(&curve, 0.1),
+            0.05,
+            20.0,
+            AltitudeLaw::Density,
+        )
+        .unwrap()
     }
 
     pub(crate) fn scaled(curve: &[EnginePoint], k: f64) -> Vec<EnginePoint> {
@@ -239,7 +270,14 @@ pub(crate) mod tests {
                 power: 110e3,
             },
         ];
-        let e = InlineEngine::new(curve.clone(), scaled(&curve, 1.0 / 7.55), 0.1, 30.0).unwrap();
+        let e = InlineEngine::new(
+            curve.clone(),
+            scaled(&curve, 1.0 / 7.55),
+            0.1,
+            30.0,
+            AltitudeLaw::Density,
+        )
+        .unwrap();
         for sigma in [1.0, 0.9, 0.7, 0.5, 0.3] {
             let ratio = e.brake_power(200.0, 1.0, sigma) / e.brake_power(200.0, 1.0, 1.0);
             assert!(close(ratio, sigma - (1.0 - sigma) / 7.55, 1e-12), "{sigma}");
@@ -247,25 +285,78 @@ pub(crate) mod tests {
     }
 
     #[test]
-    fn throttle_scales_indicated_power_and_idle_brakes_the_shaft() {
+    fn throttle_gain_never_vanishes_and_idle_brakes_the_shaft() {
         let e = engine();
+        let g = |s: f64| s / (1.0 + s * s).sqrt();
         let full = e.torques(200.0, 1.0, 1.0);
-        let half = e.torques(200.0, 0.5, 1.0);
-        // θ = 0.08 + 0.92 × 0.5 of the largest indicated power, 1.1 × 112 kW.
-        let throttled = 0.54 * 1.05 * 1.1 * 112e3 / 200.0;
-        assert!(close(half.combustion, throttled, 1e-12));
         assert!(close(full.combustion, 1.1 * 108e3 / 200.0, 1e-12));
+        // Half lever: θ = 0.05 + 0.95 × 0.5 of the largest indicated power, 1.1 × 112 kW.
+        let (p_full, p_max) = (1.1 * 108e3, 1.1 * 112e3);
+        let s = 0.525 * p_max / p_full;
+        let half = e.torques(200.0, 0.5, 1.0);
+        let expected = p_full * g(s) / g(p_max / p_full) / 200.0;
+        assert!(close(half.combustion, expected, 1e-12));
         assert_eq!(half.friction, full.friction);
-        // Throttled, the indicated power is constant: the torque falls as 1/ω.
-        let slow = e.torques(150.0, 0.5, 1.0);
-        assert!(close(
-            slow.combustion * 150.0,
-            half.combustion * 200.0,
-            1e-12
-        ));
-        // Idle: 0.08 × 123.2 kW indicated, less than the 10.8 kW of friction at 200 rad/s.
+        // No dead zone: the power rises with the lever all the way, at any speed.
+        for speed in [80.0, 148.0, 200.0, 230.0] {
+            let mut previous = 0.0;
+            for i in 0..=20 {
+                let power = e.brake_power(speed, f64::from(i) / 20.0, 1.0);
+                if i > 0 {
+                    assert!(power > previous, "dead zone at {speed} rad/s, lever {i}/20");
+                }
+                previous = power;
+            }
+        }
+        // Nearly closed, the power hardly depends on the speed: the torque falls with it.
+        let (slow, fast) = (e.torques(150.0, 0.0, 1.0), e.torques(200.0, 0.0, 1.0));
+        assert!(slow.combustion > fast.combustion);
+        // Idle gives less than the 10.8 kW of friction at 200 rad/s: engine braking.
         assert!(e.brake_power(200.0, 0.0, 1.0) < 0.0);
         assert!(e.brake_power(200.0, -1.0, 1.0) == e.brake_power(200.0, 0.0, 1.0));
+    }
+
+    #[test]
+    fn altitude_laws_follow_density_or_a_power_of_pressure() {
+        let curve = [(150.0, 90e3), (220.0, 110e3)]
+            .map(|(speed, power)| EnginePoint { speed, power })
+            .to_vec();
+        let pressure = InlineEngine::new(
+            curve.clone(),
+            scaled(&curve, 0.1),
+            0.1,
+            30.0,
+            AltitudeLaw::Pressure(1.04),
+        )
+        .unwrap();
+        let density = InlineEngine::new(
+            curve.clone(),
+            scaled(&curve, 0.1),
+            0.1,
+            30.0,
+            AltitudeLaw::Density,
+        )
+        .unwrap();
+        for altitude in [0.0, 2_000.0, 5_000.0] {
+            let air = crate::atmosphere::isa(altitude);
+            assert!(close(density.charge_ratio(&air), air.density / RHO0, 1e-12));
+            assert!(close(
+                pressure.charge_ratio(&air),
+                (air.pressure / P0).powf(1.04),
+                1e-12
+            ));
+        }
+        // R&M 462's law is the more pessimistic one at altitude (about 9 % at 5 000 m).
+        let air = crate::atmosphere::isa(5_000.0);
+        assert!(pressure.charge_ratio(&air) < density.charge_ratio(&air));
+        let bad = InlineEngine::new(
+            curve.clone(),
+            scaled(&curve, 0.1),
+            0.1,
+            30.0,
+            AltitudeLaw::Pressure(-1.0),
+        );
+        assert_eq!(bad, Err(EngineError::BadAltitudeLaw));
     }
 
     #[test]
@@ -303,7 +394,7 @@ pub(crate) mod tests {
         let good = vec![point(120.0, 75e3), point(200.0, 108e3)];
         let new = |c: Vec<EnginePoint>, k, idle, stall| {
             let friction = scaled(&c, k);
-            InlineEngine::new(c, friction, idle, stall)
+            InlineEngine::new(c, friction, idle, stall, AltitudeLaw::Density)
         };
         assert_eq!(
             new(good[..1].to_vec(), 0.1, 0.1, 30.0),
@@ -331,7 +422,13 @@ pub(crate) mod tests {
             Err(EngineError::BadFriction)
         );
         assert_eq!(
-            InlineEngine::new(good.clone(), good[..1].to_vec(), 0.1, 30.0),
+            InlineEngine::new(
+                good.clone(),
+                good[..1].to_vec(),
+                0.1,
+                30.0,
+                AltitudeLaw::Density
+            ),
             Err(EngineError::BadFriction)
         );
         assert_eq!(

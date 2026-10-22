@@ -168,4 +168,6 @@ fn refuses_inconsistent_references() {
     let data = edited(r#"tail: ["tailplane"]"#, r#"tail: ["stabiliser"]"#);
     assert!(invalid_message(&data).contains("unknown surface stabiliser"));
     assert!(fixture().build(&Loading { fuel_fraction: 1.5 }).is_err());
+    let data = edited("normal_force: 0.035,", "normal_force: 0.3,");
+    assert!(invalid_message(&data).contains("normal_force"));
 }

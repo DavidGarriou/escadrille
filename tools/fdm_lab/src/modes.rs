@@ -251,6 +251,75 @@ pub fn lateral(linear: &Linear) -> Vec<Mode> {
     modes
 }
 
+/// Model reduced to the `slow` states, the `fast` ones in quasi-static equilibrium
+/// (Schur complement A_ss − A_sf A_ff⁻¹ A_fs): the way to compare variants without
+/// freezing states, which would describe another aircraft (aerodynamicist review).
+pub fn reduced(linear: &Linear, slow: &[usize], fast: &[usize]) -> Option<DMatrix<f64>> {
+    let block = |rows: &[usize], cols: &[usize]| {
+        DMatrix::from_fn(rows.len(), cols.len(), |i, j| linear.a[(rows[i], cols[j])])
+    };
+    let inverse = block(fast, fast).try_inverse()?;
+    Some(block(slow, slow) - block(slow, fast) * inverse * block(fast, slow))
+}
+
+/// Static stability around a trim.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct StaticStability {
+    /// Stick-fixed static margin, fraction of the mean wing chord, rotor speed and
+    /// downwash in quasi-static equilibrium: K = M_w / (Z_w c̄).
+    pub static_margin: f64,
+    /// Mean chord of the wings used, m.
+    pub mean_chord: f64,
+    /// Yawing moment per unit of sideslip velocity, N·m / (m/s); positive is stable
+    /// (weathercock).
+    pub n_v: f64,
+    /// Rolling moment per unit of sideslip velocity, N·m / (m/s); negative is the
+    /// dihedral effect.
+    pub l_v: f64,
+}
+
+/// Static margin and lateral derivatives from the linear model.
+pub fn static_stability(aircraft: &Aircraft, linear: &Linear) -> Option<StaticStability> {
+    // Longitudinal: u, w, q, θ with Ω and ε eliminated.
+    let long = reduced(linear, &[0, 2, 4, 7], &[8, 9])?;
+    let (z_w, m_w) = (long[(1, 1)], long[(2, 1)]);
+    let mass = aircraft.mass();
+    let inertia = mass.airframe_inertia();
+    let surfaces = aircraft.lifting().surfaces();
+    let wings: Vec<usize> = aircraft
+        .downwash()
+        .map_or_else(|| vec![0], |d| d.wings.clone());
+    let (mut area, mut span) = (0.0, 0.0);
+    for &i in &wings {
+        let strips = surfaces[i].strips();
+        area += strips.iter().map(|s| s.area).sum::<f64>();
+        // Strip edges: centre ± half its width (area / chord).
+        let right = strips
+            .iter()
+            .map(|s| s.position.y + 0.5 * s.area / s.chord)
+            .fold(f64::MIN, f64::max);
+        let left = strips
+            .iter()
+            .map(|s| s.position.y - 0.5 * s.area / s.chord)
+            .fold(f64::MAX, f64::min);
+        span += right - left;
+    }
+    if !(area > 0.0 && span > 0.0 && z_w != 0.0) {
+        return None;
+    }
+    let mean_chord = area / span;
+    let static_margin = (inertia.y_axis.y * m_w) / (mass.mass() * z_w * mean_chord);
+    // Lateral: moments from the angular accelerations, M = I' ω̇.
+    let rates = glam::DVec3::new(linear.a[(3, 1)], linear.a[(4, 1)], linear.a[(5, 1)]);
+    let moments = inertia * rates;
+    Some(StaticStability {
+        static_margin,
+        mean_chord,
+        n_v: moments.z,
+        l_v: moments.x,
+    })
+}
+
 /// Eigenvalues of the full matrix (couplings included).
 pub fn coupled(linear: &Linear) -> Vec<Mode> {
     modes(linear, &(0..STATES).collect::<Vec<_>>())
@@ -329,10 +398,59 @@ mod tests {
         let roll = named(&lat, "roulis").expect("roll mode");
         assert!(roll.stable() && roll.natural_frequency > 1.0, "{roll:?}");
         assert_eq!(roll.dominant, "p");
-        assert!(lat.len() >= 2 && lat.len() <= 4, "{lat:?}");
+        // With a plausible propeller normal force (aerodynamicist review: 0.3 made the
+        // biplane directionally unstable), the dutch roll and the spiral are there.
+        let dutch = named(&lat, "roulis hollandais").expect("dutch roll");
+        assert!(dutch.period.unwrap() < 10.0 && dutch.stable(), "{dutch:?}");
+        let spiral = named(&lat, "spirale").expect("spiral");
+        assert!(spiral.time_to_half_or_double > 10.0, "slow: {spiral:?}");
+
+        let st = static_stability(&a, &lin).unwrap();
+        assert!(st.n_v > 0.0 && st.l_v < 0.0, "{st:?}");
+        assert!(st.static_margin > 0.0 && st.static_margin < 0.3, "{st:?}");
 
         // The full matrix keeps one mode per real eigenvalue or conjugate pair.
         let full = coupled(&lin);
         assert!(full.len() * 2 >= STATES && full.len() <= STATES, "{full:?}");
+    }
+}
+
+#[cfg(test)]
+mod kinematics {
+    use super::*;
+    use crate::trim::tests::{STILL_AIR, biplane};
+
+    #[test]
+    fn euler_rates_match_the_attitude_quaternion() {
+        // φ̇ and θ̇ of the linear model against the Euler angles of the quaternion
+        // advanced by a small time (banked and pitched, all three rates).
+        let a = biplane();
+        let (phi, theta) = (0.4_f64, 0.25_f64);
+        let w = DVec3::new(0.3, -0.2, 0.25);
+        let x = [40.0, 2.0, 3.0, w.x, w.y, w.z, phi, theta, 180.0, 0.02];
+        let d = derivative(
+            &a,
+            &STILL_AIR,
+            &ControlDeflections::default(),
+            0.5,
+            1_000.0,
+            &x,
+        );
+        let q0 = DQuat::from_euler(EulerRot::ZYX, 0.0, theta, phi);
+        let h = 1e-6;
+        let q1 = (q0 * DQuat::from_scaled_axis(w * h)).normalize();
+        let (_, theta1, phi1) = q1.to_euler(EulerRot::ZYX);
+        assert!(
+            ((phi1 - phi) / h - d[6]).abs() < 1e-5,
+            "φ̇ {} vs {}",
+            (phi1 - phi) / h,
+            d[6]
+        );
+        assert!(
+            ((theta1 - theta) / h - d[7]).abs() < 1e-5,
+            "θ̇ {} vs {}",
+            (theta1 - theta) / h,
+            d[7]
+        );
     }
 }

@@ -33,10 +33,11 @@
 //!   a blade-element calculation, or E:). Ahead of the centre of gravity it destabilises
 //!   in pitch and yaw.
 //!
-//! Slipstream (momentum theory): axial speed and swirl, the swirl from the torque,
-//! r v_θ = Q / ṁ far downstream and half that at the disc, with the same law along the
-//! axis as the axial speed and a solid-body core near the hub (E:). It runs straight
-//! back along the thrust axis (E:).
+//! Slipstream (momentum theory): axial speed and swirl. The swirl comes from the torque:
+//! r v_θ is conserved along a streamline of an inviscid axisymmetric flow, so it is zero
+//! ahead of the disc and K = Q / ṁ just behind it (blended over ±5 % of the radius, C¹),
+//! with a solid-body core near the hub (E:). The slipstream runs straight back along the
+//! thrust axis (E:).
 
 use std::f64::consts::{FRAC_PI_2, PI};
 
@@ -55,6 +56,9 @@ const SLIPSTREAM_EDGE: f64 = 0.1;
 /// Radius of the slipstream's swirl core, as a fraction of the tube radius (E:: the hub
 /// and blade roots carry little load).
 const SWIRL_CORE: f64 = 0.25;
+
+/// Half-width of the step of the swirl across the disc, fraction of the radius (C¹).
+const SWIRL_STEP: f64 = 0.05;
 
 /// Step of the energy check of the coefficients over the whole circle, rad.
 const ENERGY_CHECK_STEP: f64 = 0.1 * PI / 180.0;
@@ -365,7 +369,7 @@ impl Propeller {
 /// Slipstream from Froude's momentum theory (`modele-aero.md`): induced speed v_i at the
 /// disc, v(x) = v_i (1 + x / √(x² + R²)) at a distance x behind it (2 v_i far
 /// downstream), in a stream tube that contracts so as to conserve the mass flow; swirl
-/// r v_θ = K (1 + x / √(x² + R²)) / 2, with K = Q / ṁ, turning with the propeller.
+/// r v_θ = K behind the disc and 0 ahead of it, with K = Q / ṁ, turning with the propeller.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Slipstream {
     hub: DVec3,
@@ -415,10 +419,10 @@ impl Slipstream {
         let edge = (radial / self.tube_radius(distance) - (1.0 - SLIPSTREAM_EDGE))
             / (2.0 * SLIPSTREAM_EDGE);
         let weight = 1.0 - smoothstep(edge);
-        let along_axis = self.axial_speed_at(distance) / (2.0 * self.induced);
+        let behind = smoothstep(distance / (2.0 * SWIRL_STEP * self.radius) + 0.5);
         // Free vortex outside the core, solid-body rotation inside.
         let core = SWIRL_CORE * self.tube_radius(distance);
-        let circulation = self.swirl * along_axis;
+        let circulation = self.swirl * behind;
         let tangential = if radial > 0.0 {
             let speed = if radial >= core {
                 circulation / radial

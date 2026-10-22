@@ -424,9 +424,16 @@ fn slipstream_swirls_with_the_propeller() {
     // Half of it at the disc, continuous across the core, nothing on the axis.
     let at_disc = s.local_flow(hub + DVec3::new(0.0, 0.0, -0.8));
     assert!(close(at_disc.y, 0.5 * s.swirl() / 0.8, 1e-12));
+    // r v_θ is conserved along a streamline: all of it just behind the disc (on the
+    // wing roots), none ahead of it.
+    let behind = s.local_flow(hub + DVec3::new(-0.5 * 1.25, 0.0, -0.8));
+    assert!(close(behind.y, s.swirl() / 0.8, 1e-12), "{behind:?}");
+    let ahead = s.local_flow(hub + DVec3::new(0.5 * 1.25, 0.0, -0.8));
+    assert_eq!(ahead.y, 0.0);
+    // Solid-body core: continuous at its edge, proportional to the radius inside.
     let core = 0.25 * s.tube_radius(far);
-    let inside = s.local_flow(hub + DVec3::new(-far, 0.0, -(core - 1e-9)));
-    let outside = s.local_flow(hub + DVec3::new(-far, 0.0, -(core + 1e-9)));
-    assert!((inside.y - outside.y).abs() < 1e-6 * outside.y);
+    let at = |r: f64| s.local_flow(hub + DVec3::new(-far, 0.0, -r)).y;
+    assert!((at(core - 1e-9) - at(core + 1e-9)).abs() < 1e-6 * at(core));
+    assert!(close(at(0.5 * core), 0.5 * at(core), 1e-9));
     assert_eq!(s.local_flow(hub - DVec3::X * 3.0).y, 0.0);
 }

@@ -10,7 +10,7 @@ use escadrille_fdm::environment::Environment;
 use escadrille_fdm::rigid_body::RigidBodyState;
 
 use crate::campaign::{Outcome, validated};
-use crate::modes::Mode;
+use crate::modes::{Mode, StaticStability};
 use crate::robustness::RobustnessOutcome;
 use crate::trim::Trim;
 
@@ -21,6 +21,7 @@ pub struct Cruise {
     pub commands: PilotControls,
     pub longitudinal: Vec<Mode>,
     pub lateral: Vec<Mode>,
+    pub stability: Option<StaticStability>,
 }
 
 #[derive(Debug, Clone)]
@@ -139,6 +140,26 @@ pub fn markdown(r: &Report) -> String {
                 " (**au-delà des débattements**)"
             }
         );
+        if let Some(st) = c.stability {
+            let _ = writeln!(
+                t,
+                "Stabilité statique : marge statique {:.1} % de la corde moyenne ({:.2} m), régime et déflexion en équilibre ; N_v = {:+.1} N·m/(m/s) ({}) ; L_v = {:+.1} N·m/(m/s) ({}).\n",
+                100.0 * st.static_margin,
+                st.mean_chord,
+                st.n_v,
+                if st.n_v > 0.0 {
+                    "stable de route"
+                } else {
+                    "**instable de route**"
+                },
+                st.l_v,
+                if st.l_v < 0.0 {
+                    "effet de dièdre"
+                } else {
+                    "**dièdre négatif**"
+                }
+            );
+        }
         let lanchester =
             std::f64::consts::PI * 2f64.sqrt() * f.speed / escadrille_fdm::constants::G0;
         let _ = writeln!(
@@ -197,13 +218,15 @@ pub fn time_step_change(
     let fly = |step: f64| {
         let mut state: RigidBodyState = trim.flight.state();
         let mut samples = Vec::new();
-        let steps = (20.0 / step).round() as u32;
-        let per_sample = (0.1 / step).round() as u32;
+        // Whole numbers of steps per second, so that both runs switch the elevator at
+        // exactly the same instants.
+        let per_second = (1.0 / step).round() as u32;
+        let steps = 20 * per_second;
+        let per_sample = per_second / 10;
         for i in 0..steps {
-            let time = f64::from(i) * step;
-            let doublet = if (1.0..2.0).contains(&time) {
+            let doublet = if (per_second..2 * per_second).contains(&i) {
                 0.2
-            } else if (2.0..3.0).contains(&time) {
+            } else if (2 * per_second..3 * per_second).contains(&i) {
                 -0.2
             } else {
                 0.0
@@ -232,4 +255,28 @@ pub fn time_step_change(
             speed.max(climb).max(pitch)
         })
         .fold(0.0, f64::max)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::trim::tests::{STILL_AIR, biplane};
+    use crate::trim::{Flight, LEVEL_AT_SPEED, solve_robust};
+
+    #[test]
+    fn time_step_check_sees_a_coarse_step() {
+        let a = biplane();
+        let trim = solve_robust(
+            &a,
+            &STILL_AIR,
+            Flight::guess(1_000.0, 37.0, 0.4),
+            LEVEL_AT_SPEED,
+        )
+        .unwrap();
+        let c = trim.commands(&a);
+        let fine = time_step_change(&a, &STILL_AIR, &trim, c, 1.0 / 240.0);
+        let coarse = time_step_change(&a, &STILL_AIR, &trim, c, 1.0 / 20.0);
+        assert!(fine < 0.01, "{fine}");
+        assert!(coarse > 10.0 * fine && coarse > 0.0, "{coarse} vs {fine}");
+    }
 }

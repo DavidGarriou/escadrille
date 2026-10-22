@@ -65,7 +65,13 @@ pub struct BestClimb {
     /// m/s.
     pub rate: f64,
     pub trim: Trim,
+    /// The optimum lies at the edge of the searched interval (45 to 95 % of the maximum
+    /// speed): the true optimum may be outside it.
+    pub at_edge: bool,
 }
+
+/// Lower and upper bounds of the speed of best climb, fractions of the maximum speed.
+const CLIMB_SPEED_RANGE: (f64, f64) = (0.45, 0.95);
 
 /// Best rate of climb at an altitude: golden-section search on the speed, between 45 %
 /// and 95 % of the maximum level speed.
@@ -78,7 +84,8 @@ pub fn best_climb(
     let rate =
         |speed: f64| climb(aircraft, env, altitude, speed).map(|t| (t.flight.climb_rate(), t));
     let ratio = 0.5 * (5.0_f64.sqrt() - 1.0);
-    let (mut lo, mut hi) = (0.45 * vmax, 0.95 * vmax);
+    let (bottom, top) = (CLIMB_SPEED_RANGE.0 * vmax, CLIMB_SPEED_RANGE.1 * vmax);
+    let (mut lo, mut hi) = (bottom, top);
     let mut x1 = hi - ratio * (hi - lo);
     let mut x2 = lo + ratio * (hi - lo);
     let (mut f1, mut f2) = (rate(x1)?, rate(x2)?);
@@ -96,57 +103,121 @@ pub fn best_climb(
         }
     }
     let (speed, (rate, trim)) = if f1.0 > f2.0 { (x1, f1) } else { (x2, f2) };
-    Ok(BestClimb { speed, rate, trim })
+    let at_edge = speed - bottom < 2.0 * SPEED_TOLERANCE || top - speed < 2.0 * SPEED_TOLERANCE;
+    Ok(BestClimb {
+        speed,
+        rate,
+        trim,
+        at_edge,
+    })
 }
 
-/// Time to climb from `from` to `to` at the best rate of climb, s (trapezoids on 1 / rate).
-pub fn time_to_climb(
-    aircraft: &Aircraft,
-    env: &dyn Environment,
+/// ∫ dh / rate(h) from `from` to `to`, trapezoids on 1 / rate with steps of at most
+/// `step`; the rate must stay positive.
+pub fn integrate_climb(
+    rate: impl Fn(f64) -> Result<f64, PerformanceError>,
     from: f64,
     to: f64,
+    step: f64,
 ) -> Result<f64, PerformanceError> {
-    let steps = ((to - from) / CLIMB_STEP).ceil().max(1.0) as u32;
+    let steps = ((to - from) / step).ceil().max(1.0) as u32;
     let dh = (to - from) / f64::from(steps);
-    let inverse_rate = |h: f64| {
-        let rate = best_climb(aircraft, env, h)?.rate;
-        if rate > 0.0 {
-            Ok(1.0 / rate)
+    let inverse = |h: f64| {
+        let r = rate(h)?;
+        if r > 0.0 {
+            Ok(1.0 / r)
         } else {
             Err(PerformanceError::NoClimb { altitude: h })
         }
     };
-    let mut previous = inverse_rate(from)?;
+    let mut previous = inverse(from)?;
     let mut time = 0.0;
     for i in 1..=steps {
-        let next = inverse_rate(from + f64::from(i) * dh)?;
+        let next = inverse(from + f64::from(i) * dh)?;
         time += 0.5 * (previous + next) * dh;
         previous = next;
     }
     Ok(time)
 }
 
+/// Time to climb from `from` to `to` at the best rate of climb, s.
+pub fn time_to_climb(
+    aircraft: &Aircraft,
+    env: &dyn Environment,
+    from: f64,
+    to: f64,
+) -> Result<f64, PerformanceError> {
+    integrate_climb(
+        |h| best_climb(aircraft, env, h).map(|b| b.rate),
+        from,
+        to,
+        CLIMB_STEP,
+    )
+}
+
+/// A ceiling and how it was found.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Ceiling {
+    pub altitude: f64,
+    /// Found by extrapolating the last rates of climb, the steady climb being no longer
+    /// solvable near the ceiling (as the period's "theoretical ceiling").
+    pub extrapolated: bool,
+}
+
 /// Altitude at which the best rate of climb falls to `rate` (m/s): 100 ft/min for the
-/// service ceiling of the period, 0 for the absolute ceiling.
+/// service ceiling of the period, 0 for the theoretical (absolute) ceiling. Climbing in
+/// steps of [`CLIMB_STEP`]; between two solved steps the crossing is found by
+/// bisection; if the climb can no longer be solved before the crossing, the last two
+/// rates are extrapolated linearly (the period's method), and the result says so.
 pub fn ceiling(
     aircraft: &Aircraft,
     env: &dyn Environment,
     rate: f64,
-) -> Result<f64, PerformanceError> {
-    let excess = |h: f64| best_climb(aircraft, env, h).map_or(-1.0, |b| b.rate - rate);
-    let (mut lo, mut hi) = (0.0, 12_000.0);
-    if excess(lo) <= 0.0 {
-        return Err(PerformanceError::NoClimb { altitude: lo });
-    }
-    while hi - lo > CEILING_TOLERANCE {
-        let mid = 0.5 * (lo + hi);
-        if excess(mid) > 0.0 {
-            lo = mid;
-        } else {
-            hi = mid;
+) -> Result<Ceiling, PerformanceError> {
+    let excess = |h: f64| best_climb(aircraft, env, h).map(|b| b.rate - rate);
+    let mut points: Vec<(f64, f64)> = Vec::new();
+    let mut h = 0.0;
+    loop {
+        match excess(h) {
+            Ok(e) if e > 0.0 => points.push((h, e)),
+            Ok(_) => {
+                let Some(&(mut lo, _)) = points.last() else {
+                    return Err(PerformanceError::NoClimb { altitude: h });
+                };
+                let mut hi = h;
+                while hi - lo > CEILING_TOLERANCE {
+                    let mid = 0.5 * (lo + hi);
+                    match excess(mid) {
+                        Ok(e) if e > 0.0 => lo = mid,
+                        Ok(_) => hi = mid,
+                        Err(_) => break,
+                    }
+                }
+                return Ok(Ceiling {
+                    altitude: 0.5 * (lo + hi),
+                    extrapolated: false,
+                });
+            }
+            Err(error) => {
+                let n = points.len();
+                if n < 2 {
+                    return Err(error);
+                }
+                let ((h1, e1), (h2, e2)) = (points[n - 2], points[n - 1]);
+                if e2 >= e1 {
+                    return Err(error);
+                }
+                return Ok(Ceiling {
+                    altitude: h2 + e2 * (h2 - h1) / (e1 - e2),
+                    extrapolated: true,
+                });
+            }
+        }
+        h += CLIMB_STEP;
+        if h > 15_000.0 {
+            return Err(PerformanceError::NoClimb { altitude: h });
         }
     }
-    Ok(0.5 * (lo + hi))
 }
 
 /// Lowest steady speed, engine at idle.
@@ -154,7 +225,8 @@ pub fn ceiling(
 pub struct Stall {
     pub speed: f64,
     pub alpha: f64,
-    /// The elevator ran out of travel before the wing stalled.
+    /// The elevator ran out of travel before the wing stalled: the speed is that of the
+    /// last steady glide the pilot can hold.
     pub elevator_limited: bool,
     pub trim: Trim,
 }
@@ -175,21 +247,22 @@ pub fn stall_speed(
         let Ok(trim) = solve_robust(aircraft, env, guess, AT_ALPHA) else {
             break;
         };
-        let elevator_limited = trim.commands(aircraft).pitch.abs() > 1.0;
+        if trim.commands(aircraft).pitch.abs() > 1.0 {
+            if let Some(b) = best.as_mut() {
+                b.elevator_limited = true;
+            }
+            break;
+        }
         let speed = trim.flight.speed;
-        match best {
-            Some(b) if speed >= b.speed => break,
-            _ => {}
+        if best.is_some_and(|b| speed >= b.speed) {
+            break;
         }
         best = Some(Stall {
             speed,
             alpha,
-            elevator_limited,
+            elevator_limited: false,
             trim,
         });
-        if elevator_limited {
-            break;
-        }
         guess = trim.flight;
         alpha += 0.005;
     }
@@ -235,7 +308,7 @@ mod tests {
         assert!((t - (t1 + t2)).abs() < 1e-6 * t);
 
         let target = 0.508; // 100 ft/min
-        let h = ceiling(&a, &STILL_AIR, target).unwrap();
+        let h = ceiling(&a, &STILL_AIR, target).unwrap().altitude;
         let rate = best_climb(&a, &STILL_AIR, h).unwrap().rate;
         assert!((rate - target).abs() < 0.01, "ceiling {h} m, rate {rate}");
     }
@@ -247,5 +320,40 @@ mod tests {
         let vmax = max_level_speed(&a, &STILL_AIR, 500.0).unwrap().flight.speed;
         assert!(stall.speed > 10.0 && stall.speed < 0.7 * vmax, "{stall:?}");
         assert!(stall.trim.flight.climb_rate() < 0.0, "a glide at idle");
+        // The sweep stops at the minimum: slightly lower or higher angles fly faster.
+        if !stall.elevator_limited {
+            for da in [-0.005, 0.005] {
+                let mut g = stall.trim.flight;
+                g.alpha = stall.alpha + da;
+                if let Ok(t) = solve_robust(&a, &STILL_AIR, g, AT_ALPHA) {
+                    assert!(t.flight.speed >= stall.speed - 1e-9, "{da}: {t:?}");
+                }
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod integration {
+    use super::*;
+
+    #[test]
+    fn climb_time_integration_is_second_order() {
+        // Linear rate 6 − 0.001 h m/s: exact time −1000 ln((6 − 0.001 h₁) / (6 − 0.001 h₀)).
+        let rate = |h: f64| Ok(6.0 - 0.001 * h);
+        let exact = -1_000.0 * ((6.0 - 3.0) / 6.0_f64).ln();
+        let trapezoids = integrate_climb(rate, 0.0, 3_000.0, 250.0).unwrap();
+        assert!(
+            (trapezoids - exact).abs() < 2e-3 * exact,
+            "{trapezoids} vs {exact}"
+        );
+        // Halving the step divides the error by about four.
+        let finer = integrate_climb(rate, 0.0, 3_000.0, 125.0).unwrap();
+        let ratio = (trapezoids - exact) / (finer - exact);
+        assert!((ratio - 4.0).abs() < 0.2, "{ratio}");
+        assert!(matches!(
+            integrate_climb(|h| Ok(1.0 - 0.001 * h), 0.0, 2_000.0, 250.0),
+            Err(PerformanceError::NoClimb { .. })
+        ));
     }
 }

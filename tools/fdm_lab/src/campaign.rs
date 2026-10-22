@@ -17,6 +17,7 @@ pub enum Unit {
     Speed,
     Duration,
     Altitude,
+    RotationSpeed,
 }
 
 impl Unit {
@@ -26,6 +27,7 @@ impl Unit {
             Self::Speed => (si * 3.6, "km/h"),
             Self::Duration => (si / 60.0, "min"),
             Self::Altitude => (si, "m"),
+            Self::RotationSpeed => (si * 30.0 / std::f64::consts::PI, "tr/min"),
         }
     }
 }
@@ -42,7 +44,7 @@ pub struct Outcome {
     pub tolerance_pct: f64,
     pub confidence: Confidence,
     pub source: String,
-    /// Why nothing was computed.
+    /// Why nothing was computed, or a remark on how it was.
     pub note: Option<String>,
     pub blocking: bool,
 }
@@ -60,112 +62,153 @@ impl Outcome {
     }
 }
 
-/// Runs the quantitative targets of a test file.
+/// Runs the quantitative targets of a test file (a level speed with an engine speed
+/// gives two outcomes).
 pub fn run(
     aircraft: &Aircraft,
     env: &dyn Environment,
     essais: &EssaisFile,
     accepted: Confidence,
 ) -> Vec<Outcome> {
-    essais
-        .quantitative
-        .iter()
-        .map(|q| {
-            let (label, unit, target, tolerance_pct, source, confidence, computed) = match q {
-                Quantitative::MaxLevelSpeed {
-                    altitude,
-                    target,
-                    tolerance_pct,
-                    source,
-                    confidence,
-                } => (
+    let mut outcomes = Vec::new();
+    let mut push = |label: String,
+                    unit: Unit,
+                    target: f64,
+                    tolerance_pct: f64,
+                    source: &String,
+                    confidence: Confidence,
+                    computed: Result<f64, String>,
+                    remark: Option<String>| {
+        let (computed, note) = match computed {
+            Ok(value) => (Some(value), remark),
+            Err(message) => (None, Some(message)),
+        };
+        outcomes.push(Outcome {
+            label,
+            unit,
+            target,
+            computed,
+            tolerance_pct,
+            confidence,
+            source: source.clone(),
+            note,
+            blocking: confidence.blocks_validation(accepted),
+        });
+    };
+    for q in &essais.quantitative {
+        match q {
+            Quantitative::MaxLevelSpeed {
+                altitude,
+                target,
+                tolerance_pct,
+                rpm,
+                source,
+                confidence,
+            } => {
+                let trim =
+                    max_level_speed(aircraft, env, altitude.si()).map_err(|e| format!("{e:?}"));
+                push(
                     format!("Vitesse maximale à {:.0} m", altitude.si()),
                     Unit::Speed,
                     target.si(),
                     *tolerance_pct,
                     source,
                     *confidence,
-                    max_level_speed(aircraft, env, altitude.si())
-                        .map(|t| t.flight.speed)
-                        .map_err(|e| format!("{e:?}")),
-                ),
-                Quantitative::ClimbTime {
-                    from,
-                    to,
-                    target,
-                    tolerance_pct,
-                    source,
-                    confidence,
-                } => (
-                    format!("Montée de {:.0} à {:.0} m", from.si(), to.si()),
-                    Unit::Duration,
-                    target.si(),
-                    *tolerance_pct,
-                    source,
-                    *confidence,
-                    time_to_climb(aircraft, env, from.si(), to.si()).map_err(|e| format!("{e:?}")),
-                ),
-                Quantitative::StallSpeed {
-                    power,
-                    target,
-                    tolerance_pct,
-                    source,
-                    confidence,
-                } => (
-                    format!(
-                        "Vitesse de décrochage ({})",
-                        match power {
-                            PowerSetting::Idle => "moteur au ralenti",
-                            PowerSetting::Full => "pleins gaz",
-                        }
+                    trim.clone().map(|t| t.flight.speed),
+                    None,
+                );
+                if let Some(rpm) = rpm {
+                    push(
+                        format!("Régime à la vitesse maximale à {:.0} m", altitude.si()),
+                        Unit::RotationSpeed,
+                        rpm.target.si(),
+                        rpm.tolerance_pct,
+                        source,
+                        *confidence,
+                        trim.map(|t| t.flight.rotor_speed),
+                        None,
+                    );
+                }
+            }
+            Quantitative::ClimbTime {
+                from,
+                to,
+                target,
+                tolerance_pct,
+                source,
+                confidence,
+            } => push(
+                format!("Montée de {:.0} à {:.0} m", from.si(), to.si()),
+                Unit::Duration,
+                target.si(),
+                *tolerance_pct,
+                source,
+                *confidence,
+                time_to_climb(aircraft, env, from.si(), to.si()).map_err(|e| format!("{e:?}")),
+                None,
+            ),
+            Quantitative::StallSpeed {
+                power,
+                target,
+                tolerance_pct,
+                source,
+                confidence,
+            } => {
+                let (label, computed, remark) = match power {
+                    PowerSetting::Idle => match stall_speed(aircraft, env, STALL_TEST_ALTITUDE) {
+                        Ok(s) => (
+                            "Vitesse de décrochage (moteur au ralenti)",
+                            Ok(s.speed),
+                            s.elevator_limited.then(|| {
+                                "limitée par la butée de profondeur : l'aile ne décroche pas en vol stabilisé".to_owned()
+                            }),
+                        ),
+                        Err(e) => ("Vitesse de décrochage (moteur au ralenti)", Err(format!("{e:?}")), None),
+                    },
+                    PowerSetting::Full => (
+                        "Vitesse de décrochage (pleins gaz)",
+                        Err("décrochage pleins gaz : pas encore calculé".to_owned()),
+                        None,
                     ),
+                };
+                push(
+                    label.to_owned(),
                     Unit::Speed,
                     target.si(),
                     *tolerance_pct,
                     source,
                     *confidence,
-                    match power {
-                        PowerSetting::Idle => stall_speed(aircraft, env, STALL_TEST_ALTITUDE)
-                            .map(|s| s.speed)
-                            .map_err(|e| format!("{e:?}")),
-                        PowerSetting::Full => {
-                            Err("décrochage pleins gaz : pas encore calculé".into())
-                        }
-                    },
-                ),
-                Quantitative::Ceiling {
-                    climb_rate,
-                    target,
-                    tolerance_pct,
-                    source,
-                    confidence,
-                } => (
+                    computed,
+                    remark,
+                );
+            }
+            Quantitative::Ceiling {
+                climb_rate,
+                target,
+                tolerance_pct,
+                source,
+                confidence,
+            } => {
+                let result = ceiling(aircraft, env, climb_rate.si());
+                let remark = result.as_ref().ok().and_then(|c| {
+                    c.extrapolated.then(|| {
+                        "extrapolé à partir des derniers taux de montée calculés (méthode de l'époque)".to_owned()
+                    })
+                });
+                push(
                     format!("Plafond (montée de {:.2} m/s)", climb_rate.si()),
                     Unit::Altitude,
                     target.si(),
                     *tolerance_pct,
                     source,
                     *confidence,
-                    ceiling(aircraft, env, climb_rate.si()).map_err(|e| format!("{e:?}")),
-                ),
-            };
-            let (computed, note) = match computed {
-                Ok(value) => (Some(value), None),
-                Err(message) => (None, Some(message)),
-            };
-            Outcome {
-                label,
-                unit,
-                target,
-                computed,
-                tolerance_pct,
-                confidence,
-                source: source.clone(),
-                note,
-                blocking: confidence.blocks_validation(accepted),
+                    result.map(|c| c.altitude).map_err(|e| format!("{e:?}")),
+                    remark,
+                );
             }
-        })
-        .collect()
+        }
+    }
+    outcomes
 }
 
 /// Whether every blocking target passed.

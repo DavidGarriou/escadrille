@@ -44,7 +44,24 @@ struct Record {
     max_rotor: f64,
     /// Accumulated heading change, rad.
     yaw: f64,
+    /// Largest angle of attack of the body, rad.
+    max_alpha: f64,
+    /// Largest aerodynamic load factor (aerodynamic force over weight).
+    max_load_factor: f64,
+    /// Time spent stalled and yawing (angle of attack above [`SPIN_ALPHA`], yaw rate
+    /// above [`SPIN_YAW_RATE`]), s.
+    spinning_time: f64,
 }
+
+/// Angle of attack above which the wings are stalled in a spin, rad (E:, well past the
+/// stall of the period's thin sections).
+const SPIN_ALPHA: f64 = 20.0 * std::f64::consts::PI / 180.0;
+
+/// Yaw rate of a spin, rad/s (E:).
+const SPIN_YAW_RATE: f64 = 0.5;
+
+/// Time stalled and yawing that makes a spin, s (E:).
+const SPIN_TIME: f64 = 3.0;
 
 fn fly(
     aircraft: &Aircraft,
@@ -85,6 +102,15 @@ fn fly(
         let new_heading = heading(&state);
         record.yaw += wrap(new_heading - last_heading);
         last_heading = new_heading;
+        let v = state.velocity_body;
+        let alpha = v.z.atan2(v.x);
+        record.max_alpha = record.max_alpha.max(alpha);
+        let force = aircraft.loads(&state, &c, env).wrench.force;
+        let weight = aircraft.mass().mass() * escadrille_fdm::constants::G0;
+        record.max_load_factor = record.max_load_factor.max(force.length() / weight);
+        if alpha > SPIN_ALPHA && state.angular_velocity_body.z.abs() > SPIN_YAW_RATE {
+            record.spinning_time += DT;
+        }
     }
     (state, record)
 }
@@ -160,12 +186,14 @@ pub fn run(aircraft: &Aircraft, env: &dyn Environment, scenario: &Robustness) ->
             let yawed = Cell::new(0.0);
             let last = Cell::new(heading(&start));
             let recovery_at = Cell::new(None::<f64>);
+            let yaw_at_recovery = Cell::new(0.0);
             let (end, record) = fly(aircraft, env, start, 40.0, |t, s| {
                 let h = heading(s);
                 yawed.set(yawed.get() + wrap(h - last.get()));
                 last.set(h);
                 if recovery_at.get().is_none() && (yawed.get().abs() >= target || t >= 20.0) {
                     recovery_at.set(Some(t));
+                    yaw_at_recovery.set(yawed.get());
                 }
                 if recovery_at.get().is_none() {
                     PilotControls {
@@ -181,15 +209,32 @@ pub fn run(aircraft: &Aircraft, env: &dyn Environment, scenario: &Robustness) ->
                     }
                 }
             });
-            let turns_done = yawed.get().abs() / (2.0 * std::f64::consts::PI);
+            let turns = |yaw: f64| yaw.abs() / (2.0 * std::f64::consts::PI);
+            // A spin is stalled and yawing for a while; otherwise the aircraft only
+            // tightened into a spiral dive (aerodynamicist review).
+            let what = if record.spinning_time >= SPIN_TIME {
+                format!(
+                    "**vrille établie** ({:.1} s décroché en lacet)",
+                    record.spinning_time
+                )
+            } else {
+                format!(
+                    "pas de vrille : spirale engagée ou décrochage sans autorotation ({:.1} s décroché en lacet)",
+                    record.spinning_time
+                )
+            };
             (
                 "Vrille : entrée puis sortie",
                 record,
                 format!(
-                    "{turns_done:.1} tours de cap ; sortie commandée à {:.1} s ; vitesse de rotation finale {:.2} rad/s ; assiette finale {:.0}°",
+                    "{what} ; {:.1} tours de cap avant la sortie, commandée à {:.1} s ; incidence maximale {:.0}°, facteur de charge maximal {:.1} ; à la fin : rotation {:.2} rad/s, assiette {:.0}°, vitesse {:.0} km/h",
+                    turns(yaw_at_recovery.get()),
                     recovery_at.get().unwrap_or(f64::NAN),
+                    record.max_alpha.to_degrees(),
+                    record.max_load_factor,
                     end.angular_velocity_body.length(),
-                    pitch_of(&end).to_degrees()
+                    pitch_of(&end).to_degrees(),
+                    end.velocity_body.length() * 3.6
                 ),
             )
         }
@@ -210,7 +255,7 @@ pub fn run(aircraft: &Aircraft, env: &dyn Environment, scenario: &Robustness) ->
                 format!(
                     "après {seconds:.0} s : vitesse {:.1} km/h, altitude perdue {:.0} m",
                     end.velocity_body.length() * 3.6,
-                    -end.position_ned.z - ALTITUDE
+                    ALTITUDE + end.position_ned.z
                 ),
             )
         }

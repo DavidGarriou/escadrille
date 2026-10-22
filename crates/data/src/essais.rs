@@ -5,7 +5,7 @@ use std::path::Path;
 
 use serde::Deserialize;
 
-use crate::units::{Duration, Length, Speed};
+use crate::units::{Duration, Length, RotationSpeed, Speed};
 use crate::{DataError, load_checked};
 
 /// Confidence of a target (skill `recherche-historique`): A primary measurement,
@@ -32,12 +32,22 @@ pub enum PowerSetting {
     Full,
 }
 
+/// Engine speed measured with a level speed: checks the propeller and engine together.
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct RpmTarget {
+    pub target: RotationSpeed,
+    pub tolerance_pct: f64,
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub enum Quantitative {
     MaxLevelSpeed {
         altitude: Length,
         target: Speed,
         tolerance_pct: f64,
+        /// Engine speed in that level flight, when the source gives it.
+        #[serde(default)]
+        rpm: Option<RpmTarget>,
         source: String,
         confidence: Confidence,
     },
@@ -117,7 +127,7 @@ mod tests {
             aircraft: "test",
             conditions: (fuel_fraction: 1.0),
             quantitative: [
-                MaxLevelSpeed(altitude: M(2000.0), target: Kmh(190.0), tolerance_pct: 3.0, source: "S1", confidence: C),
+                MaxLevelSpeed(altitude: M(2000.0), target: Kmh(190.0), tolerance_pct: 3.0, rpm: Some((target: Rpm(1720.0), tolerance_pct: 3.0)), source: "S1", confidence: C),
                 ClimbTime(from: M(0.0), to: M(3000.0), target: MinS(11, 30), tolerance_pct: 5.0, source: "S1", confidence: B),
                 Ceiling(climb_rate: FtMin(100.0), target: M(5500.0), tolerance_pct: 5.0, source: "S2", confidence: C),
             ],
@@ -129,6 +139,10 @@ mod tests {
             panic!("{file:?}");
         };
         assert_eq!(target.si(), 690.0);
+        let Quantitative::MaxLevelSpeed { rpm: Some(rpm), .. } = &file.quantitative[0] else {
+            panic!("{file:?}");
+        };
+        assert!((rpm.target.si() - 1720.0 * std::f64::consts::PI / 30.0).abs() < 1e-12);
         assert!(Confidence::C.blocks_validation(Confidence::C));
         assert!(!Confidence::D.blocks_validation(Confidence::C));
     }
