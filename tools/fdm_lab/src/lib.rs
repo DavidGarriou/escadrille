@@ -2,5 +2,6 @@
 //! step 6): trim, performance, eigenmodes and reports. The binary (`main.rs`) is the
 //! command line around this library.
 
+pub mod modes;
 pub mod performance;
 pub mod trim;
