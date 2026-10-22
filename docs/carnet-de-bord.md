@@ -958,3 +958,11 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 ### Ce qu'il faut tester maintenant
 - **Q** « Rappelle-moi ce qu'il faut tester maintenant. »
 - **R** Rien à tester manette en main : le M1 est sans rendu, et le premier vol à la manette viendra au M2. L'essai du joueur qui clôt le M1 consiste à lire le rapport d'essais du SPAD et ses tracés, puis à dire si l'avion « ressemble » aux témoignages. Il faut d'abord deux choses : `/nouvel-avion spad7`, et la décision sur la police des tracés. En attendant, essai facultatif : faire tourner `fdm_lab` sur le biplan synthétique, sur la machine du joueur, et donner un avis sur la lisibilité du rapport.
+
+### `/nouvel-avion spad7` : cadrage et décisions
+- **Q** Le joueur lance `/nouvel-avion spad7`.
+- **A** Relecture des fiches `spad7.md`, `hispano-suiza-8a.md` et `profil-spad7.md`, et de la liste des données à estimer de l'aérodynamicien. Constat : `fdm_lab inertia`, `fdm_lab gains` et `asset_check`, prévus par le processus, n'existent pas encore.
+- **D** Décisions du joueur :
+  1. **`spad7` = S.VII 150 ch** (Hispano-Suiza 8Aa), une Vickers, 703 kg des essais officiels. Toutes ses cibles sont en confiance A. Le 180 ch, machine type de la SPA 3 à l'été 1917, viendra ensuite sous `spad7_180` : même cellule, autre moteur.
+  2. **`fdm_lab inertia`** est écrit maintenant : centrage et inertie tirés d'un bilan de masses par composant, dans un fichier sourcé `masses.ron`. Les gains de l'instructeur et de l'IA, ainsi que la maquette 3D avec `asset_check`, attendent le M2, puisque le M1 n'a ni IA ni rendu.
+  3. **Tracés** : `plotters` sans polices système, avec `ab_glyph` et la police Go (BSD-3-Clause) embarquée, dans `fdm_lab` seulement. La question de la police est donc close.
