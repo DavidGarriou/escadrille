@@ -1,0 +1,13 @@
+// Synthetic flight tests for the tool tests: targets set near the model's own values,
+// not historical data (every value is E:).
+Essais(
+    aircraft: "test_biplane",
+    conditions: (fuel_fraction: 1.0),                                  // E: synthetic
+    quantitative: [
+        MaxLevelSpeed(altitude: M(1000.0), target: Kmh(168.0), tolerance_pct: 3.0, source: "test", confidence: B), // E: synthetic
+        StallSpeed(power: Idle, target: Kmh(64.0), tolerance_pct: 10.0, source: "test", confidence: D), // E: synthetic
+        ClimbTime(from: M(0.0), to: M(1000.0), target: MinS(3, 30), tolerance_pct: 10.0, source: "test", confidence: D), // E: synthetic
+        Ceiling(climb_rate: FtMin(100.0), target: M(5600.0), tolerance_pct: 5.0, source: "test", confidence: D), // E: synthetic
+    ],
+    robustness: [ZeroAirspeed, TailSlide],
+)

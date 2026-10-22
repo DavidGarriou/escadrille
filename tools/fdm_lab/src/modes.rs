@@ -232,24 +232,21 @@ pub fn longitudinal(linear: &Linear) -> Vec<Mode> {
     modes
 }
 
-/// Lateral modes, named: the oscillation is the dutch roll, the fastest real mode the
-/// roll subsidence, the slowest the spiral.
+/// Lateral modes, named by their eigenvector rather than their rank, so that an unusual
+/// aircraft is not given textbook names: an oscillation driven by sideslip and yaw is the
+/// dutch roll, a slow one driven by bank a coupled spiral and roll oscillation; the real
+/// mode driven by the roll rate is the roll subsidence, a slow one driven by bank or yaw
+/// the spiral.
 pub fn lateral(linear: &Linear) -> Vec<Mode> {
     let mut modes = modes(linear, &LATERAL);
-    let reals: Vec<usize> = (0..modes.len())
-        .filter(|&i| modes[i].period.is_none())
-        .collect();
-    for mode in modes.iter_mut().filter(|m| m.period.is_some()) {
-        mode.name = "roulis hollandais".into();
-    }
-    if let (Some(&slowest), Some(&fastest)) = (reals.first(), reals.last()) {
-        modes[fastest].name = "roulis".into();
-        if slowest != fastest {
-            modes[slowest].name = "spirale".into();
-        }
-    }
-    for mode in modes.iter_mut().filter(|m| m.name.is_empty()) {
-        mode.name = format!("apériodique ({})", mode.dominant);
+    for mode in &mut modes {
+        mode.name = match (mode.period.is_some(), mode.dominant) {
+            (true, "v" | "r") => "roulis hollandais".into(),
+            (true, _) => "oscillation spirale-roulis".into(),
+            (false, "p") => "roulis".into(),
+            (false, "φ" | "r") if mode.natural_frequency < 0.5 => "spirale".into(),
+            (false, dominant) => format!("apériodique ({dominant})"),
+        };
     }
     modes
 }
