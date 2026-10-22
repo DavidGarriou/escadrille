@@ -942,3 +942,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - tracés temporels, en attente de la décision sur la police.
 
   Contre-vérification demandée à l'aérodynamicien.
+
+### Contre-vérification de l'aérodynamicien
+- **R** Tout est réglé **sauf le décrochage**, où le pilote décidait encore de la nature et du côté du départ :
+  - entre l'incidence de décrochage et le départ, il croisait les commandes : aileron à fond contre le roulis, palonnier à fond parce que l'intégrale qui annule le dérapage suivait le roulis. Le test miroir ne pouvait pas le voir, puisque le pilote s'inverse avec l'hélice ;
+  - après un départ en roulis, le maintien de 3 s mesurait une spirale, pas une abattée.
+- **A** Corrigé (commit suivant `ad75506`) :
+  - dès l'incidence de décrochage atteinte, **plus d'ailerons ni de palonnier** (trim de plané), comme dans la technique « pas d'aileron au décrochage » ;
+  - après un départ en roulis, l'avion est laissé seul 1 s au plus, ou jusqu'à 60° d'inclinaison.
+- **R** Le biplan synthétique fait maintenant une **abattée de 12°**, avec une inclinaison de 13° à gauche, cap −4°, 62 m perdus. Avant, il partait en roulis à droite à 86° : c'était le pilote.
+- **A** Le test de la boucle borne désormais le dépassement d'incidence du pilote, au lieu de dépendre d'une marge de 0,3° au décrochage.
+- **⚠** Signalé par la revue : `StallSpeed(power: Full)` est maintenant calculé et bloquant. Sa définition (vitesse stabilisée minimale pleins gaz, en montée) est notée dans `format-avion.md`. **D** Aucune cible du SPAD ne s'en sert (la fiche n'a pas de décrochage moteur), et l'avis de l'historien sera demandé avant d'en écrire une.
+- **A** 184 tests réussis, `just check` sans erreur.
