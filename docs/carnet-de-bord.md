@@ -874,3 +874,26 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - méthodes de `fdm_lab` (trim, performances, modes, marge statique, robustesse, convergence).
 - **A** `format-avion.md` suit le schéma actuel : bloc `fuselage`, `friction: Curve(…)` ou `Fraction(k)`, `altitude_law`, `normal_force`, régime cible dans `MaxLevelSpeed`.
 - **D** Tout est prêt pour le SPAD VII. Reste au joueur à lancer **`/nouvel-avion spad7`** (ce processus lui est réservé) ; la liste des données à estimer de l'aérodynamicien servira de guide. La question de la police des tracés reste ouverte.
+
+### Essais qualitatifs dans `fdm_lab` (étape 6 du plan M1)
+- **D** En attendant `/nouvel-avion spad7` et la réponse sur la police des tracés, j'avance la seule partie de l'étape 6 qui ne dépend ni de l'un ni de l'autre : les **scénarios qualitatifs issus des témoignages**, testés sur le biplan synthétique.
+- **A** Schéma : champ facultatif `manoeuvre` sur les scénarios qualitatifs de `essais.ron`. Quatre manœuvres tirées du § 6.2 de la fiche SPAD :
+  - `Loop` : boucle pleins gaz ;
+  - `PowerOffStall` : décrochage moteur réduit ;
+  - `Glide` : finesse maximale ;
+  - `Dive` : piqué tenu puis ressource.
+
+  Un scénario sans manœuvre (embardée au sol, cockpit…) est listé « non simulé ».
+- **A** **Pilote scripté**, avec les mêmes commandes que le joueur :
+  - profondeur : vise un facteur de charge sans dépasser l'incidence de décrochage moins 2°, en anticipant sa vitesse de variation ; ses gains diminuent comme la pression dynamique au-delà de la vitesse d'entrée, sinon la ressource dépassait 6 g pour 4 demandés ;
+  - ailerons : ailes dans le plan vertical ;
+  - direction : dérapage nul.
+
+  Premier essai corrigé : sans anticipation, la boucle dépassait l'incidence de décrochage de 5,5°. Profondeur laissée au neutre, le piqué se redressait seul et la ressource n'avait plus d'objet. Le pilote **tient** donc la pente, et le fdm_lab relève à chaque instant le signe du moment de tangage profondeur au neutre : cabreur = rappelant, piqueur = engagement.
+- **R** Biplan synthétique, données non historiques :
+  - boucle bouclée en 8,8 s, sommet à +80 m et 48 km/h, sans décrocher ;
+  - abattée de 33° et inclinaison de 23° au décrochage (64 km/h, contre 69 km/h stabilisé), 66 m perdus ;
+  - finesse 6,8 à 100 km/h ;
+  - piqué tenu à −80° : 376 km/h, moment rappelant, ressource en 4,3 s avec 265 m perdus.
+- **A** Rapport : nouvelle section « Essais qualitatifs » (attendu, source, observé). Ces essais **ne bloquent pas** la validation : comparer l'observé à l'attendu revient au joueur et à l'aérodynamicien. Seules des valeurs non finies feraient échouer la campagne. `format-avion.md` et `modele-aero.md` sont à jour.
+- **A** 176 tests réussis, `just check` sans erreur. Revue de l'aérodynamicien demandée.
