@@ -1,0 +1,72 @@
+// Mass build-up of the empty SPAD VII 150 ch (`fdm_lab inertia spad7`): it gives the
+// empty mass, centre of gravity and inertia of aircraft.ron, which a test keeps in
+// agreement. Positions from the datum of aircraft.ron (lower wing leading edge on the
+// aircraft axis; x forwards, y right, z down), geometry of docs/recherche/spad7-calculs.md
+// § 3. No component mass of the S.VII is sourced (spad7.md § 3): every value is a
+// comparable (C:) or an estimate (E:), closed on the empty mass of S46 (1 100 lb).
+Masses(
+    aircraft: "spad7",
+    datum: "bord d'attaque du plan inférieur, dans l'axe de l'avion (point virtuel)",
+    components: [
+        (
+            name: "moteur Hispano-Suiza 8Aa, à sec",
+            mass: Lb(447.0),                              // C: mean of the 150 hp Hispano dry masses, H19 p. 203 (440 and 455 lb) and H20 (445 lb), hispano-suiza-8a.md § 6
+            position_m: (0.18, 0.0, -0.40),               // E: crankshaft on the thrust line (z −0.30), cylinders above it; engine from the propeller flange (x 0.75) back about 1.15 m
+            shape: Box(size_m: (1.25, 0.80, 0.80)),       // E: overall size of a 150 hp V8 Hispano
+        ),
+        (
+            name: "radiateur frontal et eau",
+            mass: Kg(40.0),                               // E: radiator about 20 kg and some 20 L of water in the circuit
+            position_m: (0.55, 0.0, -0.30),               // E: radiator in the nose behind the propeller, water spread back into the engine
+            shape: Box(size_m: (0.40, 0.75, 0.75)),       // E: circular radiator opening of 0.71 m (spad7-calculs.md § 3)
+        ),
+        (
+            name: "hélice et moyeu",
+            mass: Kg(22.0),                               // E: wooden two-bladed propeller of 2.45 m, 20 to 25 kg (aerodynamicist)
+            position_m: (0.78, 0.0, -0.30),               // C: hub on the 1917 drawing (spad7-calculs.md § 3)
+            shape: Own(ixx: 6.6, iyy: 3.3, izz: 3.3),     // C: m R² / 5 about the shaft; half of it about the other axes, averaged over a turn of the two blades
+        ),
+        (
+            name: "plan supérieur",
+            mass: Kg(58.0),                               // C: wings 22 % of the empty mass as on the S.XI (S49), 110 kg, shared in proportion to the areas (9.46 and 8.49 m²)
+            position_m: (-0.48, 0.0, -1.27),              // C: 40 % of the 1.21 m chord, gap of 1.27 m
+            shape: Box(size_m: (1.21, 7.82, 0.06)),       // C: span and chord of the data
+        ),
+        (
+            name: "plan inférieur (deux demi-plans)",
+            mass: Kg(52.0),                               // C: share of the 110 kg, as above
+            position_m: (-0.48, 0.0, 0.0),                // C: 40 % of the chord
+            shape: Own(ixx: 295.0, iyy: 6.3, izz: 301.0), // C: two panels of 26 kg from y = 0.40 to 3.91 m: m (L²/12 + y_c²) about x, plus m c²/12 about z
+        ),
+        (
+            name: "mâts, câbles et renvois d'ailerons",
+            mass: Kg(12.0),                               // E: 4 interplane and 4 intermediate struts, flying and landing wires
+            position_m: (-0.45, 0.0, -0.63),              // C: mid-gap, between the spars
+            shape: Own(ixx: 60.0, iyy: 2.0, izz: 60.0),   // C: masses about 2.2 m either side of the axis
+        ),
+        (
+            name: "empennage (plan fixe, profondeur, dérive, gouvernail)",
+            mass: Kg(15.0),                               // E: the S.XI moving surfaces alone weigh 19.9 kg (S49) on a larger aircraft
+            position_m: (-4.45, 0.0, -0.80),              // C: tail of the 1917 drawing
+            shape: Box(size_m: (0.80, 2.81, 0.60)),       // C: tailplane span and fin height of the drawing
+        ),
+        (
+            name: "train d'atterrissage",
+            mass: Kg(25.0),                               // E: two 700 mm wheels, axle, struts and rubber cord, about 5 % of the empty mass
+            position_m: (0.10, 0.0, 0.55),                // C: wheels 0.12 m ahead of the leading edge, 0.78 m below the chord (drawing)
+            shape: Box(size_m: (0.30, 1.52, 0.60)),       // S: track of 5 ft (S48)
+        ),
+        (
+            name: "réservoir et circuits, vides",
+            mass: Kg(10.0),                               // E:
+            position_m: (-0.95, 0.0, -0.15),              // E: main tank under the seat (S13)
+            shape: Point,
+        ),
+        (
+            name: "fuselage, capots, poste, commandes et béquille",
+            mass: Kg(62.4),                               // C: what the other components leave of the 1 100 lb (498.95 kg) of S46
+            position_m: (-1.60, 0.0, -0.35),              // E: structure from the nose (x 0.6) to the tail post (x −4.9), heavier forward
+            shape: Box(size_m: (5.50, 0.75, 0.90)),       // E: fuselage of the drawing, 0.80 × 1.10 m at most
+        ),
+    ],
+)

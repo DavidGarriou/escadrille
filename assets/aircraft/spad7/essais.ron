@@ -1,0 +1,79 @@
+// Flight tests of the SPAD VII 150 ch (Hispano-Suiza 8Aa): official figures of the
+// French table of 1919 (S46, Flight, 13 February 1919, p. 205, read on the page image;
+// spad7.md § 5.1) and behaviours from the pilots' testimonies (spad7.md § 6.2).
+// The test atmosphere is not given: the targets are compared in the standard atmosphere
+// (E:, spad7.md § 5.4).
+Essais(
+    aircraft: "spad7",
+    // S46 load: pilot 176 lb, armament 88 lb, sundries 11 lb, petrol and oil 176 lb, of
+    // which 8 kg of oil carried as payload in aircraft.ron.
+    conditions: (fuel_fraction: 0.739),                              // C: (79.8 − 8.0) kg of petrol over 135 L at 0.72 kg/L (spad7-calculs.md § 4)
+
+    quantitative: [
+        //! S: S46 p. 205, line « Spa. 7C1, Hispano 8Aa »: level speeds in mph and engine speeds printed under the line, confidence A; tolerance ±4 % (the decrement 192 / 179 / 174 km/h is irregular: aerodynamicist, review of 2026-10-22), engine speed ±3 %
+        MaxLevelSpeed(altitude: M(2000.0), target: Mph(119.5), tolerance_pct: 4.0, rpm: Some((target: Rpm(1720.0), tolerance_pct: 3.0)), source: "S46", confidence: A),
+        MaxLevelSpeed(altitude: M(3000.0), target: Mph(111.5), tolerance_pct: 4.0, rpm: Some((target: Rpm(1680.0), tolerance_pct: 3.0)), source: "S46", confidence: A),
+        MaxLevelSpeed(altitude: M(4000.0), target: Mph(108.0), tolerance_pct: 4.0, rpm: Some((target: Rpm(1640.0), tolerance_pct: 3.0)), source: "S46", confidence: A),
+
+        //! S: S46 p. 205, times of climb, confidence A; measured from the take-off, so the model (airborne at best climb speed from sea level) should be a little quicker (bias of the order of half a minute, E:); tolerance ±5 %
+        ClimbTime(from: M(0.0), to: M(2000.0), target: MinS(6.0, 40.0), tolerance_pct: 5.0, source: "S46", confidence: A),
+        ClimbTime(from: M(0.0), to: M(3000.0), target: MinS(11.0, 30.0), tolerance_pct: 5.0, source: "S46", confidence: A),
+        ClimbTime(from: M(0.0), to: M(4000.0), target: MinS(19.0, 30.0), tolerance_pct: 5.0, source: "S46", confidence: A),
+
+        //! S: S46 p. 205, theoretical ceiling (rate of climb nil) 18 000 ft, confidence A; tolerance ±5 %
+        Ceiling(climb_rate: Ms(0.0), target: Ft(18000.0), tolerance_pct: 5.0, source: "S46", confidence: A),
+
+        //! S: power-off stall « about 47 mph » of a S.VII with a 180 hp Wright-Hispano E, flown by Frank Tallman decades later, mass unknown (S31, seen in summary only): confidence D, reported but never blocking
+        StallSpeed(power: Idle, target: Mph(47.0), tolerance_pct: 10.0, source: "S31", confidence: D),
+    ],
+
+    qualitative: [
+        (
+            name: "piqué vertical pleins gaz",
+            description: "Structure robuste, tient un piqué quasi vertical à pleine puissance ; le moment de tangage reste rappelant, la ressource ramène l'avion en palier (confirmé, deux témoignages directs indépendants)",
+            source: "T2, T6 (spad7.md § 6.2)",
+            manoeuvre: Some(Dive(altitude: M(3000.0), angle: Deg(-80.0), seconds: 20.0, load_factor: 4.0)), // S: −80° for 20 s from 3 000 m, the extreme case of T6 (spad7.md § 6.2); E: pull-out at 4 g
+        ),
+        (
+            name: "piqué à 60°",
+            description: "Variante réaliste : selon le RAE, les piqués « verticaux » des pilotes faisaient plutôt 45 à 60°",
+            source: "S60 (spad7.md § 6.2)",
+            manoeuvre: Some(Dive(altitude: M(3000.0), angle: Deg(-60.0), seconds: 20.0, load_factor: 4.0)), // S: 45 to 60° (S60); E: 20 s and 4 g as above
+        ),
+        (
+            name: "boucle",
+            description: "Boucle aisée, bouclée sans décrochage au sommet (un seul jugement de pilote, à confirmer)",
+            source: "T1, T4 (spad7.md § 6.2)",
+            manoeuvre: Some(Loop(altitude: M(2000.0), load_factor: 3.5)), // E: from level flight at full throttle (the cruising speed is not sourced), pulled at 3.5 g
+        ),
+        (
+            name: "décrochage moteur réduit",
+            description: "Décrochage brutal à basse vitesse : abattée nette et départ en roulis (à confirmer, aucun témoignage direct lu)",
+            source: "T9, T16 (spad7.md § 6.2)",
+            manoeuvre: Some(PowerOffStall(altitude: M(1000.0))), // E: test height
+        ),
+        (
+            name: "plané",
+            description: "Mauvais plané, plus pentu que celui d'un Nieuport ; atterrissage au moteur (à confirmer)",
+            source: "T9 (spad7.md § 6.2)",
+            manoeuvre: Some(Glide(altitude: M(1000.0))), // E: test height
+        ),
+        (
+            name: "vrille",
+            description: "Entrée en vrille « paresseuse et irrégulière, mais très douce », sortie franche aux commandes croisées : voir le scénario de robustesse « Vrille »",
+            source: "T1 (spad7.md § 6.2)",
+        ),
+        (
+            name: "plate-forme de tir",
+            description: "Très stable en vol : oscillation d'incidence bien amortie, spirale peu divergente : voir les modes propres du rapport",
+            source: "T8, S5 (spad7.md § 6.2)",
+        ),
+        (
+            name: "embardée au décollage",
+            description: "Couple marqué : à pleine puissance, l'avion part à gauche, contré au pied droit (M2, au sol)",
+            source: "T8 (spad7.md § 6.2)",
+        ),
+    ],
+
+    robustness: [ZeroAirspeed, TailSlide, SpinEntryRecovery(turns: 3), Inverted(seconds: 10.0), MaxDive], // E: the scenarios of the M1 plan (step 7)
+)
