@@ -43,3 +43,26 @@ Résultat : +5 à +6,4 % de traction selon J ; le rendement maximal passe de 0,7
 **Points d'appui des quatre quadrants** : estimation par éléments de pale de l'aérodynamicien (revue du 2026-10-22), avec contrôle d'énergie : arrêt (−0,065 ; −0,008), écoulement inversé (+0,07 ; +0,008), rotation inverse (−0,04 ; −0,007).
 
 **Contrôle attendu** : à 192 km/h et 1 720 tr/min à 2 000 m, J = 53,3 / (28,67 × 2,45) ≈ 0,76, au voisinage du rendement maximal. Le modèle doit retrouver vitesse **et** régime (S46).
+
+## 3. Géométrie mesurée sur le dessin de 1917
+
+**Document** : dessin trois vues « The type VII 160 HP Hispano-Suiza motored Spad Scout », *Flight*, 16 août 1917, p. 841 (reprise d'*Aerial Age*, S48 de `spad7.md`), PDF d'archive.org (`Flight_International_Magazine_1917-08-16-pdf`, page 15) rendu à 600 points par pouce. L'article qualifie ses cotes d'« approximatives » ; le dessin a les mêmes proportions que son texte (corde de 4 ft 7 in pour 25 ft 6 in d'envergure). **Confiance C pour les proportions, D pour la corde.**
+
+**Mise à l'échelle** : la barre d'échelle est illisible à cette définition. L'échelle vient des cotes officielles de S46 : envergure de 7,83 m en vue de dessus (1 885 px) et longueur hors tout de 6,10 m en vue de côté. Les deux vues donnent **240,7 et 240 px/m** : elles concordent à 0,3 %. Mesures faites sur une grille de 20 px (±10 px, soit ±4 cm).
+
+| Grandeur | Dessin | Retenu pour les données | Remarque |
+|---|---|---|---|
+| Corde des plans | 1,37 m (330 px) | **1,21 m (C)** | Le dessin reprend la corde de S48, incompatible avec la surface officielle (A). Avec 1,21 m, plan supérieur sur toute l'envergure et plan inférieur depuis le flanc du fuselage (0,40 m de l'axe), la surface des bandes vaut 17,96 m², à +0,6 % des 17,85 m² ; c'est le rapport 0,94 entre surface publiée et rectangle brut du XIII (aérodynamicien). **Conflit à trancher en revue** |
+| Écartement | 1,26 m (302 px) | 1,27 m (S48, C) | Concordant |
+| Décalage horizontal | ≈ 0 : mâts verticaux, bords d'attaque alignés | 0 (C) | XIII : 1¼°, soit 3 cm |
+| Mâts interplans | avant à 17 %, arrière à 49 % de la corde | positions des traînées | |
+| Ailerons (plan supérieur seul) | 1,95 m d'envergure depuis le saumon, 0,44 m de corde (32 %) | de 50 % à 100 % de la demi-envergure, 32 % de la corde (C) | XIII : 0,495 m sur 1,40 m (35 %, S15 vu en résumé) |
+| Plan fixe et profondeur | envergure 2,81 m ; surface 2,30 m² dont profondeur 1,00 m² (44 %) ; corde à l'emplanture 1,14 m ; bord d'attaque à 3,78 m derrière celui des ailes | panneau trapézoïdal de même surface : cordes 1,14 et 0,50 m, quart de corde de x = −4,07 à −4,51 m | Contours numérisés point par point, surface par la formule du polygone |
+| Dérive et gouvernail | dérive 0,37 m², gouvernail 0,53 m² (59 %) ; hauteur totale 1,09 m ; le gouvernail descend jusqu'au bas du fuselage ; la dérive avance de 0,2 à 0,27 m devant le plan fixe | deux panneaux : sous le plan fixe (gouvernail seul, 0,39 m de haut, corde 0,53 m), au-dessus (0,70 m de haut, cordes 1,61 et 0,39 m) | S48 : la dérive avance d'environ 12 in |
+| Plan fixe : hauteur | sur les longerons supérieurs, 0,70 m au-dessus de la corde du plan inférieur | z = −0,70 m | |
+| Fuselage | hauteur maximale ≈ 1,1 à 1,17 m ; ouverture circulaire du radiateur 0,71 m ; largeur peu lisible (renflements des carters d'arbres à cames) | 0,80 m de large, 1,10 m de haut (E:) | |
+| Hélice | moyeu 0,78 m devant le bord d'attaque, 0,30 m au-dessus de la corde du plan inférieur ; diamètre dessiné 2,29 m | moyeu (0,78 ; 0 ; −0,30) ; diamètre 2,45 m (§ 2) | |
+| Roues | diamètre dessiné 0,58 m, axe 0,12 m devant le bord d'attaque, 0,78 m sous la corde | positions du train | Dimension « 700 × … » lue sur le S.XI par l'historien |
+| Poste | ouverture de 0,9 à 1,4 m derrière le bord d'attaque | pilote à x = −1,15 m | |
+
+**Repère des données** : origine au bord d'attaque du plan inférieur, dans l'axe (point virtuel, dans le fuselage) ; x vers l'avant, y à droite, z vers le bas ; ligne de traction horizontale (le dessin est tracé en ligne de vol, queue haute).
