@@ -159,6 +159,9 @@ Essais(
             rpm: Some((target: Rpm(0.0), tolerance_pct: 3.0)), source: "S1", confidence: A), // S:
         ClimbTime(from: M(0.0), to: M(0.0), target: MinS(0, 0), tolerance_pct: 5.0, source: "S1", confidence: B), // S:
         StallSpeed(power: Idle, target: Kmh(0.0), tolerance_pct: 5.0, source: "S2", confidence: C), // S:
+        // power: Full = vitesse stabilisée minimale pleins gaz (l'avion monte) : définition
+        // à confirmer par l'historien avant d'y attacher une cible (l'époque mesurait
+        // plutôt une vitesse minimale en palier).
         Ceiling(climb_rate: FtMin(100.0), target: M(0.0), tolerance_pct: 5.0, source: "S1", confidence: B), // S:
     ],
 
@@ -183,7 +186,7 @@ Essais(
 
 Manœuvres qualitatives (`fdm_lab/src/qualitative.rs`), vérifiées au chargement (facteur de charge > 1, piqué entre −90° et 0° et d'au moins 5 s) : départ cap au nord, ailes horizontales, air calme. Le pilote vise un facteur de charge sans dépasser l'incidence de décrochage (à la manette de la manœuvre) moins 2°, anticipée sur sa vitesse de variation ; il garde les ailes dans le plan vertical aux ailerons et annule le dérapage à la direction (proportionnel et intégral).
 - `Loop` (`speed` facultative, vitesse maximale en palier par défaut) : pleins gaz ; bouclée quand le **vecteur vitesse** a tourné d'un tour sans sortir du plan (inclinaison < 45°) ; sommet (hauteur, vitesse, rapport à V_s), part du temps sur la limite d'incidence, marge au décrochage.
-- `PowerOffStall` : depuis le palier à 1,3 V_s, gaz réduits, vitesse diminuée d'**un nœud par seconde** (pratique des essais de certification) jusqu'au départ : abattée (le nez plonge) ou départ en roulis (inclinaison > 30°). Ensuite, l'avion seul (manche tenu, ailerons et palonnier au neutre) jusqu'à ce que le nez cesse de plonger (3 s au plus) : abattée, inclinaison et son côté, cap ; puis le pilote rétablit. Vitesses vraie et équivalente, dérapage au décrochage, décélération mesurée.
+- `PowerOffStall` : depuis le palier à 1,3 V_s, gaz réduits, vitesse diminuée d'**un nœud par seconde** (pratique des essais de certification) jusqu'au départ : abattée (le nez plonge) ou départ en roulis (inclinaison > 30°). Dès l'incidence de décrochage atteinte, plus d'ailerons ni de palonnier (trim de plané) : un pilote qui lutte contre le roulis croise les commandes et provoque lui-même le départ (revue de l'aérodynamicien). Après le départ, l'avion seul (manche tenu) jusqu'à ce que le nez cesse de plonger (3 s au plus), ou 1 s et 60° d'inclinaison au plus après un départ en roulis (au-delà, c'est une spirale ou une vrille) : abattée, inclinaison et son côté, cap ; puis le pilote rétablit. Vitesses vraie et équivalente, dérapage au décrochage, décélération mesurée.
 - `Glide` : finesse maximale au ralenti.
 - `Dive` : piqué tenu à l'angle donné (pente mesurée dans le plan vertical, valable jusqu'à −90°), pleins gaz ; signe du moment de tangage profondeur au neutre ; puis deux branches depuis la fin du piqué : profondeur relâchée au neutre 3 s (la pente remonte : rappelant ; elle s'accentue : engagement), et ressource jusqu'à une trajectoire horizontale. Chiffres du piqué établi (après 2 s).
 

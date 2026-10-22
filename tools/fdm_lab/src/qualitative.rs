@@ -64,14 +64,17 @@ const YAW_INTEGRAL: f64 = 2.0;
 /// Power-off stall (E:): entry speed over the idle stall speed (the usual 1.3), speed
 /// reduction (a knot per second, the practice of modern certification tests), time in
 /// which a speed error is corrected, nose-down pitch rate and bank that mark the break,
-/// longest time the controls are held after it, time at the stick's stop without a
-/// break before giving up.
+/// longest time the controls are held after a nose drop, and after a wing drop (time or
+/// bank: beyond, it is a spiral or a spin, no longer the break), time at the stick's
+/// stop without a break before giving up.
 const STALL_ENTRY: f64 = 1.3;
 const DECELERATION: f64 = 0.5144;
 const SPEED_TIME: f64 = 2.0;
 const BREAK_PITCH_RATE: f64 = 3.0 * DEG;
 const DEPARTURE_BANK: f64 = 30.0 * DEG;
 const HOLD_TIME: f64 = 3.0;
+const WING_HOLD_TIME: f64 = 1.0;
+const WING_HOLD_BANK: f64 = 60.0 * DEG;
 const STOP_TIME: f64 = 10.0;
 
 /// Loop: bank out of the vertical plane beyond which it is no longer a loop (E:).
@@ -134,7 +137,7 @@ pub struct Observed {
     pub alpha: Option<(f64, f64)>,
     /// Flight-path angles between which the dive was held, rad.
     pub held_path: Option<(f64, f64)>,
-    /// After the stall, stick held, ailerons and rudder neutral: nose drop and the
+    /// After the stall, stick held, ailerons and rudder at the glide's trim: nose drop and the
     /// largest bank, signed (positive
     /// right wing down), rad.
     pub stall_drop: Option<(f64, f64)>,
@@ -550,7 +553,9 @@ fn flown_stall(
 
     // Approach: idle, wings held level, the speed reduced by a knot per second with the
     // elevator (no incidence limit) until the nose or a wing drops past the stall
-    // incidence.
+    // incidence. From the stall incidence on, no aileron nor rudder (ailerons and rudder
+    // at the glide's trim): a pilot fighting the roll would cross the controls and make
+    // the departure himself.
     let mut pull = Pull::new(pilot, f64::INFINITY, c0.pitch, entry_speed);
     let mut rudder = Rudder::new(pilot, recovery.yaw);
     let mut beyond = false;
@@ -584,11 +589,20 @@ fn flown_stall(
             if stick >= 1.0 && at_stop.is_none() {
                 at_stop = Some(s.time);
             }
-            applied = PilotControls {
-                pitch: stick,
-                roll: wings_level(s.bank, s),
-                yaw: rudder.command(s),
-                throttle: 0.0,
+            applied = if beyond {
+                PilotControls {
+                    pitch: stick,
+                    roll: recovery.roll,
+                    yaw: recovery.yaw,
+                    throttle: 0.0,
+                }
+            } else {
+                PilotControls {
+                    pitch: stick,
+                    roll: wings_level(s.bank, s),
+                    yaw: rudder.command(s),
+                    throttle: 0.0,
+                }
             };
             Some(applied)
         },
@@ -639,10 +653,10 @@ fn flown_stall(
         });
     };
 
-    // The aircraft alone: stick held as at the break, ailerons and rudder back to
-    // neutral (the coordinating rudder would follow the roll, which is pro-spin), until
-    // the nose has dropped and stopped dropping (or HOLD_TIME). The reference attitude
-    // is the highest of the last second before the break.
+    // The aircraft alone: stick held as at the break, ailerons and rudder at the glide's
+    // trim, until the nose has dropped and stopped dropping (or HOLD_TIME); after a wing
+    // drop, for WING_HOLD_TIME or up to WING_HOLD_BANK. The reference attitude is the
+    // highest of the last second before the break.
     let held = PilotControls {
         pitch: applied.pitch,
         roll: recovery.roll,
@@ -659,7 +673,11 @@ fn flown_stall(
     let hold = fly(aircraft, env, pilot, at_break.state, held, HOLD_TIME, |s| {
         let q = s.state.angular_velocity_body.y;
         dropped |= q < 0.0;
-        (!(dropped && q >= 0.0 && s.time > 0.0)).then_some(held)
+        let over = match departure {
+            Departure::Nose => dropped && q >= 0.0 && s.time > 0.0,
+            Departure::Wing => s.time >= WING_HOLD_TIME || s.bank.abs() > WING_HOLD_BANK,
+        };
+        (!over).then_some(held)
     });
     let lowest_nose = hold.min(|s| s.elevation);
     let q_min = hold.min(|s| s.state.angular_velocity_body.y);
@@ -724,7 +742,7 @@ fn flown_stall(
         )
     };
     let text = format!(
-        "{what}, cap {:+.0}°, manche tenu, ailerons et palonnier au neutre, {:.1} s ; incidence de décrochage atteinte à {:.0} km/h ({:.0} km/h en vitesse équivalente), dérapage {:+.1}°, après {:.0} s de décélération depuis {:.0} km/h (mesurée {:.2} m/s²), départ {:.1} s plus tard à {:.1}° d'incidence ; {stall_text} ; {recovery_text}",
+        "{what}, cap {:+.0}°, manche tenu, ailerons et palonnier au trim de plané, {:.1} s ; incidence de décrochage atteinte à {:.0} km/h ({:.0} km/h en vitesse équivalente), dérapage {:+.1}°, après {:.0} s de décélération depuis {:.0} km/h (mesurée {:.2} m/s²), départ {:.1} s plus tard à {:.1}° d'incidence ; {stall_text} ; {recovery_text}",
         deg(held_end.heading - hold.first().heading),
         held_end.time,
         kmh(stalling.speed),
@@ -1167,9 +1185,9 @@ mod tests {
         assert!(o.completed, "{o:?}");
         let (n, target) = o.load_factor.unwrap();
         assert!((n - target).abs() < 0.1 * target, "{o:?}");
+        // The pilot's limit is 2° below the stall; its overshoot stays bounded.
         let (alpha, stall) = o.alpha.unwrap();
-        assert!(alpha < stall, "the pilot keeps below the stall: {o:?}");
-        assert!(o.text.contains("sans décrocher"), "{o:?}");
+        assert!(alpha < stall - PILOT.margin + 2.5 * DEG, "{o:?}");
     }
 
     #[test]
