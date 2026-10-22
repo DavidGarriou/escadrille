@@ -8,11 +8,13 @@ use std::process::ExitCode;
 use clap::{Parser, Subcommand};
 use escadrille_data::aircraft::{Built, Loading, load_aircraft};
 use escadrille_data::essais::{Confidence, Quantitative, load_essais};
+use escadrille_data::masses::load_masses;
 use escadrille_fdm::aircraft::Aircraft;
 use escadrille_fdm::environment::{Environment, StandardEnvironment};
 use fdm_lab::campaign::{self, validated};
 use fdm_lab::modes::{Mode, lateral, linearise, longitudinal, static_stability};
-use fdm_lab::performance::max_level_speed;
+use fdm_lab::performance::{envelope, max_level_speed};
+use fdm_lab::plots::{self, Panel, Series};
 use fdm_lab::report::{Cruise, Report, markdown, time_step_change};
 use fdm_lab::trim::{Flight, LEVEL_AT_SPEED, Trim, solve_robust};
 use fdm_lab::{qualitative, robustness};
@@ -54,6 +56,9 @@ enum Command {
         #[arg(long, default_value_t = 2_000.0)]
         altitude_m: f64,
     },
+    /// Empty mass, centre of gravity and inertia from the mass build-up (masses.ron), as
+    /// the mass block of aircraft.ron, checked against it.
+    Inertia { aircraft: String },
     /// Print the ISA sea-level constants used by the FDM.
     Constants,
 }
@@ -97,6 +102,118 @@ fn print_modes(title: &str, modes: &[Mode]) {
             m.dominant
         );
     }
+}
+
+/// Envelope step of the plots, m.
+const PLOT_STEP: f64 = 250.0;
+
+/// The report's plots, written to `dir`: (title, file name) of each.
+fn figures(
+    aircraft: &Aircraft,
+    essais: &escadrille_data::essais::EssaisFile,
+    qualitative: &[fdm_lab::qualitative::QualitativeOutcome],
+    dir: &Path,
+) -> Result<Vec<(String, String)>, String> {
+    let points = envelope(aircraft, &STILL_AIR, PLOT_STEP);
+    let mut speeds = Vec::new();
+    let mut rpms = Vec::new();
+    let mut climbs = Vec::new();
+    for q in &essais.quantitative {
+        match q {
+            Quantitative::MaxLevelSpeed {
+                altitude,
+                target,
+                rpm,
+                ..
+            } => {
+                speeds.push((target.si() * 3.6, altitude.si()));
+                if let Some(r) = rpm {
+                    rpms.push((r.target.si() * 30.0 / std::f64::consts::PI, altitude.si()));
+                }
+            }
+            Quantitative::ClimbTime {
+                from, to, target, ..
+            } if from.si() == 0.0 => climbs.push((target.si() / 60.0, to.si())),
+            _ => {}
+        }
+    }
+    // Time to climb: trapezoids on 1 / rate along the envelope.
+    let mut time = 0.0;
+    let mut times = Vec::new();
+    for (i, p) in points.iter().enumerate() {
+        if i > 0 {
+            let q = &points[i - 1];
+            time += 0.5 * (1.0 / q.best_climb.rate + 1.0 / p.best_climb.rate) * PLOT_STEP;
+        }
+        times.push((time / 60.0, p.altitude));
+    }
+    let model = |f: fn(&fdm_lab::performance::EnvelopePoint) -> f64| {
+        points
+            .iter()
+            .map(|p| (f(p), p.altitude))
+            .collect::<Vec<_>>()
+    };
+    let one = |label: &str, model: Vec<(f64, f64)>, targets: Vec<(f64, f64)>| Panel {
+        y_label: label.to_owned(),
+        series: if targets.is_empty() {
+            vec![Series::line("modèle", model)]
+        } else {
+            vec![
+                Series::line("modèle", model),
+                Series::dots("cible historique", targets),
+            ]
+        },
+    };
+    let mut written = Vec::new();
+    let charts = [
+        (
+            "vitesse.png",
+            "Vitesse maximale en palier, pleins gaz",
+            "vitesse vraie (km/h)",
+            one(
+                "altitude (m)",
+                model(|p| p.max_speed.flight.speed * 3.6),
+                speeds,
+            ),
+        ),
+        (
+            "regime.png",
+            "Régime à la vitesse maximale",
+            "régime (tr/min)",
+            one(
+                "altitude (m)",
+                model(|p| p.max_speed.flight.rotor_speed * 30.0 / std::f64::consts::PI),
+                rpms,
+            ),
+        ),
+        (
+            "taux-de-montee.png",
+            "Meilleur taux de montée, pleins gaz",
+            "taux de montée (m/s)",
+            one("altitude (m)", model(|p| p.best_climb.rate), Vec::new()),
+        ),
+        (
+            "montee.png",
+            "Temps de montée depuis le niveau de la mer",
+            "temps (min)",
+            one("altitude (m)", times, climbs),
+        ),
+    ];
+    for (file, title, x_label, panel) in charts {
+        plots::draw(&dir.join(file), title, x_label, &[panel])?;
+        written.push((title.to_owned(), file.to_owned()));
+    }
+    for (i, o) in qualitative.iter().enumerate() {
+        if let Some(Ok(observed)) = &o.flown
+            && !observed.trace.is_empty()
+        {
+            let file = format!("qualitatif-{}.png", i + 1);
+            let title = format!("Essai qualitatif : {}", o.name);
+            plots::manoeuvre(&dir.join(&file), &title, &observed.trace)?;
+            written.push((title, file));
+        }
+    }
+    Ok(written)
 }
 
 fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, String> {
@@ -149,6 +266,9 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
         .as_ref()
         .map(|c| time_step_change(aircraft, &STILL_AIR, &c.trim, c.commands, 1.0 / 240.0));
 
+    let dir = out.join(id);
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    let figures = figures(aircraft, &essais, &qualitative, &dir)?;
     let report = Report {
         id,
         name: &data.file.name,
@@ -158,11 +278,10 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
         outcomes: &outcomes,
         robustness: &robustness,
         qualitative: &qualitative,
+        figures: &figures,
         cruise,
         time_step_change: time_step,
     };
-    let dir = out.join(id);
-    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     let path = dir.join("rapport.md");
     std::fs::write(&path, markdown(&report)).map_err(|e| e.to_string())?;
 
@@ -193,6 +312,45 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
     Ok(validated(&outcomes)
         && robustness.iter().all(|o| o.passed)
         && qualitative.iter().all(|o| o.finite()))
+}
+
+fn inertia(assets: &Path, id: &str) -> Result<bool, String> {
+    let masses = load_masses(assets, id)
+        .map_err(|e| e.to_string())?
+        .ok_or_else(|| {
+            format!("pas de bilan de masses pour {id} (assets/aircraft/{id}/masses.ron)")
+        })?;
+    let e = masses.empty();
+    let i = e.inertia;
+    println!(
+        "Bilan de masses de {id} ({} composants) :",
+        masses.components.len()
+    );
+    println!("        empty: Kg({:.1}),", e.mass);
+    println!(
+        "        cg_empty_m: ({:.3}, {:.3}, {:.3}), // C: fdm_lab inertia {id} (masses.ron)",
+        e.cg_m[0], e.cg_m[1], e.cg_m[2]
+    );
+    println!(
+        "        inertia_empty_kg_m2: (ixx: {:.0}, iyy: {:.0}, izz: {:.0}, ixz: {:.0}), // C: fdm_lab inertia {id} (masses.ron)",
+        i.ixx, i.iyy, i.izz, i.ixz
+    );
+    match load_aircraft(assets, id) {
+        Ok(data) => match masses.check(&data.file.mass) {
+            Ok(()) => {
+                println!("aircraft.ron concorde avec le bilan.");
+                Ok(true)
+            }
+            Err(message) => {
+                println!("aircraft.ron s'écarte du bilan : {message}");
+                Ok(false)
+            }
+        },
+        Err(error) => {
+            println!("aircraft.ron non chargé : {error}");
+            Ok(false)
+        }
+    }
 }
 
 fn main() -> ExitCode {
@@ -237,6 +395,7 @@ fn main() -> ExitCode {
             confidence,
             out,
         } => essai(&cli.assets, &aircraft, &confidence, &out),
+        Command::Inertia { aircraft } => inertia(&cli.assets, &aircraft),
     };
     match result {
         Ok(true) => ExitCode::SUCCESS,
@@ -277,6 +436,15 @@ mod tests {
         );
         assert!(report.contains("Convergence en pas de temps"));
         assert!(report.contains("## Essais qualitatifs"), "{report}");
+        assert!(report.contains("](vitesse.png)"), "{report}");
+        for file in [
+            "vitesse.png",
+            "regime.png",
+            "montee.png",
+            "qualitatif-1.png",
+        ] {
+            assert!(out.join("test_biplane").join(file).exists(), "{file}");
+        }
         assert!(ok, "{report}");
         let _ = std::fs::remove_dir_all(&out);
     }

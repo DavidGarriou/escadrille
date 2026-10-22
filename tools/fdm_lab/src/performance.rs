@@ -220,6 +220,39 @@ pub fn ceiling(
     }
 }
 
+/// Maximum level speed and best climb at one altitude (for the plots).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct EnvelopePoint {
+    pub altitude: f64,
+    pub max_speed: Trim,
+    pub best_climb: BestClimb,
+}
+
+/// The envelope from sea level upwards in steps of `step` metres, as long as both the
+/// maximum speed and a positive climb can be solved.
+pub fn envelope(aircraft: &Aircraft, env: &dyn Environment, step: f64) -> Vec<EnvelopePoint> {
+    let mut points = Vec::new();
+    let mut altitude = 0.0;
+    while altitude <= 15_000.0 {
+        let (Ok(max_speed), Ok(best_climb)) = (
+            max_level_speed(aircraft, env, altitude),
+            best_climb(aircraft, env, altitude),
+        ) else {
+            break;
+        };
+        if best_climb.rate <= 0.0 {
+            break;
+        }
+        points.push(EnvelopePoint {
+            altitude,
+            max_speed,
+            best_climb,
+        });
+        altitude += step;
+    }
+    points
+}
+
 /// Lowest steady speed at a throttle setting.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Stall {

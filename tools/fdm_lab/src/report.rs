@@ -35,6 +35,8 @@ pub struct Report<'a> {
     pub outcomes: &'a [Outcome],
     pub robustness: &'a [RobustnessOutcome],
     pub qualitative: &'a [QualitativeOutcome],
+    /// Plots next to the report: (title, file name).
+    pub figures: &'a [(String, String)],
     pub cruise: Option<Cruise>,
     /// Largest relative change when the time step is halved.
     pub time_step_change: Option<f64>,
@@ -211,6 +213,13 @@ pub fn markdown(r: &Report) -> String {
                 o.source,
                 o.observed()
             );
+        }
+    }
+
+    if !r.figures.is_empty() {
+        let _ = writeln!(t, "\n## Tracés\n");
+        for (title, file) in r.figures {
+            let _ = writeln!(t, "![{title}]({file})\n");
         }
     }
 

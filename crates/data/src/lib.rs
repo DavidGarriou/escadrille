@@ -7,6 +7,7 @@
 pub mod aircraft;
 pub mod airfoil;
 pub mod essais;
+pub mod masses;
 pub mod origin;
 pub mod propeller;
 pub mod units;

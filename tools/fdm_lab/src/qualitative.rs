@@ -147,7 +147,27 @@ pub struct Observed {
     /// (positive: the dive flattens by itself).
     pub release: Option<f64>,
     pub glide_ratio: Option<f64>,
+    /// Time history of the manoeuvre, for the plots.
+    pub trace: Vec<TracePoint>,
 }
+
+/// One instant of a manoeuvre's time history (angles in the frame that suits it: the
+/// vertical plane for loops and dives, Euler angles otherwise).
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct TracePoint {
+    /// s.
+    pub time: f64,
+    /// Airspeed, m/s.
+    pub speed: f64,
+    pub alpha: f64,
+    pub pitch: f64,
+    pub bank: f64,
+    pub load_factor: f64,
+    pub controls: PilotControls,
+}
+
+/// Rate of the time histories, Hz.
+const TRACE_RATE: f64 = 20.0;
 
 /// One instant of a manoeuvre.
 #[derive(Debug, Clone, Copy)]
@@ -176,6 +196,8 @@ struct Sample {
     elevation: f64,
     bank: f64,
     heading: f64,
+    /// Controls flown to reach this instant.
+    controls: PilotControls,
 }
 
 fn unwrapped(raw: f64, previous: Option<f64>) -> f64 {
@@ -232,6 +254,7 @@ impl Sample {
             elevation,
             bank,
             heading: unwrapped(yaw, previous.map(|p| p.heading)),
+            controls: *controls,
         }
     }
 }
@@ -256,6 +279,29 @@ impl Flown {
 
     fn min(&self, f: impl Fn(&Sample) -> f64) -> f64 {
         self.samples.iter().map(f).fold(f64::MAX, f64::min)
+    }
+
+    /// Time history at [`TRACE_RATE`], from `offset` seconds, angles in the vertical
+    /// plane (`plane`) or Euler angles.
+    fn trace(&self, offset: f64, plane: bool) -> Vec<TracePoint> {
+        let mut next = 0.0;
+        let mut out = Vec::new();
+        for s in &self.samples {
+            if s.time + 1e-9 < next {
+                continue;
+            }
+            next = s.time + 1.0 / TRACE_RATE;
+            out.push(TracePoint {
+                time: offset + s.time,
+                speed: s.speed,
+                alpha: s.alpha,
+                pitch: if plane { s.pitch } else { s.elevation },
+                bank: if plane { s.roll } else { s.bank },
+                load_factor: s.load_factor,
+                controls: s.controls,
+            });
+        }
+        out
     }
 }
 
@@ -517,6 +563,7 @@ fn flown_loop(
         completed,
         load_factor: Some((flown.max(|s| s.load_factor), load_factor)),
         alpha: Some((max_alpha, stall.alpha)),
+        trace: flown.trace(0.0, true),
         ..Observed::default()
     })
 }
@@ -649,6 +696,7 @@ fn flown_stall(
             finite: approach.finite,
             alpha: Some((max_alpha, stall.alpha)),
             deceleration,
+            trace: approach.trace(0.0, false),
             ..Observed::default()
         });
     };
@@ -761,6 +809,12 @@ fn flown_stall(
         alpha: Some((max_alpha, stall.alpha)),
         stall_drop: Some((reference - lowest_nose, bank)),
         deceleration,
+        trace: [
+            approach.trace(0.0, false),
+            hold.trace(at_break.time, false),
+            after.trace(at_break.time + held_end.time, false),
+        ]
+        .concat(),
         ..Observed::default()
     })
 }
@@ -924,6 +978,7 @@ fn flown_dive(
         return Ok(Observed {
             text,
             held_path: Some(held_path),
+            trace: dive.trace(0.0, true),
             ..Observed::default()
         });
     }
@@ -1012,6 +1067,7 @@ fn flown_dive(
         alpha: Some((max_alpha, stall.alpha)),
         held_path: Some(held_path),
         release: Some(change),
+        trace: [dive.trace(0.0, true), out.trace(d1.time, true)].concat(),
         ..Observed::default()
     })
 }
