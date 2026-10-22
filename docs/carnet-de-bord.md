@@ -757,3 +757,42 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - « 180 ch » est le nom d'une classe de moteur, pas une puissance mesurée.
 - **⚠** Corrections d'allongement τ et δ : toujours introuvables dans les rapports 460 et 669, qui renvoient au rapport NACA 416. Claude l'a téléchargé : sa figure 11 donne bien ces facteurs pour une aile rectangulaire en fonction de l'allongement. Il sera lu à la prochaine passe.
 - **A** Fiches commitées. Une image à 300 dpi de la page 205 est préparée, pour lever la réserve de lecture sur la ligne du 8Aa (119,5 ou 119,3 mph, soit ±0,3 km/h).
+
+### Étape 6 du M1 : `fdm_lab` (trim, performances, modes, campagne)
+- **A** **Trim** (vol rectiligne stabilisé, ailes à plat) :
+  - huit inconnues parmi dix (incidence, dérapage, trois braquages, gaz ou vitesse ou pente, régime du rotor, déflexion), choisies selon la question posée ;
+  - équations : les huit dérivées qui doivent s'annuler ;
+  - braquages résolus sans limite, puis comparés aux débattements pour dire si le pilote peut tenir le trim.
+- **⚠** Le trim se bloquait sur une matrice singulière. La cause est physique : à bas régime le moteur est limité par la pleine ouverture, et la manette des gaz n'a plus d'effet. C'est une vraie zone morte du carburateur. Corrections :
+  - méthode de Levenberg-Marquardt et redémarrage depuis plusieurs points ;
+  - coin de la loi des gaz arrondi (C¹, ±5 %), sans changer la puissance à pleins gaz.
+
+  Conséquence attendue : à la vitesse maximale, le trim trouve une manette à 0,77 et non 1,0, le moteur étant déjà saturé. Le test vérifie la puissance, pas la position de la manette.
+- **A** **Performances** :
+  - vitesse maximale par altitude ;
+  - meilleure montée (section dorée sur la vitesse) ;
+  - temps de montée (intégration sur l'altitude) ;
+  - plafond (dichotomie sur le taux de montée, 100 ft/min pour le plafond pratique de l'époque) ;
+  - vitesse de décrochage au ralenti (balayage de l'incidence jusqu'au décrochage ou à la butée de profondeur).
+- **A** **Modes propres** :
+  - linéarisation par différences centrées sur (u, v, w, p, q, r, φ, θ, régime, déflexion) ;
+  - valeurs propres par `nalgebra` ;
+  - noms donnés par l'état dominant du vecteur propre plutôt que par le rang, pour ne pas plaquer des noms de manuel sur un avion atypique.
+- **A** **Campagne** : `just essai <avion>`
+  1. lit `essais.ron` ;
+  2. compare chaque cible historique à sa tolérance (bloquante à partir de la confiance acceptée, C pour le M1) ;
+  3. calcule les modes en croisière ;
+  4. vérifie la convergence en pas de temps (créneau de profondeur, 20 s, dt divisé par deux : écart inférieur à 1 % exigé) ;
+  5. écrit `target/essais/<id>/rapport.md` en français.
+- **A** Essayé sur le biplan synthétique, l'outil marche de bout en bout :
+  - vitesse maximale 168 km/h à 1 000 m ;
+  - décrochage 64 km/h ;
+  - montée à 1 000 m en 3,5 min ;
+  - plafond 5 620 m ;
+  - convergence en pas de temps parfaite.
+
+  Ses modes sont plausibles : oscillation d'incidence bien amortie (ζ 0,86). Mais sa stabilité de route est faible (petite dérive, gros fuselage, force normale de l'hélice). D'où une oscillation latérale lente et instable : un résultat sur cet avion inventé, pas une erreur de calcul.
+- **A** Résultat : **161 tests sur 161**, `just check` vert.
+- **⚠** Reste à faire pour l'étape 6 :
+  - les **tracés PNG**, en attente d'une décision du joueur sur la police de caractères (question ci-dessous) ;
+  - les fichiers de données du **SPAD VII**, à remplir depuis les fiches.
