@@ -995,3 +995,45 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - huit comportements du § 6.2, dont cinq manœuvres pilotées.
 - **A** En cours : l'aérodynamicien calcule les traînées parasites élément par élément, le fuselage en corps élancé, la déflexion, les allongements effectifs, l'effet P et le ralenti.
 - **⚠** Le calcul de l'aérodynamicien s'est arrêté sur la limite de débit de l'API (429), puis le processus de la session a redémarré. Il a repris où il s'était arrêté après la levée de la limite.
+
+### `/nouvel-avion spad7` : données complètes et premier essai en vol
+- **R** **Calcul de l'aérodynamicien** : traînées élément par élément, fuselage, déflexion, allongements, hélice, moteur (`spad7-calculs.md` § 5). Choix principaux :
+  - **câbles ronds**, faute de preuve de câbles profilés ;
+  - **pas de facteur 3/5** d'interférence ;
+  - contrôle de traînée : f équivalent de 0,91 m² contre 0,94 à 0,98 m² déduits de S46, sans réglage.
+
+  Deux points **bloquants** relevés, et corrigés :
+  1. des empennages tracés en flèche gonflaient les surfaces (la dérive de 0,90 à 1,51 m²) : panneaux redressés ;
+  2. la loi d'altitude `Pressure(1.04)` comptait deux fois le frottement, puisque R&M 462 mesure une puissance **au frein**. L'exposant à appliquer à la puissance indiquée est **0,93**, vérifié ici à ±0,6 %. La documentation du code et des skills, qui induisait l'erreur, est corrigée.
+- **A** `aircraft.ron` et le profil d'empennage écrits. Les calages (2,3° et 1,8°) vérifient le critère « fuselage horizontal à 170 km/h » (incidence du fuselage 0,015°). Le bilan de masses concorde ; un test d'intégration charge désormais chaque avion de `assets/`.
+- **⚠** Premier essai : les manœuvres de décrochage et de plané échouaient (« NoStall ») : le balayage du décrochage abandonnait dès son premier trim. Il essaie désormais plusieurs vitesses de départ.
+- **R** **`/essai-en-vol spad7`** (commit `7789090`) : **ÉCHEC** sur les cibles A de montée et d'altitude.
+
+  | Essai | Cible (S46) | Modèle | Écart | Résultat |
+  |---|---|---|---|---|
+  | Vitesse maximale à 2 000 m | 192,3 km/h | 198,0 | +2,9 % | réussi (±4 %) |
+  | Vitesse maximale à 3 000 m | 179,4 km/h | 192,6 | +7,4 % | **échec** |
+  | Vitesse maximale à 4 000 m | 173,8 km/h | 186,1 | +7,1 % | **échec** |
+  | Régimes à 2 000, 3 000 et 4 000 m | 1 720, 1 680, 1 640 tr/min | 1 700, 1 668, 1 630 | −0,6 à −1,1 % | réussis (±3 %) |
+  | Montées à 2 000, 3 000 et 4 000 m | 6 min 40, 11 min 30, 19 min 30 | 5,7, 9,7, 15,2 min | −15 à −22 % | **échecs** |
+  | Plafond théorique | 5 486 m | 6 507 m | +18,6 % | **échec** |
+  | Décrochage au ralenti (D) | 75,6 km/h | 80,7 | +6,7 % | réussi (±10 %) |
+
+  - Modes propres : oscillation d'incidence très amortie (ζ 0,94), roulis hollandais de 3,3 s (ζ 0,19), spirale qui double en 19 s, phugoïde de 31 s ; marge statique 4,8 %. C'est cohérent avec « très stable, bonne plate-forme de tir ».
+  - Qualitatifs :
+    - décrochage à 84 km/h, avec abattée de 7° puis aile droite qui tombe à 33° ;
+    - finesse 8,3 ;
+    - boucle bouclée, sommet à 0,85 V_s ;
+    - piqués tenus et rappelants. Relâché au neutre à 437 km/h, le SPAD se cabre jusqu'à 10,8 g : sans compensateur, le pilote doit pousser fort en piqué.
+  - Robustesse : tout réussi, vrille établie.
+- **R** **Lecture des écarts** : excès de taux de montée d'environ 0,85 m/s, constant en altitude. La traînée seule ne l'explique pas : la multiplier par 1,22 casserait la vitesse à 2 000 m (aérodynamicien).
+  - **Constat** : le **tableau italien de 1919** (S47, même masse, « H.S. 140 hp ») donne 194 km/h à 2 000 m et des montées de 5 min 50 à 2 000 m et 9 min 50 à 3 000 m. Le modèle donne 198 km/h, 5,7 et 9,7 min, soit 1 à 3 % près. Les sources françaises et britanniques donnent 6 min 20 à 6 min 40 et 11 min 30.
+  - **D** Ne pas choisir la source qui arrange le modèle. L'historien évalue les tableaux **sur leurs seuls mérites** (conditions de mesure, cohérence interne, version, moteur), sans connaître le résultat du modèle ; il relit aussi la fiche et la chronologie.
+  - Pistes physiques sourcées, à trancher ensuite :
+    - puissance en vol inférieure de 3 à 5 % à celle du banc (Report 301) ;
+    - montées comptées depuis le décollage (environ une demi-minute) ;
+    - traînée parasite qui croît avec l'incidence (S43, à modéliser) ;
+    - traînée de profil d'une aile entoilée en vraie grandeur (Report 304) ;
+    - effet Munk distinct en tangage et en lacet ;
+    - efficacité des gouvernes à grand braquage (K′ de DATCOM).
+- **⚠** Limite du pilote scripté : sa direction oscille pendant la reprise du décrochage (période d'environ 2 s). Ses gains, réglés sur le biplan synthétique, devront être normalisés par avion avant de servir à l'IA.
