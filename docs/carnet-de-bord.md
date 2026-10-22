@@ -715,3 +715,45 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **avant les modes propres** : ajouter la force normale de l'hélice (Ribner, NACA 819), soit 15 à 30 % de la stabilité de route due à la dérive sur un SPAD, et la force latérale et les moments du fuselage. Sans eux, les stabilités sont surestimées ;
   - 13 de ses 49 nouvelles erreurs volontaires survivent, dont la traction qui n'est plus ajoutée aux efforts. Neuf tests sont proposés.
 - **A** Ces points sont traités tout de suite, avant la suite de l'étape 6.
+
+## 2026-10-22 — Session 3, suite (cloud)
+
+### Reprise : « Continue le travail »
+- **Q** Le joueur demande de continuer, après un redémarrage du processus de la session.
+- **⚠** Le redémarrage a interrompu la fin des vérifications. Les corrections de la revue de l'étape 4 étaient commitées mais pas encore poussées. Après vérification (`just check` et `just test` verts, **150 tests sur 150**), elles sont poussées.
+- **⚠** Incident de la veille : la compilation complète dans la copie de travail séparée recompilait Bevy de zéro et remplissait le disque (3,7 Go libres). Elle a été arrêtée et son dossier de compilation supprimé (7,7 Go libres ensuite). Les relectures étant terminées, la copie séparée est retirée et le travail reprend dans le dépôt principal.
+
+### Corrections de la revue de l'étape 4 (commit b3d598d)
+- **A** Hélice :
+  - effet P proportionnel à V⊥·V_pale/V_r², qui ne sature plus à basse vitesse ;
+  - force normale de Ribner ;
+  - contrôle d'énergie Q·Ω − T·V_a ≥ 0 sur tout le tour des coefficients, ce qui refuse le « moteur perpétuel » de l'aérodynamicien ainsi qu'un rendement supérieur à 1 dans le tableau ;
+  - rotation du souffle, tirée du couple.
+- **A** Moteur :
+  - courbe de **puissance de frottement mesurée** (ou une fraction, au choix des données) ;
+  - puissance indiquée plafonnée par les gaz, d'où un **ralenti stable au sol** (testé : le rotor converge vers le même ralenti qu'il parte vite ou lentement) et le frein moteur en piqué ;
+  - puissance tenue constante au-delà du régime maximal.
+- **A** **Fuselage en corps élancé** : moment de Munk déstabilisant et force d'écoulement transversal (Allen et Perkins, NACA 1048).
+- **A** Déflexion annulée en vol queue en avant.
+- **A** Les tests d'assemblage proposés par l'aérodynamicien sont ajoutés. Le principal vérifie que les efforts totaux sont exactement la somme des composants, traction comprise : c'était l'une de ses erreurs volontaires qui survivaient.
+- **⚠** Deux tests étaient mal posés au premier essai :
+  - en axes avion, la composante x n'est pas une traînée, et un profil soufflé incline sa portance vers l'avant ;
+  - une rampe d'allumage plus raide demandait un seuil de continuité plus large.
+- **A** `nalgebra` ajouté à `fdm_lab`, comme prévu au plan du M1 : licence Apache-2.0, `cargo deny` vert.
+
+### Cinquième passe de l'historien : le SPAD VII 150 ch en confiance A
+- **R** Le **tableau officiel des avions français de 1919** (*Flight*, 13 février 1919, p. 204-205, repris d'*Automotive Industries*), lu sur les images des pages, fait passer en **confiance A** :
+  - les vitesses du 150 ch : 192 km/h à 2 000 m, 179 km/h à 3 000 m, 174 km/h à 4 000 m ;
+  - ses montées : 6 min 40 s à 2 000 m, 11 min 30 s à 3 000 m, 19 min 30 s à 4 000 m ;
+  - son plafond théorique : 5 486 m ;
+  - ses masses : 500 kg à vide, 703 kg au décollage ;
+  - l'envergure et la hauteur.
+
+  La série de montée du STAé se retrouve à l'identique dans ce document indépendant. Le 180 ch obtient aussi ses valeurs officielles, dont 212 km/h à 2 000 m (et non au niveau de la mer).
+- **R** Plusieurs lectures OCR de la quatrième passe étaient fausses : 694 kg, « 193 sq ft », colonnes mal attribuées. Elles sont corrigées.
+- **R** **Cote des moteurs** :
+  - le tableau donne trois conventions (américaine, britannique, française) ;
+  - retenus : 175 hp à 1 700 tr/min pour le 8Aa et 205 hp à 1 800 tr/min pour le 8Ab, en puissance maximale autorisée ;
+  - « 180 ch » est le nom d'une classe de moteur, pas une puissance mesurée.
+- **⚠** Corrections d'allongement τ et δ : toujours introuvables dans les rapports 460 et 669, qui renvoient au rapport NACA 416. Claude l'a téléchargé : sa figure 11 donne bien ces facteurs pour une aile rectangulaire en fonction de l'allongement. Il sera lu à la prochaine passe.
+- **A** Fiches commitées. Une image à 300 dpi de la page 205 est préparée, pour lever la réserve de lecture sur la ligne du 8Aa (119,5 ou 119,3 mph, soit ±0,3 km/h).
