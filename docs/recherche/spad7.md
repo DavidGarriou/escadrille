@@ -1,8 +1,8 @@
 # SPAD S.VII C.1 — fiche de recherche
 
 - Identifiant : `spad7` (même nom que `assets/aircraft/spad7/`)
-- Dernière mise à jour : 2026-10-22
-- État : **en cours** (huitième passe). Sont désormais sourcés par des documents d'époque lus :
+- Dernière mise à jour : 2026-10-23
+- État : **en cours** (neuvième passe). Sont désormais sourcés par des documents d'époque lus :
   - le profil « Spad » (B) ;
   - les polaires du RAF 15 (A pour ce profil) ;
   - la courbe de puissance et la loi d'altitude du Hispano de 180 hp (B pour un 8Ab) ;
@@ -13,6 +13,10 @@
   - **sixième passe (2026-10-22)** : la réserve de lecture sur la ligne du 8Aa (119,5 et 111,5 mph) est **levée** par un contrôle interne du tableau (§ 0) ; les facteurs τ et δ de l'aile rectangulaire sont trouvés dans le NACA TR 416 (`profil-spad7.md` § 4.2).
   - **septième passe (2026-10-22), géométrie de détail** (§ 2.5) : **aucune cote chiffrée nouvelle du S.VII**. Apports : des descriptions qualitatives du S.VII (forme en plan, haubanage, fuselage, capot), des comparables chiffrés du SPAD XIII (empennage, ailerons, dérive ; tableau français de 1919 lu sur l'image) et du biplace S.XI, et une fourchette calculée de la corde (1,14 à 1,33 m, C). Empennage, gouvernes, débattements, décalage, calages, fuselage, roues et centrage du S.VII restent **non trouvés**.
   - **huitième passe (2026-10-22), fiabilité des performances du 150 ch** (§ 5.5) : les vitesses de S46 forment deux groupes incompatibles à 3-4 % près (192 km/h à 2 000 m d'un côté, 179 et 174 km/h à 3 000 et 4 000 m de l'autre) ; la série de montée du STAé citée par S11 n'est pas indépendante de S46 ; le plafond « théorique » est une extrapolation. Nouvelles cibles avec tolérances au § 5.5.6, qui remplace le § 5.4 pour le 150 ch.
+  - **neuvième passe (2026-10-23), hélice, régimes et bord d'attaque** :
+    - aucun régime relevé en montée sur un S.VII (§ 5.6) ; régimes mesurés en vol sur un avion comparable, le VE-7 (`hispano-suiza-8a.md` § 7.5) ;
+    - hélice de l'avion de S46 non trouvée ; liste des hélices autorisées pour le S.VII à Hispano de 150 ch vue en résumé (`hispano-suiza-8a.md` § 7.5) ;
+    - bord d'attaque des ailes du S.VII : aucune source directe ; indices de famille contradictoires (§ 2.6).
 - Fiches liées : [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (moteur et hélice), [`profil-spad7.md`](profil-spad7.md) (profil d'aile)
 - Contexte de jeu visé : escadrille SPA 3 (« Cigognes », Groupe de Combat 12), Flandres, été 1917
 
@@ -73,6 +77,16 @@
 - **Relu dans l'OCR** [LU-OCR] : R&M 462, § 18 à 21 et annexe II (réduction des performances à une base commune), dans le volume II du rapport ACA 1917-18, qui ne contient aucun essai de SPAD ; tous les passages « Spad » et « Heurt » des 208 numéros de *Flight*. Aucune autre mesure du S.VII que S46, S47 et S48.
 - **Web** : 9 requêtes en anglais, français, allemand et italien, toutes en résumé. Échec DNS le 2026-10-22 pour francearchives.gouv.fr, le portail du SHD, fr.geneawiki.com, beta.nationalarchives.gov.uk et enginehistory.org. Deux cotes d'archives nouvelles, vues en résumé seulement (S69, S70 ; § 5.5.7).
 - Les calculs de cohérence du § 5.5.3 sont des **ordres de grandeur** (C) sur une polaire supposée ; le calcul exact revient à l'aérodynamicien.
+
+**Neuvième passe (2026-10-23) : hélice, régimes d'essai, bord d'attaque.** Objet :
+- l'hélice réelle du S.VII 150 ch, détaillée dans `hispano-suiza-8a.md` § 7.5 ;
+- un régime moteur relevé hors vitesse maximale (§ 5.6) ;
+- la construction du bord d'attaque des ailes (§ 2.6).
+
+Méthode et accès :
+- **Outil de lecture** : échec DNS le 2026-10-23 pour tous les sites visés (woodenpropeller.com, theaerodrome.com, archive.org, gallica.bnf.fr, francearchives.gouv.fr, catalog.hathitrust.org, reports.aerade.cranfield.ac.uk). Tout ce qui vient du web est donc **[RÉSUMÉ]**.
+- **Relus localement** : les NACA Reports 220 et 292, lus sur l'image [LU-IMG] ; les passages « Spad », « propeller », « screw », « leading edge » et « plywood » de *Flight* (208 numéros), dont S48 et S49, et du volume II du rapport ACA 1917-18 [LU-OCR].
+- **Rien n'a été téléchargé.**
 
 ## 1. Identification et contexte
 
@@ -373,6 +387,32 @@ Avion examiné : n° B 6006, construit sous licence par Bernard en juillet 1917,
 
 Documents qui lèveraient ces manques : § 9.6 (lignes de la septième passe).
 
+### 2.6 Neuvième passe : le bord d'attaque des ailes (2026-10-23)
+
+**Question de l'aérodynamicien.** Le bord d'attaque du S.VII est-il coffré en contreplaqué jusqu'au longeron avant, ou entoilé directement ? Un terme de traînée du modèle est calé sur un avion américain de 1922 à bord d'attaque en contreplaqué.
+
+**Réponse : non trouvé pour le S.VII.** Aucun document d'époque lu ne décrit le bord d'attaque d'un S.VII. S48 (1917), relu en entier, n'en parle pas. Indices, du plus fort au plus faible :
+
+| Indice | Ce qu'il dit | Avion | Source, statut | Portée pour le S.VII |
+|---|---|---|---|---|
+| Rapport allemand sur un biplace capturé (1918) | nervures espacées de 190 mm (plan supérieur) et 175 mm (plan inférieur) ; **entre les nervures, de fausses nervures sur l'extrados, du bord d'attaque au longeron avant** ; toile clouée sur des nervures renforcées, cousue aux nervures et au fil de bord de fuite. **Aucune mention de contreplaqué** sur la voilure, alors que le rapport en signale dans le fuselage | S.XI (B 6006, juillet 1917) | S49, *Flight*, 16 mai 1918, p. 528 [LU-OCR] | famille SPAD, autre cellule. Des fausses nervures limitées à l'extrados vont avec un bord d'attaque entoilé, soutenu entre les nervures ; elles n'excluent pas un coffrage mince, que le rapport aurait pu passer sous silence (C) |
+| Réplique d'aujourd'hui | « les bords d'attaque de toutes les ailes sont recouverts de contreplaqué » | SPAD XIII | Memorial Flight, S71 [RÉSUMÉ] | autre type ; constructeurs de répliques volantes (rang 3) |
+| Revues de maquettes | coffrage en contreplaqué au bord d'attaque, sur l'**extrados seulement** | SPAD XIII | Hyperscale, revues de maquettes Eduard, S72 [RÉSUMÉ] | maquettes du commerce : exclues comme source de chiffre ; simple indice |
+| Forum de constructeurs | la plupart des constructeurs (« Albatros, SPAD, Nieuport ») coffraient l'**extrados**, du bord d'attaque au longeron avant, en contreplaqué de bouleau trois plis de 1,5 à 2,0 mm | non précisé | The Aerodrome, S73 [RÉSUMÉ] | forum : piste |
+| Forum de constructeurs (William Retzlaff) | bord d'attaque du XIII : baguette triangulaire en épicéa avec deux lattes de contreplaqué de bouleau de 1,5 mm ; un participant écrit que le S-7 « n'est pas construit ainsi », sans que le résumé dise sur quel point ; il ne subsisterait qu'environ 25 % des plans d'usine du S-7 | XIII, S-7 | The Aerodrome, S74 [RÉSUMÉ] | ambigu |
+
+**Bilan.**
+- Coffrage en contreplaqué de l'**extrados** seul, du bord d'attaque au longeron avant : **plausible, C**. Il est attesté pour le XIII par deux sources modernes faibles, et attribué aux SPAD en général par un forum.
+- Bord d'attaque **entoilé** sur fausses nervures : **plausible aussi, C**. C'est la seule description d'époque pour la famille (S.XI).
+- **Non tranché.** Dans tous les cas, l'intrados est entoilé : aucune source ne parle de contreplaqué sous l'aile.
+- **Pour le modèle** : rien n'autorise à dire que le S.VII avait le même bord d'attaque que l'avion américain de 1922 ; rien ne l'exclut non plus. Le terme de traînée calé sur cet avion reste un comparable (C), à signaler comme tel dans les données.
+
+**Pour trancher** (§ 9.6) :
+- les plans d'usine du S.VII : jeux de calques attribués à Roger Freeman, copies chez Leo Opdycke, selon S74 [RÉSUMÉ] ;
+- le Windsock Datafile n° 8 (P1) ;
+- une photographie d'époque d'un S.VII entoilé ou en cours de réparation ;
+- un relevé sur un appareil conservé (P17), sous réserve des restaurations.
+
 ## 3. Masses et centrage
 
 | Grandeur | Valeur | Conditions | Source | Confiance | Remarque |
@@ -401,6 +441,10 @@ Documents qui lèveraient ces manques : § 9.6 (lignes de la septième passe).
 - **Loi d'altitude du 150 ch** (quatrième passe) : un essai britannique **en vol** (R&M 462, mars 1918) sur un Hispano de 150 hp sans réducteur, monté sur S.E.5, donne une puissance proportionnelle à la pression à la puissance 1,04 environ, indépendante de la température (exposant lu dans l'OCR, à confirmer). Le tableau américain de 1919 **estime** au contraire une perte voisine de la densité (`hispano-suiza-8a.md` § 4.3 et 4.4).
 - Hélice bipale en bois à pas fixe. Selon des forums [RÉSUMÉ], diamètre de 2,35 à 2,45 m et pas de 1,75 à 2,10 m pour le 150 ch. Rien de fiable pour le 180 ch. **Table C_T/C_P mesurée** sur une hélice en bois comparable (Navy D' du VE-7 à moteur Wright de 180 hp, 2,39 m, P/D 0,8) : A pour la mesure, **C pour le SPAD** (`hispano-suiza-8a.md` § 7.4).
 - **Sens de rotation** : **horaire vu du siège du pilote** (confiance C), déduit de sources concordantes qui ne sont pas primaires. Troisième passe : les hélices du VE-7 portent « Rotation: Right hand » (NACA Report 301, p. 5). L'indice concorde, mais il ne relève pas la confiance, faute de définition de la convention et d'identification certaine du moteur. Conséquence attendue (C) : à pleine puissance et à basse vitesse, l'avion tend à partir à gauche, ce qui demande du pied à droite. C'est l'inverse du SPAD XIII à réducteur, pour lequel McCook note qu'il faut beaucoup de pied à gauche (S15).
+- **Neuvième passe (2026-10-23), hélice** (détail : `hispano-suiza-8a.md` § 7.5) :
+  - **Liste française** : sept hélices autorisées pour le « Type VII · Hispano 150 ch », vues en résumé dans le dossier de Hartmann : Levasseur 485 et 561, Gallia 3, Éclair 100 et 6, Chauvière 2066, Régy 353 (autorisation annulée). Elles vont de 2,35 à 2,50 m de diamètre et de 1,75 à 2,05 m de pas (P/D de 0,74 à 0,82).
+  - **Référence retenue** : Levasseur 485, 2,45 × 1,95 m, C. La table de D' en soufflerie reste la base aérodynamique ; deux tables mesurées en vol sur VE-7 sont ajoutées comme variantes.
+  - **Non trouvés** : l'hélice de l'avion de S46, la définition française du pas, et un régime relevé en montée sur S.VII (§ 5.6).
 
 ## 5. Performances
 
@@ -595,6 +639,33 @@ Au M1, seuls les essais de confiance D sont non bloquants (skill `simulation-vol
 #### 5.5.8 Relecture de la fiche (huitième passe)
 
 Corrections faites dans cette passe : page de la présentation de S46 (p. 201, et non p. 199) ; série du STAé non indépendante de S46 (§ 5) ; ligne Heurtaux du § 1.4 (date de publication prise pour celle de la blessure) ; deux points ajoutés au § 1.5 (nom « Vieux Charles » et fin de carrière du S.VII) ; mention « dépassé » au § 0 et sur deux entrées du journal du 2026-10-20 ; statut [LU-IMG] de la masse d'armement au § 7. Le détail est au journal des décisions.
+
+### 5.6 Neuvième passe : régimes hors vitesse maximale (2026-10-23)
+
+**Question.** Un seul régime fiable relevé sur un S.VII à Hispano de 150 ch (ou, à défaut, de 180 ch), en montée, au point fixe ou à une vitesse autre que la vitesse maximale, permettrait de dire si l'hélice du modèle absorbe trop ou si le moteur donne trop peu.
+
+**Réponse : non trouvé.**
+- **S46** ne donne que des régimes en palier ; **S47** n'en donne aucun.
+- **S48** (1917) annonce un moteur de « 160 hp at about 1,500 r.p.m. » : c'est une cote, pas une mesure.
+- ***Flight* 1916-1919** : aucun régime associé à un SPAD [LU-OCR].
+- **Volume II du rapport ACA 1917-18** : le R&M 462 a mesuré des régimes sur un S.E.5 à Hispano de 150 hp pour la loi d'altitude, mais ils ne figurent que sur des courbes illisibles dans l'OCR. L'hélice était la T.28116, d'après la légende de la figure 6, lue dans l'OCR.
+- **Web [RÉSUMÉ]** :
+  - selon un résumé du fil S11, un « Air Board summary » coterait le Hispano de 150 hp à 1 600 tr/min (1 800 tr/min au maximum) et donnerait « 108 mph à 1 640 tr/min à 13 100 ft ». L'auteur du message rattache ce document au rapport de Martlesham M.96 d'avril 1917 et suppose qu'il s'agit de N6210, le premier SPAD de construction britannique ;
+  - le couple 108 mph et 1 640 tr/min à 13 100 ft est **exactement** la ligne 8Aa de S46 à 4 000 m (174 km/h à 1 640 tr/min). C'est donc un régime en palier déjà connu, pas une nouvelle mesure ;
+  - un autre résumé du même fil range ces chiffres sous un « 180 Hispano » sans numéro de modèle ;
+  - ces résumés se contredisent : **piste seulement**. Si l'« Air Board summary » existe, il montrerait que les chiffres de la ligne 8Aa de S46 circulaient aussi dans un document britannique : indice sur l'origine de S46, à vérifier ;
+  - un autre résumé cite un relevé de McCook à « 2 300 tr/min » à la vitesse maximale au niveau de la mer, sans dire sur quel SPAD ni avec quel moteur : **écarté (D)**.
+
+**Comparable** (A pour la mesure, C pour le SPAD) : régimes à pleins gaz mesurés en vol sur le Vought VE-7 à moteur Wright à prise directe, avec deux hélices en bois de P/D 0,80 et 0,81 (`hispano-suiza-8a.md` § 7.5.6, H24 et H25) :
+- en montée, vers 103 à 128 km/h : **0,88 à 0,92** fois le régime de palier ;
+- au point fixe : **0,87 à 0,92** fois le régime de palier.
+
+**Usage proposé.** Contrôle de vraisemblance du modèle, et non cible d'`essais.ron`. Si le rapport des régimes montée/palier du modèle sort nettement de 0,88-0,92, le signaler. La transposition au SPAD n'est pas faite ici : les J de montée, le moteur et la cellule diffèrent.
+
+**Documents qui répondraient** :
+- le R&M 586, qui essaie plusieurs hélices sur un Hispano de 150 hp sans réducteur (`hispano-suiza-8a.md` § 7.5.9) ;
+- le rapport de Martlesham n° 96 (P10 ; AIR 1/1196/204/5/2600, § 9.6) ;
+- les procès-verbaux d'essais du STAé (S69).
 
 ## 6. Qualités de vol, témoignages et réputation
 
@@ -859,6 +930,14 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **S69** — Service historique de la Défense, notice du « Fonds Émile Dorand - DE 2012 ZL », producteur : Section technique de l'aéronautique militaire (1915-1918) ; la notice cite des procès-verbaux de la Commission d'examen des avions et moteurs nouveaux et des notes du Service des essais (sans nommer le SPAD dans l'extrait vu). Pages : https://servicehistorique-admin.cnmosis.dirisi.defense.gouv.fr/en/node/707 ; geneawiki, « SHD / Air - Série (DE)ZL », https://fr.geneawiki.com/wiki/SHD_/_Air_-_S%C3%A9rie_(DE)ZL, qui donne l'article 2012 ZL 245 (1895-1922) et un inventaire PDF de 2012. Échec DNS de l'outil de lecture sur les deux pages.
 - **S70** — enginehistory.org, « UK National Archives at Kew » (https://enginehistory.org/References/UKNA/Eng-AIR.shtml), d'après un résumé : pièce **AIR 1/1196/204/5/2600**, rapports hebdomadaires sur la situation des avions en essai à l'Aeroplane Experimental Station de Martlesham Heath (n° 1 à 119, 1916-1919). Présence d'un SPAD non confirmée. Échec DNS de l'outil de lecture.
 
+**Neuvième passe (consultées en résumé le 2026-10-23 ; échec DNS de l'outil de lecture sur toutes ces pages)**
+- **S71** — Memorial Flight, « SPAD XIII », https://www.memorial-flight.com/spad-xiii?lang=en : bords d'attaque de toutes les ailes recouverts de contreplaqué (XIII). Association de constructeurs et restaurateurs de répliques (rang 3).
+- **S72** — Hyperscale, revues de maquettes Eduard au 1/48 du SPAD XIII par Rob Baumgartner : https://www.hyperscale.com/2008/reviews/kits/eduard8196reviewrb_1.htm et https://www.hyperscale.com/2009/reviews/kits/eduard1142reviewrb_1.htm. Coffrage du bord d'attaque sur l'extrados seulement. Revues de maquettes : piste, jamais source de chiffre.
+- **S73** — The Aerodrome (forum), « Plywood used as wing surface on WW1 aircraft? », https://theaerodrome.com/forum/threads/plywood-used-as-wing-surface-on-ww1-aircraft.12945/ : contreplaqué de bouleau de 1,5 à 2,0 mm sur l'extrados, du bord d'attaque au longeron avant, chez « Albatros, SPAD, Nieuport ». Forum : piste.
+- **S74** — The Aerodrome (forum), « My Spad Projects » (William Retzlaff), https://theaerodrome.com/forum/threads/my-spad-projects.27757/ : construction du bord d'attaque du XIII ; remarque sur le S-7 ; plans d'usine survivants (environ 60 % pour le S-13, 25 % pour le S-7 ; calques attribués à Roger Freeman, copies chez Leo Opdycke). Forum : piste.
+- **S11 (complément)** — même fil que S11, résumé du 2026-10-23 : « Air Board summary », Hispano de 150 hp coté à 1 600 tr/min (1 800 tr/min au maximum), renvoi au rapport M.96 et à N6210 « supposé » ; résumés contradictoires (§ 5.6).
+- Hélices : sources H8 à H10 et H24 à H36 de `hispano-suiza-8a.md` § 9.
+
 ### 9.3 Pistes bibliographiques [PISTE] (non consultées ; éditions à vérifier)
 - **P1** — J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8, Albatros Productions, 1988 (fiche de catalogue de libraire).
 - **P2** — T. Gronczewski et S. M. Fleischer, *Spad VII C.1*, Aviatik Vintage Aircraft n° 1, 2004 (14 pages de plans selon une revue).
@@ -899,6 +978,8 @@ albindenis.free.fr ; en.wikipedia.org ; fr.wikipedia.org ; it.wikisource.org ; c
 
 **Cas particulier** : archive.org et ntrs.nasa.gov répondent au `curl` du conteneur (coordinateur, 2026-10-20), mais **pas** à l'outil de lecture de l'historien (DNS en échec). Ils ne sont exploitables que par téléchargement préalable (§ 9.6).
 
+**Neuvième passe (2026-10-23)** : échec DNS de l'outil de lecture pour woodenpropeller.com, www.woodenpropeller.com, archive.org, gallica.bnf.fr, francearchives.gouv.fr, www.theaerodrome.com, catalog.hathitrust.org et reports.aerade.cranfield.ac.uk.
+
 **Septième passe (2026-10-22)** : échec DNS de l'outil de lecture pour www.thisdayinaviation.com, bibliotheques-numeriques.defense.gouv.fr et sites.ualberta.ca (fichier `~khorne/archives/Issue4/hs-spad.pdf`, contenu inconnu, sans doute un article de modélisme).
 
 ### 9.6 Documents à télécharger en priorité (identifiants vérifiés par le moteur de recherche, contenu non lu)
@@ -934,6 +1015,11 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 | 1 (8e passe) | The National Archives, **AIR 1/1196/204/5/2600** (Martlesham Heath, rapports n° 1 à 119, 1916-1919), et recherche « Spad » dans AIR 1 sur discovery.nationalarchives.gov.uk (S70) | cote vue en résumé seulement | Rapport d'essai n° 96 d'avril 1917 (P10) ou ses chiffres : montée, vitesses, plafond estimé, méthode de réduction |
 | 2 (8e passe) | Recadrage à 300 dpi de la **ligne d'en-tête de la p. 204** de *Flight* du 13 février 1919 | PDF local `flight_1919-02-13.pdf` | Signes de renvoi devant « Speed on the Level » et « Theoretical Ceiling » et leur note éventuelle (lecture incertaine à 150 dpi) |
 | 2 (7e passe) | FranceArchives et SHD : notice de réglage du S.VII, fiches d'essais et de pesée du STAé | **cote non trouvée** ; recherche à faire sur francearchives.gouv.fr (mots-clés « SPAD », « STAé », « notice de réglage », « biplan monoplace ») ; seule notice SPAD repérée : celle du XIII (S38, Bibliothèques numériques de la Défense, `fc97b662-8b01-43a8-9698-6e0be5953006`) | Ce qu'on y cherche : calages, décalage, débattements, centrage |
+| 1 (9e passe) | ARC R&M 586 (1921), « Report on Various Airscrews Designed for S.E.5, with 150 H.P. Ungeared Hispano-Suiza Engine » | archives AERADE de Cranfield (collection des R&M de l'ARC, `https://reports.aerade.cranfield.ac.uk/handle/1826.2/11`) ; détail dans `hispano-suiza-8a.md` § 7.5.9 | hélices et régimes en montée et en palier sur un Hispano de 150 hp sans réducteur : séparer l'hélice du moteur (§ 5.6) |
+| 1 (9e passe) | G. Hartmann, « Les héliciers français » (PDF) | `https://www.hydroretro.net/etudegh/heliciersfrancais.pdf` | liste complète des hélices autorisées pour le « Type VII », avec colonnes, date et origine |
+| 1 (9e passe) | G. Eiffel, *Études sur l'hélice aérienne faites au laboratoire d'Auteuil* (1921, 2 vol.) | BnF (CCFr `ark:/16871/00111293469`), Gallica à chercher ; Smithsonian Libraries TL705 .E5X 1921 | dessin et essais d'une hélice de SPAD à Hispano de 150 hp (piste H28 de la fiche moteur) |
+| 2 (9e passe) | Plans d'usine du S.VII (nervures, bord d'attaque), et P1 | calques attribués à Roger Freeman, copies chez Leo Opdycke (S74 [RÉSUMÉ]) ; Windsock Datafile n° 8 | bord d'attaque coffré ou entoilé (§ 2.6), nervures, fausses nervures |
+| 2 (9e passe) | Fil S11, page entière | `https://theaerodrome.com/forum/threads/climbing-performance-of-the-spad-vii.30985/` | texte exact de l'« Air Board summary » et du rapport M.96, avec leurs références (§ 5.6) |
 
 ## 10. Journal des décisions
 - **2026-10-20 — Sous-version pour la SPA 3, été 1917.** S5, S8 et S16 font du 8Ab de 180 ch le moteur des S.VII neufs à partir du printemps 1917 (« avril 1917 » pour S16). Guynemer juge le 150 ch insuffisant dès décembre 1916 (S1). Aucun état des appareils de la SPA 3 n'a été trouvé. **Retenu : S.VII 180 ch (8Ab), confiance C**, en sachant que la SPA 3 alignait sans doute encore des 150 ch et quelques SPAD XIII à partir de fin juillet 1917 (S18, S1). Ce choix sera à revoir dès que l'historique d'Albin Denis ou les journaux de marche seront accessibles.
@@ -1021,3 +1107,19 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
   - Journal du 2026-10-20 : entrées « Montée du 180 ch » et « Plafond du 180 ch » marquées dépassées.
   - § 7 : masse d'armement en [LU-IMG], et signalée comme conventionnelle.
 - **2026-10-22 — Documents demandés** (§ 5.5.7 et § 9.6, lignes « 8e passe ») : en priorité, l'inventaire du fonds Émile Dorand au SHD (DE 2012 ZL 245) et la pièce AIR 1/1196/204/5/2600 des National Archives. Ces deux cotes n'ont été vues qu'en résumé.
+
+**Neuvième passe (2026-10-23 ; hélice, régimes, bord d'attaque)**
+- **2026-10-23 — Hélice.** Les décisions sont prises dans `hispano-suiza-8a.md` (§ 7.5.8 et journal, sixième passe).
+  - Géométrie de référence : Levasseur 485, 2,45 × 1,95 m, C.
+  - Table de base inchangée : D' en soufflerie, mise à l'échelle.
+  - Deux variantes mesurées en vol, laissées au choix de l'aérodynamicien.
+  - L'hélice de l'avion de S46 reste **inconnue**.
+- **2026-10-23 — Régime hors vitesse maximale : non trouvé** pour un S.VII (§ 5.6).
+  - Aucun chiffre n'a été déduit ni comblé.
+  - Le comparable du VE-7 (0,88 à 0,92 fois le régime de palier en montée à pleins gaz) sert de contrôle de vraisemblance, pas de cible.
+  - Les cibles du § 5.5.6 ne changent pas. La tolérance de ±3 % sur le régime est signalée comme plus serrée que l'incertitude documentaire sur l'hélice ; la décision revient à l'aérodynamicien.
+- **2026-10-23 — Bord d'attaque : non tranché** (§ 2.6).
+  - Coffrage de l'extrados en contreplaqué jusqu'au longeron avant : C (XIII par des sources modernes, forum).
+  - Bord d'attaque entoilé sur fausses nervures : C (seule description d'époque de la famille, sur le S.XI, S49).
+  - Aucune valeur n'est retenue. Le terme de traînée calé sur un avion américain de 1922 reste un comparable, à étiqueter comme tel.
+- **2026-10-23 — Origine de S46.** Rien de confirmé. La piste « Air Board summary » (§ 5.6) est notée sans être utilisée : résumés contradictoires, document non lu.

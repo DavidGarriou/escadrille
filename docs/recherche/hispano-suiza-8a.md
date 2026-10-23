@@ -1,11 +1,12 @@
 # Hispano-Suiza 8A (8Aa, 8Ab) et hélice du SPAD VII — fiche de recherche
 
 - Identifiant : `hispano-suiza-8a`
-- Dernière mise à jour : 2026-10-21
+- Dernière mise à jour : 2026-10-23
 - État : **en cours**.
   - Troisième passe : courbe puissance/régime, loi d'altitude et consommation du 180 hp sourcées par des rapports NACA lus ; hélice d'époque comparable mesurée (VE-7).
   - **Quatrième passe** : la contradiction sur la cote du 8Ab est **expliquée** par plusieurs conventions de cote (§ 3.2). Une **loi d'altitude mesurée en vol** sur un Hispano de 150 hp sans réducteur est trouvée (§ 4.3). L'hélice réelle du SPAD et le sens de rotation restent sans source primaire.
   - **Cinquième passe (2026-10-21)** : tableaux des moteurs et des avions relus **sur l'image**. Puissance maximale autorisée sur le S.VII : 175 hp à 1 700 tr/min (8Aa), 205 hp à 1 800 tr/min (8Ab) ; régimes en palier ; consommation, masses et couples (§ 3.2, 4.4, 5, 6, 7.4).
+  - **Sixième passe (2026-10-23), hélice du S.VII 150 ch** (§ 7.5) : liste de sept hélices autorisées pour le « Type VII · Hispano 150 ch », avec diamètre et pas (vue en résumé seulement) ; cotes britanniques AB 723, AB 759 et AB 764 précisées ; deux rapports NACA lus qui donnent des hélices de la famille de D' **mesurées en vol** sur VE-7, avec leurs régimes en montée, en palier et au point fixe ; titre exact du R&M 586 établi. La définition française du pas, l'hélice exacte de l'avion de S46 et un régime en montée sur S.VII restent **non trouvés**.
 - Avion concerné : [`spad7.md`](spad7.md) (SPAD S.VII C.1)
 - Méthode et statuts des sources (**[LU]**, **[LU-OCR]**, **[RÉSUMÉ]**, **[PISTE]**) : voir `spad7.md` § 0. Première et deuxième passes : seules des pages GitHub ont pu être lues, le reste n'a été vu qu'en résumé de moteur de recherche. Troisième passe : rapports NACA téléchargés par le coordinateur (PDF et texte extrait) et **lus** (§ 3.1, 4.1, 5, 7.4), chiffres douteux de l'OCR vérifiés sur l'image des pages.
 
@@ -133,6 +134,8 @@ Remarque (C) : les puissances de H19 à 2 000 et 2 100 tr/min (220 et 225 hp) so
 - Un essai du département moteurs du Royal Aircraft Establishment, daté du **8 août 1916**, sur un Hispano-Suiza de 150 hp. Sa courbe serait reproduite en **figure 10** de l'**ARC R&M n° 586** (juillet 1921). Le même participant du forum note qu'elle donne une puissance maximale un peu plus faible à 2 000 tr/min, mais plus de puissance et un couple maximal plus élevé vers 1 200 à 1 400 tr/min. La référence de comparaison n'est pas claire dans le résumé (H6 [RÉSUMÉ]).
 - R&M 586 doit se trouver dans les archives ARC numérisées par Cranfield (AERADE, `reports.aerade.cranfield.ac.uk`), inaccessibles depuis le conteneur. Une autre voie : le volume annuel *Technical Report of the Aeronautical Research Committee* de 1920-21 ou de 1921-22 sur archive.org (série dont seul le volume `technicalreport1917aero_2` a été repéré). Identifiant à trouver, contenu non lu.
 - Un participant du même forum dit utiliser cette courbe dans un modèle de performances du « Spad 7 C1 » à **740 kg**, réglé d'après des données de l'Air Board (H6 [RÉSUMÉ]). Ce n'est pas une source de chiffre, mais une piste vers des données de l'Air Board.
+
+- **Sixième passe (2026-10-23) : titre exact du R&M 586.** Le NACA Report 292 (H25, liste de références, p. 14) [LU-IMG] le cite ainsi : Aerodynamics Staff of the R.A.E., « Report on Various Airscrews Designed for SE-5, with 150 H.P. Ungeared Hispano-Suiza Engine », R. & M. 586, 1921. L'index des R&M publié en 1968 (R&M 3555, archives AERADE de Cranfield) donne le même titre (vu en résumé). Ce rapport porte donc sur **plusieurs hélices essayées sur le même moteur que le 8Aa** (classe 150 hp, sans réducteur), et pas seulement sur la courbe du moteur. C'est le seul document repéré qui puisse dire, sur ce moteur, si un écart de régime vient de l'hélice ou du moteur (§ 7.5.9).
 
 **Conséquence pour le modèle de vol** : la forme de `power_curve` peut désormais être sourcée, pour le 180 ch, par le Report 46 (§ 3.1). Le R&M 586 reste utile pour le 150 ch.
 
@@ -262,7 +265,9 @@ Les deux lignes américaines du Hispano n'ont pas d'estimation.
 | Levasseur série 586 | **SPAD XIII** (pour comparaison) | 2,55 m | 2,30 m | — | H11 [RÉSUMÉ] | C (XIII) |
 | « Les trois meilleures hélices » pour le SPAD VII 180 ch | document de 1917 cité par un forum | non détaillé | — | — | H10 [RÉSUMÉ] | — |
 
-Bilan : pour le 150 ch, le **diamètre de 2,45 m** revient dans trois documents sur quatre, et le **pas** varie de 1,75 à 2,10 m selon le fabricant. Pour le 180 ch : **non trouvé**. Aucune de ces hélices n'a de mesure aérodynamique connue ; la seule mesure d'époque d'hélices en bois comparables trouvée est celle du VE-7 (§ 7.4).
+Bilan : pour le 150 ch, le **diamètre de 2,45 m** revient dans trois documents sur quatre, et le **pas** varie de 1,75 à 2,10 m selon le fabricant. Pour le 180 ch : **non trouvé**.
+
+> **Sixième passe (2026-10-23)** : ce tableau est complété et en partie corrigé au § 7.5. En bref : la Gallia série 3 figure à 2,50 × 2,00 m dans la liste reprise par Hartmann (contre 2,45 × 2,10 m sur le forum) ; le pas de 1,91 m appartient bien à AB 759, et la valeur de 1,85 m à un autre plan, AB 764 (2,414 m) ; la Régy 353 est cotée 2,35 × 1,80 m avec un moyeu de 170 mm. La Levasseur 485 (2,45 × 1,95 m) et l'Éclair 100 (2,35 × 1,75 m) sont recoupées. Aucune de ces hélices n'a de mesure aérodynamique connue ; la seule mesure d'époque d'hélices en bois comparables trouvée est celle du VE-7 (§ 7.4).
 
 Témoignage d'époque : le 28 décembre 1916, Guynemer réclame à Béchereau « une meilleure hélice » pour le SPAD de 150 ch (`spad7.md` S1 [LU]). Il trouvait donc les hélices du début de série insuffisantes.
 
@@ -293,6 +298,8 @@ Bipale en bois à pas fixe, d'après les fiches de collectionneurs (H8, H11 [RÉ
 - *L'Aérophile*, 1er-15 avril 1919, p. 112-114, « Description du moteur Hispano-Suiza (150) horsepower » (source française) ;
 - *The Aeroplane*, 4 avril 1917, p. 856-858, « The Hispano-Suiza motor » ;
 - *Air Service Information Circular*, vol. 1, n° 5 (14 février 1920) : instructions de calage de l'allumage des Hispano-Suiza modèles E et I.
+
+**Sixième passe (2026-10-23) : un indice de plus, sans changement de confiance.** Une hélice britannique dessinée pour le S.VII porte au moyeu « 140 HP Hispano Suiza », « R H Tractor S7 », « D 2450 », « P 2132 » et, sur l'autre face, le numéro de plan de l'Air Board « AB 723 » (woodenpropeller.com et deux fiches de vente Bonhams, H26 [RÉSUMÉ]). Comme pour les hélices du VE-7 (point 5), le marquage « right hand » n'est défini dans aucun document lu. L'indice concorde avec les points 1 à 5 ; la confiance reste **C**.
 
 **Effets attendus en vol** (C, physique élémentaire, à faire émerger du modèle et non à scripter) : à pleine puissance et à basse vitesse, tendance à partir à gauche, contrée au pied droit ; réaction de couple en roulis vers la gauche.
 
@@ -369,6 +376,222 @@ Les tableaux III de B' (p. 18) et de I (p. 19) sont lus et vérifiés sur l'imag
   Les deux versions volent donc près du **rendement maximal** de l'hélice D' (0,77 à 0,775 pour J de 0,75 à 0,85). **Contrôle fort** pour l'aérodynamicien : avec la puissance de S46 (205 hp à 1 800 tr/min pour le 8Ab, 175 hp à 1 700 tr/min pour le 8Aa) et une seule hélice, le modèle doit retrouver **à la fois** la vitesse et le régime de chaque altitude. Un pas trop faible ferait monter le régime au-delà de la valeur lue ; un pas trop fort le ferait baisser. (La quatrième passe donnait par erreur 1 720 tr/min pour le 8Ab.)
 - **Ce que la table ne donne pas** : J = 0 (point fixe au sol), l'effet de l'incidence de l'axe (toujours horizontal ici) et l'effet du nombre de Mach en bout de pale. Pour ce dernier, le Report 319 (profils d'hélice à grande vitesse, téléchargé, non exploité) est une piste.
 
+### 7.5 Sixième passe (2026-10-23) : hélice réelle du S.VII 150 ch, définition du pas, régimes mesurés en vol
+
+**Objet.** Le modèle du S.VII 150 ch (8Aa, hélice D' portée à 2,45 m) retrouve la vitesse, la montée et le plafond de S46 (`spad7.md`). Il tourne en revanche trop lentement à la vitesse maximale : 1 665 tr/min au lieu de 1 720 tr/min à 2 000 m. L'hélice doit être choisie d'après les documents, pas d'après le régime.
+
+#### 7.5.1 Accès et méthode
+
+- **Outil de lecture** : échec DNS le 2026-10-23 pour woodenpropeller.com (avec et sans « www »), archive.org, gallica.bnf.fr, francearchives.gouv.fr, theaerodrome.com, catalog.hathitrust.org et reports.aerade.cranfield.ac.uk. **Aucune page web n'a pu être ouverte.** Tout ce qui vient du web est donc **[RÉSUMÉ]** : une quarantaine de requêtes, en français, anglais, allemand et italien.
+- **Lus dans le dossier de travail** :
+  - les NACA Reports 220 et 292, déjà téléchargés mais absents de `ntrs/INDEX.md` (fichiers `19930091287.pdf` et `19930091361.pdf`), lus sur l'image des pages **[LU-IMG]** ;
+  - le volume II du rapport ACA 1917-18, les 208 numéros de *Flight* 1916-1919 et la bibliographie de Brockett **[LU-OCR]**.
+- **Rien n'a été téléchargé** : l'outil de l'historien ne le permet pas. Aucun sous-dossier n'a donc été créé dans `sources/`. Les documents à récupérer sont listés au § 7.5.9.
+- **Rien de nouveau dans les sources locales d'époque** : aucun passage de *Flight* ni du volume ACA ne donne l'hélice d'un SPAD. Le volume ACA ne cite que des hélices britanniques du S.E.5 à Hispano. Par exemple, l'hélice T.28086 du S.E.5 a un rayon de 47 in, soit 2,39 m de diamètre (C). Source : A. A. Griffith et B. Hague (second nom restitué d'après un OCR déformé), « On the Shape of Propeller Blades », R&M n° 452, juin 1918, même volume [LU-OCR] ; page imprimée non repérée dans l'OCR.
+
+#### 7.5.2 Hélices autorisées pour le « Type VII · Hispano 150 ch » (H9 [RÉSUMÉ])
+
+**Le tableau.** Le dossier de Gérard Hartmann sur les héliciers français contient un tableau dont chaque ligne donne : le type d'avion, le moteur, la série, le fabricant, deux cotes en mètres, une cote en millimètres et une observation.
+- Les extraits vus ne donnent ni les intitulés des colonnes, ni la date, ni l'origine du tableau.
+- Le même tableau porte, pour une hélice Régy du SPAD XIII, la mention « STAé 7 sept 1917 ». Il s'agit donc sans doute de la transcription d'une liste officielle d'hélices homologuées (déduction, C).
+
+**Lecture des colonnes proposée** (C) : diamètre, pas, épaisseur du moyeu. Arguments :
+- la Gallia série 3 du forum H8 a un moyeu de 150 mm d'épaisseur ;
+- les premières cotes vont de 2,35 à 2,50 m et les secondes de 1,75 à 2,05 m. Cela donne des P/D de 0,74 à 0,82, valeurs ordinaires pour un chasseur (D' : 0,80).
+
+| Série | Fabricant | Diamètre | Pas (lecture C) | Moyeu | Observation imprimée | P/D (C) |
+|---|---|---|---|---|---|---|
+| 485 | Levasseur | 2,45 m | 1,95 m | 150 mm | « Aucune tolérance en dessous » | 0,80 |
+| 561 | Levasseur | 2,50 m | 2,05 m | 150 mm | « Moteur surcomprimé » | 0,82 |
+| 3 | Gallia | 2,50 m | 2,00 m | 150 mm | « Moteur ordinaire ou surcompressé » | 0,80 |
+| 100 | Éclair | 2,35 m | 1,75 m | 150 mm | « Moteur ordinaire ou surcomprimé » | 0,74 |
+| 6 | Éclair | 2,40 m | 1,95 m | 150 mm | « Approuvé » | 0,81 |
+| 2066 | Chauvière | 2,35 m | 1,80 m | 150 mm | non vue | 0,77 |
+| 353 | Régy | 2,35 m | 1,80 m | **170 mm** | « Autorisation annulée » | 0,77 |
+
+**Remarques.**
+- **Statut** : chaque ligne a été vue dans un résumé distinct du moteur de recherche, qui la cite en entier. Le tableau lui-même n'a pas été lu. **Confiance C** pour chaque chiffre.
+- **« Aucune tolérance en dessous »** : le sens n'est pas expliqué. D'après les résumés du même dossier, Levasseur fabriquait à 0,5 mm près sur la longueur, **0,5° près sur l'angle de pas** et 0,5 mm près sur l'épaisseur des pales.
+- **Régy 353** : c'est la seule ligne à 170 mm de moyeu. Hartmann écrit qu'elle a été homologuée sur le SPAD VII, puis que l'autorisation a été annulée quand des concurrents ont présenté des hélices mieux adaptées au monoplace et à son moteur. Un lien entre le moyeu et l'annulation n'est **pas** établi.
+- **« Surcomprimé »** : trois lignes sur sept visent un Hispano de 150 ch « surcomprimé ».
+  - Un résumé de Wikipedia (H1) donne au 8Ab la désignation française « Type 34-S », le S signifiant « surcomprimé ».
+  - Si c'est exact, ces lignes concernent le **8Ab**, encore rangé sous « Hispano 150 ch » dans cette liste, et la Levasseur 561 (2,50 × 2,05 m) serait une hélice du 180 ch.
+  - **Hypothèse C**, à vérifier sur la liste elle-même. Elle s'accorde avec le marquage « Sur » d'une Gallia série 3 (§ 4).
+- **Divergences avec les forums** :
+  - Gallia série 3 : 2,45 m sur le forum aviation-ancienne t8351 (H10), et 2,45 × 2,10 m avec une pale de 190 mm sur le forum woodenpropeller (H8, données dites « officielles », sans source) ; ici, 2,50 × 2,00 m ;
+  - Levasseur 561 : 2,45 m selon le forum t8351, qui écrit « et non 2,50 indiquée sur certains sites ».
+  - **Non tranché.**
+- **Même tableau, autre avion** : une Levasseur 486 de 2,70 m pour le « Type H » (hydravion F.B.A.) à Hispano de 150 ch.
+- **Forme des pales** : selon Hartmann, les hélices Levasseur se reconnaissent à un bord d'attaque à courbure négative. Sans cote, cela ne sert pas au modèle.
+
+#### 7.5.3 Hélices britanniques et pièces conservées (H8, H26, H27, H10 [RÉSUMÉ])
+
+| Repère | Moteur marqué | Diamètre | Pas | Remarques | Source |
+|---|---|---|---|---|---|
+| AB 723 (numéro de plan de l'Air Board) | « 140 HP Hispano Suiza », « R H Tractor S7 » | 2 450 mm | 2 132 mm | D et P frappés au moyeu ; « dessin de style Levasseur » ; acajou selon woodenpropeller, hêtre selon Bonhams ; un fil du forum attribue un exemplaire à Mann Egerton | H8, H26 |
+| AB 759 | SPAD S7, « Hisso 150hp » | 2,45 m | 1,91 m (« et non 1,85 m ») | attribution par Bob Gardner, spécialiste des hélices britanniques, sur le forum woodenpropeller | H8 |
+| AB 764 | SPAD (moteur non précisé) | 2 414 mm | 1 850 mm | frappée « Levasseur Design » | H8 |
+| Levasseur, NASM A19320047000 | « 180 hp Hispano-Suiza » selon la fiche | 243,8 cm (96 in) | non donné | corde de 21,6 cm (8,5 in) ; le musée juge le fabricant et l'attribution au S.VII **non confirmés** | H27 |
+| Éclair série 100 du S.VII du Musée de l'Air | — | 2,35 m | non donné | selon le forum t8351 ; rien ne dit que cette hélice soit celle d'origine | H10 |
+
+- Conversions (C) : P/D de 0,87 pour AB 723, 0,78 pour AB 759 et 0,77 pour AB 764.
+- Sur les hélices de plan AB, D et P sont frappés au moyeu, en mm, selon un participant du forum H8. La convention britannique de mesure du pas n'est pas donnée.
+- AB 723 vise le Hispano de 140 hp des tout premiers moteurs. C'est la plus forte en pas de toutes les hélices relevées.
+
+#### 7.5.4 Quelle hélice sur le S.VII 150 ch en service en 1917 ?
+
+**Non établi.** Aucun document lu ou résumé ne relie une hélice à une escadrille, à un appareil ou à l'essai de S46. Indices :
+- **Un parc mêlé** : sept modèles français étaient autorisés pour le même avion et le même moteur (§ 7.5.2). Il n'y avait donc pas une « hélice du S.VII ».
+- **Éclair** : l'hélice Éclair (types 6 et 100) est citée comme équipant le SPAD VII, « dont celui de Guynemer » (H9 ; Wikipédia « Hélice Éclair », H35 [RÉSUMÉ]).
+- **Document du GQG du 27 décembre 1917** : destiné à réduire le nombre de modèles d'hélices en service, il désignerait les trois meilleures hélices du SPAD VII **180 ch**.
+  - Le forum t8351 les marque en gras, mais le résumé a perdu la mise en forme. La Levasseur 485 n'en ferait pas partie (H10 [RÉSUMÉ]).
+  - Ni la cote du document ni les trois noms ne sont connus.
+- **Guynemer** : sa demande d'« une meilleure hélice » du 28 décembre 1916 (`spad7.md` S1 [LU]) porte sur le 150 ch, un an plus tôt.
+- **Hélice de l'avion de S46** : **non trouvée**. S46 ne mentionne aucune hélice (`spad7.md` § 5.5.2).
+
+#### 7.5.5 Définition du pas
+
+- **Convention française de 1916-1918 : non trouvée.** Aucune source lue ou résumée ne dit :
+  - si le « pas » frappé sur les moyeux ou imprimé dans la liste est géométrique ou effectif ;
+  - à quel rayon il est mesuré.
+
+  Seul indice (H9 [RÉSUMÉ]) : la tolérance de Levasseur s'exprimait en **degrés d'angle de pas**. Le pas se contrôlait donc sans doute par les calages de pale à des stations données (C).
+- **Convention américaine, lue** : les hélices de la famille de D' sont cotées par leur « mean geometrical pitch », c'est-à-dire leur **pas géométrique moyen**. Sources [LU-IMG] : H24, p. 4 ; H25, p. 4. La liste des symboles du NACA, en fin de H24, distingue ce pas (p_g) du pas effectif (p_e), du pas « standard » et des pas de poussée nulle et de couple nul.
+- **Contrôle (C, calculs faits ici sur les calages lus sur l'image)** :
+  - hélice 3712 (H25, figure 1) : le pas géométrique 2πr·tan β vaut 79,0 à 79,1 in à 0,15, 0,30, 0,45, 0,60 et 0,75 R, puis 77,0 in à 0,90 R. Le pas annoncé est de 6 ft 7,1 in, soit 79,1 in ;
+  - hélice D' (H24, figure 4) : 75,1 à 75,2 in à 0,56, 0,72, 0,89 et 0,97 R, pour 6 ft 3,2 in, soit 75,2 in ;
+  - ces hélices sont donc **à pas géométrique constant** le long de la pale, au moins jusqu'aux trois quarts du rayon. Pas moyen, pas à 2/3 R et pas à 0,75 R y coïncident à 1 % près ;
+  - l'accord de ces calculs avec les pas imprimés vaut aussi contrôle de ma lecture des calages, imprimés en petits caractères.
+- **Sensibilité (C)** : à 0,75 R, où 3712 est calée à 18,9°, 0,5° de calage change le pas local d'environ 2,8 %. La seule tolérance de fabrication citée pour Levasseur suffit donc à déplacer le pas d'environ ±3 %.
+- **Conséquence pour le modèle** : en attendant une définition écrite, traiter le pas français comme un **pas géométrique constant**, comme celui de D', avec l'étiquette `E:`. Si le pas français était mesuré autrement (en bout de pale, ou comme pas effectif), la comparaison des P/D avec D' serait faussée de quelques pour cent.
+
+#### 7.5.6 Hélices de la famille de D' mesurées en vol (H24, H25) [LU-IMG]
+
+**Les essais.** Deux rapports NACA mesurent **en vol** les hélices en bois standard de la Navy sur le Vought VE-7 : la série de 1924 avec un moteur Wright E-4 (H24, Langley, du 1er mai au 24 août 1924), la série de 1926 avec un Wright E-2 (H25). Méthode commune :
+- des planés pour obtenir la polaire de l'avion ;
+- des vols à pleins gaz de 50 à 135 mph, en montée, en palier ou en piqué selon la vitesse ;
+- le régime relevé par un compteur de tours entraîné par l'arbre à cames ;
+- la puissance tirée de l'étalonnage du moteur au banc, corrigée de la pression et de la température d'admission.
+
+**Confiance A pour les mesures, C pour le SPAD** : autre avion, autre moteur. Les rapports ne disent pas que ces Wright sont des Hispano sous licence (identification C, comme au § 7.3).
+
+**a) Géométrie**
+
+| Hélice | Diamètre | Pas géométrique moyen | P/D (C) | Source |
+|---|---|---|---|---|
+| D' | 7 ft 10 in (2,388 m) | 6 ft 3,2 in au dessin ; 6 ft 2,8 in (1,900 m) mesurés après les essais | 0,80 | H24, p. 4-5 |
+| 3712 | 8 ft 2 in (2,489 m) | 6 ft 7,1 in (2,009 m) | 0,81 | H25, p. 4 |
+| 3713 | 8 ft 2 in | 6 ft 2,0 in (1,880 m) | 0,76 | H25, p. 4 |
+| 3714 (doublon de l'hélice I) | 8 ft 2 in | 5 ft 8,8 in (1,748 m) | 0,70 | H25, p. 4 |
+| 3715 | 8 ft 2 in | 5 ft 3,3 in (1,608 m) | 0,65 | H25, p. 4 |
+
+Les hélices 3712 à 3715 ne diffèrent que par l'épaisseur et le pas, avec la même forme en plan (allongement 6). Elles sont en bouleau lamellé entoilé de coton, sans bord métallique (H25, p. 3-4).
+
+**Géométrie complète de 3712**, utilisable pour un calcul par éléments de pale. Source : H25, figure 1 p. 4 (calages) et tableau I p. 14 (cordes). Rayon R = 49 in.
+
+| r (in) | r/R | Corde (in) | Corde (m, C) | Calage (°) |
+|---|---|---|---|---|
+| 7,35 | 0,15 | 7,35 | 0,187 | 59,71 |
+| 14,70 | 0,30 | 7,72 | 0,196 | 40,55 |
+| 22,05 | 0,45 | 8,17 | 0,208 | 29,73 |
+| 29,40 | 0,60 | 7,72 | 0,196 | 23,17 |
+| 36,75 | 0,75 | 6,47 | 0,164 | 18,90 |
+| 44,10 | 0,90 | 4,41 | 0,112 | 15,53 |
+
+Les ordonnées des profils (extrados et intrados en pouces, de 2,5 à 90 % de la corde, rayons de bord d'attaque et de fuite) sont au tableau I, p. 14. Elles ne sont pas recopiées ici.
+
+**b) Coefficients en vol (valeurs lissées), comparés à la table de soufflerie déjà utilisée** (D', H17, avion complet)
+
+| J | C_P de D' en soufflerie (H17) | C_P de D' en vol (H24, tableau III, p. 24) | C_P de 3712 en vol (H25, tableau IV, p. 23) |
+|---|---|---|---|
+| 0,45 | 0,0682 | 0,0673 | 0,0682 |
+| 0,50 | 0,0671 | 0,0662 | 0,0662 |
+| 0,55 | 0,0654 | 0,0648 | 0,0638 |
+| 0,60 | 0,0631 | 0,0630 | 0,0611 |
+| 0,65 | 0,0603 | 0,0605 | 0,0583 |
+| 0,70 | 0,0570 | 0,0576 | 0,0547 |
+| 0,75 | 0,0534 | 0,0545 | 0,0510 |
+| 0,80 | 0,0497 | 0,0510 | 0,0471 |
+| 0,85 | 0,0457 | 0,0471 | — |
+
+- **Tables complètes**, avec C_T et η : D' en vol de J = 0,30 à 0,85 (η max 0,760 à J = 0,80) ; 3712 en vol de J = 0,35 à 0,80 (η max 0,705 à J = 0,70).
+- **Contrôle** : chaque ligne a été vérifiée par η = C_T·J/C_P. C'est ce contrôle qui fixe la lecture 0,0471 pour 3712 à J = 0,80.
+
+**Ce qu'en disent les auteurs.**
+- **H24** (p. 3 et 12) : en vol, poussée et puissance absorbée dépassent de **6 à 10 %** (8 % en moyenne) celles des maquettes de Stanford ; les rendements restent proches.
+- **H25** (p. 13) :
+  - en vol, aucun rendement ne dépasse 71 %, soit au moins 4 à 5 % de moins que ne le prévoient les maquettes ; les auteurs l'attribuent surtout aux vitesses plus élevées en bout de pale ;
+  - une comparaison précise entre hélices exige de connaître les calages réels en fonctionnement, à cause de la déformation des pales.
+- **H24** (p. 8) : une fois installé, le moteur n'entraînait pas les hélices au point fixe aux régimes attendus des essais de maquettes. Il a fallu reprendre l'installation (fuite à l'admission, magnétos, mélange) pour obtenir 1 580 tr/min au point fixe avec l'hélice I.
+
+**c) Régimes à pleins gaz mesurés en vol** (extraits ; vitesses vraies). σ est la masse volumique relative, calculée ici à partir du poids spécifique de l'air imprimé (C).
+
+| Hélice, moteur | Condition | Vitesse | Pente | Régime (tr/min) | J | σ | Essai |
+|---|---|---|---|---|---|---|---|
+| D', Wright E-4 (H24, tableau II, p. 22) | point fixe | 0 | — | 1 650 ; 1 640 | 0 | 1,00 | 31-8 ; 12-6 |
+| | montée | 103,7 ft/s (114 km/h) | +11,5° | 1 640 | 0,484 | 0,97 | 31-4 |
+| | montée | 116,9 ft/s (128 km/h) | +9,7° | 1 660 | 0,539 | 0,98 | 31-5 |
+| | palier | 167,5 ft/s (184 km/h) | 0,0° | 1 800 | 0,713 | 1,00 | 32-1 |
+| | palier | 171,2 ft/s (188 km/h) | 0,0° | 1 808 | 0,726 | 0,99 | 32-8 |
+| 3712, Wright E-2 (H25, tableau III, p. 18) | point fixe | 0 | — | 1 480 à 1 504 | 0 | 1,00 | 2-10, 14-11, 15-11 |
+| | montée | 100,4 ft/s (110 km/h) | +8,3° | 1 500 | 0,492 | 0,91 | 1-1 |
+| | montée | 94,3 ft/s (103 km/h) | +8,2° | 1 504 | 0,461 | 0,89 | 15-1 |
+| | palier | 175,5 ft/s (193 km/h) | 0,0° | 1 710 | 0,754 | 0,92 | 1-7 |
+| | palier | 171,5 ft/s (188 km/h) | −0,1° | 1 668 | 0,756 | 0,90 | 15-2 |
+
+**Rapport des régimes montée/palier à pleins gaz (C).**
+- D' : 1 640-1 660 contre 1 800-1 808 tr/min, soit **0,91 à 0,92**.
+- 3712 : 1 500-1 504 contre 1 668-1 710 tr/min, soit **0,88 à 0,90**. Chaque vol comparé à lui-même donne 0,877 (vol 1) et 0,902 (vol 15).
+
+Ce sont des régimes **de VE-7**. Le moteur, la cellule, la masse (2 040 à 2 213 lb, soit 925 à 1 004 kg) et les J de montée (0,46 à 0,54) diffèrent de ceux du SPAD : ces chiffres ne se transposent pas tels quels. Ils donnent l'ordre de grandeur de la chute de régime entre palier et montée, pour un V8 Wright à prise directe et une hélice en bois de P/D voisin de 0,8.
+
+#### 7.5.7 Ce que cela change pour le modèle (C ; arbitrage de l'aérodynamicien)
+
+- **Les documents encadrent D'.** Dans la liste française, les P/D vont de 0,74 à 0,82, avec une médiane de 0,80 ; sur les plans britanniques, de 0,77 à 0,87. D', à 0,80, est au milieu : aucun document ne désigne une hélice de pas nettement plus faible.
+- **Forme de la courbe C_P(J).** Le rapport C_P(J = 0,53) / C_P(J = 0,77) règle l'écart entre le régime de montée et celui du palier. Calculé ici par interpolation linéaire, il vaut :
+  - 1,273 pour D' en soufflerie (H17) ;
+  - 1,231 pour D' en vol (H24), soit 3,3 % de moins ;
+  - 1,310 pour 3712 en vol (H25), soit 2,9 % de plus.
+- **Ordre de grandeur (C, hypothèses simples).**
+  - Près de 1 700 tr/min, la puissance du moteur croît à peu près comme le régime : la forme de H14 donne un facteur de 0,785 à 1 500 tr/min et de 0,890 à 1 700 tr/min. À J donné, le régime d'équilibre varie alors comme C_P^(−1/2).
+  - Pour gagner 3,3 % de régime en palier (de 1 665 à 1 720 tr/min) sans changer celui de la montée, il faudrait un rapport C_P(montée)/C_P(palier) plus fort d'environ 6,7 % que celui de D' en soufflerie.
+  - La courbe la plus favorable mesurée en vol (3712) n'apporte que 2,9 %, soit environ 1,4 % de régime. Celle de D' en vol va dans l'autre sens, d'environ −1,7 %.
+- **Lecture.**
+  - Mesurées en vol, des hélices en bois de pas voisin diffèrent d'environ ±1,5 % sur l'écart de régime entre montée et palier. La tolérance de fabrication (±0,5° de calage) déplace à elle seule le pas d'environ ±3 %.
+  - L'écart du modèle (−3,2 %) est donc **du même ordre que l'incertitude des sources sur l'hélice**. Selon cet ordre de grandeur, il est toutefois **plus grand que ce que la seule forme de la courbe d'hélice peut expliquer**.
+  - Les documents disponibles ne permettent pas de trancher entre « l'hélice absorbe trop » et « le moteur donne trop peu ». Pour un Hispano de 150 hp, seul le R&M 586 le pourrait (§ 7.5.9).
+
+#### 7.5.8 Hélice recommandée pour le modèle (S.VII 150 ch, 8Aa)
+
+| Rôle | Hélice | Diamètre | Pas | P/D | Définition du pas | Confiance | Raison |
+|---|---|---|---|---|---|---|---|
+| **Géométrie de référence** | **Levasseur série 485** | **2,45 m** | **1,95 m** | 0,80 | pas géométrique supposé constant le long de la pale (`E:`) | C | seule hélice dont les deux cotes reviennent dans deux transmissions distinctes (liste reprise par Hartmann, H9 ; forum H8) ; même diamètre qu'AB 759 et que la liste du forum t8351 ; même P/D que D' |
+| Table aérodynamique de base | D' en soufflerie (H17), mise à l'échelle de 2,45 m | — | — | 0,80 | pas géométrique constant (vérifié, § 7.5.5) | A pour la mesure, C pour le SPAD | **inchangée** : même P/D que la Levasseur 485 |
+| Variante 1 | 3712 en vol (H25), mise à l'échelle | 2,489 m à l'origine | 2,009 m | 0,81 | pas géométrique moyen, constant à 1 % près jusqu'à 0,75 R | A pour la mesure, C pour le SPAD | mesurée en vol ; géométrie complète pour caler un calcul par éléments de pale ; courbe C_P(J) la plus raide |
+| Variante 2 | D' en vol (H24) | 2,388 m à l'origine | 1,900 m (mesuré) | 0,80 | idem | A pour la mesure, C pour le SPAD | même hélice que la base, mesurée en vol ; courbe la plus plate |
+| Variante historique | Éclair série 100 (série 6) | 2,35 m (2,40 m) | 1,75 m (1,95 m) | 0,74 (0,81) | inconnue | C | type d'hélice cité pour les SPAD VII, dont celui de Guynemer |
+
+- **Non recommandées** :
+  - la **Gallia série 3**, retenue comme référence le 2026-10-20 : ses cotes changent selon la source (2,45 × 2,10 m ou 2,50 × 2,00 m) ;
+  - **AB 723**, dessinée pour le Hispano de 140 hp.
+- **Pour le 180 ch** : toujours aucune hélice attestée. Si l'hypothèse « surcomprimé = 8Ab » se vérifie (§ 7.5.2), les candidates seraient la Levasseur 561 (2,50 × 2,05 m), la Gallia série 3 et l'Éclair 100, toutes en C.
+
+#### 7.5.9 Documents à obtenir (pour la session principale)
+
+| Priorité | Document | Où | Ce qu'on y cherche |
+|---|---|---|---|
+| 1 | ARC R&M 586 (1921), Aerodynamics Staff of the R.A.E., « Report on Various Airscrews Designed for S.E.5, with 150 H.P. Ungeared Hispano-Suiza Engine » | archives AERADE de Cranfield, collection des R&M de l'Aeronautical Research Committee, `https://reports.aerade.cranfield.ac.uk/handle/1826.2/11`, à parcourir par numéro ou par titre (fichiers sur le modèle `arc-rm-NNNN.pdf`, comme `arc-rm-3555.pdf`) ; à défaut, *Technical Report of the Aeronautical Research Committee* 1920-21 (HMSO) | diamètres, pas, calages et rendements de plusieurs hélices sur un Hispano de 150 hp sans réducteur ; régimes en montée et en palier ; courbe du moteur (figure 10, § 3.3) |
+| 1 | G. Hartmann, « Les héliciers français », PDF | `https://www.hydroretro.net/etudegh/heliciersfrancais.pdf` | le tableau « Type VII » complet : intitulés des colonnes, origine et date de la liste, page, lignes « Hispano 180 ch » s'il y en a |
+| 1 | G. Eiffel, *Études sur l'hélice aérienne faites au laboratoire d'Auteuil*, Paris, Librairie aéronautique E. Chiron, 1921, 2 vol. (texte XVI-304 p. ; XXVII planches) | notice BnF (CCFr) `https://ccfr.bnf.fr/portailccfr/ark:/16871/00111293469` ; Smithsonian Libraries, cote TL705 .E5X 1921 (`https://www.si.edu/object/siris_sil_549981`) ; à chercher sur Gallica | un participant du forum The Aerodrome a publié un dessin d'hélice du « SPAD à Hispano-Suiza de 150 hp », numérisé dans « un ensemble d'ouvrages d'Eiffel » (H28 [RÉSUMÉ]) : géométrie, calages, peut-être essais de maquette |
+| 2 | G. Eiffel, *Résumé des principaux travaux exécutés pendant la guerre au laboratoire aérodynamique Eiffel, 1915-1918*, Paris, E. Chiron, 212 p. (daté [1919] par HathiTrust, 1920 par Brockett) | HathiTrust, notice 001035741 (exemplaire de l'université du Michigan, en accès intégral selon la notice) ; peut-être Bibliothèques numériques de la Défense, document `75bed661-8e23-4f70-942a-0e0608fa5971` (contenu non confirmé) | essais d'hélices et de maquettes de SPAD |
+| 2 | The Aerodrome, fil « Propeller for Hispano Suiza 150 hp SPAD » | `https://theaerodrome.com/forum/showthread.php?p=785680` | le dessin et sa référence exacte |
+| 2 | Forum aviation-ancienne, fil t8351 | `https://aviation-ancienne.forumactif.com/t8351-dimensions-de-l-helice-pour-le-spad-vii` | les trois hélices en gras du document du GQG du 27 décembre 1917, et la référence de ce document |
+| 2 | Forum woodenpropeller : fils 950-, 3469- et 3326- (archive `t-3247.html`) ; pages `SPAD_VII.html` et `SPADs7.html` | `https://www.woodenpropeller.com/forumvB/forum/wooden-propeller-identification/early-wooden-propellers/<numéro>-` | origine des données « officielles » de la Gallia série 3 ; AB 759 et AB 764 (Bob Gardner) |
+| 2 | S. Drzewiecki, *Théorie générale de l'hélice : hélices aériennes et hélices marines*, Paris, Gauthier-Villars, 1919, XII-184 p. (S56) | Gallica, à chercher | la définition française du pas à l'époque |
+| 3 | A. Lapresle, « Résultats acquis sur la question de l'hélice aérienne », *L'Aérophile*, 29e année, n° 19-20 (1er-15 octobre 1921), p. 305-312 ; P. Levasseur, « Les avions et les hélices Pierre Levasseur », *L'Aéronautique*, 3e année, n° 30 (novembre 1921), p. 463 (S56) | Gallica | conventions et cotes de l'époque |
+| 3 | SHD, département Air : listes d'homologation des hélices de la Section technique de l'aéronautique | **cote non trouvée** ; chercher sur FranceArchives « hélices homologuées », « Section technique de l'aéronautique », « hélice » avec « Spad » ; voir aussi le fonds Dorand (`spad7.md` S69, DE 2012 ZL 245) | la liste originale : date, colonnes, définition du pas |
+| 3 | Image à 300 dpi de la p. 528 de *Flight* du 16 mai 1918 (`Flight_International_Magazine_1918-05-16-pdf`), déjà demandée dans `spad7.md` § 9.6 | archive.org | la légende du dessin coté du S.XI mentionne l'hélice (« Screw », « Hub ») et peut-être un régime ; illisible dans l'OCR |
+
 ## 8. Fiabilité et défauts connus (pour les pannes et l'ambiance, pas pour le M1)
 - Surchauffe par temps chaud, mise en température difficile par temps froid, bâti moteur à renforcer sur les premiers S.VII (`spad7.md` S5 [RÉSUMÉ]).
 - Surchauffe vers 4 000 m d'un moteur reconstruit : il faut réduire les gaz et piquer pour refroidir (Hall, `spad7.md` S3 [LU]).
@@ -411,11 +634,46 @@ Fichiers PDF et texte extrait de NASA NTRS, téléchargés par le coordinateur l
 - **H23** — H. Glauert et S. B. Gates, « Prediction of the Performance and Longitudinal Stability of an Aeroplane », ARC R&M n° 324, mars 1917, même volume ACA, p. 576 et suivantes : phrase d'époque sur une puissance au frein variant comme une puissance de la densité (exposant illisible dans l'OCR, p. 577). Cité pour mémoire.
 - Bibliographie Brockett : `spad7.md` S56.
 
+**Sources de la sixième passe (2026-10-23)**
+
+*Lues dans le dossier de travail* (PDF de NTRS déjà téléchargés par le coordinateur, absents de `ntrs/INDEX.md`). Pages : pagination imprimée.
+- **H24** — W. F. Durand et E. P. Lesley (Stanford University), « Comparison of Tests on Air Propellers in Flight with Wind Tunnel Model Tests on Similar Forms », NACA Report No. 220, publié en mars 1926 (réimpression du Government Printing Office, 1927). Fichier local `ntrs/19930091287.pdf` ; NTRS 19930091287, https://ntrs.nasa.gov/citations/19930091287 (adresse construite sur le modèle des autres rapports, non ouverte). **[LU-IMG]** : p. 3-13 et 16-29 (figures 1 à 5 et 14, tableaux II, III, VI, VII et VIII, liste des symboles en dernière page). Primaire.
+- **H25** — J. W. Crowley Jr. et R. E. Mixson (Langley), « Characteristics of Five Propellers in Flight », NACA Report No. 292, publié en novembre 1928 ; texte daté du 8 novembre 1927. Fichier local `ntrs/19930091361.pdf` ; NTRS 19930091361, https://ntrs.nasa.gov/citations/19930091361 (même remarque). **[LU-IMG]** : p. 3-23 (figures 1 à 22, tableaux I à IV, références p. 14). Primaire.
+- R&M 452 du volume ACA 1917-18 (`technicalreport1917aero_2`) [LU-OCR] : rayon de l'hélice T.28086 du S.E.5 (§ 7.5.1).
+
+*Vues en résumé de recherche* [RÉSUMÉ], le 2026-10-23 (pages non ouvertes : échec DNS de l'outil de lecture) :
+- **H9 (complément)** — G. Hartmann, « Les héliciers français », https://www.hydroretro.net/etudegh/heliciersfrancais.pdf : sept lignes « Type VII · Hispano 150 ch » (§ 7.5.2) ; tolérances de Levasseur ; homologation puis annulation de la Régy 353 ; Éclair types 6 et 100 sur le SPAD VII ; Levasseur 486 du « Type H » ; mention « STAé 7 sept 1917 » pour une Régy du SPAD XIII. Secondaire. L'auteur et la page restent à vérifier sur le PDF.
+- **H8 (complément)** — woodenpropeller.com :
+  - pages « SPAD s7 Wooden Propeller » (https://woodenpropeller.com/SPADs7.html) et « SPAD VII » (https://woodenpropeller.com/SPAD_VII.html) : AB 723 ;
+  - fils du forum « Early wooden propellers » 3326- (archive : https://woodenpropeller.com/forumvB/archive/index.php/t-3247.html ; Gallia série 3), 950- et 3469- (AB 759, AB 764, d'après Bob Gardner), et 46746-spad-vii-prop (exemplaire attribué à Mann Egerton).
+  - Forum de collectionneurs : piste.
+- **H10 (complément)** — Forum Aviation ancienne :
+  - fil t8351 (liste de séries et de diamètres ; Éclair 100 du S.VII du Musée de l'Air ; document du GQG du 27 décembre 1917) ;
+  - fil t8336, https://aviation-ancienne.forumactif.com/t8336-helice-spad-vii : hélice de S.VII à 180 ch refaite en 1928 sur plans d'époque, marquée Contrôle Veritas.
+  - Forum : piste.
+- **H26** — Bonhams :
+  - vente 25448, lot 132, « A two bladed 'Eddington' type wooden propeller as fitted to a SPAD VII, circa 1916 », https://cars.bonhams.com/auction/25448/lot/132/ ;
+  - vente 20931, lot 117, « A twin bladed wooden propeller for 140Hp Hispano-Suiza engined SPAD VII », https://cars.bonhams.com/auction/20931/lot/117/.
+  - Marquages relevés : « 140 HP Hispano Suiza », « R H Tractor S7 », « D2450 », « P2132 », « AB 723 ». Fiches de vente : piste.
+- **H27** — Smithsonian, National Air and Space Museum, « Levasseur Propeller, fixed-pitch, two-blade, wood », A19320047000, https://airandspace.si.edu/collection-objects/levasseur-propeller-fixed-pitch-two-blade-wood/nasm_A19320047000. Institutionnelle. Le musée lui-même ne confirme ni le fabricant ni l'attribution au S.VII.
+- **H28** — The Aerodrome (forum), « Propeller for Hispano Suiza 150 hp SPAD », message de « machinist », https://theaerodrome.com/forum/showthread.php?p=785680 : dessin d'hélice numérisé, dit tiré d'« un ensemble d'ouvrages » d'Eiffel. Piste vers H30.
+- **H29** — Aeronautical Research Council, R&M n° 3555 (index des R&M, HMSO, 1968), https://reports.aerade.cranfield.ac.uk/bitstream/handle/1826.2/2824/arc-rm-3555.pdf : titre du R&M 586. Primaire (index).
+- **H35** — Wikipédia (fr), « Hélice Éclair », https://fr.wikipedia.org/wiki/H%C3%A9lice_%C3%89clair. Wiki : piste.
+- **H36** — enginehistory.org, « UKNA DSIR Propeller Records », https://www.enginehistory.org/References/UKNA/Prop-DSIR.shtml : liste de cotes DSIR consacrées aux hélices ; aucune entrée « Spad » dans le résumé. Piste.
+- **H1 (complément)** — Wikipedia (en), « Hispano-Suiza 8 » : désignation française « Type 34-S » du 8Ab, avec le « S » de « surcomprimé » selon le résumé. Wiki : piste.
+
+*Pistes bibliographiques* [PISTE] (repérées dans S56 ou dans des catalogues, non consultées) :
+- **H30** — G. Eiffel, *Études sur l'hélice aérienne faites au laboratoire d'Auteuil*, Paris, Librairie aéronautique E. Chiron, 1921, 2 vol. (texte XVI-304 p. ; XXVII planches). Notice BnF, CCFr ark:/16871/00111293469 ; Smithsonian Libraries TL705 .E5X 1921.
+- **H31** — G. Eiffel, *Résumé des principaux travaux exécutés pendant la guerre au laboratoire aérodynamique Eiffel (1915-1918)*, Paris, E. Chiron, [1919] selon HathiTrust (notice 001035741), 1920 selon Brockett ; 212 p.
+- **H32** — S. Drzewiecki, *Théorie générale de l'hélice : hélices aériennes et hélices marines*, Paris, Gauthier-Villars, 1919, XII-184 p.
+- **H33** — A. Lapresle, « Résultats acquis sur la question de l'hélice aérienne », *L'Aérophile*, 29e année, n° 19-20, 1er-15 octobre 1921, p. 305-312.
+- **H34** — P. Levasseur, « Les avions et les hélices Pierre Levasseur », *L'Aéronautique*, 3e année, n° 30, novembre 1921, p. 463.
+
 **Pistes non consultées**
 - ~~Images des pages 201-203 de *Flight* du 13 février 1919 (H19)~~ : **lues en cinquième passe** (§ 3.2, 4.4, 5, 6). Reste à trouver l'original d'*Automotive Industries* (fin 1918 ou début 1919), d'où *Flight* tire ces tableaux, pour écarter une erreur de recopie (inversion possible des lignes françaises, § 3.2).
 - Rapport NACA du Bureau of Standards sur les Hispano de 150 hp en caisson d'altitude (H22) : numéro à trouver dans les rapports annuels NACA de 1919-1921.
 - Notices Wright-Martin de 1918 et *L'Aérophile* d'avril 1919 (§ 7.3).
-- ARC R&M n° 586 (juillet 1921), figure 10 : courbe puissance/régime du Hispano 150, d'après l'essai du RAE du 8 août 1916 (archives Cranfield AERADE).
+- ARC R&M n° 586 (juillet 1921), figure 10 : courbe puissance/régime du Hispano 150, d'après l'essai du RAE du 8 août 1916 (archives Cranfield AERADE). **Sixième passe** : le rapport porte sur plusieurs hélices dessinées pour le S.E.5 à Hispano de 150 hp sans réducteur (titre au § 3.3) ; priorité 1 (§ 7.5.9).
 - Rapport du département moteurs du RAE, 8 août 1916 (National Archives).
 - Rapports d'essais de Chalais-Meudon de 1915 (endurance de 50 h) et fiches STAé des moteurs (SHD).
 - Notices d'époque des héliciers (Levasseur, Gallia, Éclair, Régy, Ratier) et le dossier de Gérard Hartmann sur les héliciers français, en entier.
@@ -462,3 +720,27 @@ Fichiers PDF et texte extrait de NASA NTRS, téléchargés par le coordinateur l
 - **Loi d'altitude.** La « puissance estimée » de H19 suit la densité à 1 % près : c'est une convention de calcul, **non retenue** (§ 4.4). La loi mesurée en vol de H21 reste la référence proposée pour le 150 ch.
 - **Consommation : 0,52 lb/(hp·h), A** (H19, H14, H20 concordants).
 - **Masse à sec du 8Ab : 231 kg (510 lb), A** pour la valeur imprimée dans H19 ; recoupe les 230 kg de H1.
+
+**Sixième passe (2026-10-23 ; hélice du S.VII 150 ch)**
+- **Géométrie de référence de l'hélice (remplace l'entrée du 2026-10-20 « Gallia série 3 »).**
+  - Fourchette : sept hélices autorisées pour le « Type VII · Hispano 150 ch », de 2,35 à 2,50 m de diamètre et de 1,75 à 2,05 m de pas (P/D de 0,74 à 0,82) ; plans britanniques de 0,77 à 0,87 (§ 7.5.2 et 7.5.3).
+  - **Retenu : Levasseur série 485, 2,45 × 1,95 m (P/D 0,80), confiance C.** C'est la seule hélice dont les deux cotes reviennent dans deux transmissions distinctes. Son diamètre est celui d'AB 759 ; son P/D est celui de D'.
+  - La Gallia série 3 est abandonnée comme référence : 2,45 × 2,10 m sur un forum, 2,50 × 2,00 m dans la liste reprise par Hartmann. La pale de 190 mm n'a pas d'autre source.
+  - Les deux tableaux de 7.5.2 et 7.5.3 sont en **[RÉSUMÉ]** : aucune valeur ne dépasse C.
+- **Table aérodynamique de l'hélice.** **Maintenu** : D' en soufflerie (H17) mise à l'échelle, puisque la Levasseur 485 a le même P/D. **Ajouté** : deux variantes mesurées en vol, A pour la mesure et C pour le SPAD : 3712 (H25), à géométrie complète, et D' (H24).
+  - Le rapport C_P(J = 0,53)/C_P(J = 0,77) vaut 1,231 (D' en vol), 1,273 (D' en soufflerie) et 1,310 (3712 en vol).
+  - Le choix revient à l'aérodynamicien. Je n'ai retenu aucune variante d'après le régime qu'elle donnerait.
+- **Définition du pas.**
+  - Convention française : **non trouvée**.
+  - Hélices de la Navy : pas géométrique moyen, constant le long de la pale à 1 % près jusqu'à 0,75 R (vérifié par le calcul sur 3712 et D').
+  - **Retenu, en `E:`** : traiter le pas français comme un pas géométrique constant. Justification : c'est la seule convention écrite trouvée pour des hélices de même famille. Le contrôle de la fabrication en degrés de calage, chez Levasseur (H9 [RÉSUMÉ]), est compatible avec cette lecture.
+- **Régime en montée d'un S.VII : non trouvé.**
+  - Comparable, en A pour la mesure et C pour l'usage : sur VE-7 à pleins gaz, le régime de montée vaut 0,88 à 0,92 fois celui du palier (H24, H25, § 7.5.6). Ce rapport sert de **contrôle de vraisemblance** du modèle, pas de cible.
+  - Ordre de grandeur (C, § 7.5.7) : la forme de la courbe d'hélice explique au mieux la moitié de l'écart de 3,2 % entre le régime du modèle et S46 en palier. Les sources lues ne permettent pas de dire si l'autre moitié vient du moteur ou de S46.
+  - **Signalé à l'aérodynamicien** : une tolérance de ±3 % sur le régime est plus serrée que l'incertitude documentaire sur l'hélice. À elle seule, la tolérance de fabrication de ±0,5° de calage fait varier le pas d'environ ±3 %, soit environ ±2 % de régime (C). Le choix de la tolérance lui revient.
+- **AB 759 précisé.** 2,45 × 1,91 m pour le SPAD à Hispano de 150 hp ; la valeur de 1,85 m citée en première passe appartient à un autre plan, AB 764 (2,414 × 1,85 m, « Levasseur Design »). AB 723 (2,45 × 2,132 m) vise le 140 hp. Tout cela vient d'un forum, en résumé : C.
+- **Hélice du 180 ch.** Toujours non attestée.
+  - Hypothèse C : « Hispano 150 surcomprimé » désignerait le 8Ab (« Type 34-S »).
+  - Candidates si l'hypothèse se vérifie : Levasseur 561 (2,50 × 2,05 m), Gallia série 3, Éclair 100. **Rien n'est changé dans les données.**
+- **Sens de rotation.** Le marquage « R H Tractor S7 » d'AB 723 concorde avec le § 7.3. Confiance inchangée (C) : la convention n'est pas définie.
+- **Priorité documentaire.** Le R&M 586 passe en tête (§ 7.5.9) : ses essais de plusieurs hélices sur un Hispano de 150 hp sans réducteur sont le seul document repéré qui puisse séparer l'hélice du moteur.

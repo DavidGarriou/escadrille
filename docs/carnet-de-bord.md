@@ -1146,3 +1146,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
 ### Suite : l'hélice réelle du S.VII 150 ch
 - **Q** Le joueur : « Lance l'étape 1 ». **D** Recherche confiée à l'historien : l'hélice réelle du S.VII 150 ch (fabricant, diamètre, pas et définition du pas, forme des pales), un régime relevé en montée, et, en question secondaire, le bord d'attaque des ailes (contreplaqué ou toile). Les cotes connues ne viennent que d'un forum de collectionneurs (H8, vu en résumé, confiance C).
+- **R** Rapport de l'historien (sixième passe de `hispano-suiza-8a.md` § 7.5 ; neuvième passe de `spad7.md`). Toutes les pages web n'ont été vues qu'en résumé : l'outil de lecture de l'historien échoue sur ces sites.
+  - **Liste de sept hélices autorisées** pour le « Type VII · Hispano 150 ch » (dossier Hartmann, sans doute une liste du STAé de 1917, confiance C) : de 2,35 à 2,50 m de diamètre, P/D de 0,74 à 0,82. Aucun document ne dit laquelle équipait l'avion de S46 : le parc était mêlé.
+  - **Référence retenue : Levasseur série 485, 2,45 × 1,95 m (P/D 0,80)**, à la place de la Gallia série 3. C'est déjà, à 1 cm près, l'hélice du modèle (D' portée à 2,45 m, pas de 1,96 m) : **la table du modèle est maintenue**.
+  - **Définition française du pas** : non trouvée. Les hélices de la Navy sont à pas géométrique constant (vérifié sur les calages des Reports 220 et 292).
+  - **Hélices de la famille de D' mesurées en vol** (Reports 220 et 292, lus sur l'image) :
+    - la forme de la courbe C_P(J) varie d'environ ±1,5 % en régime ;
+    - l'écart du modèle (−3,2 %) est du même ordre que l'incertitude sur l'hélice, mais plus grand que ce que la seule forme de courbe explique.
+  - **Régime en montée sur S.VII** : non trouvé. Sur le VE-7, le régime de montée vaut 0,88 à 0,92 fois celui du palier.
+  - **Bord d'attaque** : non tranché (C dans les deux sens).
+  - **Document décisif** : le R&M 586 (1921), plusieurs hélices sur un Hispano de 150 hp sans réducteur.
+- **A** Contrôle sur le modèle : ce rapport vaut 0,87 au sol et 0,91 à 4 000 m, en limite basse des mesures du VE-7. Plausible.
+- **⚠** Le proxy de l'environnement refuse `reports.aerade.cranfield.ac.uk` (R&M 586) et `www.hydroretro.net` (dossier Hartmann). Pour les lire, le joueur doit les ajouter aux domaines autorisés de l'environnement.
