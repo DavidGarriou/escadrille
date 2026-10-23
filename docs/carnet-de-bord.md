@@ -1142,3 +1142,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **régime à la vitesse maximale −3,2 / −3,0 / −3,3 % (±3 %) : en échec de peu**, A à 2 000 m, qui bloque la validation.
 - **D** Pas de réglage. L'écart restant, et la montée trop rapide qu'il cache, tiennent à l'hélice, un comparable. Pistes notées dans `spad7-calculs.md` § 7 (historien, éléments de pale, postes à faible J). Le `spad7` n'est pas déclaré « validé ».
 
+- **R** Rapport d'essai `spad7` remis au joueur (commit 95a300a) : verdict ÉCARTS. Tout passe, sauf le régime à la vitesse maximale (−3,0 à −3,3 % pour ±3 %). Propositions de suite : l'hélice réelle du S.VII 150 ch (historien), puis un calcul par éléments de pale. En attente des retours du joueur ; `docs/essais/spad7.md` ne sera écrit qu'après son accord.
