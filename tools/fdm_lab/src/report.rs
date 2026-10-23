@@ -11,6 +11,7 @@ use escadrille_fdm::rigid_body::RigidBodyState;
 
 use crate::campaign::{Outcome, validated};
 use crate::modes::{Mode, StaticStability};
+use crate::polar::{AirframePolar, FIT_RANGE};
 use crate::qualitative::QualitativeOutcome;
 use crate::robustness::RobustnessOutcome;
 use crate::trim::Trim;
@@ -35,6 +36,8 @@ pub struct Report<'a> {
     pub outcomes: &'a [Outcome],
     pub robustness: &'a [RobustnessOutcome],
     pub qualitative: &'a [QualitativeOutcome],
+    /// Drag polar of the airframe from glides at idle.
+    pub polar: Option<AirframePolar>,
     /// Plots next to the report: (title, file name).
     pub figures: &'a [(String, String)],
     pub cruise: Option<Cruise>,
@@ -180,6 +183,24 @@ pub fn markdown(r: &Report) -> String {
         let _ = writeln!(t, "|---|---|---|---|---|---|");
         mode_rows(&mut t, &c.longitudinal);
         mode_rows(&mut t, &c.lateral);
+    }
+
+    if let Some(p) = &r.polar {
+        let _ = writeln!(t, "\n## Polaire de la cellule\n");
+        let _ = writeln!(
+            t,
+            "Vols planés stabilisés au ralenti à {:.0} m, forces de l'hélice retranchées (traînée « vraie », convention du NACA Report 304). Ajustement sur {} vols de C_L {:.1} à {:.1} : **C_D = {:.4} + {:.4} C_L²**. Surface de référence {:.2} m², envergure {:.2} m, allongement équivalent b²/(κS) = {:.2} : **coefficient d'Oswald de l'avion complet {:.3}**.",
+            p.altitude,
+            p.fitted,
+            FIT_RANGE.0,
+            FIT_RANGE.1,
+            p.cd0,
+            p.k,
+            p.reference.area,
+            p.reference.span,
+            p.reference.equivalent_aspect_ratio(),
+            p.oswald()
+        );
     }
 
     if !r.robustness.is_empty() {

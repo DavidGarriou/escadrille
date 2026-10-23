@@ -18,8 +18,8 @@ use escadrille_fdm::environment::Environment;
 use escadrille_fdm::rigid_body::RigidBodyState;
 use glam::{DVec3, EulerRot};
 
-use crate::performance::{PerformanceError, max_level_speed, stall_speed, stall_speed_at};
-use crate::trim::{Flight, LEVEL_AT_SPEED, PATH_AT_SPEED, Trim, solve_robust};
+use crate::performance::{PerformanceError, glide, max_level_speed, stall_speed, stall_speed_at};
+use crate::trim::{Flight, LEVEL_AT_SPEED, Trim, solve_robust};
 
 const DEG: f64 = PI / 180.0;
 
@@ -593,7 +593,7 @@ fn flown_stall(
         LEVEL_AT_SPEED,
     )
     .map_err(|e| format!("{e:?}"))?;
-    let glide = glide_at(aircraft, env, altitude, entry_speed).map_err(error)?;
+    let glide = glide(aircraft, env, altitude, entry_speed).map_err(error)?;
     let c0 = level.commands(aircraft);
     let recovery = glide.commands(aircraft);
     let gamma_glide = glide.flight.flight_path;
@@ -819,18 +819,6 @@ fn flown_stall(
     })
 }
 
-/// Steady glide at idle at a given speed.
-fn glide_at(
-    aircraft: &Aircraft,
-    env: &dyn Environment,
-    altitude: f64,
-    speed: f64,
-) -> Result<Trim, PerformanceError> {
-    let mut guess = Flight::guess(altitude, speed, 0.0);
-    guess.flight_path = -0.12;
-    Ok(solve_robust(aircraft, env, guess, PATH_AT_SPEED)?)
-}
-
 /// Best glide at idle: golden-section search on the speed for the shallowest path.
 fn best_glide(
     aircraft: &Aircraft,
@@ -839,7 +827,7 @@ fn best_glide(
 ) -> Result<Trim, PerformanceError> {
     let stall = stall_speed(aircraft, env, altitude)?;
     let vmax = max_level_speed(aircraft, env, altitude)?.flight.speed;
-    let path = |speed: f64| glide_at(aircraft, env, altitude, speed);
+    let path = |speed: f64| glide(aircraft, env, altitude, speed);
     let ratio = 0.5 * (5.0_f64.sqrt() - 1.0);
     let (mut lo, mut hi) = (1.05 * stall.speed, vmax);
     let mut x1 = hi - ratio * (hi - lo);
@@ -1334,7 +1322,7 @@ mod tests {
         let best = best_glide(&a, &STILL_AIR, 1_000.0).unwrap();
         assert!(best.flight.flight_path < 0.0, "{best:?}");
         for dv in [-3.0, 3.0] {
-            let other = glide_at(&a, &STILL_AIR, 1_000.0, best.flight.speed + dv).unwrap();
+            let other = glide(&a, &STILL_AIR, 1_000.0, best.flight.speed + dv).unwrap();
             assert!(other.flight.flight_path < best.flight.flight_path, "{dv}");
         }
         // Distance over height lost in a free glide from the trim.

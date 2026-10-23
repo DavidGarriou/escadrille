@@ -1077,3 +1077,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Ordre de grandeur des trois pistes ensemble : celui de l'écart (environ −1 m/s en montée).
   - Règle : **calage sur l'avion de comparaison mesuré, jamais sur les cibles du SPAD**.
 - **Q** Validation du plan, demandée par une fenêtre de question que le joueur a fermée, puis reposée dans le fil. **D** « Je valide le plan » : les quatre étapes, dans l'ordre.
+
+### Étape 1 du plan : la polaire du modèle
+- **A** Nouvelle commande **`fdm_lab polaire <id>`**, reprise dans le rapport d'essais (section et tracé `polaire.png`).
+  - Mesure : vols planés stabilisés au ralenti, forces de l'hélice retranchées (traînée « vraie » du Report 304), ajustement C_D = C_D0 + K C_L² entre C_L 0,2 et 0,8.
+  - Résultat : coefficient d'Oswald rapporté à l'allongement équivalent du biplan.
+  - Tests : un ajustement exact, et le Report 304 retrouvé (0,734 sur les 21 vols).
+- **R** **SPAD modélisé : C_D = 0,047 + 0,081 C_L², coefficient d'Oswald 0,89**, contre **0,73** pour le Sperry Messenger en vraie grandeur. Le modèle manque bien de traînée liée à la portance, la piste principale du plan.

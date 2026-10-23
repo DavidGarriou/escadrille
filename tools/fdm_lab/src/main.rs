@@ -15,6 +15,7 @@ use fdm_lab::campaign::{self, validated};
 use fdm_lab::modes::{Mode, lateral, linearise, longitudinal, static_stability};
 use fdm_lab::performance::{envelope, max_level_speed};
 use fdm_lab::plots::{self, Panel, Series};
+use fdm_lab::polar::{AirframePolar, Reference, airframe_polar};
 use fdm_lab::report::{Cruise, Report, markdown, time_step_change};
 use fdm_lab::trim::{Flight, LEVEL_AT_SPEED, Trim, solve_robust};
 use fdm_lab::{qualitative, robustness};
@@ -56,6 +57,13 @@ enum Command {
         #[arg(long, default_value_t = 2_000.0)]
         altitude_m: f64,
     },
+    /// Drag polar of the airframe from glides at idle (propeller forces taken out) and its
+    /// Oswald factor.
+    Polaire {
+        aircraft: String,
+        #[arg(long, default_value_t = 1_000.0)]
+        altitude_m: f64,
+    },
     /// Empty mass, centre of gravity and inertia from the mass build-up (masses.ron), as
     /// the mass block of aircraft.ron, checked against it.
     Inertia { aircraft: String },
@@ -72,6 +80,66 @@ fn build(assets: &Path, id: &str, fuel_fraction: f64) -> Result<Built, String> {
     load_aircraft(assets, id)
         .and_then(|data| data.build(&Loading { fuel_fraction }))
         .map_err(|e| e.to_string())
+}
+
+/// Reference of the polar: the two planes of a biplane (interference) or the largest
+/// horizontal surface.
+fn reference(data: &escadrille_data::aircraft::AircraftData, built: &Built) -> Reference {
+    let area_span = |name: &str| {
+        built
+            .summary
+            .surfaces
+            .iter()
+            .find(|(n, ..)| n == name)
+            .map(|&(_, area, span, _)| (area, span))
+    };
+    if let Some(i) = data.file.interference.first() {
+        let (a, b) = (area_span(&i.planes.0), area_span(&i.planes.1));
+        if let (Some((s1, b1)), Some((s2, b2))) = (a, b) {
+            return Reference {
+                area: s1 + s2,
+                span: b1.max(b2),
+                kappa: 0.5 * (1.0 + i.sigma),
+            };
+        }
+    }
+    let (_, area, span, _) =
+        built
+            .summary
+            .surfaces
+            .iter()
+            .cloned()
+            .fold((String::new(), 0.0, 0.0, 0.0), |best, s| {
+                if s.1 > best.1 { s } else { best }
+            });
+    Reference {
+        area,
+        span,
+        kappa: 1.0,
+    }
+}
+
+fn print_polar(polar: &AirframePolar) {
+    println!(
+        "Polaire de la cellule à {:.0} m (vols planés au ralenti, hélice exclue) :",
+        polar.altitude
+    );
+    for p in &polar.points {
+        println!(
+            "  {:6.1} km/h   C_L {:6.3}   C_D {:7.4}",
+            p.speed * 3.6,
+            p.cl,
+            p.cd
+        );
+    }
+    println!(
+        "C_D = {:.4} + {:.4} C_L² ({} vols de C_L 0,2 à 0,8) ; allongement équivalent {:.2} ; coefficient d'Oswald {:.3}",
+        polar.cd0,
+        polar.k,
+        polar.fitted,
+        polar.reference.equivalent_aspect_ratio(),
+        polar.oswald()
+    );
 }
 
 fn level(
@@ -104,12 +172,16 @@ fn print_modes(title: &str, modes: &[Mode]) {
     }
 }
 
+/// Altitude of the airframe polar in the report, m.
+const POLAR_ALTITUDE: f64 = 1_000.0;
+
 /// Envelope step of the plots, m.
 const PLOT_STEP: f64 = 250.0;
 
 /// The report's plots, written to `dir`: (title, file name) of each.
 fn figures(
     aircraft: &Aircraft,
+    polar: Option<&AirframePolar>,
     essais: &escadrille_data::essais::EssaisFile,
     qualitative: &[fdm_lab::qualitative::QualitativeOutcome],
     dir: &Path,
@@ -203,6 +275,27 @@ fn figures(
         plots::draw(&dir.join(file), title, x_label, &[panel])?;
         written.push((title.to_owned(), file.to_owned()));
     }
+    if let Some(p) = polar {
+        let title = "Polaire de la cellule (vols planés au ralenti, hélice exclue)";
+        let fitted = (0..=20)
+            .map(|i| {
+                let cl = 0.05 * f64::from(i) * 1.1;
+                (p.cd0 + p.k * cl * cl, cl)
+            })
+            .collect();
+        let panel = Panel {
+            y_label: "C_L".to_owned(),
+            series: vec![
+                Series::dots(
+                    "vols planés du modèle",
+                    p.points.iter().map(|q| (q.cd, q.cl)).collect(),
+                ),
+                Series::line("ajustement parabolique", fitted),
+            ],
+        };
+        plots::draw(&dir.join("polaire.png"), title, "C_D", &[panel])?;
+        written.push((title.to_owned(), "polaire.png".to_owned()));
+    }
     for (i, o) in qualitative.iter().enumerate() {
         if let Some(Ok(observed)) = &o.flown
             && !observed.trace.is_empty()
@@ -268,7 +361,14 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
 
     let dir = out.join(id);
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    let figures = figures(aircraft, &essais, &qualitative, &dir)?;
+    let polar = airframe_polar(
+        aircraft,
+        &STILL_AIR,
+        POLAR_ALTITUDE,
+        reference(&data, &built),
+    )
+    .ok();
+    let figures = figures(aircraft, polar.as_ref(), &essais, &qualitative, &dir)?;
     let report = Report {
         id,
         name: &data.file.name,
@@ -278,6 +378,7 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
         outcomes: &outcomes,
         robustness: &robustness,
         qualitative: &qualitative,
+        polar,
         figures: &figures,
         cruise,
         time_step_change: time_step,
@@ -396,6 +497,25 @@ fn main() -> ExitCode {
             out,
         } => essai(&cli.assets, &aircraft, &confidence, &out),
         Command::Inertia { aircraft } => inertia(&cli.assets, &aircraft),
+        Command::Polaire {
+            aircraft,
+            altitude_m,
+        } => load_aircraft(&cli.assets, &aircraft)
+            .map_err(|e| e.to_string())
+            .and_then(|data| {
+                let built = data
+                    .build(&Loading { fuel_fraction: 1.0 })
+                    .map_err(|e| e.to_string())?;
+                let polar = airframe_polar(
+                    &built.aircraft,
+                    &STILL_AIR,
+                    altitude_m,
+                    reference(&data, &built),
+                )
+                .map_err(|e| format!("{e:?}"))?;
+                print_polar(&polar);
+                Ok(true)
+            }),
     };
     match result {
         Ok(true) => ExitCode::SUCCESS,
@@ -437,6 +557,10 @@ mod tests {
         assert!(report.contains("Convergence en pas de temps"));
         assert!(report.contains("## Essais qualitatifs"), "{report}");
         assert!(report.contains("](vitesse.png)"), "{report}");
+        assert!(
+            report.contains("coefficient d'Oswald de l'avion complet"),
+            "{report}"
+        );
         for file in [
             "vitesse.png",
             "regime.png",

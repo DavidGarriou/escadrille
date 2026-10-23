@@ -46,6 +46,18 @@ pub fn max_level_speed(
     Ok(solve_robust(aircraft, env, guess, SPEED_AT_THROTTLE)?)
 }
 
+/// Steady glide at idle at a given speed.
+pub fn glide(
+    aircraft: &Aircraft,
+    env: &dyn Environment,
+    altitude: f64,
+    speed: f64,
+) -> Result<Trim, PerformanceError> {
+    let mut guess = Flight::guess(altitude, speed, 0.0);
+    guess.flight_path = -0.12;
+    Ok(solve_robust(aircraft, env, guess, PATH_AT_SPEED)?)
+}
+
 /// Steady climb at full throttle at a given speed.
 pub fn climb(
     aircraft: &Aircraft,
