@@ -214,8 +214,15 @@ pub struct InlineEngineSpec {
     pub friction: FrictionSpec,
     /// Chosen from the engine's research sheet.
     pub altitude_law: AltitudeLawSpec,
+    /// Fraction of the bench indicated power delivered in flight (1 by default).
+    #[serde(default = "full_power")]
+    pub installed_power: f64,
     pub idle_throttle: f64,
     pub stall_speed: RotationSpeed,
+}
+
+fn full_power() -> f64 {
+    1.0
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -672,6 +679,7 @@ impl AircraftData {
             e.stall_speed.si(),
             altitude_law,
         )
+        .and_then(|engine| engine.with_installed_power(e.installed_power))
         .map_err(|err| self.invalid(format!("engine {}: {err:?}", e.name)))?;
 
         let travel = ControlTravel {

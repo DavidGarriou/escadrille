@@ -157,3 +157,28 @@ Avec l'incertitude de K mesuré (±0,004, soit ±0,004 sur k) : **k = 0,020 ± 0
 **Ce que k recouvre.** Surtout la traînée de profil des ailes réelles : toile, nervures, rugosité, à des nombres de Reynolds voisins de ceux du Report 233. Mais aussi, faute de mieux, tout ce que le modèle de biplan ne voit pas de la traînée liée à la portance (interférence réelle des plans, mâts, fuselage). Sur une aile, à C_l 0,6, k ajoute 0,007 à la traînée de section, qui passe d'environ 0,0085 (table ramenée en 2D) à 0,016 : presque le double, plus que la seule toile ne l'explique sans doute, d'où la confiance C. L'empennage n'en reçoit pas (portance faible ; même choix sur les deux avions).
 
 **Effet sur le SPAD** (campagne d'essais du 2026-10-23) : montées de −15 / −16 / −22 % à −9 / −8 / −12 % de la cible ; plafond de +19 % à +8 % ; vitesse maximale à 2 000 m de +2,9 % à +1,7 %, à 3 000 m +5,6 %, à 4 000 m +4,5 %. Finesse maximale de 8,3 à 7,4.
+
+## 7. Puissance installée (2026-10-23)
+
+Étape 4 du plan `docs/plans/m1-ecarts-spad7.md`. Nouveau champ moteur `installed_power` : fraction de la puissance **indiquée** du banc fournie en vol, le frottement restant entier.
+
+**Source.** NACA Report 301, p. 10 et figures 11 à 13 : avion VE-7 à moteur Wright-Hispano, famille du 8Aa. En vol, les coefficients de puissance, calculés avec l'étalonnage du moteur au banc, dépassent de 3 à 5 % ceux de la soufflerie en vraie grandeur dans trois essais sur quatre ; les auteurs en concluent que le moteur ne fournissait pas en vol toute sa puissance de banc. Sur la figure 13, l'hélice D' (le comparable du SPAD, § 2) montre l'écart le plus faible : 0 à 3 % selon J.
+
+**Valeur.** Le plan retient −4 % au frein, milieu de 3 à 5 %. La fraction s'applique à la puissance indiquée P₀ + P_f ; à 1 700 tr/min, P₀ = 175 hp et P_f = 16 hp, d'où 1 − 0,04 × 175 / 191 = **0,963**. Confiance C : un autre avion, et une interprétation des auteurs (« probably »).
+
+**Sensibilité** (vitesse maximale, régime à cette vitesse, temps de montée ; 74 % de carburant) :
+
+| Fraction | Vitesse 2 000 / 3 000 / 4 000 m (km/h) | Régime (tr/min) | Montée à 2 000 / 3 000 / 4 000 m (min) |
+|---|---|---|---|
+| cible S46 | 192,3 / 179,4 / 173,8 | 1 720 / 1 680 / 1 640 | 6,67 / 11,5 / 19,5 |
+| 1,00 | 195,5 / 189,4 / 181,7 | 1 693 / 1 657 / 1 616 | 6,05 / 10,55 / 17,10 |
+| 0,98 | 192,8 / 186,6 / 178,5 | 1 672 / 1 636 / 1 593 | 6,39 / 11,22 / 18,42 |
+| 0,97 | 191,4 / 185,1 / 176,9 | 1 661 / 1 626 / 1 582 | 6,58 / 11,59 / 19,16 |
+| 0,96 | 190,1 / 183,7 / 175,3 | 1 651 / 1 615 / 1 571 | 6,78 / 11,98 / 19,96 |
+
+**Ce que montre le tableau.**
+- Les montées et le plafond demandent une fraction de 0,96 à 0,98.
+- Le régime à la vitesse maximale, lui, baisse avec la puissance : la tolérance de ±3 % n'est tenue qu'au-dessus de 0,98, soit moins de 2 % de perte au frein, en dessous de ce que mesure la source.
+- **0,98 ferait tout passer, mais ce serait un réglage sur les cibles du SPAD** : on garde 0,963, la valeur de la source.
+
+Le régime dépend surtout de l'hélice, qui n'est pas celle du SPAD mais un comparable : la D' (P/D 0,8), portée à 2,45 m de diamètre. L'absorption varie comme D⁵ : 2,40 m au lieu de 2,45 m (−10 % d'absorption) relèverait le régime d'environ 3 %. Avant l'étape 4, à pleine puissance de banc, le régime était déjà de 1,5 % trop bas. C'est la piste à suivre si l'on retrouve le diamètre et le pas de l'hélice du S.VII 150 ch (`hispano-suiza-8a.md` § 7.1).

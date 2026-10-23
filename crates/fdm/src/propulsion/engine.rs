@@ -20,6 +20,12 @@
 //! n = 2 (E:); θ = idle + (1 − idle) × lever (E:) and P_i,max the largest full-throttle
 //! indicated power of the curves. Full throttle gives exactly the curves.
 //!
+//! Installed power: the curves are bench (dynamometer) figures. In flight, an installed
+//! engine breathes warmer air through its intake and delivered a few per cent less (NACA
+//! Report 301: flight power coefficients 3 to 5 % above the full-scale tunnel's on a
+//! Hispano-Suiza): the indicated power is multiplied by an installed fraction, like a
+//! smaller charge, friction unchanged.
+//!
 //! Outside the measured curves (E:), the torque is held constant below the first point and
 //! the power above the last one, so that full throttle stays the largest power. Below the stall
 //! speed the engine stops firing (it restarts when windmilled fast enough), with a C¹
@@ -53,6 +59,8 @@ pub enum EngineError {
     /// The stall speed must be positive and the engine fully firing (twice the stall
     /// speed) before the start of the curve.
     BadStallSpeed,
+    /// The installed fraction of the indicated power must be in (0, 1].
+    BadInstalledPower,
 }
 
 /// How the indicated power falls with altitude.
@@ -85,6 +93,8 @@ pub struct InlineEngine {
     idle_throttle: f64,
     stall_speed: f64,
     altitude_law: AltitudeLaw,
+    /// Fraction of the bench indicated power delivered in flight.
+    installed: f64,
     /// Largest full-throttle indicated power at sea level, W.
     max_indicated: f64,
 }
@@ -161,16 +171,29 @@ impl InlineEngine {
             idle_throttle,
             stall_speed,
             altitude_law,
+            installed: 1.0,
             max_indicated,
         })
     }
 
-    /// Charge ratio c of the altitude law for the ambient air.
+    /// The same engine delivering `fraction` of its bench indicated power in flight.
+    pub fn with_installed_power(self, fraction: f64) -> Result<Self, EngineError> {
+        if !(fraction > 0.0 && fraction <= 1.0) {
+            return Err(EngineError::BadInstalledPower);
+        }
+        Ok(Self {
+            installed: fraction,
+            ..self
+        })
+    }
+
+    /// Charge ratio c for the ambient air: the altitude law times the installed fraction.
     pub fn charge_ratio(&self, atmosphere: &AtmosphereState) -> f64 {
-        match self.altitude_law {
+        let law = match self.altitude_law {
             AltitudeLaw::Density => atmosphere.density / RHO0,
             AltitudeLaw::Pressure(n) => (atmosphere.pressure / P0).max(0.0).powf(n),
-        }
+        };
+        self.installed * law
     }
 
     /// Torques at a shaft speed relative to the crankcase (rad/s), throttle lever
@@ -360,6 +383,38 @@ pub(crate) mod tests {
             AltitudeLaw::Pressure(-1.0),
         );
         assert_eq!(bad, Err(EngineError::BadAltitudeLaw));
+    }
+
+    #[test]
+    fn an_installed_engine_loses_indicated_power_not_friction() {
+        let bench = engine();
+        let installed = engine().with_installed_power(0.96).unwrap();
+        for altitude in [0.0, 3_000.0] {
+            let air = crate::atmosphere::isa(altitude);
+            let c = bench.charge_ratio(&air);
+            assert!(close(installed.charge_ratio(&air), 0.96 * c, 1e-12));
+            for (speed, throttle) in [(200.0, 1.0), (180.0, 0.5), (150.0, 0.0)] {
+                let (b, i) = (
+                    bench.torques(speed, throttle, c),
+                    installed.torques(speed, throttle, 0.96 * c),
+                );
+                assert!(close(i.combustion, 0.96 * b.combustion, 1e-12));
+                assert_eq!(i.friction, b.friction);
+            }
+        }
+        // At full throttle: 0.96 c (P₀ + P_f) − P_f, here P_f = 0.1 P₀.
+        let p0 = bench.brake_power(200.0, 1.0, 1.0);
+        let air = crate::atmosphere::isa(2_000.0);
+        let c = bench.charge_ratio(&air);
+        let p = installed.brake_power(200.0, 1.0, installed.charge_ratio(&air));
+        assert!(close(p, 0.96 * c * 1.1 * p0 - 0.1 * p0, 1e-9));
+        for bad in [0.0, -0.1, 1.01, f64::NAN] {
+            assert_eq!(
+                engine().with_installed_power(bad),
+                Err(EngineError::BadInstalledPower)
+            );
+        }
+        assert_eq!(engine().with_installed_power(1.0), Ok(engine()));
     }
 
     #[test]

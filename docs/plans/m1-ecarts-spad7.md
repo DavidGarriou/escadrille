@@ -87,3 +87,13 @@ Conclusion : le fuselage du SPAD ne monte qu'à 3 à 5° d'incidence, là où S4
 - Nouveau champ de profil `fabric_drag_rise` : ΔC_d = k C_l². Pour retrouver la polaire mesurée, k = 0,020 ± 0,005 ; le calage est tenu par un test. Détail et sensibilité : `spad7-calculs.md` § 6.
 - `fdm_lab polaire` plane désormais jusqu'au C_L le plus bas de l'ajustement, comme les piqués du Report 304 : avant, il s'arrêtait à la vitesse maximale en palier (C_L 0,5 pour le Messenger).
 - SPAD avec k = 0,020 : Oswald 0,723. Montées −9 / −8 / −12 % (avant −15 / −16 / −22 %), plafond +8 % (avant +19 %), vitesses +1,7 / +5,6 / +4,5 % (avant +2,9 / +7,4 / +7,1 %).
+
+### Étape 4 (2026-10-23) : puissance installée 0,963
+
+- Nouveau champ moteur `installed_power`, appliqué à la puissance indiquée (frottement entier). −4 % au frein (Report 301) donne 0,963 pour le Hispano (`spad7-calculs.md` § 7).
+- Campagne du SPAD :
+  - vitesses −1,0 / +2,6 / +1,1 % : réussies ;
+  - montées +0,8 / +3,1 / +1,1 % : réussies ;
+  - plafond +2,1 % : réussi ;
+  - **régime à la vitesse maximale −3,8 / −3,7 / −4,0 %, pour une tolérance de ±3 % : en échec**, A à 2 000 m.
+- Sensibilité : 0,98 ferait tout passer, mais ce serait un réglage sur les cibles ; la source donne 3 à 5 % de perte. Le régime dépend surtout de l'hélice, un comparable (D' portée à 2,45 m) : piste documentaire, le diamètre et le pas réels de l'hélice du S.VII 150 ch.

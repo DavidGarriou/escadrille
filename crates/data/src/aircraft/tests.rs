@@ -170,4 +170,28 @@ fn refuses_inconsistent_references() {
     assert!(fixture().build(&Loading { fuel_fraction: 1.5 }).is_err());
     let data = edited("normal_force: 0.035,", "normal_force: 0.3,");
     assert!(invalid_message(&data).contains("normal_force"));
+    let data = edited(
+        "altitude_law: Density,",
+        "altitude_law: Density, installed_power: 1.2, // E: test",
+    );
+    assert!(invalid_message(&data).contains("BadInstalledPower"));
+}
+
+#[test]
+fn an_installed_engine_delivers_less_than_on_the_bench() {
+    let at_full = |data: AircraftData| {
+        let a = data.build(&FULL).unwrap().aircraft;
+        let engine = &a.propulsion().unwrap().engine;
+        let air = escadrille_fdm::atmosphere::isa(0.0);
+        engine.brake_power(200.0, 1.0, engine.charge_ratio(&air))
+    };
+    let bench = at_full(fixture());
+    let installed = at_full(edited(
+        "altitude_law: Density,",
+        "altitude_law: Density, installed_power: 0.96, // E: test",
+    ));
+    assert!(
+        installed < 0.97 * bench && installed > 0.94 * bench,
+        "{installed} {bench}"
+    );
 }

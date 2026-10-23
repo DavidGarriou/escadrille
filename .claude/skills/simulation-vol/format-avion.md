@@ -88,6 +88,7 @@ Aircraft(
         friction: Curve([(speed: Rpm(0.0), power: Hp(0.0))]), // S: puissance de frottement mesurée en entraînant le moteur
         // ou friction: Fraction(0.0),                    // C: le k de Gagg-Farrar, P_f = k P₀
         altitude_law: Pressure(0.93),                     // C: c = (p/p₀)ⁿ sur la puissance indiquée (R&M 462, frein en ^1,04, converti avec le frottement) ; ou Density (c = σ)
+        installed_power: 1.0,                             // facultatif (1 par défaut) ; C: fraction de la puissance indiquée du banc fournie en vol (Report 301)
         idle_throttle: 0.0,                               // E:
         stall_speed: Rpm(0.0),                            // E:
     )),

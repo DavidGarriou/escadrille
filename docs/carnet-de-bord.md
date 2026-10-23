@@ -1112,3 +1112,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - vitesses maximales +1,7 / +5,6 / +4,5 % : 2 000 et 4 000 m passent, 3 000 m échoue de peu ;
   - finesse 8,3 → 7,4 (« mauvais plané ») ; le décrochage part maintenant en roulis à droite (60° en 0,7 s).
 - **D** k reste en confiance C : il porte probablement plus que la toile (interférence réelle du biplan, mâts). Prochaine étape du plan : la puissance installée.
+
+### Étape 4 du plan : la puissance installée
+- **A** Nouveau champ moteur `installed_power` : fraction de la puissance indiquée du banc fournie en vol, le frottement restant entier. Tests dans le FDM et dans le schéma de données (valeur hors de (0, 1] refusée).
+- **⚠** Le plan disait « 0,96 » pour −4 % de puissance. Appliquée à la puissance indiquée, la même perte au frein donne 1 − 0,04 × 175 / 191 = **0,963**. Corrigé avant de conclure.
+- **A** Relecture des figures 11 à 13 du Report 301 : l'hélice D', le comparable du SPAD, montre l'écart le plus faible (0 à 3 %).
+- **R** Campagne du SPAD avec 0,963 :
+  - vitesses −1,0 / +2,6 / +1,1 %, montées +0,8 / +3,1 / +1,1 %, plafond +2,1 % : **toutes réussies** ;
+  - **régime à la vitesse maximale −3,8 / −3,7 / −4,0 % (tolérance ±3 %) : en échec**, dont 2 000 m en A, qui bloque.
+- **R** Sensibilité (`spad7-calculs.md` § 7) : 0,98 ferait tout passer.
+- **D** Pas de réglage à 0,98 : ce serait caler la puissance sur les cibles du SPAD, et la source donne 3 à 5 % de perte. Le régime dépend surtout de l'hélice, un comparable : 5 cm de diamètre en moins le relèveraient d'environ 3 %. Piste documentaire : le diamètre et le pas de l'hélice réelle.
