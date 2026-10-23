@@ -127,6 +127,12 @@ impl AirfoilFile {
 
     /// Section polar with the given broadside drag coefficient.
     pub fn polar(&self, cd_max: f64) -> Result<Polar, String> {
+        if self.fabric_drag_rise.is_nan() || self.fabric_drag_rise < 0.0 {
+            return Err(format!(
+                "aerofoil {}: fabric_drag_rise {} must be positive or zero",
+                self.name, self.fabric_drag_rise
+            ));
+        }
         Polar::new(self.section_points(), cd_max)
             .map_err(|e| format!("aerofoil {}: {e:?}", self.name))
     }
@@ -233,6 +239,15 @@ mod tests {
                 "{a:?} {b:?}"
             );
             assert_eq!((b.alpha, b.cl, b.cm), (a.alpha, a.cl, a.cm));
+        }
+        // A negative rise would lower the drag: refused, as a NaN.
+        for bad in [-0.01, f64::NAN] {
+            let file = AirfoilFile {
+                fabric_drag_rise: bad,
+                ..plain.clone()
+            };
+            let err = file.polar(1.2).unwrap_err();
+            assert!(err.contains("fabric_drag_rise"), "{err}");
         }
     }
 

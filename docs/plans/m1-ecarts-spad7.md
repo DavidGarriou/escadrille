@@ -56,7 +56,7 @@ La relecture complète de S43 (NACA Report 17, p. 285-288) corrige deux prémiss
 - la traînée du **train** croît jusqu'à 2° environ (référence : longerons supérieurs), puis reste quasi constante jusqu'à 16° : pas de loi d'incidence pour le train ;
 - la hausse de 0,015 à 0,025 lb à 12° est **lente jusqu'à 9°, puis rapide** : la traînée du corps, du train et de l'empennage reste « constante à 20 % près de 0° à 9° », et croît très vite au-delà. Une loi en sin² α (k ≈ 15) surestime donc la hausse aux petits angles.
 
-Par ailleurs, le fuselage du modèle porte déjà une traînée d'écoulement transversal (Allen et Perkins, en sin³ α) : une loi en sin² α ajoutée aux mêmes éléments la compterait deux fois aux grands angles (décrochage, vrille).
+~~Par ailleurs, le fuselage du modèle porte déjà une traînée d'écoulement transversal : une loi en sin² α la compterait deux fois.~~ **Argument faux aux angles en jeu** (revue de l'aérodynamicien) : la traînée transversale du fuselage ne vaut que 0,0095 m² à 9° et 0,022 m² à 12°, contre 0,07 à 0,25 m² pour la hausse de S43 sur les éléments de type corps. Le double compte ne jouerait qu'au-delà de 20 à 30°. Entre 9 et 12° d'incidence du fuselage, en manœuvre (la boucle s'y tient), la question reste ouverte. S43 note lui-même (p. 287-288) que, sur un biplan sans décalage comme le SPAD, la hausse est en partie compensée par la baisse de traînée des mâts et des câbles.
 
 Incidence du fuselage du SPAD modélisé (trim, 74 % de carburant) :
 
@@ -71,7 +71,35 @@ Effet sur la vitesse ascensionnelle :
 - **Allure de S43** (une loi en sin⁴ α passe par +67 % à 12° et +21 % à 9°) : −0,002 à −0,02 m/s.
 - Ordre de grandeur de l'écart à combler : 0,85 m/s.
 
-Conclusion : le fuselage du SPAD ne monte qu'à 3 à 5° d'incidence, là où S43 ne mesure presque rien. La piste 2 n'explique pas l'écart. On ne change pas le modèle (la loi serait un ajout de code sans effet mesurable, avec un risque de double compte). Elle reste notée pour les grands angles, à reprendre avec une source en vraie grandeur : les mesures de S43 sont faites sur une maquette au 1/24 à 30 mph, et le décollement du corps à ces faibles nombres de Reynolds ne se transpose pas tel quel.
+Conclusion, validée par l'aérodynamicien : le fuselage du SPAD ne monte qu'à 3 à 5° d'incidence, là où S43 ne mesure presque rien. La piste 2 n'explique pas l'écart, et on ne change pas le modèle. Elle reste notée pour la manœuvre (9 à 12°), à reprendre avec une source en vraie grandeur : S43 est une maquette au 1/24 essayée à 30 mph. Toute loi d'incidence ajoutée plus tard imposera de recaler k (étape 3).
+
+### Étape 3 (2026-10-23) : traînée des ailes entoilées, k = 0,020 ± 0,005
+
+- Avion de comparaison modélisé : le Sperry Messenger du Report 304 (`tools/fdm_lab/comparison/`), sur les mêmes tables et avec les mêmes méthodes que le SPAD. Table polie : Oswald 0,889, contre 0,734 mesuré.
+- Nouveau champ de profil `fabric_drag_rise` : ΔC_d = k C_l². Pour retrouver la polaire mesurée, k = 0,020 ± 0,005 ; le calage est tenu par un test. Détail et sensibilité : `spad7-calculs.md` § 6.
+- `fdm_lab polaire` plane désormais jusqu'au C_L le plus bas de l'ajustement, comme les piqués du Report 304 : avant, il s'arrêtait à la vitesse maximale en palier (C_L 0,5 pour le Messenger).
+- SPAD avec k = 0,020 : Oswald 0,723. Montées −9 / −8 / −12 % (avant −15 / −16 / −22 %), plafond +8 % (avant +19 %), vitesses +1,7 / +5,6 / +4,5 % (avant +2,9 / +7,4 / +7,1 %).
+
+### Étape 4 (2026-10-23) : puissance installée 0,973
+
+- Nouveau champ moteur `installed_power`, appliqué à la puissance indiquée (frottement entier).
+- Première valeur 0,963 (−4 % au frein, milieu des 3 à 5 % du Report 301), puis **0,973 (−3 %)** après lecture des Reports 220 et 292 demandée par la revue. Leur réduction de la puissance en p/√T donne, aux altitudes des vols, 1 % de plus que la loi d'altitude du modèle : ce point était compté deux fois. Valeur fragile (plage 0 à 4 %, confiance D selon l'aérodynamicien) ; détail dans `spad7-calculs.md` § 7.
+- Campagne du SPAD :
+  - vitesses −0,2 / +3,4 / +2,1 % : réussies ;
+  - montées −2,1 / −0,2 / −2,9 % : réussies ;
+  - plafond +3,8 % : réussi ;
+  - **régime à la vitesse maximale −3,2 / −3,0 / −3,3 %, pour une tolérance de ±3 % : en échec de peu**, A à 2 000 m.
+
+### Étape 5 (2026-10-23) : essai et revue
+
+Revue de l'aérodynamicien : rien de bloquant. Points corrigés :
+- **Régime et montée vont ensemble.** Avec une hélice qui absorberait juste ce qu'il faut pour le régime à la vitesse maximale (2,40 m au lieu de 2,45 m), le modèle monterait encore 4 à 8 % trop vite. Le succès des montées repose donc en partie sur un régime trop bas. L'écart restant tient à l'hélice, un comparable : voir `spad7-calculs.md` § 7, « Pour le régime ».
+- **Puissance installée** : cause non identifiée par la source (la mention « air d'admission plus chaud » est retirée) ; double compte avec la loi d'altitude corrigé (0,963 → 0,973).
+- **Décrochage** : le « 60° » rapporté après l'étape 3 était la butée d'arrêt du pilote scripté, pas une mesure. Le départ se mesure désormais sur une fenêtre fixe de 3 s après l'incidence de décrochage, relevé à 1, 2 et 3 s, avec un test de convergence en pas de temps. À 74 % de carburant : inclinaison +6 / +33 / +44° et assiette +6 / 0 / −2°. De 60 à 90 % de carburant, toujours à droite, 33 à 36° à 2 s ; à 3 s, de 42 à 78°, puisque le départ croît de façon exponentielle.
+- **Attribution de k** : la pente de portance du Messenger modélisé est 16 à 23 % plus forte que la mesure. Une partie du terme est sans doute « induite » (k ≈ 0,016 transposé au SPAD), ce qui reste dans la marge ; voir `spad7-calculs.md` § 6.
+- Code : un k négatif est refusé, et le test des tables compare aussi la convention et la référence des moments.
+
+**Écart restant, sans réglage** : le régime à la vitesse maximale (−3,0 à −3,3 %), avec derrière lui une montée qui serait trop rapide au bon régime. Piste documentaire : l'hélice réelle du S.VII 150 ch.
 
 ## Hors de ce plan (tâches séparées, déjà repérées)
 
@@ -81,19 +109,13 @@ Conclusion : le fuselage du SPAD ne monte qu'à 3 à 5° d'incidence, là où S4
 - Chronométrage des montées depuis le lâcher des freins : il faut le modèle de sol du M2.
 - Documents d'archives repérés par l'historien : fonds Dorand du SHD, rapport britannique n° 96.
 
-### Étape 3 (2026-10-23) : traînée des ailes entoilées, k = 0,020 ± 0,005
-
-- Avion de comparaison modélisé : le Sperry Messenger du Report 304 (`tools/fdm_lab/comparison/`), sur les mêmes tables et avec les mêmes méthodes que le SPAD. Table polie : Oswald 0,889, contre 0,734 mesuré.
-- Nouveau champ de profil `fabric_drag_rise` : ΔC_d = k C_l². Pour retrouver la polaire mesurée, k = 0,020 ± 0,005 ; le calage est tenu par un test. Détail et sensibilité : `spad7-calculs.md` § 6.
-- `fdm_lab polaire` plane désormais jusqu'au C_L le plus bas de l'ajustement, comme les piqués du Report 304 : avant, il s'arrêtait à la vitesse maximale en palier (C_L 0,5 pour le Messenger).
-- SPAD avec k = 0,020 : Oswald 0,723. Montées −9 / −8 / −12 % (avant −15 / −16 / −22 %), plafond +8 % (avant +19 %), vitesses +1,7 / +5,6 / +4,5 % (avant +2,9 / +7,4 / +7,1 %).
-
-### Étape 4 (2026-10-23) : puissance installée 0,963
-
-- Nouveau champ moteur `installed_power`, appliqué à la puissance indiquée (frottement entier). −4 % au frein (Report 301) donne 0,963 pour le Hispano (`spad7-calculs.md` § 7).
-- Campagne du SPAD :
-  - vitesses −1,0 / +2,6 / +1,1 % : réussies ;
-  - montées +0,8 / +3,1 / +1,1 % : réussies ;
-  - plafond +2,1 % : réussi ;
-  - **régime à la vitesse maximale −3,8 / −3,7 / −4,0 %, pour une tolérance de ±3 % : en échec**, A à 2 000 m.
-- Sensibilité : 0,98 ferait tout passer, mais ce serait un réglage sur les cibles ; la source donne 3 à 5 % de perte. Le régime dépend surtout de l'hélice, un comparable (D' portée à 2,45 m) : piste documentaire, le diamètre et le pas réels de l'hélice du S.VII 150 ch.
+- Pente de portance des biplans : le Messenger modélisé est 16 à 23 % trop raide (étape 3).
+- Hélice : calcul par éléments de pale de la D' et des hélices documentées (Levasseur, Gallia, Éclair) ; postes à faible J du tableau (traînée de souffle du VE-7) à passer en C:.
+- Rapport d'essai :
+  - modes propres à une vitesse de référence fixe : aujourd'hui calculés à 0,8 V_max, ils bougent à chaque version ;
+  - décrochage donné en plage sur un petit balayage (décélération, carburant) ;
+  - piqué relâché au neutre : 10 à 11 g, au-delà de la limite structurale, gouverne flottante non modélisée ; sur-régime de 2 473 tr/min (+18 %) en piqué vertical ;
+  - robustesse « piqué à 60° » : manche au neutre, « régime maximal » égal à la valeur initiale ;
+  - plané : la finesse de 7,4 inclut la petite traction de l'hélice au ralenti.
+- Nom du champ `fabric_drag_rise` : il porte plus que la toile (priorité basse).
+- Historien : hélice réelle du S.VII 150 ch, régime en montée, bord d'attaque des ailes (contreplaqué ou toile).

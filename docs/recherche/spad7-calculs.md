@@ -158,27 +158,69 @@ Avec l'incertitude de K mesuré (±0,004, soit ±0,004 sur k) : **k = 0,020 ± 0
 
 **Effet sur le SPAD** (campagne d'essais du 2026-10-23) : montées de −15 / −16 / −22 % à −9 / −8 / −12 % de la cible ; plafond de +19 % à +8 % ; vitesse maximale à 2 000 m de +2,9 % à +1,7 %, à 3 000 m +5,6 %, à 4 000 m +4,5 %. Finesse maximale de 8,3 à 7,4.
 
+**Revue de l'aérodynamicien (2026-10-23) et vérifications.**
+- Méthode jugée saine : tables et méthodes identiques sur les deux avions, si bien que les erreurs de méthode s'annulent au premier ordre. Le plané au ralenti équivaut à la traction nulle du Report 304 (hélice en moulinet, forces retranchées). Ajusté sur les 21 C_L du Report 304 au lieu de la grille de `fdm_lab`, k ne bouge pas.
+- **Pente de portance** (vérification demandée par la revue) :
+  - Messenger mesuré (tableau II, 19 vols de C_L 0,2 à 0,81) : 0,0533 ± 0,0017 par degré, portance nulle à −3,3° ; jusqu'à C_L 0,7 : 0,057 par degré, −2,9° ;
+  - Messenger modélisé : 0,0657 par degré, −2,0° ; k ne la change pas ;
+  - le modèle est donc 16 à 23 % trop raide, bien au-delà des ±3 à 4 % que le Report 304 donne sur l'incidence.
+
+  Une partie de l'écart tient donc sans doute au rendement d'envergure du biplan réel (σ, e), ou à la pente de section d'une aile entoilée, et non à la seule traînée de profil. Pour les performances, cela ne change rien, puisque k est calé sur la polaire mesurée. Mais la part « induite » varie comme 1/A_eq : si tout l'écart était induit, le SPAD (A_eq 4,42 contre 3,59) recevrait l'équivalent de k ≈ 0,016. C'est dans la marge de ±0,005.
+
+  Piste séparée, ouverte : la pente de portance des biplans du modèle, qui joue sur l'incidence de vol, la déflexion et la réponse aux rafales.
+- **Bord d'attaque** : les ailes du Messenger ont du contreplaqué du bord d'attaque au longeron avant (Report 304, p. 4). Si celui du S.VII est entoilé, k serait pour lui une borne basse. Question pour l'historien.
+- **Couplage avec les traînées parasites** : k contient la hausse de traînée du corps du Messenger avec l'incidence, pour C_L de 0,2 à 0,8. Si l'on ajoute un jour une loi d'incidence aux éléments de traînée (piste 2), il faudra recaler k.
+- **Domaine** : calé jusqu'à C_L 0,8 (bandes jusqu'à C_l 0,9 à 1,0). Au-delà, décrochage et branche négative compris, c'est une extrapolation (E:). Elle ne change ni la vitesse de décrochage (80,6 → 80,7 km/h) ni, sensiblement, les modes.
+
 ## 7. Puissance installée (2026-10-23)
 
 Étape 4 du plan `docs/plans/m1-ecarts-spad7.md`. Nouveau champ moteur `installed_power` : fraction de la puissance **indiquée** du banc fournie en vol, le frottement restant entier.
 
-**Source.** NACA Report 301, p. 10 et figures 11 à 13 : avion VE-7 à moteur Wright-Hispano, famille du 8Aa. En vol, les coefficients de puissance, calculés avec l'étalonnage du moteur au banc, dépassent de 3 à 5 % ceux de la soufflerie en vraie grandeur dans trois essais sur quatre ; les auteurs en concluent que le moteur ne fournissait pas en vol toute sa puissance de banc. Sur la figure 13, l'hélice D' (le comparable du SPAD, § 2) montre l'écart le plus faible : 0 à 3 % selon J.
+**Source.** NACA Report 301, p. 10 et figures 11 à 13 : avion VE-7, moteur Wright-Hispano (famille du 8Aa). Les références de vol sont le Report 220 (hélices B', D' et I) et le Report 292 (hélice I, dite 3714).
+- En vol, les coefficients de puissance, calculés avec l'étalonnage du moteur au banc, dépassent de 3 à 5 % ceux de la soufflerie en vraie grandeur dans trois essais sur quatre.
+- Les auteurs en déduisent que le moteur ne fournissait « probablement » pas en vol toute sa puissance de banc. Ils ne donnent pas de cause : ils évoquent seulement l'inclinaison de l'axe de l'hélice en vol, et jugent l'accord « probablement dans la précision des essais en vol ».
+- Sur la figure 13, l'hélice D' (le comparable du SPAD, § 2) montre l'écart le plus faible : 0 à 3 % selon J. B' et D' viennent pourtant de la même campagne, sur le même avion. Une perte propre au moteur serait la même pour les deux : une part de l'écart est donc de la dispersion d'essai.
 
-**Valeur.** Le plan retient −4 % au frein, milieu de 3 à 5 %. La fraction s'applique à la puissance indiquée P₀ + P_f ; à 1 700 tr/min, P₀ = 175 hp et P_f = 16 hp, d'où 1 − 0,04 × 175 / 191 = **0,963**. Confiance C : un autre avion, et une interprétation des auteurs (« probably »).
+**Double compte avec la loi d'altitude** (point soulevé par la revue, vérifié dans les Reports 220 et 292) :
+- les deux rapports ramènent la puissance du banc aux conditions de vol par P_frein ∝ p/√T. Le Report 220 a vérifié la dépendance en 1/√T au banc, à pression constante ;
+- les vols de puissance ont lieu à 1 500–3 000 ft (Report 220) et vers 3 000 ft (Report 292 : poids spécifique de l'air de 0,068 à 0,071 lb/ft³) ;
+- à ces altitudes, en atmosphère type, leur loi donne **0,6 à 1,3 %** de puissance au frein de plus que la loi du modèle (`Pressure(0.93)` sur la puissance indiquée, tirée de R&M 462) : +0,6 % à 457 m, +0,9 % à 686 m, +1,3 % à 914 m ;
+- cette part du « déficit » est déjà dans le modèle.
 
-**Sensibilité** (vitesse maximale, régime à cette vitesse, temps de montée ; 74 % de carburant) :
+**Valeur.** Même statistique que le plan (milieu des 3 à 5 %, soit 4 %), moins le double compte (1 %) : **−3 % au frein**. À 1 700 tr/min, P₀ = 175 hp et P_f = 16 hp, d'où 1 − 0,03 × 175 / 191 = **0,973**.
+- Plage défendable : 0 à 4 % au frein, soit 0,96 à 1,0.
+- Confiance C pour la méthode, D pour la valeur (revue de l'aérodynamicien) : un autre avion, une cause non identifiée, des écarts proches de la précision des essais.
+- Une première valeur, 0,963, avait été retenue avant la lecture des Reports 220 et 292. **Transparence** : je savais alors qu'une fraction de 0,98 ferait passer le régime. La correction vient des sources, mais elle va dans ce sens ; à garder en tête en relisant ce chiffre.
+
+**Sensibilité** (vitesse maximale, régime à cette vitesse, temps de montée ; 74 % de carburant ; hélice de 2,45 m) :
 
 | Fraction | Vitesse 2 000 / 3 000 / 4 000 m (km/h) | Régime (tr/min) | Montée à 2 000 / 3 000 / 4 000 m (min) |
 |---|---|---|---|
 | cible S46 | 192,3 / 179,4 / 173,8 | 1 720 / 1 680 / 1 640 | 6,67 / 11,5 / 19,5 |
 | 1,00 | 195,5 / 189,4 / 181,7 | 1 693 / 1 657 / 1 616 | 6,05 / 10,55 / 17,10 |
 | 0,98 | 192,8 / 186,6 / 178,5 | 1 672 / 1 636 / 1 593 | 6,39 / 11,22 / 18,42 |
-| 0,97 | 191,4 / 185,1 / 176,9 | 1 661 / 1 626 / 1 582 | 6,58 / 11,59 / 19,16 |
+| **0,973** | 191,8 / 185,6 / 177,4 | 1 665 / 1 629 / 1 586 | 6,53 / 11,48 / 18,93 |
 | 0,96 | 190,1 / 183,7 / 175,3 | 1 651 / 1 615 / 1 571 | 6,78 / 11,98 / 19,96 |
 
-**Ce que montre le tableau.**
-- Les montées et le plafond demandent une fraction de 0,96 à 0,98.
-- Le régime à la vitesse maximale, lui, baisse avec la puissance : la tolérance de ±3 % n'est tenue qu'au-dessus de 0,98, soit moins de 2 % de perte au frein, en dessous de ce que mesure la source.
-- **0,98 ferait tout passer, mais ce serait un réglage sur les cibles du SPAD** : on garde 0,963, la valeur de la source.
+**Le régime et la montée se lisent ensemble** (revue de l'aérodynamicien, mesures par sonde, fraction 0,963) :
 
-Le régime dépend surtout de l'hélice, qui n'est pas celle du SPAD mais un comparable : la D' (P/D 0,8), portée à 2,45 m de diamètre. L'absorption varie comme D⁵ : 2,40 m au lieu de 2,45 m (−10 % d'absorption) relèverait le régime d'environ 3 %. Avant l'étape 4, à pleine puissance de banc, le régime était déjà de 1,5 % trop bas. C'est la piste à suivre si l'on retrouve le diamètre et le pas de l'hélice du S.VII 150 ch (`hispano-suiza-8a.md` § 7.1).
+| Hélice | Vitesse (km/h) | Régime (tr/min) | Montée (min) |
+|---|---|---|---|
+| 2,45 m (données) | 190,5 / 184,1 / 175,7 | 1 654 / 1 618 / 1 574 | 6,72 / 11,86 / 19,72 |
+| 2,40 m | 192,7 / 187,5 / 179,4 | 1 725 / 1 696 / 1 652 | 6,30 / 11,01 / 17,96 |
+| 2,35 m | 193,6 / 188,3 / 181,8 | 1 790 / 1 760 / 1 726 | 5,95 / 10,34 / 16,69 |
+
+- En meilleure montée, le moteur du modèle tourne à 1 490, 1 465 et 1 440 tr/min (J de 0,53 à 0,62).
+- Avec une hélice qui absorberait juste ce qu'il faut pour le régime à la vitesse maximale, il tournerait environ 70 tr/min plus vite en montée, avec +5 % de puissance à l'arbre. **Au bon régime, le modèle monterait encore 4 à 8 % trop vite.**
+- Le succès actuel des montées repose donc en partie sur un régime trop bas. L'écart de régime n'est pas un détail isolé : c'est la trace d'un écart encore caché sur la montée.
+
+**Incertitudes à garder avec les résultats** :
+- k = 0,020 ± 0,005 : environ ±1,5 à ±2,4 points sur les temps de montée ;
+- fraction installée, de 0,96 à 0,98 : environ 5 points ;
+- les écarts de montée affichés sont dans ces bandes.
+
+**Pour le régime, sans régler sur les cibles** (revue de l'aérodynamicien) :
+1. **Historien** : l'hélice réelle du S.VII 150 ch (fabricant, diamètre, pas et sa définition), et tout régime relevé en montée. Un régime de montée suffit à distinguer « l'hélice absorbe trop » de « le moteur donne trop peu ».
+2. **Calcul par éléments de pale** sur la géométrie de la D' (Report 301, fig. 5), contrôlé sur son tableau à 2,39 m, puis appliqué aux hélices documentées : Levasseur 2,45 / 1,95 m, Gallia 2,45 / 2,10 m, Éclair 2,35 / 1,75 m (diamètre / pas). C'est le **pas**, plus que le diamètre, qui sépare le régime à la vitesse maximale (J ≈ 0,77) de celui de la montée (J ≈ 0,53).
+3. **Postes à faible J du tableau d'hélice** : les +5 à +6,4 % de traction rendus pour la traînée de souffle du VE-7 reposent sur des surfaces estimées (E:). ±50 % sur ces surfaces font environ ±3 % de traction en montée, soit ±5 % de vitesse ascensionnelle. La géométrie du VE-7 est documentée : on peut les passer en C:.
+4. Présenter le résultat comme une enveloppe. Si S46 tombe dedans, on rapporte et on s'arrête. L'hélice se choisit par le document, jamais par le régime.

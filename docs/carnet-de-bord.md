@@ -1110,7 +1110,7 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - montées −9 / −8 / −12 % (avant −15 / −16 / −22 %), toujours en échec ;
   - plafond +8 % (avant +19 %), en échec de peu (±7 %) ;
   - vitesses maximales +1,7 / +5,6 / +4,5 % : 2 000 et 4 000 m passent, 3 000 m échoue de peu ;
-  - finesse 8,3 → 7,4 (« mauvais plané ») ; le décrochage part maintenant en roulis à droite (60° en 0,7 s).
+  - finesse 8,3 → 7,4 (« mauvais plané ») ; le décrochage part maintenant en roulis à droite (60° en 0,7 s : **mesure fausse**, c'était la butée d'arrêt du pilote scripté, voir la revue plus bas).
 - **D** k reste en confiance C : il porte probablement plus que la toile (interférence réelle du biplan, mâts). Prochaine étape du plan : la puissance installée.
 
 ### Étape 4 du plan : la puissance installée
@@ -1122,3 +1122,23 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **régime à la vitesse maximale −3,8 / −3,7 / −4,0 % (tolérance ±3 %) : en échec**, dont 2 000 m en A, qui bloque.
 - **R** Sensibilité (`spad7-calculs.md` § 7) : 0,98 ferait tout passer.
 - **D** Pas de réglage à 0,98 : ce serait caler la puissance sur les cibles du SPAD, et la source donne 3 à 5 % de perte. Le régime dépend surtout de l'hélice, un comparable : 5 cm de diamètre en moins le relèveraient d'environ 3 %. Piste documentaire : le diamètre et le pas de l'hélice réelle.
+
+### Revue de l'aérodynamicien (étapes 2 à 4) et corrections
+- **A** Campagne `/essai-en-vol spad7` relue avec ses tracés : montée passant par les trois cibles, polaire parabolique. L'écart de régime est un décalage constant d'environ 65 tr/min, de même pente que les cibles : il vient de l'absorption de l'hélice, pas de la loi d'altitude.
+- **R** Revue : rien de bloquant ; quatre points importants.
+  1. **Régime et montée vont ensemble** : au bon régime (hélice de 2,40 m au lieu de 2,45 m), le modèle monterait encore 4 à 8 % trop vite. Le succès des montées repose en partie sur un régime trop bas.
+  2. **Puissance installée** : « air d'admission plus chaud » n'est pas dans la source ; valeur fragile (confiance D) ; double compte possible avec la loi d'altitude des vols de référence.
+  3. **Décrochage** : le « 60° » était la butée du pilote scripté ; deux critères d'arrêt faisaient la course.
+  4. **Étape 2** : l'abandon est validé, mais l'argument du double compte est faux aux angles en jeu.
+- **A** Reports 220 et 292 téléchargés (NTRS) et lus.
+  - Les deux ramènent la puissance du banc au vol par P ∝ p/√T, à 1 500–3 000 ft.
+  - À ces altitudes, cette loi donne 0,6 à 1,3 % de plus que celle du modèle (R&M 462) : environ 1 point des 3 à 5 % est déjà compté.
+  - **Puissance installée corrigée de 0,963 à 0,973** (−3 % au frein). Transparence : je savais qu'une fraction de 0,98 ferait passer le régime ; la correction vient des sources, mais va dans ce sens.
+- **A** Mesure du décrochage refaite sur une fenêtre fixe de 3 s après l'incidence de décrochage, relevée à 1, 2 et 3 s, avec un test de convergence en pas de temps. (Une fenêtre de 2 s ne voyait pas le départ tardif du biplan d'essai, à 2,5 s.) À 74 % de carburant : inclinaison +6 / +33 / +44°, assiette +6 / 0 / −2°. De 60 à 90 % de carburant, toujours à droite, 33 à 36° à 2 s ; 42 à 78° à 3 s (départ exponentiel).
+- **A** Vérification demandée par la revue : pente de portance du Messenger, mesurée (tableau II) 0,053 ± 0,002 par degré, modélisée 0,066. Le modèle est 16 à 23 % trop raide : une partie de k est sans doute « induite » (0,016 transposé au SPAD, dans la marge). Piste séparée notée.
+- **A** Code : k négatif refusé ; le test des tables compare aussi convention et référence des moments.
+- **R** Campagne finale du SPAD (k 0,020, puissance installée 0,973) :
+  - vitesses −0,2 / +3,4 / +2,1 %, montées −2,1 / −0,2 / −2,9 %, plafond +3,8 % : réussis ;
+  - **régime à la vitesse maximale −3,2 / −3,0 / −3,3 % (±3 %) : en échec de peu**, A à 2 000 m, qui bloque la validation.
+- **D** Pas de réglage. L'écart restant, et la montée trop rapide qu'il cache, tiennent à l'hélice, un comparable. Pistes notées dans `spad7-calculs.md` § 7 (historien, éléments de pale, postes à faible J). Le `spad7` n'est pas déclaré « validé ».
+

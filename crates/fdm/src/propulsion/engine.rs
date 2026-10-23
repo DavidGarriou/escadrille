@@ -20,11 +20,11 @@
 //! n = 2 (E:); θ = idle + (1 − idle) × lever (E:) and P_i,max the largest full-throttle
 //! indicated power of the curves. Full throttle gives exactly the curves.
 //!
-//! Installed power: the curves are bench (dynamometer) figures. In flight, an installed
-//! engine breathes warmer air through its intake and delivered a few per cent less (NACA
-//! Report 301: flight power coefficients 3 to 5 % above the full-scale tunnel's on a
-//! Hispano-Suiza): the indicated power is multiplied by an installed fraction, like a
-//! smaller charge, friction unchanged.
+//! Installed power: the curves are bench (dynamometer) figures, and an installed engine
+//! seems to deliver a few per cent less in flight (NACA Report 301: flight power
+//! coefficients 3 to 5 % above the full-scale tunnel's on a Wright-Hispano; cause not
+//! identified by the source). The indicated power is multiplied by an installed fraction,
+//! like a smaller charge, friction unchanged.
 //!
 //! Outside the measured curves (E:), the torque is held constant below the first point and
 //! the power above the last one, so that full throttle stays the largest power. Below the stall

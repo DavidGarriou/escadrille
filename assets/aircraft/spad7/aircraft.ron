@@ -161,7 +161,7 @@ Aircraft(
             (speed: Rpm(2100.0), power: Hp(25.0)),
         ]),
         altitude_law: Pressure(0.93),                                          // C: R&M 462 flight measurement on a 150 hp Hispano, brake power in (p/p₀)^1.04, converted to the indicated power with the friction above (±0.6 % from 1 000 to 5 000 m)
-        installed_power: 0.963,                                                // C: NACA Report 301 p. 10, VE-7 with a Wright-Hispano: flight power coefficients 3 to 5 % above the full-scale tunnel's in three tests of four, the engines « not actually delivering the full power developed on the dynamometer »; −4 % of brake power at 1 700 rpm is 1 − 0.04 × 175 / 191 of the indicated power (spad7-calculs.md § 7)
+        installed_power: 0.973,                                                // C: NACA Report 301 p. 10 (VE-7, Wright-Hispano): flight C_P 3 to 5 % above the full-scale tunnel's in three tests of four (midpoint 4 %), less the 1 % that the p/√T reduction of its flight references (Reports 220 and 292, 1 500 to 3 000 ft) puts above this engine's altitude law: −3 % of brake power, 1 − 0.03 × 175 / 191 of the indicated power; range 0 to 4 %, cause not identified by the source (spad7-calculs.md § 7)
         idle_throttle: 0.045,                                                  // C: about 500 rpm at a standstill on the ground with the propeller's C_P(0) (E: idling 450 to 500 rpm)
         stall_speed: Rpm(200.0),                                               // E: magneto ignition, full firing from 400 rpm
     )),

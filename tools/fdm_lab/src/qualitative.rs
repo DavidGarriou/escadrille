@@ -63,18 +63,20 @@ const YAW_INTEGRAL: f64 = 2.0;
 
 /// Power-off stall (E:): entry speed over the idle stall speed (the usual 1.3), speed
 /// reduction (a knot per second, the practice of modern certification tests), time in
-/// which a speed error is corrected, nose-down pitch rate and bank that mark the break,
-/// longest time the controls are held after a nose drop, and after a wing drop (time or
-/// bank: beyond, it is a spiral or a spin, no longer the break), time at the stick's
-/// stop without a break before giving up.
+/// which a speed error is corrected, nose-down pitch rate and bank that mark the break
+/// (the bank also tells a wing drop from a nose drop), window after the stall incidence
+/// over which the aircraft is left alone and measured, and the instants of it reported,
+/// shortest time it is left alone after a late break, time at the stick's stop without a
+/// break before giving up. One window for every departure (aerodynamicist review of
+/// 2026-10-23: two stopping rules raced and a stop was reported as a measurement).
 const STALL_ENTRY: f64 = 1.3;
 const DECELERATION: f64 = 0.5144;
 const SPEED_TIME: f64 = 2.0;
 const BREAK_PITCH_RATE: f64 = 3.0 * DEG;
 const DEPARTURE_BANK: f64 = 30.0 * DEG;
-const HOLD_TIME: f64 = 3.0;
-const WING_HOLD_TIME: f64 = 1.0;
-const WING_HOLD_BANK: f64 = 60.0 * DEG;
+const DEPARTURE_WINDOW: f64 = 3.0;
+const DEPARTURE_INSTANTS: [f64; 3] = [1.0, 2.0, 3.0];
+const LATE_BREAK_HOLD: f64 = 0.5;
 const STOP_TIME: f64 = 10.0;
 
 /// Loop: bank out of the vertical plane beyond which it is no longer a loop (E:).
@@ -568,15 +570,6 @@ fn flown_loop(
     })
 }
 
-/// How the stall showed itself.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Departure {
-    /// The nose dropped.
-    Nose,
-    /// A wing dropped past [`DEPARTURE_BANK`] before the nose.
-    Wing,
-}
-
 /// Power-off stall from level flight at 1.3 times the idle stall speed.
 fn flown_stall(
     aircraft: &Aircraft,
@@ -607,7 +600,7 @@ fn flown_stall(
     let mut rudder = Rudder::new(pilot, recovery.yaw);
     let mut beyond = false;
     let mut at_stop = None::<f64>;
-    let mut departure = None;
+    let mut broke = false;
     let mut applied = c0;
     let approach = fly(
         aircraft,
@@ -618,12 +611,11 @@ fn flown_stall(
         APPROACH_TIME,
         |s| {
             beyond |= s.alpha >= stall.alpha;
-            if beyond && s.state.angular_velocity_body.y < -BREAK_PITCH_RATE {
-                departure = Some(Departure::Nose);
-                return None;
-            }
-            if beyond && s.bank.abs() > DEPARTURE_BANK {
-                departure = Some(Departure::Wing);
+            if beyond
+                && (s.state.angular_velocity_body.y < -BREAK_PITCH_RATE
+                    || s.bank.abs() > DEPARTURE_BANK)
+            {
+                broke = true;
                 return None;
             }
             if at_stop.is_some_and(|t| s.time - t > STOP_TIME) {
@@ -673,7 +665,7 @@ fn flown_stall(
         eas_kmh(stall.speed, altitude),
         deg(stall.alpha)
     );
-    let Some(departure) = departure.filter(|_| approach.finite) else {
+    if !(broke && approach.finite) {
         let what = if at_stop.is_some() {
             format!(
                 "**pas de décrochage franc** : manche en butée {STOP_TIME:.0} s, l'avion s'enfonce à {:.0} km/h",
@@ -702,39 +694,75 @@ fn flown_stall(
     };
 
     // The aircraft alone: stick held as at the break, ailerons and rudder at the glide's
-    // trim, until the nose has dropped and stopped dropping (or HOLD_TIME); after a wing
-    // drop, for WING_HOLD_TIME or up to WING_HOLD_BANK. The reference attitude is the
-    // highest of the last second before the break.
+    // trim (as since the stall incidence), up to DEPARTURE_WINDOW after the stall
+    // incidence, and at least LATE_BREAK_HOLD after the break. The departure is measured
+    // over exactly DEPARTURE_WINDOW after the stall incidence, whichever way it broke;
+    // the reference attitude is the highest of the last second before the stall
+    // incidence.
     let held = PilotControls {
         pitch: applied.pitch,
         roll: recovery.roll,
         yaw: recovery.yaw,
         throttle: 0.0,
     };
+    let hold_time = (stalling.time + DEPARTURE_WINDOW - at_break.time).max(LATE_BREAK_HOLD);
+    let hold = fly(
+        aircraft,
+        env,
+        pilot,
+        at_break.state,
+        held,
+        hold_time,
+        |_| Some(held),
+    );
+    let held_end = hold.last();
     let reference = approach
         .samples
         .iter()
-        .filter(|s| s.time >= at_break.time - 1.0)
+        .filter(|s| s.time >= stalling.time - 1.0 && s.time <= stalling.time)
         .map(|s| s.elevation)
         .fold(f64::MIN, f64::max);
-    let mut dropped = false;
-    let hold = fly(aircraft, env, pilot, at_break.state, held, HOLD_TIME, |s| {
-        let q = s.state.angular_velocity_body.y;
-        dropped |= q < 0.0;
-        let over = match departure {
-            Departure::Nose => dropped && q >= 0.0 && s.time > 0.0,
-            Departure::Wing => s.time >= WING_HOLD_TIME || s.bank.abs() > WING_HOLD_BANK,
-        };
-        (!over).then_some(held)
-    });
-    let lowest_nose = hold.min(|s| s.elevation);
-    let q_min = hold.min(|s| s.state.angular_velocity_body.y);
-    let bank = hold
+    // Samples of the window, with their time from the start of the approach.
+    let window_end = stalling.time + DEPARTURE_WINDOW;
+    let window: Vec<(f64, &Sample)> = approach
         .samples
         .iter()
-        .map(|s| s.bank)
-        .fold(0.0_f64, |b, x| if x.abs() > b.abs() { x } else { b });
-    let held_end = hold.last();
+        .map(|s| (s.time, s))
+        .chain(
+            hold.samples
+                .iter()
+                .skip(1)
+                .map(|s| (at_break.time + s.time, s)),
+        )
+        .filter(|(t, _)| *t >= stalling.time && *t <= window_end + 0.5 * pilot.dt)
+        .collect();
+    let at = |after: f64| {
+        window
+            .iter()
+            .min_by(|a, b| {
+                (a.0 - stalling.time - after)
+                    .abs()
+                    .total_cmp(&(b.0 - stalling.time - after).abs())
+            })
+            .map_or(&at_break, |(_, s)| *s)
+    };
+    let instants = DEPARTURE_INSTANTS.map(at);
+    let extreme = |f: &dyn Fn(&Sample) -> f64| {
+        window
+            .iter()
+            .map(|(_, s)| f(s))
+            .fold(0.0_f64, |b, x| if x.abs() > b.abs() { x } else { b })
+    };
+    let lowest_nose = window
+        .iter()
+        .map(|(_, s)| s.elevation)
+        .fold(f64::MAX, f64::min);
+    let q_min = window
+        .iter()
+        .map(|(_, s)| s.state.angular_velocity_body.y)
+        .fold(0.0, f64::min);
+    let bank = extreme(&|s| s.bank);
+    let roll_rate = extreme(&|s| s.state.angular_velocity_body.x);
 
     // The pilot recovers: the glide's stick, wings levelled, until the flight path is
     // back to the glide's.
@@ -761,20 +789,39 @@ fn flown_stall(
     let end = after.last();
     let recovered = end.flight_path >= gamma_glide;
     let side = if bank > 0.0 { "droite" } else { "gauche" };
-    let what = match departure {
-        Departure::Nose => format!(
-            "abattée de {:.0}° (assiette {:+.0}° → {:+.0}°, jusqu'à {:.0}°/s), inclinaison jusqu'à {:.0}° à {side}",
-            deg(reference - lowest_nose),
-            deg(reference),
-            deg(lowest_nose),
-            deg(-q_min),
-            deg(bank.abs())
-        ),
-        Departure::Wing => format!(
-            "**départ en roulis à {side}** : inclinaison jusqu'à {:.0}°, le nez baissant de {:.0}°",
+    let nose = format!(
+        "assiette {:+.0}° → {:+.0}°, jusqu'à {:.0}°/s",
+        deg(reference),
+        deg(lowest_nose),
+        deg(-q_min)
+    );
+    let series = |f: &dyn Fn(&Sample) -> f64| {
+        instants
+            .iter()
+            .map(|s| format!("{:+.0}°", deg(f(s))))
+            .collect::<Vec<_>>()
+            .join(" / ")
+    };
+    let timeline = format!(
+        "inclinaison {} et assiette {} à {} s de l'incidence de décrochage",
+        series(&|s| s.bank),
+        series(&|s| s.elevation),
+        DEPARTURE_INSTANTS.map(|t| format!("{t:.0}")).join(", ")
+    );
+    let what = if bank.abs() > DEPARTURE_BANK {
+        format!(
+            "**départ en roulis à {side}** : inclinaison jusqu'à {:.0}° (roulis jusqu'à {:.0}°/s), le nez baissant de {:.0}° ({nose})",
             deg(bank.abs()),
+            deg(roll_rate.abs()),
             deg(reference - lowest_nose)
-        ),
+        )
+    } else {
+        format!(
+            "abattée de {:.0}° ({nose}), inclinaison jusqu'à {:.0}° à {side} (roulis jusqu'à {:.0}°/s)",
+            deg(reference - lowest_nose),
+            deg(bank.abs()),
+            deg(roll_rate.abs())
+        )
     };
     let lost = at_break.altitude - end.altitude;
     let recovery_text = if recovered {
@@ -790,9 +837,9 @@ fn flown_stall(
         )
     };
     let text = format!(
-        "{what}, cap {:+.0}°, manche tenu, ailerons et palonnier au trim de plané, {:.1} s ; incidence de décrochage atteinte à {:.0} km/h ({:.0} km/h en vitesse équivalente), dérapage {:+.1}°, après {:.0} s de décélération depuis {:.0} km/h (mesurée {:.2} m/s²), départ {:.1} s plus tard à {:.1}° d'incidence ; {stall_text} ; {recovery_text}",
-        deg(held_end.heading - hold.first().heading),
-        held_end.time,
+        "{what} ; {timeline} ; cap {:+.0}° ; mesurés sur les {:.0} s qui suivent l'incidence de décrochage, avion livré à lui-même (manche tenu, ailerons et palonnier au trim de plané) ; incidence de décrochage atteinte à {:.0} km/h ({:.0} km/h en vitesse équivalente), dérapage {:+.1}°, après {:.0} s de décélération depuis {:.0} km/h (mesurée {:.2} m/s²), départ {:.1} s plus tard à {:.1}° d'incidence ; {stall_text} ; {recovery_text}",
+        deg(instants[instants.len() - 1].heading - stalling.heading),
+        DEPARTURE_WINDOW,
         kmh(stalling.speed),
         eas_kmh(stalling.speed, stalling.altitude),
         deg(stalling.beta),
@@ -1293,6 +1340,30 @@ mod tests {
         let (drop, _) = o.stall_drop.unwrap();
         assert!(drop > 0.0, "{o:?}");
         assert!(o.completed, "back to a normal glide: {o:?}");
+    }
+
+    #[test]
+    fn halving_the_time_step_does_not_change_the_stall() {
+        // The departure grows exponentially: measured over a fixed window, it must still
+        // converge with the time step.
+        let a = biplane();
+        let fine = Pilot {
+            dt: 0.5 * PILOT.dt,
+            ..PILOT
+        };
+        let stall = Manoeuvre::PowerOffStall {
+            altitude: Length::M(1_000.0),
+        };
+        let coarse = fly_on(&a, &PILOT, stall.clone()).stall_drop.unwrap();
+        let fine = fly_on(&a, &fine, stall).stall_drop.unwrap();
+        assert!(
+            (coarse.0 - fine.0).abs() < 0.05 * fine.0.abs() + 0.2 * DEG,
+            "{coarse:?} {fine:?}"
+        );
+        assert!(
+            (coarse.1 - fine.1).abs() < 0.05 * fine.1.abs() + 0.2 * DEG,
+            "{coarse:?} {fine:?}"
+        );
     }
 
     #[test]
