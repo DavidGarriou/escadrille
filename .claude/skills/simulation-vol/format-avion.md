@@ -118,6 +118,8 @@ Airfoil(
     convention: Absolute,            // ou Halved : coefficients britanniques k = C/2
     moment_reference: QuarterChord,  // ou LeadingEdge
     test_wing: Some((aspect_ratio: 6.0, tau: 0.0, delta: 0.0)), // S: / C: maquette de soufflerie ; None pour un profil 2D
+    camber_correction: Some((zero_lift_shift: Deg(0.0), cm_shift: 0.0)), // facultatif ; C: théorie du profil mince
+    fabric_drag_rise: 0.0,           // facultatif (0 par défaut) ; C: calé sur un avion en vraie grandeur
     points: [
         //! S: tableau de la source, page
         (alpha: Deg(0.0), cl: 0.0, cd: 0.0, cm: 0.0),
@@ -125,7 +127,13 @@ Airfoil(
 )
 ```
 
-Le chargeur ramène les tableaux mesurés sur une maquette d'allongement fini à l'allongement infini (corrections de Glauert τ et δ), puisque le FDM ajoute lui-même l'angle induit. Le tableau doit dépasser le décrochage des deux côtés ; un décrochage négatif absent de la source s'ajoute explicitement, en `E:`.
+Le chargeur applique, dans l'ordre :
+1. les coefficients britanniques doublés (`Halved`) et le moment ramené au quart de corde ;
+2. le passage de la maquette d'allongement fini à l'allongement infini (corrections de Glauert τ et δ), puisque le FDM ajoute lui-même l'angle induit ;
+3. `camber_correction` : un tableau mesuré sur un profil sert pour un profil voisin. Toute la courbe est décalée de la différence d'incidence de portance nulle et de C_m entre les deux lignes moyennes ; pente, traînée et décrochage restent ceux du tableau ;
+4. `fabric_drag_rise` : traînée ΔC_d = k C_l² ajoutée à chaque point. Les tableaux viennent de maquettes polies ; une aile entoilée réelle traîne davantage, de plus en plus avec la portance (toile qui se creuse entre les nervures, rugosité). k se cale sur un avion **mesuré en vraie grandeur**, piloté par `fdm_lab` sur le même tableau, jamais sur les cibles de l'avion du jeu. Le RAF 15 : 0,020 ± 0,005, d'après le Sperry Messenger du NACA Report 304 (`tools/fdm_lab/comparison/`, test `the_fabric_drag_of_the_spad_wing_reproduces_the_full_scale_messenger`).
+
+Le tableau doit dépasser le décrochage des deux côtés ; un décrochage négatif absent de la source s'ajoute explicitement, en `E:`.
 
 ## Hélice (`propeller.ron`)
 

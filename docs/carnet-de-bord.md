@@ -1095,3 +1095,20 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - avec l'allure mesurée par S43 : −0,02 m/s au plus ;
   - écart à expliquer : 0,85 m/s.
 - **D** Pas de changement du modèle pour la piste 2. La loi serait du code sans effet mesurable, et elle doublerait la traînée d'écoulement transversal du fuselage, déjà présente aux grands angles. Le détail est dans le plan (§ Résultats). La piste reste notée pour les grands angles, à reprendre avec une mesure en vraie grandeur (S43 est une maquette au 1/24 à 30 mph).
+
+### Étape 3 du plan : la vraie grandeur du Report 304
+- **A** Relevé de la géométrie du Sperry Messenger sur la figure 2 et dans le texte du Report 304 : envergure 20 ft, corde 4 ft, entreplan 3 ft 10 in, dièdre 1,5°, décalage d'environ 16 in, empennage 6 ft 8 in × 3 ft 7 in, centre de gravité dessiné à 29 % de la corde. Masse en essai : 1 008 lb (tableau II).
+- **A** Avion de comparaison `messenger_raf15`, rangé dans `tools/fdm_lab/comparison/` (ce n'est pas un avion du jeu). Il vole sur les mêmes tables que le SPAD (un test garantit qu'elles restent identiques) et avec les mêmes méthodes.
+- **⚠** `fdm_lab polaire` s'arrêtait à la vitesse maximale en palier : pour le Messenger, cela laissait C_L ≥ 0,5. Les planés vont maintenant jusqu'au C_L le plus bas de l'ajustement, comme les piqués du Report 304. Le SPAD passe de 0,890 à 0,899.
+- **R** Messenger modélisé sur la table polie : **Oswald 0,889, contre 0,734 mesuré**. La méthode du modèle donne la même valeur aux deux avions (SPAD 0,899) : l'écart vient bien de ce que le modèle ignore, pas du SPAD.
+- **A** Nouveau champ de profil `fabric_drag_rise`, ΔC_d = k C_l², pour la traînée des ailes entoilées réelles. **k = 0,020 ± 0,005**, calé sur le Messenger seul :
+  - sensibilité au centrage, au e des ailes et au σ : 0,017 à 0,022 ;
+  - incertitude de la mesure : ±0,004 ;
+  - un test vérifie que le Messenger modélisé, avec le k de `spad.ron`, retrouve la polaire mesurée.
+- **R** Essai du SPAD avec k = 0,020 :
+  - Oswald 0,723 ;
+  - montées −9 / −8 / −12 % (avant −15 / −16 / −22 %), toujours en échec ;
+  - plafond +8 % (avant +19 %), en échec de peu (±7 %) ;
+  - vitesses maximales +1,7 / +5,6 / +4,5 % : 2 000 et 4 000 m passent, 3 000 m échoue de peu ;
+  - finesse 8,3 → 7,4 (« mauvais plané ») ; le décrochage part maintenant en roulis à droite (60° en 0,7 s).
+- **D** k reste en confiance C : il porte probablement plus que la toile (interférence réelle du biplan, mâts). Prochaine étape du plan : la puissance installée.

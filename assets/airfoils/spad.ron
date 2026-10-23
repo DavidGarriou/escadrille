@@ -16,6 +16,7 @@ Airfoil(
         zero_lift_shift: Deg(-0.60), // C: thin-aerofoil theory, Spad −3.18° minus RAF 15 −2.58° (spad7-calculs.md § 1)
         cm_shift: -0.0145,           // C: thin-aerofoil theory, Spad −0.0690 minus RAF 15 −0.0545 (spad7-calculs.md § 1)
     )),
+    fabric_drag_rise: 0.020,         // C: full-scale glides of the Sperry Messenger with RAF 15 wings (NACA Report 304), flown by its model on this table: 0.020 ± 0.005 (spad7-calculs.md § 6)
     points: [
         //! E: negative stall, not measured for the RAF 15 (profil-spad7.md § 3.7): slope of the measured range kept to −7.5° (linear to −6° in Report 309), rounded minimum C_L −0.42 near −9° (thin section with a hollow lower surface: early lower-surface separation), gentle fall after it; drag rising to the Report 233 values of the positive stall; C_m tending to zero
         (alpha: Deg(-15.0), cl: -0.34, cd: 0.170, cm: -0.020),

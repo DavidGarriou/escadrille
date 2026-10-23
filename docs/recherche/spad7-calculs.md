@@ -117,3 +117,43 @@ Calculées par l'aérodynamicien sur la géométrie du § 3 et contrôlées avec
 - **Débattements** : ±20°, ±25° et ±30° (E:, aucune source SPAD).
 - **Calages** : 2,3° (plan supérieur) et 1,8° (plan inférieur), d'après le critère « fuselage horizontal à 170 km/h et 2 000 m ». Vérifié par le trim : incidence du fuselage 0,015°.
 - **Hauteur du moyeu** : 0,38 m au-dessus du bord d'attaque inférieur, d'après la relecture du dessin par l'aérodynamicien (0,36 à 0,41 m ; j'avais lu 0,30). Le moteur, le radiateur et l'hélice du bilan de masses ont suivi.
+
+## 6. Traînée des ailes entoilées, calée sur le Sperry Messenger (2026-10-23)
+
+Étape 3 du plan `docs/plans/m1-ecarts-spad7.md`. Le tableau du RAF 15 (Report 233) a été mesuré sur une maquette **polie** ; le champ `fabric_drag_rise` de `spad.ron` ajoute la traînée de l'aile **telle qu'on la construisait**, ΔC_d = k C_l².
+
+**Avion de comparaison.** Le Sperry Messenger à ailes RAF 15 du NACA Report 304 : polaire de l'avion complet en vraie grandeur, par vols planés à traction nulle.
+- Ajustement des 21 vols de C_L 0,23 à 0,81 : C_D = 0,055 + **0,120 ± 0,004** C_L² (écart type d'une mesure 0,003).
+- Modèle `tools/fdm_lab/comparison/aircraft/messenger_raf15/`, construit sur les mêmes tables que le SPAD (RAF 15 sans recalage de cambrure, empennage du SPAD), avec les mêmes méthodes (e = 0,92, σ de Prandtl, déflexion) :
+  - géométrie du Report 304 (texte p. 4 et fig. 2, lue sur l'image) : envergure 20 ft, corde 4 ft (148,5 sq ft au total), entreplan 3 ft 10 in, dièdre 1,5°, calage +2°, plan fixe à +1,5° ;
+  - relevés sur la figure 2 : décalage d'environ 16 in, empennage de 6 ft 8 in × 3 ft 7 in (2,12 m²), bord d'attaque 3,16 m derrière celui du plan supérieur, centre de gravité à 29 % de la corde moyenne ;
+  - masse 1 008 lb, moyenne du tableau II ;
+  - moteur, hélice, inerties et débattements : `E:`. Ils ne jouent pas sur la polaire.
+
+**Mesure** (`fdm_lab`, planés au ralenti au niveau de la mer, forces de l'hélice retranchées, C_L 0,2 à 0,8) :
+
+| | C_D0 | K | Oswald |
+|---|---|---|---|
+| Messenger mesuré (Report 304) | 0,055 | 0,120 | 0,734 |
+| Messenger modélisé, table polie | 0,054 | 0,0997 | 0,889 |
+| Messenger modélisé, k = 0,020 | 0,054 | 0,1201 | 0,738 |
+| SPAD modélisé, table polie | 0,047 | 0,0801 | 0,899 |
+| SPAD modélisé, k = 0,020 | 0,047 | 0,0995 | 0,723 |
+
+K croît de 1,02 par unité de k : **k = (0,120 − 0,0997) / 1,02 = 0,020**.
+
+**Sensibilité** du calage aux valeurs estimées du Messenger :
+
+| Variante | k nécessaire |
+|---|---|
+| référence | 0,0199 |
+| centre de gravité 0,10 m plus en avant / en arrière | 0,0167 / 0,0216 |
+| e des ailes 0,95 au lieu de 0,92 | 0,0219 |
+| σ 0,47 au lieu de 0,50 | 0,0217 |
+| empennage (e 0,60), déflexion (0,12), fuselage (volume × 2), hélice (D 1,8 m) | 0,0198 à 0,0201 |
+
+Avec l'incertitude de K mesuré (±0,004, soit ±0,004 sur k) : **k = 0,020 ± 0,005**, confiance C (un autre avion, une autre époque, des ailes construites de la même façon).
+
+**Ce que k recouvre.** Surtout la traînée de profil des ailes réelles : toile, nervures, rugosité, à des nombres de Reynolds voisins de ceux du Report 233. Mais aussi, faute de mieux, tout ce que le modèle de biplan ne voit pas de la traînée liée à la portance (interférence réelle des plans, mâts, fuselage). Sur une aile, à C_l 0,6, k ajoute 0,007 à la traînée de section, qui passe d'environ 0,0085 (table ramenée en 2D) à 0,016 : presque le double, plus que la seule toile ne l'explique sans doute, d'où la confiance C. L'empennage n'en reçoit pas (portance faible ; même choix sur les deux avions).
+
+**Effet sur le SPAD** (campagne d'essais du 2026-10-23) : montées de −15 / −16 / −22 % à −9 / −8 / −12 % de la cible ; plafond de +19 % à +8 % ; vitesse maximale à 2 000 m de +2,9 % à +1,7 %, à 3 000 m +5,6 %, à 4 000 m +4,5 %. Finesse maximale de 8,3 à 7,4.

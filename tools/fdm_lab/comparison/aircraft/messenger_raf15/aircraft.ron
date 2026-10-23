@@ -1,0 +1,136 @@
+// Comparison aircraft, not a game aircraft: the Sperry Messenger with RAF 15 wings
+// whose full-scale glide polar NACA Report 304 measured (Crowley and Green, 1929). Flown
+// by fdm_lab on the same tables as the SPAD, it calibrates the drag of fabric wings as
+// built against the polished models of the tables (plan docs/plans/m1-ecarts-spad7.md,
+// step 3). Only its steady glides are used: what does not change the lift-dependent drag
+// (engine, propeller, inertia, control travel) is E:. Geometry from Report 304 (text and
+// fig. 2, read on the page image).
+Aircraft(
+    id: "messenger_raf15",
+    name: "Sperry Messenger, ailes RAF 15 (NACA Report 304)",
+    research: "NACA Report 304 (1929), p. 4-5, fig. 2 et tableau II ; plan docs/plans/m1-ecarts-spad7.md",
+    datum: "bord d'attaque du plan inférieur, dans l'axe de l'avion ; x le long de l'axe de traction",
+
+    mass: (
+        empty: Lb(774.5),                                         // C: 1 008 lb in the glides (mean of the 29 weights of table II, 998 to 1 016 lb) less the pilot and the fuel below
+        cg_empty_m: (-0.14, 0.0, -0.37),                          // C: c.g. mark of fig. 2 (side view), 0.14 m behind the lower leading edge, 0.69 of the gap below the upper chord: 29 % of the mean chord
+        inertia_empty_kg_m2: (ixx: 350.0, iyy: 500.0, izz: 800.0, ixz: 10.0), // E: light biplane; no effect on steady glides
+        pilot: Lb(170.0),                                         // E: pilot with the flight-path recorder's reel
+        pilot_m: (-0.14, 0.0, -0.37),                             // E: at the drawn c.g., which is the loaded one
+        fuel: (capacity: L(40.0), density_kg_per_l: 0.72, position_m: (-0.14, 0.0, -0.37)), // E: at the drawn c.g.
+        payload: [],
+    ),
+
+    surfaces: [
+        (
+            name: "upper",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [(
+                root_m: (0.108, 0.0, -1.168), tip_m: (0.108, 3.048, -1.248), // S: span 20 ft, gap 3 ft 10 in, dihedral 1.5° (p. 4, fig. 2); C: stagger 16 in read on fig. 2 at the scale of the gap, quarter chord
+                chord_root: M(1.191), chord_tip: M(1.191),                     // C: 148.5 sq ft including the centre section (p. 4) over 38 ft of plane span (lower plane cut by a fuselage of 2 ft, E:); 4 ft drawn
+                incidence: Deg(2.0),                                           // S: +2° to the thrust line (p. 4)
+                strips: 8,                                                     // E: discretisation
+            )],
+            airfoil: "airfoils/raf15.ron",
+            span_efficiency: 0.92,                                             // C: method of the SPAD (spad7-calculs.md § 5): 1/(1 + δ) of TR 416 at aspect ratio 6 (conservative for 5.1), cut-out
+            controls: [
+                (control: Aileron, span_from: 0.6, span_to: 1.0, chord_ratio: 0.375), // S: 4 ft × 1 ft 6 in on fig. 2, upper plane
+            ],
+        ),
+        (
+            name: "lower",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [(
+                root_m: (-0.298, 0.305, 0.0), tip_m: (-0.298, 3.048, -0.072), // S: as the upper plane; E: from the side of a fuselage 2 ft wide
+                chord_root: M(1.191), chord_tip: M(1.191),                     // C: as the upper plane
+                incidence: Deg(2.0),                                           // S: +2° (p. 4)
+                strips: 8,                                                     // E: discretisation
+            )],
+            airfoil: "airfoils/raf15.ron",
+            span_efficiency: 0.92,                                             // C: as the upper plane, fuselage gap
+        ),
+        (
+            name: "tailplane",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [(
+                root_m: (-3.01, 0.0, -0.74), tip_m: (-3.01, 1.016, -0.74),    // S: span 6 ft 8 in (fig. 2); C: leading edge 3.16 m behind the upper one (plan and side views, 3.13 to 3.20 m), quarter chord at the mean chord, height on the side view
+                chord_root: M(1.043), chord_tip: M(1.043),                     // C: 3 ft 7 in drawn, less the rounded corners and the rudder cut-out: 2.12 m²
+                incidence: Deg(1.5),                                           // S: stabilizer fixed at +1.5° (p. 4)
+                strips: 3,                                                     // E: discretisation
+            )],
+            airfoil: "airfoils/empennage.ron",
+            span_efficiency: 0.75,                                             // C: Helmbold lift slope at aspect ratio 1.95 with the section slope of the table (5.8 per radian)
+            controls: [
+                (control: Elevator, span_from: 0.0, span_to: 1.0, chord_ratio: 0.5), // S: 21.5 in of 3 ft 7 in (fig. 2)
+            ],
+        ),
+        (
+            name: "fin",
+            kind: Vertical,
+            mirrored: false,
+            panels: [(
+                root_m: (-3.03, 0.0, -0.55), tip_m: (-3.03, 0.0, -1.49),      // C: fin and rudder 3 ft 3 in high (fig. 2), above the fuselage
+                chord_root: M(1.30), chord_tip: M(0.82),                       // C: 2 ft 3 in + 2 ft 2 in drawn, rounded outline: about 1.0 m²
+                incidence: Deg(0.0),                                           // E: no offset
+                strips: 2,                                                     // E: discretisation
+            )],
+            airfoil: "airfoils/empennage.ron",
+            span_efficiency: 0.61,                                             // E: as the SPAD
+            aspect_ratio: Some(1.5),                                           // E: as the SPAD (partial end plate)
+            controls: [
+                (control: Rudder, span_from: 0.0, span_to: 1.0, chord_ratio: 0.49), // S: 2 ft 2 in of 4 ft 5 in (fig. 2)
+            ],
+        ),
+    ],
+    interference: [(planes: ("upper", "lower"), sigma: 0.50)],         // C: Prandtl, NACA TN 182, gap / span 0.192
+    downwash: Some((
+        wings: ["upper", "lower"],
+        tail: ["tailplane"],
+        factor: 0.156,                                                 // C: method of the SPAD, 2S/(πb²) = 0.236 × 0.84 × 0.86 × 0.915 (tail near mid-gap, arm / span 0.48 against 0.51)
+        tail_arm: M(2.92),                                             // C: mean quarter chord of the planes (x −0.095) to the tailplane's (x −3.01)
+    )),
+
+    parasite_drag: [
+        (name: "fuselage, moteur, train, mâts et câbles", cd: 1.0, reference_area: M2(0.62), position_m: (-0.6, 0.0, -0.45)), // C: measured C_D0 of Report 304 (0.055 × 13.80 m²) less the profile drag of the wings and tails at zero lift (0.14 m²); E: position
+    ],
+
+    fuselage: Some((
+        position_m: (-1.0, 0.0, -0.45),                                // E: centroid of a fuselage of 17 ft 9 in overall (fig. 2)
+        volume_m3: 0.5,                                                // E: SPAD's 0.95 m³ scaled by width² (0.6 against 0.8 m)
+        apparent_mass: 0.9,                                            // E: Lamb, fineness about 8
+        plan_area: M2(2.2), side_area: M2(2.8),                        // E: length 5.1 m, width 0.6 m, depth 0.75 m, tapered
+        crossflow_drag: 0.75,                                          // E: as the SPAD
+    )),
+
+    engine: Inline((
+        name: "Lawrance L-4 (E:)",
+        power_curve: [
+            (speed: Rpm(1400.0), power: Hp(50.0)),                     // E: 60 hp class
+            (speed: Rpm(1600.0), power: Hp(56.0)),                     // E:
+            (speed: Rpm(1800.0), power: Hp(61.0)),                     // E:
+            (speed: Rpm(2000.0), power: Hp(64.0)),                     // E:
+        ],
+        friction: Curve([
+            (speed: Rpm(1400.0), power: Hp(4.5)),                      // E:
+            (speed: Rpm(2000.0), power: Hp(7.0)),                      // E:
+        ]),
+        idle_throttle: 0.05,                                           // E:
+        altitude_law: Density,
+        stall_speed: Rpm(150.0),                                       // E:
+    )),
+
+    propeller: (
+        table: "aircraft/messenger_raf15/propeller.ron",
+        diameter: M(2.13),                                             // C: disc of the front view of fig. 2, about 7 ft
+        hub_m: (1.30, 0.0, -0.55),                                     // C: 17 ft 9 in overall (fig. 2); E: height
+        rotation: Clockwise,                                           // E:
+        p_factor_m: 0.6,                                               // E:
+        normal_force: 0.035,                                           // E: blade-element order of magnitude
+        rotor_inertia_kg_m2: 3.0,                                      // E: wooden propeller of 2.1 m
+    ),
+
+    travel: (aileron: Deg(20.0), elevator: Deg(25.0), rudder: Deg(25.0)), // E:
+)

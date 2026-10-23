@@ -4,17 +4,24 @@
 //! measured aeroplane through its Oswald factor (plan `docs/plans/m1-ecarts-spad7.md`).
 
 use escadrille_fdm::aircraft::Aircraft;
+use escadrille_fdm::constants::G0;
 use escadrille_fdm::environment::Environment;
 use glam::DVec3;
 
-use crate::performance::{PerformanceError, glide, max_level_speed, stall_speed};
+use crate::performance::{PerformanceError, glide, stall_speed};
 
 /// Lift coefficients of the fit, as in Report 304 (attached flow, below the stall and
 /// above the steep dives).
 pub const FIT_RANGE: (f64, f64) = (0.2, 0.8);
 
-/// Number of glides between 1.1 times the stall speed and the maximum level speed.
+/// Number of glides between 1.1 times the stall speed and the speed of the lowest lift
+/// coefficient fitted.
 const GLIDES: u32 = 24;
+
+/// The fastest glide aims at this fraction of the lowest fitted lift coefficient, so that
+/// the fit range is covered whatever the engine: Report 304 reached it in dives, beyond
+/// the maximum level speed.
+const FASTEST_GLIDE_CL: f64 = 0.9;
 
 /// Reference of the coefficients: wing area and span, and the biplane factor
 /// κ = (1 + σ) / 2 of Prandtl (1 for a monoplane), giving the equivalent aspect ratio
@@ -111,7 +118,11 @@ pub fn airframe_polar(
     reference: Reference,
 ) -> Result<AirframePolar, PerformanceError> {
     let low = 1.1 * stall_speed(aircraft, env, altitude)?.speed;
-    let high = max_level_speed(aircraft, env, altitude)?.flight.speed;
+    let density = env.atmosphere(DVec3::new(0.0, 0.0, -altitude)).density;
+    let weight = aircraft.mass().mass() * G0;
+    let high = (2.0 * weight / (density * reference.area * FASTEST_GLIDE_CL * FIT_RANGE.0))
+        .sqrt()
+        .max(low);
     let mut points = Vec::new();
     for i in 0..GLIDES {
         let speed = low + (high - low) * f64::from(i) / f64::from(GLIDES - 1);
@@ -137,6 +148,10 @@ pub fn airframe_polar(
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
+    use escadrille_data::aircraft::{Loading, load_aircraft};
+
     use super::*;
     use crate::trim::tests::{STILL_AIR, biplane};
 
@@ -205,6 +220,59 @@ mod tests {
             "{cd0} {k}"
         );
         assert!((polar.oswald() - 0.734).abs() < 0.005, "{}", polar.oswald());
+    }
+
+    fn comparison_assets() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("comparison")
+    }
+
+    fn game_assets() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets")
+    }
+
+    /// The Messenger flown on the RAF 15 table with the given fabric drag.
+    fn messenger(fabric_drag_rise: f64) -> AirframePolar {
+        let mut data = load_aircraft(&comparison_assets(), "messenger_raf15").unwrap();
+        data.airfoils
+            .get_mut("airfoils/raf15.ron")
+            .unwrap()
+            .fabric_drag_rise = fabric_drag_rise;
+        let built = data.build(&Loading { fuel_fraction: 1.0 }).unwrap();
+        let ft = 0.3048;
+        let reference = Reference {
+            area: 148.5 * ft * ft,
+            span: 20.0 * ft,
+            kappa: 0.75,
+        };
+        airframe_polar(&built.aircraft, &STILL_AIR, 0.0, reference).unwrap()
+    }
+
+    #[test]
+    fn the_comparison_tables_are_those_of_the_spad() {
+        let comparison = load_aircraft(&comparison_assets(), "messenger_raf15").unwrap();
+        let spad = load_aircraft(&game_assets(), "spad7").unwrap();
+        for (copy, original) in [
+            ("airfoils/raf15.ron", "airfoils/spad.ron"),
+            ("airfoils/empennage.ron", "airfoils/spad_empennage.ron"),
+        ] {
+            let (copy, original) = (&comparison.airfoils[copy], &spad.airfoils[original]);
+            assert_eq!(copy.points, original.points);
+            assert_eq!(copy.test_wing, original.test_wing);
+            assert_eq!(copy.fabric_drag_rise, 0.0, "the table as measured");
+        }
+    }
+
+    #[test]
+    fn the_fabric_drag_of_the_spad_wing_reproduces_the_full_scale_messenger() {
+        // Report 304: K = 0.120 ± 0.004 over C_L 0.2 to 0.8, C_D0 0.055.
+        let polished = messenger(0.0);
+        assert!(polished.fitted >= 10, "{polished:?}");
+        assert!(polished.oswald() > 0.85, "{}", polished.oswald());
+        let spad = load_aircraft(&game_assets(), "spad7").unwrap();
+        let fabric = spad.airfoils["airfoils/spad.ron"].fabric_drag_rise;
+        let built = messenger(fabric);
+        assert!((built.k - 0.120).abs() < 0.002, "{built:?}");
+        assert!((built.cd0 - 0.055).abs() < 0.003, "{built:?}");
     }
 
     #[test]

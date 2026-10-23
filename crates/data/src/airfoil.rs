@@ -16,6 +16,11 @@
 //! A table measured on one section can stand for a comparable one (C:): the whole curve
 //! is then moved by the difference of zero-lift incidence and of quarter-chord moment
 //! between the two mean lines (thin-aerofoil theory), slope, drag and stall kept.
+//!
+//! Tables come from smooth, polished models. A fabric wing as built (sagging covering,
+//! ribs, roughness) has more profile drag, growing with the lift: the file may add
+//! ΔC_d = k C_l² to every point, k calibrated on a full-scale aeroplane against a model of
+//! it flown on the same table (C:, `fdm_lab`, plan `docs/plans/m1-ecarts-spad7.md`).
 
 use escadrille_fdm::aero::polar::{Polar, PolarPoint};
 use serde::Deserialize;
@@ -76,6 +81,9 @@ pub struct AirfoilFile {
     pub test_wing: Option<TestWing>,
     #[serde(default)]
     pub camber_correction: Option<CamberCorrection>,
+    /// k of the drag added as k C_l² for the wing as built (0: the table as measured).
+    #[serde(default)]
+    pub fabric_drag_rise: f64,
     pub points: Vec<AirfoilPoint>,
 }
 
@@ -111,6 +119,7 @@ impl AirfoilFile {
                     point.alpha += c.zero_lift_shift.si();
                     point.cm += c.cm_shift;
                 }
+                point.cd += self.fabric_drag_rise * point.cl * point.cl;
                 point
             })
             .collect()
@@ -169,6 +178,7 @@ mod tests {
                 delta: 0.05,
             }),
             camber_correction: None,
+            fabric_drag_rise: 0.0,
             points,
         }
     }
@@ -207,6 +217,22 @@ mod tests {
             assert!((b.alpha - a.alpha + 0.6_f64.to_radians()).abs() < 1e-12);
             assert_eq!((b.cl, b.cd), (a.cl, a.cd));
             assert!((b.cm - a.cm + 0.0145).abs() < 1e-12);
+        }
+    }
+
+    #[test]
+    fn the_fabric_drag_grows_with_the_square_of_the_lift() {
+        let plain = measured(Convention::Absolute, MomentReference::QuarterChord);
+        let fabric = AirfoilFile {
+            fabric_drag_rise: 0.02,
+            ..plain.clone()
+        };
+        for (a, b) in plain.section_points().iter().zip(fabric.section_points()) {
+            assert!(
+                (b.cd - a.cd - 0.02 * a.cl * a.cl).abs() < 1e-12,
+                "{a:?} {b:?}"
+            );
+            assert_eq!((b.alpha, b.cl, b.cm), (a.alpha, a.cl, a.cm));
         }
     }
 

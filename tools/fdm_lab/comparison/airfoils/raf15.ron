@@ -1,0 +1,39 @@
+// RAF 15 measured at full-scale Reynolds number on a polished model (NACA Report 233,
+// table XXX), for the comparison aircraft of fdm_lab: the same table as
+// assets/airfoils/spad.ron without its camber correction (a test keeps them equal).
+Airfoil(
+    name: "RAF 15 (Re 3,58 × 10⁶)",
+    source: "profil-spad7.md : A15 (NACA Report 233, tableau XXX, p. 80), A26 (TR 416)",
+    convention: Absolute,
+    moment_reference: QuarterChord,
+    test_wing: Some((
+        aspect_ratio: 6.857, // C: TR 416 (A26) effective ratio of the closed 60 in tunnel, 6 / (1 − ½ (30/60)²): wall and induced corrections together
+        tau: 0.175,          // S: TR 416, fig. 11, rectangular wing of aspect ratio 6 (profil-spad7.md § 4.2)
+        delta: 0.05,         // S: TR 416, fig. 11, rectangular wing of aspect ratio 6
+    )),
+    points: [
+        //! E: negative stall, not measured for the RAF 15 (profil-spad7.md § 3.7): slope of the measured range kept to −7.5° (linear to −6° in Report 309), rounded minimum C_L −0.42 near −9° (thin section with a hollow lower surface: early lower-surface separation), gentle fall after it; drag rising to the Report 233 values of the positive stall; C_m tending to zero
+        (alpha: Deg(-15.0), cl: -0.34, cd: 0.170, cm: -0.020),
+        (alpha: Deg(-12.0), cl: -0.36, cd: 0.110, cm: -0.030),
+        (alpha: Deg(-10.5), cl: -0.40, cd: 0.080, cm: -0.040),
+        (alpha: Deg(-9.0), cl: -0.42, cd: 0.055, cm: -0.048),
+        (alpha: Deg(-7.5), cl: -0.38, cd: 0.035, cm: -0.052),
+        (alpha: Deg(-6.0), cl: -0.272, cd: 0.022, cm: -0.054),
+
+        //! S: NACA Report 233 (Munk and Miller, 1927), table XXX, p. 80: RAF 15, 20 atm, Re 3 580 000, aspect ratio 6, no wall correction; 4.5° read 0.507 on the page image (OCR 0.557); the « 16 ± » row taken at 16°
+        (alpha: Deg(-4.5), cl: -0.162, cd: 0.0139, cm: -0.054),
+        (alpha: Deg(-3.0), cl: -0.052, cd: 0.0087, cm: -0.052),
+        (alpha: Deg(-1.5), cl: 0.052, cd: 0.0083, cm: -0.053),
+        (alpha: Deg(0.0), cl: 0.166, cd: 0.0088, cm: -0.048),
+        (alpha: Deg(1.5), cl: 0.285, cd: 0.0119, cm: -0.045),
+        (alpha: Deg(3.0), cl: 0.398, cd: 0.0154, cm: -0.044),
+        (alpha: Deg(4.5), cl: 0.507, cd: 0.0205, cm: -0.049),
+        (alpha: Deg(6.0), cl: 0.629, cd: 0.0280, cm: -0.045),
+        (alpha: Deg(9.0), cl: 0.850, cd: 0.0477, cm: -0.048),
+        (alpha: Deg(12.0), cl: 1.063, cd: 0.0734, cm: -0.049),
+        (alpha: Deg(15.0), cl: 1.209, cd: 0.0997, cm: -0.046),
+        (alpha: Deg(16.0), cl: 1.127, cd: 0.1527, cm: -0.077),
+        (alpha: Deg(18.0), cl: 1.004, cd: 0.2181, cm: -0.138),
+        (alpha: Deg(21.0), cl: 0.924, cd: 0.2872, cm: -0.137),
+    ],
+)

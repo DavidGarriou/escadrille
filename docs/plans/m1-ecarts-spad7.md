@@ -80,3 +80,10 @@ Conclusion : le fuselage du SPAD ne monte qu'à 3 à 5° d'incidence, là où S4
 - Gains du pilote scripté normalisés par avion. Sa direction oscille pendant la reprise du décrochage du SPAD.
 - Chronométrage des montées depuis le lâcher des freins : il faut le modèle de sol du M2.
 - Documents d'archives repérés par l'historien : fonds Dorand du SHD, rapport britannique n° 96.
+
+### Étape 3 (2026-10-23) : traînée des ailes entoilées, k = 0,020 ± 0,005
+
+- Avion de comparaison modélisé : le Sperry Messenger du Report 304 (`tools/fdm_lab/comparison/`), sur les mêmes tables et avec les mêmes méthodes que le SPAD. Table polie : Oswald 0,889, contre 0,734 mesuré.
+- Nouveau champ de profil `fabric_drag_rise` : ΔC_d = k C_l². Pour retrouver la polaire mesurée, k = 0,020 ± 0,005 ; le calage est tenu par un test. Détail et sensibilité : `spad7-calculs.md` § 6.
+- `fdm_lab polaire` plane désormais jusqu'au C_L le plus bas de l'ajustement, comme les piqués du Report 304 : avant, il s'arrêtait à la vitesse maximale en palier (C_L 0,5 pour le Messenger).
+- SPAD avec k = 0,020 : Oswald 0,723. Montées −9 / −8 / −12 % (avant −15 / −16 / −22 %), plafond +8 % (avant +19 %), vitesses +1,7 / +5,6 / +4,5 % (avant +2,9 / +7,4 / +7,1 %).
