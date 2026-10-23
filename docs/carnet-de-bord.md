@@ -1064,3 +1064,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
   **L'écart vient du modèle**, pas des sources : il monte trop bien.
 - **⚠** La consigne de l'historien de chronométrer les montées « depuis le lâcher des freins » demande le modèle de sol du M2. Pour l'instant, seule la convention « depuis 0 m en vol » est calculée.
+
+## 2026-10-23 — Session 4
+
+### Choix de la voie pour les écarts du SPAD
+- **Q** Quelle voie suivre pour les écarts du SPAD ? **D** Le joueur choisit les **pistes physiques sourcées** (plutôt que d'autres sources d'abord, ou que d'accepter les écarts).
+- **A** Lecture des deux sources de mesure :
+  - **NACA Report 17** (S43, maquette de JN-2, MIT 1917) : en présence des ailes, la traînée du fuselage et du train passe de 0,015 à 0,025 lb entre 0° et 12° (+67 %), et la traînée parasite totale croît jusqu'à 20 % entre 0° et 9° ;
+  - **NACA Report 304** (Sperry Messenger à ailes RAF 15, vols planés en vraie grandeur) : les 29 vols du tableau II, lus sur l'image. Ajustés sur 21 vols de C_L 0,23 à 0,81, ils donnent C_D = 0,055 + 0,120 C_L² (écart type 0,003), soit un **coefficient d'Oswald de l'avion complet de 0,73**, avec l'allongement équivalent du biplan (3,6, σ de Prandtl 0,50).
+- **A** Plan proposé au joueur : `docs/plans/m1-ecarts-spad7.md`.
+  - Étapes : polaire du modèle mesurée par `fdm_lab polaire` ; traînée parasite fonction de l'incidence (S43) ; comparaison avec la vraie grandeur du Report 304, et le reste ajouté comme traînée de profil d'ailes entoilées ; puissance installée à 0,96 (Report 301).
+  - Ordre de grandeur des trois pistes ensemble : celui de l'écart (environ −1 m/s en montée).
+  - Règle : **calage sur l'avion de comparaison mesuré, jamais sur les cibles du SPAD**.
