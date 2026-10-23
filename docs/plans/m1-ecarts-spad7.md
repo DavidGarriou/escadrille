@@ -44,6 +44,35 @@ Ensemble, elles sont de l'ordre de l'écart mesuré. Ce chiffrage reste grossier
 
 Chaque étape : tests unitaires, `just check`, `just test`, carnet de bord, commit et push.
 
+## Résultats
+
+### Étape 1 (2026-10-23)
+
+`fdm_lab polaire spad7` : coefficient d'Oswald de la cellule du SPAD modélisé 0,890, contre 0,734 pour le Messenger en vraie grandeur (Report 304) ; voir le carnet de bord.
+
+### Étape 2 (2026-10-23) : mesurée, sans changement du modèle
+
+La relecture complète de S43 (NACA Report 17, p. 285-288) corrige deux prémisses du plan :
+- la traînée du **train** croît jusqu'à 2° environ (référence : longerons supérieurs), puis reste quasi constante jusqu'à 16° : pas de loi d'incidence pour le train ;
+- la hausse de 0,015 à 0,025 lb à 12° est **lente jusqu'à 9°, puis rapide** : la traînée du corps, du train et de l'empennage reste « constante à 20 % près de 0° à 9° », et croît très vite au-delà. Une loi en sin² α (k ≈ 15) surestime donc la hausse aux petits angles.
+
+Par ailleurs, le fuselage du modèle porte déjà une traînée d'écoulement transversal (Allen et Perkins, en sin³ α) : une loi en sin² α ajoutée aux mêmes éléments la compterait deux fois aux grands angles (décrochage, vrille).
+
+Incidence du fuselage du SPAD modélisé (trim, 74 % de carburant) :
+
+| Altitude | Meilleure montée | Incidence | Vitesse maximale | Incidence |
+|---|---|---|---|---|
+| 0 m | 115 km/h | 2,6° | 205 km/h | −2,0° |
+| 2 000 m | 118 km/h | 4,0° | 198 km/h | −1,3° |
+| 4 000 m | 127 km/h | 4,9° | 186 km/h | 0,0° |
+
+Effet sur la vitesse ascensionnelle :
+- **Majorant**, avec la loi du plan (k = 15,4 en sin² α) appliquée au corps, au poste, aux armes, aux échappements, au train et même au radiateur (0,41 m²) : −0,04 m/s à 0 m, −0,08 m/s à 2 000 m, −0,12 m/s à 4 000 m.
+- **Allure de S43** (une loi en sin⁴ α passe par +67 % à 12° et +21 % à 9°) : −0,002 à −0,02 m/s.
+- Ordre de grandeur de l'écart à combler : 0,85 m/s.
+
+Conclusion : le fuselage du SPAD ne monte qu'à 3 à 5° d'incidence, là où S43 ne mesure presque rien. La piste 2 n'explique pas l'écart. On ne change pas le modèle (la loi serait un ajout de code sans effet mesurable, avec un risque de double compte). Elle reste notée pour les grands angles, à reprendre avec une source en vraie grandeur : les mesures de S43 sont faites sur une maquette au 1/24 à 30 mph, et le décollement du corps à ces faibles nombres de Reynolds ne se transpose pas tel quel.
+
 ## Hors de ce plan (tâches séparées, déjà repérées)
 
 - Effet Munk distinct en tangage et en lacet : deux volumes. En lacet, la stabilité de route est surestimée d'environ 35 %.

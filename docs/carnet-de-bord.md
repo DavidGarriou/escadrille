@@ -1084,3 +1084,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Résultat : coefficient d'Oswald rapporté à l'allongement équivalent du biplan.
   - Tests : un ajustement exact, et le Report 304 retrouvé (0,734 sur les 21 vols).
 - **R** **SPAD modélisé : C_D = 0,047 + 0,081 C_L², coefficient d'Oswald 0,89**, contre **0,73** pour le Sperry Messenger en vraie grandeur. Le modèle manque bien de traînée liée à la portance, la piste principale du plan.
+
+### Étape 2 du plan : la traînée parasite et l'incidence
+- **A** Relecture complète des passages de S43 (NACA Report 17, p. 285-288) avant d'écrire la loi d'incidence. Deux prémisses du plan sont corrigées :
+  - la traînée du train ne croît que jusqu'à 2° environ, puis reste quasi constante jusqu'à 16° ;
+  - la hausse du fuselage est lente jusqu'à 9°, puis rapide (corps, train et empennage « constants à 20 % près de 0° à 9° »).
+- **A** Mesure de l'incidence du fuselage du SPAD modélisé : **2,6° à 4,9° en meilleure montée**, de 0 à 4 000 m ; −2° à 0° à la vitesse maximale.
+- **R** Effet de la piste 2 sur la vitesse ascensionnelle :
+  - majorant, avec la loi du plan (k = 15 en sin² α, appliquée même au radiateur) : −0,04 à −0,12 m/s ;
+  - avec l'allure mesurée par S43 : −0,02 m/s au plus ;
+  - écart à expliquer : 0,85 m/s.
+- **D** Pas de changement du modèle pour la piste 2. La loi serait du code sans effet mesurable, et elle doublerait la traînée d'écoulement transversal du fuselage, déjà présente aux grands angles. Le détail est dans le plan (§ Résultats). La piste reste notée pour les grands angles, à reprendre avec une mesure en vraie grandeur (S43 est une maquette au 1/24 à 30 mph).
