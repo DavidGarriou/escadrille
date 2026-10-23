@@ -1143,3 +1143,6 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Pas de réglage. L'écart restant, et la montée trop rapide qu'il cache, tiennent à l'hélice, un comparable. Pistes notées dans `spad7-calculs.md` § 7 (historien, éléments de pale, postes à faible J). Le `spad7` n'est pas déclaré « validé ».
 
 - **R** Rapport d'essai `spad7` remis au joueur (commit 95a300a) : verdict ÉCARTS. Tout passe, sauf le régime à la vitesse maximale (−3,0 à −3,3 % pour ±3 %). Propositions de suite : l'hélice réelle du S.VII 150 ch (historien), puis un calcul par éléments de pale. En attente des retours du joueur ; `docs/essais/spad7.md` ne sera écrit qu'après son accord.
+
+### Suite : l'hélice réelle du S.VII 150 ch
+- **Q** Le joueur : « Lance l'étape 1 ». **D** Recherche confiée à l'historien : l'hélice réelle du S.VII 150 ch (fabricant, diamètre, pas et définition du pas, forme des pales), un régime relevé en montée, et, en question secondaire, le bord d'attaque des ailes (contreplaqué ou toile). Les cotes connues ne viennent que d'un forum de collectionneurs (H8, vu en résumé, confiance C).
