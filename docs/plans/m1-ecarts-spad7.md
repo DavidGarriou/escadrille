@@ -1,6 +1,6 @@
 # Plan — Écarts du SPAD VII : pistes physiques sourcées
 
-- Statut : **proposé** au joueur le 2026-10-23 (à valider)
+- Statut : **validé** par le joueur le 2026-10-23
 - Contexte : premier essai en vol du `spad7` (carnet de bord du 2026-10-22) :
   - la vitesse et le régime à 2 000 m passent ;
   - **le modèle monte trop bien** : montées 15 à 22 % trop rapides, plafond +19 %, vitesses à 3 000 et 4 000 m +7 % ;

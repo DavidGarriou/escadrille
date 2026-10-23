@@ -1076,3 +1076,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Étapes : polaire du modèle mesurée par `fdm_lab polaire` ; traînée parasite fonction de l'incidence (S43) ; comparaison avec la vraie grandeur du Report 304, et le reste ajouté comme traînée de profil d'ailes entoilées ; puissance installée à 0,96 (Report 301).
   - Ordre de grandeur des trois pistes ensemble : celui de l'écart (environ −1 m/s en montée).
   - Règle : **calage sur l'avion de comparaison mesuré, jamais sur les cibles du SPAD**.
+- **Q** Validation du plan, demandée par une fenêtre de question que le joueur a fermée, puis reposée dans le fil. **D** « Je valide le plan » : les quatre étapes, dans l'ordre.
