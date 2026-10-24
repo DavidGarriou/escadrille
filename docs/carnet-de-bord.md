@@ -1300,4 +1300,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - départ au décrochage à gauche (−54°) ;
   - c'est le sens du biais déclaré, pas une validation.
 - **⚠** Disque plein pendant les essais : 26 Go de `target`. `target/release` et `target/debug/incremental` supprimés (reconstructibles).
+- **A** Revue de l'aérodynamicien lancée sur les étapes 1 à 4 et l'addendum (en cours).
+- **R** Sensibilité du côté du départ au décrochage moteur réduit à la part de rotation laissée derrière les ailes (`swirl_left`) :
+  - 0,3 : à gauche, −53° à 3 s ;
+  - 0,5 (retenu) : à gauche, −54° ;
+  - 0,7 : à gauche, −56° ;
+  - 1,0 (aucun redressement) : à droite, +78°, comme avant.
+
+  Dans la plage des sources (« environ la moitié »), le départ se fait à gauche ; il dépend surtout de la rotation qui atteint l'empennage. Ce n'est pas encore une conclusion : l'addendum et la revue peuvent la déplacer. § 9 à reprendre à l'étape 6.
+- **D** En attente du joueur : addendum sur l'inclinaison de la portance due à la rotation, option (b) recommandée.
 
