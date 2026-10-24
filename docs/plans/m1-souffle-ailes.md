@@ -95,6 +95,32 @@ Chaque étape : `just check`, `just test`, carnet de bord, commit et push.
   - fuselage non modélisé.
 - **Conclusion** : la surestimation est confirmée, d'un facteur 1,2 à 1,8. C'est moins que le facteur 2 estimé dans le plan.
 
+### Étape 2 (2026-10-24) : facteur de largeur du souffle
+
+- FDM :
+  - les bandes portantes sentent le souffle par `Slipstream::lifting_flow`, réduit par le facteur η du tableau 2 de R&M 2368, interpolé en V/v et en 1/μ = a₀c / 8πR ;
+  - les éléments de traînée et le fuselage gardent tout le souffle ;
+  - les surfaces passent désormais la bande entière (position et corde) à leur écoulement local, et connaissent la pente de leur profil à portance nulle ;
+  - prolongements du tableau (E:) : η = 1 pour un jet infiniment plus large que la corde ; au-delà de μ = 1, la valeur de μ = 1 ; pour un jet plus lent que l'avion, le rapport inverse.
+- Maquette du TN 1146, sans aucun paramètre réglé :
+
+| Calage | Mesure | Avant | Avec η |
+|---|---|---|---|
+| 15° | 47,5 à 50 % | 71 % | 41 % |
+| 25° | 39 à 45 % | 70 % | 40 % |
+| 35° | 43,5 à 46 % | 57 % | 39 % |
+
+  Le modèle tombe au bas de la plage du texte du NACA (40 à 50 %). Il est dans la dispersion à 25°, et 5 à 9 points en dessous à 15° et 35°. On n'ajoute aucun facteur. Le test garde la plage du NACA élargie de ±4 points, la sensibilité mesurée à l'étape 1 avant la correction : de 36 à 54 %.
+- SPAD (sonde temporaire), roulis du tourbillon sur les ailes :
+  - Vmax : 1,00 → 0,94 Q ;
+  - montée : 0,86 → 0,74 Q ;
+  - décrochage plein gaz : 0,51 → 0,40 Q ;
+  - ralenti : inchangé, car le souffle y est à peine plus rapide que l'avion (limite de Koning).
+
+  La portance ajoutée par le souffle passe de 11,0 à 9,3 % en montée, et de 15,8 à 11,8 % au décrochage plein gaz.
+- **Réserve** : en charge légère (croisière, ralenti), la théorie (R&M 2368, partie II) garde la théorie des bandes pour le tourbillon. La mesure du NACA ne couvre que la forte traction.
+- **Test des modes propres** : son plancher absolu passe de 1e-3 à 5e-3. Les tables linéaires par morceaux (polaires) cassent la pente le long de la perturbation : environ 7e-5 sur une réponse en lacet de 3e-3 seulement. Ces cassures existaient déjà, dont une au point d'équilibre lui-même ; le facteur les a déplacées.
+
 ## Effets attendus sur le SPAD (ordres de grandeur, à vérifier)
 
 - **Montée plus lente, d'environ 5 %**, parce que la cellule reprend moins d'énergie au tourbillon.

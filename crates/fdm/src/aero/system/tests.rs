@@ -83,7 +83,7 @@ fn flight(alpha: f64) -> DVec3 {
     DVec3::new(V * alpha.cos(), 0.0, V * alpha.sin())
 }
 
-fn still(_: usize, _: DVec3) -> DVec3 {
+fn still(_: usize, _: &Strip) -> DVec3 {
     DVec3::ZERO
 }
 

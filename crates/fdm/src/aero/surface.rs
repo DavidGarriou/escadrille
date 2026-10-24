@@ -157,6 +157,7 @@ pub struct LiftingSurface {
     strips: Vec<Strip>,
     polar: Polar,
     induced: Option<InducedModel>,
+    section_slope: f64,
 }
 
 /// Induction is faded out completely beyond this geometric angle of attack (rad), unless
@@ -165,6 +166,9 @@ pub const INDUCTION_FADE_END: f64 = 40.0 * PI / 180.0;
 
 /// Smallest fade of the induction past the stall (rad).
 pub const INDUCTION_FADE_MARGIN: f64 = 15.0 * PI / 180.0;
+
+/// Lift slope of thin-aerofoil theory, per radian.
+const THIN_AEROFOIL_SLOPE: f64 = 2.0 * PI;
 
 /// Maximum iterations of the induced-angle root finder (converges in a few; the cap
 /// keeps the cost bounded and the result deterministic).
@@ -224,11 +228,13 @@ impl LiftingSurface {
                 return Err(SurfaceError::InductionNotMonotone);
             }
         }
+        let section_slope = polar.zero_lift_slope().unwrap_or(THIN_AEROFOIL_SLOPE);
         Ok(Self {
             name,
             strips,
             polar,
             induced,
+            section_slope,
         })
     }
 
@@ -248,19 +254,27 @@ impl LiftingSurface {
         self.induced
     }
 
+    /// Section lift slope at zero lift, per radian (2π if the table's lift does not
+    /// change sign between its stall points): sets how much of the slipstream the strips
+    /// feel ([`crate::propulsion::propeller::Slipstream::lifting_flow`]).
+    pub fn section_slope(&self) -> f64 {
+        self.section_slope
+    }
+
     /// Aerodynamic force and moment about the centre of gravity, body axes.
     ///
     /// `air_velocity` is the velocity of the centre of gravity relative to the free-stream
-    /// air, body axes; `local_flow(r)` is the extra air velocity at body point `r` (wing
-    /// downwash on the tail, propeller slipstream, ground effect…), body axes; `density`
-    /// in kg/m³.
+    /// air, body axes; `local_flow(strip)` is the extra air velocity at the strip's
+    /// quarter-chord point (wing downwash on the tail, propeller slipstream, ground
+    /// effect…), body axes, given the whole strip because the slipstream's effect depends
+    /// on its chord; `density` in kg/m³.
     pub fn loads(
         &self,
         air_velocity: DVec3,
         angular_velocity: DVec3,
         density: f64,
         controls: &ControlDeflections,
-        local_flow: impl Fn(DVec3) -> DVec3,
+        local_flow: impl Fn(&Strip) -> DVec3,
     ) -> Wrench {
         self.loads_with_mutual(
             air_velocity,
@@ -282,13 +296,12 @@ impl LiftingSurface {
         angular_velocity: DVec3,
         density: f64,
         controls: &ControlDeflections,
-        local_flow: impl Fn(DVec3) -> DVec3,
+        local_flow: impl Fn(&Strip) -> DVec3,
         mutual: f64,
     ) -> (Wrench, f64) {
         let (mut wrench, mut lift, mut weight) = (Wrench::default(), 0.0, 0.0);
         for strip in &self.strips {
-            let v =
-                air_velocity + angular_velocity.cross(strip.position) - local_flow(strip.position);
+            let v = air_velocity + angular_velocity.cross(strip.position) - local_flow(strip);
             let (w, state) = self.strip_loads(strip, v, density, controls, mutual);
             wrench += w;
             lift += state.coefficients.cl * state.dynamic_pressure * strip.area;

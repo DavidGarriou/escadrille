@@ -1286,4 +1286,7 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - La lecture des figures est vérifiée : le roulis calculé par le NACA retombe sur leur courbe.
 - **R** Le modèle actuel fait reprendre à l'aile 57 à 71 % du couple de l'hélice ; la mesure donne 39 à 50 %. Surestimation d'un facteur 1,2 à 1,8, moindre que le facteur 2 estimé ; elle résiste aux incertitudes de la maquette. Détail dans le plan, « Résultats ».
 - **⚠** Les ancres « hélice arrêtée » recopiées du Messenger faisaient créer de l'énergie à la table à 15°. Remplacées par des valeurs qui passent le contrôle du FDM ; elles ne servent pas au point mesuré.
+- **A** Étape 2 : facteur de largeur du souffle (R&M 2368, tableau 2) appliqué à ce que le souffle ajoute à la portance des bandes, pour la vitesse comme pour le tourbillon. Les éléments de traînée gardent tout le souffle.
+- **R** Maquette du TN 1146 : l'aile reprend 41 / 40 / 39 % du couple (avant : 71 / 70 / 57 %), pour 39 à 50 % mesurés. C'est le bas de la plage, sans aucun paramètre réglé. SPAD : le roulis du tourbillon sur les ailes baisse en montée et au décrochage plein gaz ; il ne change presque pas à Vmax ni au ralenti (limite de Koning).
+- **⚠** Le test de linéarisation des modes propres a échoué de peu (2,3 % pour 2 % admis). Diagnostic : les polaires linéaires par morceaux cassent la pente le long de la perturbation ; ces cassures existaient déjà, dont une au point d'équilibre. **D** Plancher absolu du test porté de 1e-3 à 5e-3, avec la justification en commentaire. À relire par l'aérodynamicien.
 

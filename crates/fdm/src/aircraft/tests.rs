@@ -547,14 +547,12 @@ fn total_loads_are_the_sum_of_the_components() {
     let slip = p.propeller.slipstream(&prop, rho);
     let blown = |r: DVec3| slip.local_flow(r);
     let downwash = downwash_velocity(v, 0.02);
+    let surfaces = a.lifting.surfaces();
     let lifting = a
         .lifting
-        .loads(v, w, rho, &ControlDeflections::default(), |i, r| {
-            if i == 2 {
-                blown(r) + downwash
-            } else {
-                blown(r)
-            }
+        .loads(v, w, rho, &ControlDeflections::default(), |i, strip| {
+            let felt = slip.lifting_flow(strip.position, strip.chord, surfaces[i].section_slope());
+            if i == 2 { felt + downwash } else { felt }
         });
     let mut expected = lifting.wrench + prop.wrench;
     for item in &a.drag {
@@ -646,8 +644,8 @@ fn slipstream_blows_on_the_drag_items_and_the_wings() {
         .wrench;
     let blown_lifting = a
         .lifting
-        .loads(v, w, rho, &ControlDeflections::default(), |_, r| {
-            slip.local_flow(r)
+        .loads(v, w, rho, &ControlDeflections::default(), |_, strip| {
+            slip.local_flow(strip.position)
         })
         .wrench;
     assert!((blown_lifting.force - unblown.force).length() > 100.0);

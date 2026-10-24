@@ -483,3 +483,137 @@ fn slipstream_swirls_with_the_propeller() {
     assert!(close(at(0.5 * core), 0.5 * at(core), 1e-9));
     assert_eq!(s.local_flow(hub - DVec3::X * 3.0).y, 0.0);
 }
+
+#[test]
+fn the_jet_width_factor_is_table_2_of_r_and_m_2368() {
+    // Nodes of the table: (V/v, 1/μ, ΔL / ΔL_strip).
+    for (ratio, narrowness, eta) in [
+        (0.0, 1.0, 0.1257),
+        (0.0, 0.2, 0.4081),
+        (0.5, 0.4, 0.4880),
+        (0.5, 0.2, 0.6225),
+        (1.0 / 1.2, 1.0, 0.5685),
+        (1.0 / 1.2, 0.4, 0.7861),
+    ] {
+        assert!(
+            (jet_width_factor(ratio, narrowness) - eta).abs() < 1e-12,
+            "{ratio} {narrowness}"
+        );
+    }
+    // Strip theory when the jet barely differs from the stream (Koning), or is infinitely
+    // wide.
+    for x in [0.0, 0.3, 1.0, 5.0] {
+        assert_eq!(jet_width_factor(1.0, x), 1.0);
+        assert_eq!(jet_width_factor(x.min(1.0), 0.0), 1.0);
+    }
+}
+
+#[test]
+fn the_jet_width_factor_is_monotone_continuous_and_bounded() {
+    let grid = |n: i32, top: f64| (0..=n).map(move |i| f64::from(i) * top / f64::from(n));
+    for x in grid(200, 1.5) {
+        let mut previous = jet_width_factor(0.0, x);
+        for r in grid(200, 1.0).skip(1) {
+            let eta = jet_width_factor(r, x);
+            assert!(eta >= previous && eta - previous < 0.02, "{r} {x}");
+            previous = eta;
+        }
+    }
+    for r in grid(100, 1.0) {
+        let mut previous = jet_width_factor(r, 0.0);
+        for x in grid(300, 1.5).skip(1) {
+            let eta = jet_width_factor(r, x);
+            assert!(eta <= previous && previous - eta < 0.02, "{r} {x}");
+            assert!(eta > 0.0 && eta <= 1.0);
+            previous = eta;
+        }
+        // Narrower than μ = 1: the factor of μ = 1.
+        assert_eq!(jet_width_factor(r, 3.0), jet_width_factor(r, 1.0));
+        // A jet slower than the stream: the factor of the inverse ratio.
+        if r > 0.0 {
+            assert!((jet_width_factor(1.0 / r, 0.3) - jet_width_factor(r, 0.3)).abs() < 1e-12);
+        }
+    }
+    assert_eq!(jet_width_factor(f64::NAN, 0.3), 1.0);
+}
+
+/// Slipstream of the synthetic propeller at 20 m/s and 1 500 rpm, and a point inside its
+/// tube, 1.5 m behind the disc and 0.6 m to the right of its axis.
+fn blowing() -> (Slipstream, DVec3) {
+    let p = propeller();
+    let w = p.loads(
+        DVec3::new(20.0, 0.0, 0.0),
+        DVec3::ZERO,
+        2.0 * PI * 25.0,
+        RHO,
+    );
+    (
+        p.slipstream(&w, RHO),
+        p.geometry().hub + DVec3::new(-1.5, 0.6, 0.0),
+    )
+}
+
+#[test]
+fn a_strip_feels_eta_times_the_lift_the_slipstream_adds() {
+    let (s, point) = blowing();
+    let (chord, slope) = (1.5, 5.5);
+    let full = s.local_flow(point);
+    let felt = s.lifting_flow(point, chord, slope);
+    // Axial parts (the air moves backwards: −x) and swirl parts.
+    let (free, jet, effective) = (20.0, 20.0 - full.x, 20.0 - felt.x);
+    let (swirl, swirl_felt) = (full.z, felt.z);
+    assert!(jet > free + 1.0 && swirl.abs() > 0.5, "{full:?}");
+    let narrowness = slope * chord / (8.0 * PI * s.tube_radius(1.5));
+    let eta = jet_width_factor(free / jet, narrowness);
+    assert!(eta > 0.3 && eta < 0.9, "{eta}");
+    // Dynamic pressure: v_e² − V² = η (v² − V²).
+    assert!(close(
+        effective * effective - free * free,
+        eta * (jet * jet - free * free),
+        1e-12
+    ));
+    // Swirl incidence: the lift it adds, ∝ speed × tangential velocity, is η times.
+    assert!(close(effective * swirl_felt, eta * jet * swirl, 1e-12));
+    assert_eq!(felt.y, full.y);
+}
+
+#[test]
+fn a_strip_much_narrower_than_the_jet_feels_all_of_it() {
+    let (s, point) = blowing();
+    let full = s.local_flow(point);
+    assert!((s.lifting_flow(point, 1e-9, 5.5) - full).length() < 1e-6 * full.length());
+}
+
+#[test]
+fn a_strip_feels_the_slipstream_continuously_up_to_its_edge() {
+    let (s, point) = blowing();
+    let hub = point + DVec3::new(1.5, -0.6, 0.0);
+    let tube = s.tube_radius(1.5);
+    let at = |y: f64| s.lifting_flow(hub + DVec3::new(-1.5, y, 0.0), 1.5, 5.5);
+    assert_eq!(at(1.11 * tube), DVec3::ZERO);
+    // Steps of 1 mm: less than 1 % of the jet's axial speed each, as `local_flow`.
+    let full = s.axial_speed_at(1.5);
+    let mut previous = at(0.3);
+    for i in 1..=3_000 {
+        let value = at(0.3 + f64::from(i) * 1e-3);
+        assert!(
+            (value - previous).length() < 0.01 * full,
+            "y {}",
+            0.3 + f64::from(i) * 1e-3
+        );
+        previous = value;
+    }
+}
+
+#[test]
+fn at_rest_a_strip_feels_the_root_of_eta_of_the_jet_speed() {
+    let p = propeller();
+    let w = p.loads(DVec3::ZERO, DVec3::ZERO, 2.0 * PI * 25.0, RHO);
+    let s = p.slipstream(&w, RHO);
+    let point = p.geometry().hub + DVec3::new(-1.5, 0.6, 0.0);
+    let jet = -s.local_flow(point).x;
+    let felt = -s.lifting_flow(point, 1.5, 5.5).x;
+    let eta = jet_width_factor(0.0, 5.5 * 1.5 / (8.0 * PI * s.tube_radius(1.5)));
+    assert!(jet > 5.0);
+    assert!(close(felt, eta.sqrt() * jet, 1e-12), "{felt} {jet} {eta}");
+}

@@ -2,8 +2,9 @@
 //! one load model, integrated by [`step_rk4`] (skill `simulation-vol`).
 //!
 //! Order of evaluation for a state: air data (wind, density), propeller (thrust, torque,
-//! slipstream), engine, lifting surfaces (slipstream everywhere, lagged wing downwash on
-//! the tail), parasitic drag (slipstream), then the sum.
+//! slipstream), engine, lifting surfaces (slipstream everywhere, reduced by the jet-width
+//! factor, lagged wing downwash on the tail), parasitic drag (whole slipstream), then the
+//! sum.
 //!
 //! Wing downwash at the tail: ε = `factor` × C_L of the wings (Prandtl's lifting-line
 //! result ε ∝ C_L, so that it collapses with the lift at the stall), reaching the tail
@@ -241,13 +242,17 @@ impl Aircraft {
         let downwash = state.aux[AUX_DOWNWASH];
         let downwash_velocity = downwash_velocity(air_velocity, downwash);
         let is_tail = |i: usize| self.downwash.as_ref().is_some_and(|d| d.tail.contains(&i));
+        let surfaces = self.lifting.surfaces();
         let lifting = self
             .lifting
-            .loads(air_velocity, omega, density, deflections, |i, r| {
+            .loads(air_velocity, omega, density, deflections, |i, strip| {
+                let blown = slipstream.map_or(DVec3::ZERO, |s| {
+                    s.lifting_flow(strip.position, strip.chord, surfaces[i].section_slope())
+                });
                 if is_tail(i) {
-                    blown(r) + downwash_velocity
+                    blown + downwash_velocity
                 } else {
-                    blown(r)
+                    blown
                 }
             });
 
@@ -264,7 +269,6 @@ impl Aircraft {
 
         let mut aux_rates = [0.0; AUX_STATES];
         if let Some(d) = &self.downwash {
-            let surfaces = self.lifting.surfaces();
             let (mut lift, mut area) = (0.0, 0.0);
             for &i in &d.wings {
                 let s: f64 = surfaces[i].strips().iter().map(|strip| strip.area).sum();

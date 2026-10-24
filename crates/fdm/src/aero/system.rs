@@ -23,7 +23,7 @@
 
 use glam::DVec3;
 
-use super::surface::{ControlDeflections, LiftingSurface};
+use super::surface::{ControlDeflections, LiftingSurface, Strip};
 use crate::rigid_body::Wrench;
 
 /// Induction of one plane on another: induced angle on `on` = `factor` × C_L of `from`.
@@ -99,16 +99,15 @@ impl LiftingSystem {
 
     /// Force and moment of all the surfaces about the centre of gravity, body axes.
     ///
-    /// Same conventions as [`LiftingSurface::loads`]; `local_flow(i, r)` is the extra air
-    /// velocity at body point `r` for surface `i` (downwash on the tail only, for
-    /// instance).
+    /// Same conventions as [`LiftingSurface::loads`]; `local_flow(i, strip)` is the extra
+    /// air velocity at a strip of surface `i` (downwash on the tail only, for instance).
     pub fn loads(
         &self,
         air_velocity: DVec3,
         angular_velocity: DVec3,
         density: f64,
         controls: &ControlDeflections,
-        local_flow: impl Fn(usize, DVec3) -> DVec3,
+        local_flow: impl Fn(usize, &Strip) -> DVec3,
     ) -> SystemLoads {
         let n = self.surfaces.len();
         let surface_loads = |i: usize, mutual: f64| {
@@ -117,7 +116,7 @@ impl LiftingSystem {
                 angular_velocity,
                 density,
                 controls,
-                |r| local_flow(i, r),
+                |strip| local_flow(i, strip),
                 mutual,
             )
         };

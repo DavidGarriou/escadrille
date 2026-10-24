@@ -33,7 +33,7 @@ fn section(cd0: f64, cm: f64) -> Polar {
     Polar::new(points, viterna_cd_max(6.0)).unwrap()
 }
 
-fn still(_: DVec3) -> DVec3 {
+fn still(_: &Strip) -> DVec3 {
     DVec3::ZERO
 }
 
@@ -272,6 +272,13 @@ fn force_is_the_section_force_tilted_by_the_induced_angle() {
             "{deg}°: {force:?} {state:?}"
         );
     }
+}
+
+#[test]
+fn a_surface_knows_its_section_slope() {
+    let w = wing(10.0, 1.5, 4, 0.0, DVec3::ZERO);
+    assert!((w.section_slope() - A0).abs() < 1e-9 * A0);
+    assert_eq!(w.section_slope(), w.polar().zero_lift_slope().unwrap());
 }
 
 #[test]

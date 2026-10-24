@@ -157,6 +157,24 @@ mod tests {
         }
     }
 
+    /// The wing takes back what TN 1146 measured: 40 to 50 % of the torque (« 50 to 60
+    /// percent » left, p. 13), widened by ±4 points, the effect of the wing height read on
+    /// the drawing (±0.3 in) measured before the jet-width factor existed (plan, step 1).
+    #[test]
+    fn the_wing_takes_back_what_the_tunnel_measured() {
+        for point in &TN1146 {
+            let roll = tail_off_roll(
+                &model(point),
+                &STILL_AIR,
+                tn1146_speed(),
+                point.advance_ratio,
+            )
+            .unwrap();
+            let taken = roll.recovered_fraction();
+            assert!((0.36..=0.54).contains(&taken), "{point:?}: {taken}");
+        }
+    }
+
     #[test]
     fn the_measured_points_are_those_of_figure_13() {
         for point in &TN1146 {

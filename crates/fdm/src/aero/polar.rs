@@ -26,6 +26,10 @@
 
 use std::f64::consts::{FRAC_PI_2, PI};
 
+/// Half-width of the central difference of [`Polar::zero_lift_slope`], rad (2°: wide
+/// enough to smooth the reading of a table, narrow enough to stay in the linear range).
+pub const SLOPE_HALF_STEP: f64 = 2.0 * PI / 180.0;
+
 /// One measured point of a polar.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PolarPoint {
@@ -136,6 +140,28 @@ impl Polar {
         self.stall
     }
 
+    /// Lift-curve slope at zero lift, per radian: central difference over
+    /// ±[`SLOPE_HALF_STEP`] about the zero-lift incidence, found between the stall points.
+    /// `None` when the lift does not change sign between them.
+    pub fn zero_lift_slope(&self) -> Option<f64> {
+        let (neg, pos) = self.stall;
+        if !(neg.cl < 0.0 && pos.cl > 0.0) {
+            return None;
+        }
+        let (mut lo, mut hi) = (neg.alpha, pos.alpha);
+        for _ in 0..60 {
+            let mid = 0.5 * (lo + hi);
+            if self.coefficients(mid).cl < 0.0 {
+                lo = mid;
+            } else {
+                hi = mid;
+            }
+        }
+        let zero = 0.5 * (lo + hi);
+        let h = SLOPE_HALF_STEP;
+        Some((self.coefficients(zero + h).cl - self.coefficients(zero - h).cl) / (2.0 * h))
+    }
+
     /// Measured range of the table, rad.
     pub fn table_range(&self) -> (f64, f64) {
         (
@@ -244,6 +270,42 @@ mod tests {
                 PolarPoint { alpha, cl, cd, cm }
             })
             .collect()
+    }
+
+    #[test]
+    fn the_zero_lift_slope_is_read_where_the_lift_changes_sign() {
+        assert!((thin_aerofoil().zero_lift_slope().unwrap() - 2.0 * PI).abs() < 1e-12);
+        // Cambered: C_L = 0.25 + 5.6 α − 6 α |α| below the stall, zero at α ≈ −0.047 rad
+        // where the slope is 5.6 − 12 |α|.
+        let points = (-20..=20)
+            .map(|deg: i32| {
+                let alpha = f64::from(deg).to_radians();
+                let a = alpha.clamp(-0.24, 0.24);
+                let cl = 0.25 + 5.6 * a - 6.0 * a * a.abs() - 3.0 * (alpha - a);
+                PolarPoint {
+                    alpha,
+                    cl,
+                    cd: 0.01,
+                    cm: 0.0,
+                }
+            })
+            .collect();
+        let cambered = Polar::new(points, 1.2).unwrap();
+        let zero = (-5.6 + (5.6f64 * 5.6 - 6.0).sqrt()) / 12.0;
+        let slope = cambered.zero_lift_slope().unwrap();
+        assert!(
+            (slope - (5.6 + 12.0 * zero)).abs() < 0.01 * slope,
+            "{slope}"
+        );
+        // Lift of one sign only: no zero-lift slope.
+        let lifted = stalling_points(0.0)
+            .into_iter()
+            .map(|p| PolarPoint {
+                cl: p.cl + 2.0,
+                ..p
+            })
+            .collect();
+        assert_eq!(Polar::new(lifted, 1.2).unwrap().zero_lift_slope(), None);
     }
 
     #[test]

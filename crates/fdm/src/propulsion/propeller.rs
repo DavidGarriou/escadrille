@@ -33,7 +33,9 @@
 //!   a blade-element calculation, or E:). Ahead of the centre of gravity it destabilises
 //!   in pitch and yaw.
 //!
-//! Slipstream (momentum theory): axial speed and swirl. The swirl comes from the torque:
+//! Slipstream (momentum theory): axial speed and swirl. Lifting strips feel less of it than
+//! strip theory says, by the jet-width factor of R&M 2368 ([`Slipstream::lifting_flow`]).
+//! The swirl comes from the torque:
 //! r v_θ is conserved along a streamline of an inviscid axisymmetric flow, so it is zero
 //! ahead of the disc and K = Q / ṁ just behind it (blended over ±5 % of the radius, C¹),
 //! with a solid-body core near the hub (E:). The induced axial speed exists only with a
@@ -417,12 +419,13 @@ impl Slipstream {
         self.radius * ratio.sqrt()
     }
 
-    /// Velocity of the air relative to the free stream at `point` (body axes, relative
-    /// to the centre of gravity): the `local_flow` of the surfaces and drag items.
-    pub fn local_flow(&self, point: DVec3) -> DVec3 {
-        // No flow through the disc: no stream tube (the swirl is then zero too).
+    /// Axial speed increment and swirl velocity of the slipstream at `point` (body axes,
+    /// relative to the centre of gravity), both blended into the free stream at the
+    /// tube's edge, with the distance behind the disc; `None` with no flow through the
+    /// disc (no stream tube, and no swirl either).
+    fn parts(&self, point: DVec3) -> Option<FlowParts> {
         if self.free_stream + self.induced <= 0.0 {
-            return DVec3::ZERO;
+            return None;
         }
         let d = point - self.hub;
         let along = d.dot(self.axis);
@@ -445,8 +448,115 @@ impl Slipstream {
         } else {
             DVec3::ZERO
         };
-        (-self.axis * self.axial_speed_at(distance) + tangential) * weight
+        Some(FlowParts {
+            axial: self.axial_speed_at(distance) * weight,
+            tangential: tangential * weight,
+            distance,
+        })
     }
+
+    /// Velocity of the air relative to the free stream at `point` (body axes, relative
+    /// to the centre of gravity): the `local_flow` of drag items and bodies, which feel
+    /// the whole slipstream.
+    pub fn local_flow(&self, point: DVec3) -> DVec3 {
+        self.parts(point)
+            .map_or(DVec3::ZERO, |p| -self.axis * p.axial + p.tangential)
+    }
+
+    /// The slipstream as a lifting strip responds to it, at its quarter-chord `point`, for
+    /// its `chord` (m) and section lift slope `section_slope` (per radian).
+    ///
+    /// A wing crossing a jet of finite width gains less lift than strip theory says: the
+    /// jet's edge sheds vortices whose images in the jet reduce the extra lift. Squire and
+    /// Chester (R&M 2368, 1945, part I, table 2) give the ratio η of the true increment
+    /// to strip theory's for a wing of infinite span ([`jet_width_factor`]). It is applied
+    /// to what the slipstream adds to the strip's lift:
+    /// - the dynamic pressure: the strip sees the speed v_e with
+    ///   v_e² − V² = η (v² − V²), V the free-stream axial speed and v the jet's;
+    /// - the swirl incidence: the tangential velocity is scaled by η v / v_e, so that the
+    ///   lift it adds (∝ v_e × tangential) is η times strip theory's.
+    ///
+    /// Applying the factor of a jet without rotation to the swirl is an assumption (E:),
+    /// checked against the powered model of NACA TN 1146 (`fdm_lab souffle`).
+    pub fn lifting_flow(&self, point: DVec3, chord: f64, section_slope: f64) -> DVec3 {
+        let Some(p) = self.parts(point) else {
+            return DVec3::ZERO;
+        };
+        let (free, jet) = (self.free_stream, self.free_stream + p.axial);
+        if jet <= 0.0 {
+            return -self.axis * p.axial + p.tangential;
+        }
+        let narrowness = section_slope * chord / (8.0 * PI * self.tube_radius(p.distance));
+        let eta = jet_width_factor(free / jet, narrowness);
+        let effective = (free * free + eta * (jet * jet - free * free))
+            .max(0.0)
+            .sqrt();
+        let tangential = if effective > 0.0 {
+            p.tangential * (eta * jet / effective)
+        } else {
+            DVec3::ZERO
+        };
+        -self.axis * (effective - free) + tangential
+    }
+}
+
+/// Axial and swirl parts of the slipstream at a point.
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct FlowParts {
+    /// Axial speed increment over the free stream, m/s.
+    axial: f64,
+    tangential: DVec3,
+    /// Distance behind the disc, m.
+    distance: f64,
+}
+
+/// Speed ratios V/v of the rows of [`JET_FACTORS`]: R&M 2368, table 2 (V/v = 0, 0.5 and
+/// 0.833, i.e. v/V = 1.2), and 1, where the increment is strip theory's (Koning, quoted by
+/// R&M 2368, p. 7).
+const JET_SPEED_RATIOS: [f64; 4] = [0.0, 0.5, 1.0 / 1.2, 1.0];
+
+/// Narrowness 1/μ = a₀ c / (8π R) of the columns of [`JET_FACTORS`]: μ = ∞, 5, 2.5 and 1.
+const JET_NARROWNESS: [f64; 4] = [0.0, 0.2, 0.4, 1.0];
+
+/// ΔL / ΔL_strip, R&M 2368, table 2 (S:), with a first column of 1 for a jet infinitely
+/// wider than the chord, where strip theory holds (E:: the table stops at μ = 5).
+const JET_FACTORS: [[f64; 4]; 4] = [
+    [1.0, 0.4081, 0.2628, 0.1257],
+    [1.0, 0.6225, 0.4880, 0.3062],
+    [1.0, 0.8863, 0.7861, 0.5685],
+    [1.0, 1.0, 1.0, 1.0],
+];
+
+/// Jet-width factor η of R&M 2368 (Squire and Chester, 1945, part I, table 2): extra lift
+/// of a wing of infinite span crossing a circular jet, over the extra lift of strip
+/// theory, for the speed ratio `speed_ratio` = V/v of the stream to the jet and the
+/// narrowness a₀ c / (8π R) = 1/μ of the jet (section lift slope a₀, chord c, jet radius
+/// R).
+///
+/// Bilinear in V/v and 1/μ. Beyond the table: a jet narrower than μ = 1 keeps the factor of
+/// μ = 1 (E:); a jet slower than the stream (V/v > 1, braking propeller) takes the factor
+/// of the inverse ratio, its images having the same strength with the opposite sign (E:).
+pub fn jet_width_factor(speed_ratio: f64, narrowness: f64) -> f64 {
+    let ratio = if speed_ratio > 1.0 {
+        1.0 / speed_ratio
+    } else {
+        speed_ratio
+    };
+    if !(ratio.is_finite() && narrowness.is_finite()) {
+        return 1.0;
+    }
+    let locate = |grid: &[f64; 4], x: f64| {
+        let x = x.clamp(grid[0], grid[3]);
+        let i = grid.partition_point(|&g| g <= x).clamp(1, 3);
+        (i, (x - grid[i - 1]) / (grid[i] - grid[i - 1]))
+    };
+    let (row, t) = locate(&JET_SPEED_RATIOS, ratio.max(0.0));
+    let (column, u) = locate(&JET_NARROWNESS, narrowness.max(0.0));
+    let at = |r: usize| {
+        let line = &JET_FACTORS[r];
+        line[column - 1] + u * (line[column] - line[column - 1])
+    };
+    at(row - 1) + t * (at(row) - at(row - 1))
 }
 
 /// 0 below 0, 1 above 1, C¹ in between.
