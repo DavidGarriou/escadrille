@@ -273,6 +273,9 @@ pub struct Stall {
     /// The elevator ran out of travel before the wing stalled: the speed is that of the
     /// last steady glide the pilot can hold.
     pub elevator_limited: bool,
+    /// Incidences of the sweep, before the stall, where no steady flight was found and
+    /// which were skipped: a sign of a discontinuity in the model, to be reported.
+    pub skipped: u32,
     pub trim: Trim,
 }
 
@@ -305,13 +308,15 @@ pub fn stall_speed_at(
     guess.flight_path = if throttle > 0.5 { 0.1 } else { -0.1 };
     let mut best: Option<Stall> = None;
     let mut misses = 0;
+    let mut skipped = 0;
     let mut alpha = 0.05;
     while alpha < 0.45 {
         guess.alpha = alpha;
-        // Each solution starts the next one; when that fails (before the first steady
-        // flight, or at an isolated point where the solver stalls on a kink of the
-        // tables), try several starting speeds, then the next incidence. Only
-        // STALL_MISSES failures in a row end the sweep past the stall.
+        // Each solution starts the next one; when that fails, try several starting
+        // speeds, then the next incidence. Only STALL_MISSES failures in a row end the
+        // sweep past the stall; an isolated failure is skipped and counted, never hidden
+        // (it once came from a jump of the slipstream swirl at zero thrust, which left
+        // no equilibrium: aerodynamicist review of 2026-10-24).
         let trim = best
             .and_then(|_| solve_robust(aircraft, env, guess, AT_ALPHA).ok())
             .or_else(|| {
@@ -329,6 +334,9 @@ pub fn stall_speed_at(
             alpha += 0.005;
             continue;
         };
+        if best.is_some() {
+            skipped += misses;
+        }
         misses = 0;
         if trim.commands(aircraft).pitch.abs() > 1.0 {
             if let Some(b) = best.as_mut() {
@@ -344,6 +352,7 @@ pub fn stall_speed_at(
             speed,
             alpha,
             elevator_limited: false,
+            skipped,
             trim,
         });
         guess = trim.flight;
@@ -397,11 +406,11 @@ mod tests {
     }
 
     #[test]
-    fn an_isolated_trim_failure_does_not_end_the_stall_sweep() {
-        // SPAD with its 2.40 m propeller: the idle glide at 1 000 m fails to converge at
-        // one incidence near 3°, the windmilling propeller sitting past the end of its
-        // table (J ≈ 1.3, piecewise-linear coefficients). The sweep must go on to the
-        // real stall, about 14° and 85 km/h.
+    fn every_idle_glide_of_the_spad_has_an_equilibrium() {
+        // The slipstream swirl used to vanish when the thrust crossed zero, near 3° in
+        // the idle glide of the SPAD at 1 000 m: no equilibrium there, and the stall
+        // sweep took its first point for the stall (review of 2026-10-24). Every glide
+        // must now be trimmed by the plain solver, and the sweep must skip nothing.
         let assets = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
         let a = escadrille_data::aircraft::load_aircraft(&assets, "spad7")
             .unwrap()
@@ -410,7 +419,19 @@ mod tests {
             })
             .unwrap()
             .aircraft;
+        let mut guess = Flight::guess(1_000.0, 34.0, 0.0);
+        guess.flight_path = -0.14;
+        let mut previous_speed = f64::INFINITY;
+        for i in 0..=40 {
+            let alpha = 0.045 + 0.0005 * f64::from(i);
+            let trim = crate::trim::solve(&a, &STILL_AIR, Flight { alpha, ..guess }, AT_ALPHA)
+                .unwrap_or_else(|e| panic!("α = {alpha}: {e:?}"));
+            assert!(trim.flight.speed < previous_speed, "α = {alpha}: {trim:?}");
+            previous_speed = trim.flight.speed;
+            guess = trim.flight;
+        }
         let stall = stall_speed(&a, &STILL_AIR, 1_000.0).unwrap();
+        assert_eq!(stall.skipped, 0, "{stall:?}");
         assert!(stall.alpha > 10f64.to_radians(), "{stall:?}");
         assert!(stall.speed < 100.0 / 3.6, "{stall:?}");
     }

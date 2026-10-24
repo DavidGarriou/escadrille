@@ -24,6 +24,17 @@ pub struct NonStandardDay {
     pub delta_t: f64,
 }
 
+/// Largest temperature offset accepted, K: beyond any climate (and the temperature must
+/// stay positive).
+pub const MAX_DELTA_T: f64 = 60.0;
+
+impl NonStandardDay {
+    /// A day `delta_t` warmer than the standard atmosphere, or `None` beyond ±[`MAX_DELTA_T`].
+    pub fn new(delta_t: f64) -> Option<Self> {
+        (delta_t.abs() <= MAX_DELTA_T).then_some(Self { delta_t })
+    }
+}
+
 impl Environment for NonStandardDay {
     fn atmosphere(&self, position_ned: DVec3) -> AtmosphereState {
         let standard = isa(altitude(position_ned));
@@ -114,6 +125,69 @@ mod tests {
             (pressure - geometric).abs() < 1e-9 * geometric,
             "{pressure} {geometric}"
         );
+    }
+
+    /// The same hot day described in geometric altitude: the pressure integrated along a
+    /// column whose temperature at each pressure is the standard one plus ΔT,
+    /// z(h_p) = h_p + ΔT (R / g) ln(p₀ / p), an independent check of w T_std / T.
+    struct GeometricDay {
+        delta_t: f64,
+    }
+
+    impl GeometricDay {
+        fn height(&self, pressure_altitude: f64) -> f64 {
+            use escadrille_fdm::constants::{G0, P0};
+            pressure_altitude
+                + self.delta_t * R_AIR / G0 * (P0 / isa(pressure_altitude).pressure).ln()
+        }
+    }
+
+    impl Environment for GeometricDay {
+        fn atmosphere(&self, position_ned: DVec3) -> AtmosphereState {
+            let z = altitude(position_ned);
+            let (mut lo, mut hi) = (z - 2_000.0, z + 2_000.0);
+            for _ in 0..100 {
+                let mid = 0.5 * (lo + hi);
+                if self.height(mid) < z {
+                    lo = mid;
+                } else {
+                    hi = mid;
+                }
+            }
+            NonStandardDay {
+                delta_t: self.delta_t,
+            }
+            .atmosphere(DVec3::new(0.0, 0.0, -0.5 * (lo + hi)))
+        }
+
+        fn wind_ned(&self, _position_ned: DVec3) -> DVec3 {
+            DVec3::ZERO
+        }
+
+        fn ground_altitude(&self, _position_ned: DVec3) -> f64 {
+            0.0
+        }
+    }
+
+    #[test]
+    fn the_pressure_altitude_climb_matches_a_geometric_column() {
+        let a = biplane();
+        let delta_t = 15.0;
+        let pressure =
+            time_to_pressure_altitude(&a, &NonStandardDay { delta_t }, 0.0, 2_000.0).unwrap();
+        let column = GeometricDay { delta_t };
+        let geometric = time_to_climb(&a, &column, 0.0, column.height(2_000.0)).unwrap();
+        assert!(
+            (pressure - geometric).abs() < 2e-3 * geometric,
+            "{pressure} {geometric}"
+        );
+    }
+
+    #[test]
+    fn days_beyond_any_climate_are_refused() {
+        assert!(NonStandardDay::new(20.0).is_some());
+        assert!(NonStandardDay::new(-61.0).is_none());
+        assert!(NonStandardDay::new(f64::NAN).is_none());
     }
 
     #[test]

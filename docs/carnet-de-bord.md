@@ -1188,7 +1188,7 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Hélice passée à 2,40 m ; effet P (1,10 → 1,08 m) et inertie du rotor (7,0 → 6,7 kg·m²) mis à l'échelle du diamètre.
 - **⚠** Première campagne fausse :
   - avec la nouvelle hélice, la recherche du décrochage au ralenti rendait 128 km/h à 2,9° d'incidence ; décrochage qualitatif, plané et polaire étaient faussés à sa suite ;
-  - cause : un trim isolé ne converge pas (résidu 10⁻⁷ pour 10⁻¹⁰), l'hélice en moulinet étant au-delà de la fin de sa table (J ≈ 1,3, coefficients linéaires par morceaux), et la recherche s'arrêtait au premier échec ;
+  - cause supposée : un trim isolé ne converge pas, l'hélice en moulinet étant au-delà de la fin de sa table (J ≈ 1,3, coefficients linéaires par morceaux), et la recherche s'arrêtait au premier échec. **Diagnostic faux**, corrigé plus bas après la revue : c'était le tourbillon du souffle, qui sautait quand la traction changeait de signe ;
   - correction : nouvel essai de plusieurs vitesses de départ, puis saut de l'incidence, avec trois échecs de suite avant de conclure. Test de non-régression sur le SPAD, vérifié en échec sans la correction.
 - **R** Campagne avec l'Éclair 6 :
   - régimes +0,8 / +1,5 / +1,5 % : **réussis** ;
@@ -1215,3 +1215,31 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Documents téléchargés par le coordinateur (son outil de lecture échoue sur ces sites) : NACA TM 15, TN 20, Report 126, Report 218, dossier Hartmann « Reims 1911 ». Le Report 126 dit que les altimètres ont une échelle tournante « pour faire le zéro au départ du vol » ; les altimètres français sont gradués selon la loi de Radau ; l'atmosphère type du STAé date de 1920.
 - **R** Enveloppe recommandée (178 m, ±15 K) : de −23 % à +8 % selon les conventions ; S46 est dedans, l'enveloppe est trop large pour juger le modèle.
 - **R** Comparaison avec le rapport britannique n° 96 (vu en résumé, convention sans doute celle du modèle) : modèle −3,8 / −4,8 / −5,9 %, plafond +2,2 %. **Le modèle monte probablement 4 à 6 % trop vite** ; c'est le reste à expliquer, du même ordre que les incertitudes connues.
+
+### Revue de l'aérodynamicien (hélice Éclair 6, conditions d'essai) et corrections
+- **R** Verdict **bloquant**, sur un défaut ancien du FDM. Le tourbillon du souffle n'était calculé que pour une traction positive, et le champ de souffle disparaissait sans vitesse induite. Au passage de T = 0, en plané au ralenti vers 125 km/h, le moment de roulis sautait d'environ 40 N·m : aucun équilibre n'existait entre 3,15° et 3,36°. **Mon diagnostic « cassure de la table d'hélice » était faux** ; il figure aussi dans le message du commit 85aac08.
+- **A** Correction du FDM :
+  - le tourbillon K = Q/ṁ ne dépend plus du signe de la traction ; une hélice en moulinet, ou arrêtée dans l'écoulement, tourne l'air ;
+  - fondu à zéro quand le débit à travers le disque s'annule (2 m/s, E:) ;
+  - le champ de souffle garde le tourbillon sans vitesse induite.
+- **A** Tests ajoutés ou réécrits :
+  - continuité du souffle à ±ε de traction ;
+  - hélice en moulinet ou arrêtée qui fait tourner l'air ;
+  - symétrie du plané vérifiée au régime de moulinet libre (couple nul) ;
+  - tous les planés du SPAD de 2,8° à 3,5° trimés par le solveur seul ;
+  - balayage du décrochage sans incidence sautée.
+
+  Le biplan d'essai, synthétique, part maintenant en roulis au décrochage plutôt qu'en abattée : le test accepte l'un ou l'autre.
+- **A** La recherche du décrochage compte les incidences sautées ; le rapport les signale en gras.
+- **R** Important : l'exposant de température, imposé à 0,5 pour tous les moteurs, contredisait en partie les sources ; ce choix, fait dans le même commit, allait dans le sens de la conclusion. **D** Il devient une donnée par moteur (`temperature_exponent`, 0 par défaut, loi `Pressure` seulement). **0,4 pour le Hispano** (C : 0,27 à 0,46 selon le Report 220, le L.C.E. 196 et la cohérence avec n = 0,93 ; R&M 462 ne voit pas d'effet en vol).
+- **R** Important : la conclusion du § 8 penchait du côté favorable. **D** Reformulée : les conditions inconnues déplacent les temps d'environ −20 à +12 %, si bien que S46 ne départage pas un écart de ±10 %. L'écart n'est ni la preuve d'un défaut, ni une validation. Deux indices vont contre une explication par les seules conditions : les vitesses du même tableau, qui demandent un jour froid, et la tranche de 3 000 à 4 000 m (−17 %). Tolérances inchangées.
+- **A** Autres corrections :
+  - inertie propre de l'hélice à 2,40 m (6,3 / 3,2 / 3,2) ;
+  - NaN propagé par la température type à pression donnée ;
+  - écarts de température bornés à ±60 K ;
+  - plafond calculé une fois par jour, affichage des minutes corrigé ;
+  - test hydrostatique indépendant de la conversion en altitude-pression (0,2 %) ;
+  - « départ des cales » au lieu de « lâcher des freins » ;
+  - ligne ISA +20 K retirée (hors climatologie).
+- **R** Campagne en atmosphère type inchangée par ces corrections. Enveloppe avec m = 0,4 : de −22 à +7 % selon les conventions (`spad7-calculs.md` § 8).
+

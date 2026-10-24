@@ -119,5 +119,8 @@ Revue de l'aérodynamicien : rien de bloquant. Points corrigés :
   - plané : la finesse de 7,4 inclut la petite traction de l'hélice au ralenti.
 - Nom du champ `fabric_drag_rise` : il porte plus que la toile (priorité basse).
 - Historien : hélice réelle du S.VII 150 ch, régime en montée, bord d'attaque des ailes (contreplaqué ou toile).
-- Table d'hélice linéaire par morceaux : ses cassures de pente, en particulier au-delà de J = 1,10 où elle rejoint le point « hélice arrêtée », bloquent parfois le solveur de trim au ralenti (résidu de 10⁻⁷ pour une tolérance de 10⁻¹⁰). La recherche du décrochage tolère maintenant ces échecs isolés (2026-10-24). Une interpolation lisse (cubique monotone), ou un point de table à J ≈ 1,3, serait plus propre ; à voir avec l'aérodynamicien.
+- ~~Table d'hélice linéaire par morceaux : ses cassures de pente bloqueraient le solveur au ralenti.~~ **Diagnostic faux** (revue du 2026-10-24) : le tourbillon du souffle disparaissait quand la traction changeait de signe, ce qui faisait sauter le moment de roulis sur les ailes ; il n'y avait aucun équilibre entre 3,15° et 3,36°. Corrigé dans le FDM : le tourbillon K = Q/ṁ ne dépend plus du signe de la traction. La recherche du décrochage garde un filet de sécurité, mais compte et signale toute incidence sautée.
+- Souffle sur les ailes : la théorie des bandes surestime le moment de roulis du tourbillon dans un souffle étroit. Ce moment (environ 40 N·m) dépasse le couple de l'hélice (24,5 N·m). Référence : Smelt et Davies, R&M 1788 (1937). Au point fixe, ce même effet annule presque la traînée de souffle de la cellule.
+- Force normale de l'hélice : calculée pour J de 0,6 à 0,76, alors que la meilleure montée se fait à J = 0,51 ; à recalculer par éléments de pale.
+- Plafond de S46 : il est « théorique », extrapolé. Pour comparer à l'identique, extrapoler aussi les taux du modèle à la manière de l'époque.
 

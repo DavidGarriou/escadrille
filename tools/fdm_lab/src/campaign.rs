@@ -158,16 +158,30 @@ pub fn run(
                     PowerSetting::Idle => ("Vitesse de décrochage (moteur au ralenti)", 0.0),
                     PowerSetting::Full => ("Vitesse de décrochage (pleins gaz)", 1.0),
                 };
-                let (computed, remark) =
-                    match stall_speed_at(aircraft, env, STALL_TEST_ALTITUDE, throttle) {
-                        Ok(s) => (
+                let (computed, remark) = match stall_speed_at(
+                    aircraft,
+                    env,
+                    STALL_TEST_ALTITUDE,
+                    throttle,
+                ) {
+                    Ok(s) => {
+                        let mut remarks = Vec::new();
+                        if s.elevator_limited {
+                            remarks.push("limitée par la butée de profondeur : l'aile ne décroche pas en vol stabilisé".to_owned());
+                        }
+                        if s.skipped > 0 {
+                            remarks.push(format!(
+                                    "**{} incidence(s) sans équilibre sautée(s) pendant le balayage** : discontinuité du modèle à chercher",
+                                    s.skipped
+                                ));
+                        }
+                        (
                             Ok(s.speed),
-                            s.elevator_limited.then(|| {
-                                "limitée par la butée de profondeur : l'aile ne décroche pas en vol stabilisé".to_owned()
-                            }),
-                        ),
-                        Err(e) => (Err(format!("{e:?}")), None),
-                    };
+                            (!remarks.is_empty()).then(|| remarks.join(" ; ")),
+                        )
+                    }
+                    Err(e) => (Err(format!("{e:?}")), None),
+                };
                 push(
                     label.to_owned(),
                     Unit::Speed,

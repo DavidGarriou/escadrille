@@ -61,6 +61,8 @@ pub enum EngineError {
     BadStallSpeed,
     /// The installed fraction of the indicated power must be in (0, 1].
     BadInstalledPower,
+    /// The temperature exponent must be in [0, 1], with a pressure altitude law.
+    BadTemperatureExponent,
 }
 
 /// How the indicated power falls with altitude.
@@ -74,16 +76,12 @@ pub enum AltitudeLaw {
     /// a brake power in (p / p₀)^1.04 on a 150 hp Hispano-Suiza; with the friction of
     /// NACA Report 46, the indicated exponent is about 0.93, aerodynamicist's review).
     /// On a day warmer or colder than the standard atmosphere, the charge also varies as
-    /// (T_std / T)^[`TEMPERATURE_EXPONENT`], T_std being the standard temperature at the
-    /// same pressure: 1 in the standard atmosphere.
+    /// (T_std / T)^m, T_std being the standard temperature at the same pressure (1 in the
+    /// standard atmosphere), m the engine's temperature exponent
+    /// ([`InlineEngine::with_temperature_exponent`], 0 by default). The density law
+    /// amounts to m = 1, which period measurements reject (`modele-aero.md`).
     Pressure(f64),
 }
-
-/// Exponent of the temperature at constant pressure in [`AltitudeLaw::Pressure`]: on the
-/// dynamometer, with carburettor intake air at about 10 and 26 °C, the brake power of a
-/// Wright-Hispano « varied closely as 1/√T » at constant speed and pressure (NACA Report
-/// 220, Durand and Lesley, 1926, p. 7; C: applied to the indicated power).
-pub const TEMPERATURE_EXPONENT: f64 = 0.5;
 
 /// Engine torques on the crankshaft, N·m: the `engine` and `friction` terms of
 /// [`crate::rigid_body::RotorTorques`].
@@ -104,6 +102,8 @@ pub struct InlineEngine {
     altitude_law: AltitudeLaw,
     /// Fraction of the bench indicated power delivered in flight.
     installed: f64,
+    /// Exponent m of (T_std / T) at constant pressure, pressure law only.
+    temperature_exponent: f64,
     /// Largest full-throttle indicated power at sea level, W.
     max_indicated: f64,
 }
@@ -181,7 +181,22 @@ impl InlineEngine {
             stall_speed,
             altitude_law,
             installed: 1.0,
+            temperature_exponent: 0.0,
             max_indicated,
+        })
+    }
+
+    /// The same engine with an indicated power varying as (T_std / T)^`exponent` at
+    /// constant pressure (pressure altitude law only).
+    pub fn with_temperature_exponent(self, exponent: f64) -> Result<Self, EngineError> {
+        if !matches!(self.altitude_law, AltitudeLaw::Pressure(_))
+            || !(0.0..=1.0).contains(&exponent)
+        {
+            return Err(EngineError::BadTemperatureExponent);
+        }
+        Ok(Self {
+            temperature_exponent: exponent,
+            ..self
         })
     }
 
@@ -203,7 +218,8 @@ impl InlineEngine {
             AltitudeLaw::Pressure(n) => {
                 let temperature =
                     standard_temperature_at_pressure(atmosphere.pressure) / atmosphere.temperature;
-                (atmosphere.pressure / P0).max(0.0).powf(n) * temperature.powf(TEMPERATURE_EXPONENT)
+                (atmosphere.pressure / P0).max(0.0).powf(n)
+                    * temperature.powf(self.temperature_exponent)
             }
         };
         self.installed * law
@@ -404,7 +420,8 @@ pub(crate) mod tests {
             .map(|(speed, power)| EnginePoint { speed, power })
             .to_vec();
         let engine = |law| InlineEngine::new(curve.clone(), scaled(&curve, 0.1), 0.1, 30.0, law);
-        let pressure = engine(AltitudeLaw::Pressure(0.93)).unwrap();
+        let neutral = engine(AltitudeLaw::Pressure(0.93)).unwrap();
+        let pressure = neutral.clone().with_temperature_exponent(0.5).unwrap();
         let density = engine(AltitudeLaw::Density).unwrap();
         let standard = crate::atmosphere::isa(2_000.0);
         let hot = AtmosphereState {
@@ -418,12 +435,28 @@ pub(crate) mod tests {
             pressure.charge_ratio(&standard) * ratio.sqrt(),
             1e-12
         ));
+        // By default the pressure law ignores the temperature (R&M 462's reading).
+        assert!(close(
+            neutral.charge_ratio(&hot),
+            neutral.charge_ratio(&standard),
+            1e-12
+        ));
         // The density law already holds the temperature, as 1/T.
         assert!(close(
             density.charge_ratio(&hot),
             density.charge_ratio(&standard) * ratio,
             1e-12
         ));
+        assert_eq!(
+            density.with_temperature_exponent(0.5),
+            Err(EngineError::BadTemperatureExponent)
+        );
+        for bad in [-0.1, 1.5, f64::NAN] {
+            assert_eq!(
+                neutral.clone().with_temperature_exponent(bad),
+                Err(EngineError::BadTemperatureExponent)
+            );
+        }
     }
 
     #[test]

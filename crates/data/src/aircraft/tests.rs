@@ -127,11 +127,36 @@ fn control_signs_come_from_the_geometry() {
         "{roll} {pitch} {yaw}"
     );
 
-    // Mirrored surfaces: no lateral load in a symmetric glide (rotor at rest).
-    let w = aircraft.loads(&state, &neutral, &env).wrench;
+    // Mirrored surfaces: no side force and no rolling moment in a symmetric glide with
+    // the propeller windmilling freely (zero torque, hence no swirl; a stopped propeller
+    // in the flow turns the air, and a turning one has a P-factor yaw in this pitch).
+    let at = |rotor_speed: f64| RigidBodyState {
+        rotor_speed,
+        ..state
+    };
+    let torque = |rotor: f64| {
+        aircraft
+            .evaluate(&at(rotor), &neutral, &env)
+            .propeller
+            .unwrap()
+            .torque
+    };
+    let (mut lo, mut hi) = (0.0, 300.0);
+    assert!(torque(lo) < 0.0 && torque(hi) > 0.0);
+    for _ in 0..200 {
+        let mid = 0.5 * (lo + hi);
+        if torque(mid) < 0.0 {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    let w = aircraft.loads(&at(lo), &neutral, &env).wrench;
     let scale = w.force.length();
-    assert!(w.force.y.abs() < 1e-9 * scale && w.moment.x.abs() < 1e-9 * scale);
-    assert!(w.moment.z.abs() < 1e-9 * scale, "{w:?}");
+    assert!(
+        w.force.y.abs() < 1e-9 * scale && w.moment.x.abs() < 1e-9 * scale,
+        "{w:?}"
+    );
 }
 
 #[test]
@@ -175,6 +200,11 @@ fn refuses_inconsistent_references() {
         "altitude_law: Density, installed_power: 1.2, // E: test",
     );
     assert!(invalid_message(&data).contains("BadInstalledPower"));
+    let data = edited(
+        "altitude_law: Density,",
+        "altitude_law: Density, temperature_exponent: 0.5, // E: test",
+    );
+    assert!(invalid_message(&data).contains("BadTemperatureExponent"));
 }
 
 #[test]

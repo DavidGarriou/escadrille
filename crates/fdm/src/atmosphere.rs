@@ -73,7 +73,9 @@ pub fn isa(altitude: f64) -> AtmosphereState {
 /// `pressure` (the pressure altitude), K: what a non-standard day is compared with.
 pub fn standard_temperature_at_pressure(pressure: f64) -> f64 {
     let t11 = T0 + LAPSE_RATE * TROPOPAUSE_ALTITUDE;
-    (T0 * (pressure / P0).powf(1.0 / pressure_exponent())).max(t11)
+    let t = T0 * (pressure / P0).powf(1.0 / pressure_exponent());
+    // Not `f64::max`, which would turn a NaN into t11 (as in `isa`).
+    if t < t11 { t11 } else { t }
 }
 
 #[cfg(test)]
@@ -124,6 +126,7 @@ mod tests {
             let t = standard_temperature_at_pressure(s.pressure);
             assert!((t - s.temperature).abs() < 1e-9, "{h}: {t} {s:?}");
         }
+        assert!(standard_temperature_at_pressure(f64::NAN).is_nan());
     }
 
     #[test]

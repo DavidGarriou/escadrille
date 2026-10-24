@@ -250,14 +250,42 @@ fn air_moving_with_the_aircraft_gives_no_aerodynamic_load() {
 
 #[test]
 fn symmetric_glide_has_no_lateral_loads() {
-    // Engine stopped (rotor at rest): no torque reaction, no slipstream, no P-factor.
-    let d = biplane().evaluate(&flying(40.0, 0.06, 0.0), &GLIDE, &SEA_LEVEL);
+    // Propeller windmilling freely (zero aerodynamic torque): no swirl and no induced
+    // speed (negative thrust), hence no side force and no rolling moment. (The pitch
+    // cross flow gives the turning propeller a P-factor yaw.)
+    let a = biplane();
+    let torque = |rotor: f64| {
+        a.evaluate(&flying(40.0, 0.06, rotor), &GLIDE, &SEA_LEVEL)
+            .propeller
+            .unwrap()
+            .torque
+    };
+    let (mut lo, mut hi) = (0.0, 300.0);
+    assert!(torque(lo) < 0.0 && torque(hi) > 0.0);
+    for _ in 0..200 {
+        let mid = 0.5 * (lo + hi);
+        if torque(mid) < 0.0 {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    let d = a.evaluate(&flying(40.0, 0.06, lo), &GLIDE, &SEA_LEVEL);
     let w = d.loads.wrench;
-    assert!(w.force.y.abs() < 1e-9 && w.moment.x.abs() < 1e-9 && w.moment.z.abs() < 1e-9);
+    assert!(w.force.y.abs() < 1e-6 && w.moment.x.abs() < 1e-6, "{w:?}");
     assert!(w.force.z < 0.0, "lift: {w:?}");
-    // The stopped propeller drags and is turned by the flow (it windmills).
+    assert!(d.propeller.unwrap().thrust < 0.0);
+}
+
+#[test]
+fn a_stopped_propeller_in_the_flow_turns_the_air() {
+    // Rotor at rest: the flow drives the twisted blades (it would windmill), and the
+    // reaction swirls the slipstream against the normal rotation (review of 2026-10-24:
+    // the swirl no longer depends on the sign of the thrust).
+    let d = biplane().evaluate(&flying(40.0, 0.06, 0.0), &GLIDE, &SEA_LEVEL);
     let p = d.propeller.unwrap();
     assert!(p.thrust < 0.0 && d.loads.rotor.propeller < 0.0);
+    assert!(d.loads.wrench.moment.x.abs() > 0.0, "{:?}", d.loads.wrench);
 }
 
 #[test]

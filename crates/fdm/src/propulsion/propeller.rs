@@ -36,7 +36,9 @@
 //! Slipstream (momentum theory): axial speed and swirl. The swirl comes from the torque:
 //! r v_θ is conserved along a streamline of an inviscid axisymmetric flow, so it is zero
 //! ahead of the disc and K = Q / ṁ just behind it (blended over ±5 % of the radius, C¹),
-//! with a solid-body core near the hub (E:). The slipstream runs straight back along the
+//! with a solid-body core near the hub (E:). The induced axial speed exists only with a
+//! positive thrust, but the swirl does not depend on its sign: a windmilling propeller
+//! turns the air against its rotation. The slipstream runs straight back along the
 //! thrust axis (E:).
 
 use std::f64::consts::{FRAC_PI_2, PI};
@@ -56,6 +58,10 @@ const SLIPSTREAM_EDGE: f64 = 0.1;
 /// Radius of the slipstream's swirl core, as a fraction of the tube radius (E:: the hub
 /// and blade roots carry little load).
 const SWIRL_CORE: f64 = 0.25;
+
+/// Speed through the disc below which the swirl fades out, m/s (E:: momentum theory has
+/// no stream tube when the flow through the disc stops).
+const SWIRL_FADE_SPEED: f64 = 2.0;
 
 /// Half-width of the step of the swirl across the disc, fraction of the radius (C¹).
 const SWIRL_STEP: f64 = 0.05;
@@ -347,10 +353,15 @@ impl Propeller {
             // Windmilling (braking) states are outside simple momentum theory.
             0.0
         };
-        // Angular momentum flux: Q = ṁ r v_θ far downstream.
-        let mass_flow = density * self.disc_area() * (free_stream + induced);
-        let swirl = if induced > 0.0 {
-            loads.torque / mass_flow
+        // Angular momentum flux: Q = ṁ r v_θ far downstream, whatever the sign of the
+        // thrust (a windmilling propeller still turns the air, against its rotation):
+        // the swirl must not jump when the thrust crosses zero (aerodynamicist review of
+        // 2026-10-24: it did, and no idle glide could be trimmed there). Faded out as the
+        // flow through the disc stops, where K = Q / ṁ would blow up.
+        let through = free_stream + induced;
+        let swirl = if through > 0.0 && density > 0.0 {
+            loads.torque / (density * self.disc_area() * through)
+                * smoothstep(through / SWIRL_FADE_SPEED)
         } else {
             0.0
         };
@@ -409,7 +420,8 @@ impl Slipstream {
     /// Velocity of the air relative to the free stream at `point` (body axes, relative
     /// to the centre of gravity): the `local_flow` of the surfaces and drag items.
     pub fn local_flow(&self, point: DVec3) -> DVec3 {
-        if self.induced <= 0.0 {
+        // No flow through the disc: no stream tube (the swirl is then zero too).
+        if self.free_stream + self.induced <= 0.0 {
             return DVec3::ZERO;
         }
         let d = point - self.hub;

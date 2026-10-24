@@ -282,7 +282,7 @@ fn slipstream_fades_smoothly_at_its_edge() {
 }
 
 #[test]
-fn no_slipstream_without_thrust() {
+fn a_windmilling_propeller_swirls_the_air_without_induced_speed() {
     let p = propeller();
     let windmilling = p.loads(
         DVec3::new(75.0, 0.0, 0.0),
@@ -290,9 +290,55 @@ fn no_slipstream_without_thrust() {
         2.0 * PI * 12.0,
         RHO,
     );
+    assert!(
+        windmilling.thrust < 0.0 && windmilling.torque < 0.0,
+        "{windmilling:?}"
+    );
     let s = p.slipstream(&windmilling, RHO);
     assert_eq!(s.induced_speed(), 0.0);
-    assert_eq!(s.local_flow(DVec3::new(-4.0, 0.0, 0.0)), DVec3::ZERO);
+    // Driven by the air, it turns the air against its rotation: K = Q / ṁ < 0.
+    let mass_flow = RHO * p.disc_area() * 75.0;
+    assert!(close(s.swirl() * mass_flow, windmilling.torque, 1e-12));
+    let hub = p.geometry().hub;
+    let behind = s.local_flow(hub + DVec3::new(-2.0, 0.0, -0.8));
+    assert!(behind.x.abs() < 1e-12 && behind.y < 0.0, "{behind:?}");
+}
+
+#[test]
+fn the_slipstream_is_continuous_when_the_thrust_crosses_zero() {
+    // An idle glide sits near T = 0: the swirl used to vanish with the thrust, a jump
+    // of the rolling moment on the wings that left no equilibrium (review of 2026-10-24).
+    let p = propeller();
+    let hub = p.geometry().hub;
+    let at = |thrust: f64| {
+        let loads = PropellerLoads {
+            wrench: Wrench::default(),
+            thrust,
+            torque: 24.5,
+            axial_speed: 35.0,
+            advance_angle: 1.2,
+        };
+        let s = p.slipstream(&loads, RHO);
+        (s.swirl(), s.local_flow(hub + DVec3::new(-1.5, 0.3, -0.8)))
+    };
+    let (minus, plus) = (at(-1e-6), at(1e-6));
+    assert!(
+        (minus.0 - plus.0).abs() < 1e-9 * plus.0.abs(),
+        "{minus:?} {plus:?}"
+    );
+    assert!((minus.1 - plus.1).length() < 1e-6, "{minus:?} {plus:?}");
+    assert!(plus.0 > 0.0);
+    // No flow through the disc: the swirl fades out instead of blowing up.
+    let still = PropellerLoads {
+        wrench: Wrench::default(),
+        thrust: -1.0,
+        torque: 24.5,
+        axial_speed: 0.0,
+        advance_angle: 0.0,
+    };
+    let s = p.slipstream(&still, RHO);
+    assert_eq!(s.swirl(), 0.0);
+    assert_eq!(s.local_flow(hub + DVec3::new(-1.5, 0.0, -0.8)), DVec3::ZERO);
 }
 
 #[test]

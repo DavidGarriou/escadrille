@@ -1337,8 +1337,10 @@ mod tests {
             (deceleration - DECELERATION).abs() < 0.2 * DECELERATION,
             "{o:?}"
         );
-        let (drop, _) = o.stall_drop.unwrap();
-        assert!(drop > 0.0, "{o:?}");
+        // A departure: the nose drops, or a wing drops past DEPARTURE_BANK (with the
+        // swirl of the idling propeller, the synthetic biplane rolls off).
+        let (drop, bank) = o.stall_drop.unwrap();
+        assert!(drop > 0.0 || bank.abs() > DEPARTURE_BANK, "{o:?}");
         assert!(o.completed, "back to a normal glide: {o:?}");
     }
 
@@ -1382,7 +1384,7 @@ mod tests {
             "{right:?} {left:?}"
         );
         assert!(
-            (right.0 - left.0).abs() < 0.01 * right.0,
+            (right.0 - left.0).abs() < 0.01 * right.0.abs() + 1e-9,
             "{right:?} {left:?}"
         );
     }

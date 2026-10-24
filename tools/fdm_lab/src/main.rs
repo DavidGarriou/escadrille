@@ -446,7 +446,14 @@ fn montee(assets: &Path, id: &str, deltas: &[f64], airfield: f64) -> Result<bool
             _ => {}
         }
     }
-    let minutes = |t: f64| format!("{:.0} min {:02.0} s", (t / 60.0).floor(), t % 60.0);
+    let minutes = |t: f64| {
+        let seconds = t.round();
+        format!(
+            "{:.0} min {:02.0} s",
+            (seconds / 60.0).floor(),
+            seconds % 60.0
+        )
+    };
     let gap = |t: f64, target: f64| format!("{:+.1} %", 100.0 * (t / target - 1.0));
     println!(
         "Montées de {id} ({:.0} % de carburant), altitudes-pression, meilleure vitesse ascensionnelle, sans le décollage :",
@@ -458,7 +465,9 @@ fn montee(assets: &Path, id: &str, deltas: &[f64], airfield: f64) -> Result<bool
         conventions.push(("terrain, altimètre à zéro au sol", airfield, airfield));
     }
     for &delta_t in deltas {
-        let day = NonStandardDay { delta_t };
+        let day = NonStandardDay::new(delta_t)
+            .ok_or_else(|| format!("écart de température hors du climat : {delta_t} K"))?;
+        let ceiling = ceiling(aircraft, &day, 0.0).map_err(|e| format!("{e:?}"))?;
         for &(name, start, zero) in &conventions {
             let mut line = format!("  ISA {delta_t:+.0} K, {name} :");
             for &(to, target) in &climbs {
@@ -466,8 +475,7 @@ fn montee(assets: &Path, id: &str, deltas: &[f64], airfield: f64) -> Result<bool
                     .map_err(|e| format!("{e:?}"))?;
                 line += &format!("  {:.0} m en {} ({})", to, minutes(t), gap(t, target));
             }
-            let c = ceiling(aircraft, &day, 0.0).map_err(|e| format!("{e:?}"))?;
-            let reading = c.altitude - zero;
+            let reading = ceiling.altitude - zero;
             line += &format!("  ; plafond {reading:.0} m");
             if let Some(target) = ceiling_target {
                 line += &format!(" ({})", gap(reading, target));

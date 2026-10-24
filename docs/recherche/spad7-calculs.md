@@ -236,7 +236,7 @@ Avec l'incertitude de K mesuré (±0,004, soit ±0,004 sur k) : **k = 0,020 ± 0
 
 - **Chaque cible de S46 est dans la fourchette**, mais **aucune hélice ne tient à la fois le régime et la montée**. Au bon régime (Éclair 6), le modèle monte 7 à 11 % trop vite : c'est l'écart caché que la revue annonçait, maintenant chiffré sur une hélice documentée.
 - Les hélices de P/D 0,74 à 0,77 (Éclair 100, Chauvière 2066) demandent une autre table (I à P/D 0,70 du Report 301, ou 3713 à 0,76 du Report 292, mesurée en vol). Avec un pas plus faible, elles tourneraient plus vite encore, et monteraient sans doute mieux.
-- **Ce qui reste à chercher est donc du côté de la montée**, pas de l'hélice : traction de la table à faible J (surfaces E: du VE-7, § 2) ; puissance du moteur vers 1 450–1 500 tr/min (forme de la courbe du Report 46) ; convention de chronométrage de S46 (depuis le lâcher des freins ?).
+- **Ce qui reste à chercher est donc du côté de la montée**, pas de l'hélice : traction de la table à faible J (surfaces E: du VE-7, § 2) ; puissance du moteur vers 1 450–1 500 tr/min (forme de la courbe du Report 46) ; convention de chronométrage de S46 (depuis le départ des cales ? le S.VII n'avait pas de freins).
 
 **Hélice de référence : Éclair 6** (décision du joueur, 2026-10-24, sur recommandation). Raisons :
 - le texte de Hartmann la désigne ;
@@ -253,52 +253,60 @@ Campagne avec l'Éclair 6 :
 L'écart de montée, croissant avec l'altitude, est désormais l'objet des recherches.
 
 
-## 8. Conditions des essais de 1919 : enveloppe des temps de montée (2026-10-24)
+## 8. Conditions des essais de 1919 : enveloppe des temps de montée (2026-10-24, revu le même jour)
 
 Le modèle chronomètre ses montées depuis 0 m, en vol, à la vitesse de meilleure montée, en atmosphère type. Les conditions de l'essai de S46 sont inconnues. On encadre donc ce qu'elles ajoutent au temps, sans rien changer au modèle.
 
-**Outil** : `fdm_lab montee spad7 --delta-t-k=-10,0,10,20 --airfield-m 180` (`tools/fdm_lab/src/conditions.rs`). Les altitudes sont des altitudes-pression, comme sur un altimètre. 180 m est un ordre de grandeur pour Villacoublay, en attendant l'historien.
+**Outil** : `fdm_lab montee spad7 --delta-t-k=-15,-10,0,10,15 --airfield-m 178` (`tools/fdm_lab/src/conditions.rs`). Les altitudes sont des altitudes-pression, comme sur un altimètre. La conversion de la vitesse ascensionnelle (w T_type/T) est vérifiée par un test indépendant, sur une colonne d'air intégrée en altitude géométrique (0,2 % près).
 
-**Correction du modèle faite au passage.** La loi `Pressure(0.93)` ne dépendait pas de la température. Par jour chaud, l'air plus léger freinait moins l'hélice, le moteur tournait plus vite et donnait **plus** de puissance ; le plafond montait. La charge suit maintenant (T_type/T)^0,5 à pression égale (NACA Report 220, p. 7). Le facteur vaut 1 en atmosphère type : la campagne habituelle est inchangée au chiffre près.
+**Moteur et température.** La loi `Pressure(n)` ne dépendait pas de la température : c'était la lecture de R&M 462, qui ne trouve « pas d'effet sensible » en vol. Avec cette loi, par jour chaud, l'air plus léger freine moins l'hélice, le moteur tourne plus vite, et le plafond en altitude-pression bouge à peine. Ce n'est pas une absurdité : c'est la conséquence de cette source. D'autres sources mesurent pourtant un effet. La puissance indiquée suit donc maintenant (T_type/T)^m à pression égale, **m étant une donnée par moteur** (0 par défaut, origine obligatoire). Pour le Hispano, **m = 0,4** (C), au milieu de la plage des sources :
+- NACA Report 220, p. 7 : puissance au frein d'un Wright-Hispano « closely as 1/√T » au banc, avec de l'air d'admission à 10 et 26 °C, soit environ 0,46 sur la puissance indiquée ;
+- L.C.E. 196, cité par R&M 462 : −5 à −7 % pour +19 % de température absolue, soit 0,27 à 0,38 sur la puissance indiquée ;
+- cohérence avec n = 0,93 : 0,37, si la charge suit p à température fixe ;
+- R&M 462 : pas d'effet sensible avec 20 °C d'écart en vol ; écarte m = 1, sans départager 0 et 0,5.
 
-**Enveloppe** (Éclair 6, 74 % de carburant ; écart aux cibles 6:40 / 11:30 / 19:30 et 5 486 m) :
+La loi `Density` revient à m = 1, que les sources rejettent. En atmosphère type, le facteur vaut 1 : la campagne habituelle est inchangée au chiffre près.
 
-| Jour | Départ et altimètre | 2 000 m | 3 000 m | 4 000 m | Plafond |
-|---|---|---|---|---|---|
-| ISA −10 K | 0 m | −13,7 % | −13,3 % | −17,9 % | +10,4 % |
-| ISA | 0 m (convention du modèle) | −8,0 % | −7,1 % | −11,1 % | +7,8 % |
-| ISA | terrain de 180 m, altimètre sur la mer | −14,7 % | −11,0 % | −13,4 % | +7,8 % |
-| ISA | terrain de 180 m, altimètre à zéro au sol | −3,9 % | −2,3 % | −5,3 % | +4,6 % |
-| ISA +10 K | 0 m | −2,1 % | −0,5 % | −3,8 % | +5,3 % |
-| ISA +10 K | terrain, altimètre à zéro au sol | +2,3 % | +4,8 % | +2,9 % | +2,0 % |
-| ISA +20 K | 0 m | +4,0 % | +6,4 % | +4,2 % | +2,6 % |
-| ISA +20 K | terrain, altimètre à zéro au sol | +8,9 % | +12,3 % | +11,9 % | −0,7 % |
+**Biais déclaré** : une première version imposait m = 0,5 à tous les moteurs, dans le commit même qui concluait que « ISA +10 K suffit ». Ce choix allait dans le sens de la conclusion. Avec m = 0, cette conclusion était fausse : à ISA +10 K, depuis 0 m, −6,4 / −5,5 / −9,6 %, contre −2,1 / −0,5 / −3,8 % avec m = 0,5 et −3,0 / −1,5 / −5,0 % avec m = 0,4.
+
+**Enveloppe** (Éclair 6, m = 0,4, 74 % de carburant ; écart aux cibles 6:40 / 11:30 / 19:30 et 5 486 m ; terrain de Villacoublay, 178 m) :
+
+| Jour | Depuis 0 m | Terrain, altimètre sur la mer | Terrain, altimètre à zéro au sol | Plafond (0 m / zéro au sol) |
+|---|---|---|---|---|
+| ISA −15 K | −15 / −15 / −20 % | −21 / −19 / −22 % | −12 / −11 / −15 % | +10,7 / +7,5 % |
+| ISA −10 K | −13 / −12 / −17 % | −19 / −16 / −19 % | −9 / −8 / −12 % | +9,8 / +6,5 % |
+| ISA | −8,0 / −7,1 / −11,1 % | −15 / −11 / −13 % | −4,0 / −2,3 / −5,4 % | +7,8 / +4,6 % |
+| ISA +10 K | −3,0 / −1,5 / −5,0 % | −10 / −6 / −7 % | +1,3 / +3,6 / +1,4 % | +5,9 / +2,6 % |
+| ISA +15 K | −0,5 / +1,3 / −1,8 % | −8 / −3 / −4 % | +4,1 / +6,7 / +5,0 % | +4,8 / +1,6 % |
+
+ISA +20 K jusqu'à 4 000 m sort de la climatologie : la moyenne estivale en altitude est plutôt de +5 à +7 K. Cette ligne est retirée.
+
+**Dimensions qui manquent au tableau, du même ordre** (revue de l'aérodynamicien) :
+- **loi de graduation des instruments d'époque**, isotherme ou de Radau : « 4 000 m » lus valent de 3 825 à 4 025 m en atmosphère type selon la température de graduation, soit de +1 à −7 points sur le temps à 4 000 m ;
+- **pression au sol du jour** : ±10 hPa font environ ±2 points à 2 000 m ;
+- **réduction éventuelle à une atmosphère type** : si les chiffres de 1919 étaient réduits, l'hypothèse du jour chaud tombe. L'atmosphère type du STAé date de 1920 (TN 20), mais une réduction par une méthode inconnue n'est pas exclue : question ouverte ;
+- **biais des essais réels**, tous dans le sens « l'avion réel monte moins bien » :
+  - montée en spirale au-dessus du terrain : −4 % à 20° d'inclinaison, −9 % à 30° ;
+  - vitesse unique au lieu de l'optimum à chaque altitude : environ −1 % ;
+  - terme d'énergie cinétique, absent de l'intégration : +0,5 à +0,75 % sur les temps.
 
 **Décollage** (estimation hors outil, C/E ; le modèle de sol viendra au M2) :
-- au point fixe, 1 593 tr/min et 4,0 kN de traction (T/W 0,58), comparables aux 1 640 tr/min de la D' au point fixe sur le VE-7 ;
-- roulage, queue haute, jusqu'à 89 km/h (1,1 V_s) : 6,2 à 6,9 s et 85 à 95 m, pour un frottement de 0,05 à 0,10 ;
-- puis accélération jusqu'à la vitesse de meilleure montée (116 km/h) : 3,3 s ;
-- **environ 10 s en tout**, soit +2,5 % à 2 000 m, +1,4 % à 3 000 m et +0,9 % à 4 000 m, si le chronomètre partait au début du roulage.
+- au point fixe, 1 593 tr/min et 4,0 kN de traction (T/W 0,58 ; figure de mérite environ 0,65), comparables aux 1 640 tr/min de la D' au point fixe sur le VE-7 ;
+- roulage, queue haute, jusqu'à 89 km/h (1,1 V_s) : 6,3 à 7,0 s et environ 88 m, pour un frottement de 0,05 à 0,10 ;
+- accélération jusqu'à la vitesse de meilleure montée (116 km/h) : 3,4 s ;
+- à ajouter : la mise en ligne de vol, béquille au sol (+0,3 à 0,6 s), et l'ouverture progressive des gaz (+1 à 2 s) ;
+- **10 à 15 s en tout**, soit +2,5 à +3,7 % à 2 000 m, si le chronomètre partait des cales.
 
-**Lecture.**
-- Un jour de 10 K au-dessus de l'atmosphère type, ou un altimètre calé à zéro sur le terrain, suffit à ramener les montées du modèle dans la tolérance. Les deux ensemble, avec le décollage, les dépassent un peu. L'écart de −7 à −11 % n'est donc **pas, à lui seul, la preuve d'un défaut du modèle** : il est du même ordre que l'incertitude sur les conditions de l'essai.
-- Le plafond suit la même enveloppe : +7,8 % en atmosphère type, de +2 à +5 % pour un jour chaud ou un altimètre calé au sol.
-- Pour trancher, il faut les conditions réelles de l'essai (question posée à l'historien) : départ du chronomètre, terrain, zéro de l'altimètre, saison.
+**Deux indices contre une explication par les seules conditions** :
+- **les vitesses du même tableau tirent en sens inverse** (chiffres de la revue, avec m = 0,5) : à ISA +10 K, vitesses +1,1 / +5,4 / +4,4 % ; à ISA −10 K, +0,4 / +4,7 / +3,8 %. Les vitesses demandent un jour froid, les montées un jour chaud ;
+- **la tranche de 3 000 à 4 000 m** : en atmosphère type, −8,0 % de 0 à 2 000 m, −5,6 % de 2 000 à 3 000 m, mais −17 % de 3 000 à 4 000 m. À ISA +10 K (m = 0,5), cette dernière tranche reste à −8,4 %. Départ, terrain et décollage ne touchent que la première tranche. L'arrondi des temps de S46 vaut environ ±6 % sur la dernière tranche : c'est un indice, pas une preuve. La piste de la loi d'altitude reste ouverte (richesse du carburateur Zenith sans correcteur, surchauffe vers 4 000 m selon Hall).
 
-**Après la dixième passe de l'historien** (`spad7.md` § 5.7) et la lecture des documents qu'il désigne, téléchargés par le coordinateur (2026-10-24) :
-- **Départ du chronomètre français : inconnu.** La pratique britannique de 1917 (Tizard, *Flight*, mars 1917) ramène les temps à une montée en vol depuis la hauteur type 0. Un temps britannique corrigé est donc déjà dans la convention du modèle.
-- **Altimètres** : le NACA Report 126 (1922, instruments d'altitude, p. 3-5) [LU-OCR] dit que l'échelle des altimètres tourne « pour faire le zéro au départ du vol », et que les altimètres français sont gradués selon la loi de Radau. La note NACA TN 20 (règles des concours français de 1920) cite une « atmosphère type du S.T.Aé » (T₀ = 288 K, 760 mm, loi de Radau) : elle date de 1920, après les essais de S46. L'altimètre calé à zéro sur le terrain était donc l'usage courant (C), sans preuve pour l'essai de S46.
-- **Terrain** : Villacoublay, 178 m (585 ft).
+**Lecture** (reformulée d'après la revue). Les conditions inconnues de l'essai déplacent les temps d'environ −20 à +12 % : température, terrain, zéro et graduation de l'altimètre, réduction éventuelle à une atmosphère type, départ du chronomètre, trajectoire. S46 ne départage donc pas un écart de ±10 % : l'écart actuel n'est **ni la preuve d'un défaut, ni une validation**. Deux indices vont contre une explication par les seules conditions : les vitesses du même tableau, et la tranche de 3 000 à 4 000 m. Les tolérances ne bougent pas.
 
-Enveloppe recommandée par l'historien (terrain de 178 m, ±15 K autour de l'atmosphère type ; décollage non compté, environ +10 s depuis le début du roulage) :
-
-| Jour | Depuis 0 m | Terrain, altimètre sur la mer | Terrain, altimètre à zéro au sol |
-|---|---|---|---|
-| ISA −15 K | −16 / −16 / −21 % | −23 / −20 / −23 % | −13 / −12 / −16 % |
-| ISA | −8 / −7 / −11 % | −15 / −11 / −13 % | −4 / −2 / −5 % |
-| ISA +15 K | +1 / +3 / 0 % | −6 / −1 / −2 % | +6 / +8 / +7 % |
-
-Les cibles de S46 sont dans l'enveloppe, qui est très large : les conditions de l'essai français ne permettent pas de juger le modèle à mieux que ±10 % près.
+**Après la dixième passe de l'historien** (`spad7.md` § 5.7) et la lecture des documents qu'il désigne, téléchargés par le coordinateur :
+- **départ du chronomètre français : inconnu.** La pratique britannique de 1917 (Tizard, *Flight*, mars 1917) ramène les temps à une montée en vol depuis la hauteur type 0. Un temps britannique corrigé est donc déjà dans la convention du modèle ;
+- **altimètres** : le NACA Report 126 (1922, p. 3-5) [LU-OCR] dit que l'échelle des altimètres tourne « pour faire le zéro au départ du vol », et que les altimètres français sont gradués selon la loi de Radau. L'altimètre calé à zéro sur le terrain était donc l'usage courant (C), sans preuve pour l'essai de S46 ;
+- **terrain** : Villacoublay, 178 m (585 ft).
 
 **La comparaison qui reste discriminante : le rapport britannique n° 96** (avril 1917 ; chiffres vus en résumé seulement, `spad7.md` S11 ; temps sans doute ramenés à la convention du modèle) :
 
@@ -309,7 +317,7 @@ Les cibles de S46 sont dans l'enveloppe, qui est très large : les conditions de
 | 15 000 ft (4 572 m) | 24,5 min | 23,04 min | −5,9 % |
 | Plafond estimé | 19 000 ft (5 791 m), « probablement un peu faible » | 5 917 m | +2,2 % |
 
-**Bilan.** Avec l'Éclair 6, le modèle monte probablement **4 à 6 % trop vite**. Une large part de l'écart à S46 (−7 à −11 %) tient sans doute aux conditions de l'essai français, mais pas tout. Ce reste est du même ordre que :
+**Bilan.** Avec l'Éclair 6, le modèle monte probablement **4 à 6 % trop vite**. Ce reste est du même ordre que :
 - les incertitudes connues : masse de l'avion britannique inconnue ; atmosphère britannique de 1917 un peu plus dense sous 2 000 m ; k = 0,020 ± 0,005 ; puissance installée de 0,96 à 1,0 ;
 - et la piste « traction à faible J » (surfaces E: du VE-7, ±5 % de vitesse ascensionnelle).
 

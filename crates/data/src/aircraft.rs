@@ -20,7 +20,7 @@ use escadrille_fdm::aero::surface::{
 };
 use escadrille_fdm::aero::system::{LiftingSystem, MutualInduction};
 use escadrille_fdm::aircraft::{Aircraft, ControlTravel, Downwash, Propulsion};
-use escadrille_fdm::propulsion::engine::{AltitudeLaw, EnginePoint, InlineEngine};
+use escadrille_fdm::propulsion::engine::{AltitudeLaw, EngineError, EnginePoint, InlineEngine};
 use escadrille_fdm::propulsion::propeller::{Propeller, PropellerGeometry};
 use escadrille_fdm::rigid_body::{Inertia, MassProperties, Rotor};
 use glam::DVec3;
@@ -202,8 +202,8 @@ pub enum AltitudeLawSpec {
     /// Proportional to the density ratio.
     Density,
     /// Indicated power proportional to the pressure ratio to this power (not the exponent
-    /// of a measured brake-power law: see `AltitudeLaw::Pressure`), and to (T_std / T)^0.5
-    /// on a non-standard day.
+    /// of a measured brake-power law: see `AltitudeLaw::Pressure`); on a non-standard day,
+    /// also to (T_std / T)^m, m being the engine's `temperature_exponent`.
     Pressure(f64),
 }
 
@@ -218,6 +218,10 @@ pub struct InlineEngineSpec {
     /// Fraction of the bench indicated power delivered in flight (1 by default).
     #[serde(default = "full_power")]
     pub installed_power: f64,
+    /// Exponent m of (T_std / T) on the indicated power at constant pressure, pressure
+    /// altitude law only (0 by default: no temperature effect).
+    #[serde(default)]
+    pub temperature_exponent: f64,
     pub idle_throttle: f64,
     pub stall_speed: RotationSpeed,
 }
@@ -681,6 +685,13 @@ impl AircraftData {
             altitude_law,
         )
         .and_then(|engine| engine.with_installed_power(e.installed_power))
+        .and_then(|engine| match e.altitude_law {
+            AltitudeLawSpec::Pressure(_) => {
+                engine.with_temperature_exponent(e.temperature_exponent)
+            }
+            AltitudeLawSpec::Density if e.temperature_exponent == 0.0 => Ok(engine),
+            AltitudeLawSpec::Density => Err(EngineError::BadTemperatureExponent),
+        })
         .map_err(|err| self.invalid(format!("engine {}: {err:?}", e.name)))?;
 
         let travel = ControlTravel {
