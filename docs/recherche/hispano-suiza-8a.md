@@ -592,6 +592,39 @@ Ce sont des régimes **de VE-7**. Le moteur, la cellule, la masse (2 040 à 2 21
 | 3 | SHD, département Air : listes d'homologation des hélices de la Section technique de l'aéronautique | **cote non trouvée** ; chercher sur FranceArchives « hélices homologuées », « Section technique de l'aéronautique », « hélice » avec « Spad » ; voir aussi le fonds Dorand (`spad7.md` S69, DE 2012 ZL 245) | la liste originale : date, colonnes, définition du pas |
 | 3 | Image à 300 dpi de la p. 528 de *Flight* du 16 mai 1918 (`Flight_International_Magazine_1918-05-16-pdf`), déjà demandée dans `spad7.md` § 9.6 | archive.org | la légende du dessin coté du S.XI mentionne l'hélice (« Screw », « Hub ») et peut-être un régime ; illisible dans l'OCR |
 
+#### 7.5.10 Septième passe (2026-10-24) : le dossier Hartmann lu en entier, le R&M 586 introuvable en ligne
+
+**Accès.** Le joueur a autorisé `www.hydroretro.net` et `reports.aerade.cranfield.ac.uk` dans l'environnement. Le dossier a été téléchargé par le coordinateur (`sources/hartmann/heliciersfrancais.pdf`, 23 pages, auteur Gérard Hartmann, créé le 24 mai 2008), puis lu sur le texte extrait et vérifié sur l'image des pages 19 et 20 **[LU-IMG]**.
+
+**Le tableau** (annexe, p. 19-20) a pour colonnes « Type, Moteur, série, Hélice, Diam., Pas, Moyeu épaisseur, Commentaires ». Le texte (p. 13) le présente ainsi : il existait 253 types d'hélices, et l'inspection du matériel décida de ne garder que trois fournisseurs, dont Éclair. L'origine officielle de la liste n'est pas écrite ; seules deux lignes portent « STAé 7 sept 1917 ». Secondaire, confiance **C**, mais lue cette fois.
+
+Lignes « SPAD », moteur Hispano 150 ch (p. 19-20) :
+
+| Type | Série | Fabricant | Diamètre | Pas | P/D (C) | Moyeu | Commentaire imprimé |
+|---|---|---|---|---|---|---|---|
+| Type VII | 353 | Régy | 2,35 m | 1,80 m | 0,77 | 170 mm | Autorisation annulée |
+| Type VII | 6 | Éclair | 2,40 m | 1,95 m | 0,81 | 150 mm | Approuvé |
+| Type VII | 367 | Régy | 2,45 m | 1,90 m | 0,78 | 140 mm | Moteur surcomprimé |
+| Type VII | 100 | Éclair | 2,35 m | 1,75 m | 0,74 | 150 mm | Moteur ordinaire ou surcomprimé |
+| Type VII | 2066 | Chauvière | 2,35 m | 1,80 m | 0,77 | 150 mm | — |
+| Type VII | 485 | Levasseur | 2,45 m | 1,95 m | 0,80 | 150 mm | Aucune tolérance en dessous |
+| Type VII | 561 | Levasseur | 2,50 m | 2,05 m | 0,82 | 150 mm | Moteur surcomprimé |
+| Type VII | 3 | Gallia | 2,50 m | 2,00 m | 0,80 | 150 mm | Moteur ordinaire ou surcompressé |
+| VII 19 m² | 2117 | Chauvière | 2,45 m | 1,85 m | 0,76 | 150 mm | Autorisation annulée |
+| VII 19 m² | 2117 | Chauvière | 2,40 m | 1,95 m | 0,81 | 150 mm | Moteur surcomprimé |
+| VII 19 m² | 2116 | Chauvière | 2,40 m | 1,80 m | 0,75 | 150 mm | Remplace la 2117 moteurs surcomprimés |
+| Type VII | 23211 | Chauvière | 2,60 m | 2,05 m | 0,79 | 150 mm | (Hispano 200 ch) |
+| Type XII | 336 | Régy | 2,45 m | 1,90 m | 0,78 | 140 mm | **Pas mesuré aux 2/3 de la pale** |
+
+Ce que la lecture complète ajoute ou corrige par rapport au § 7.5.2 :
+- **Colonnes confirmées** : diamètre, pas, épaisseur du moyeu.
+- **Lignes nouvelles** : Régy 367 (moteur surcomprimé) ; trois Chauvière pour un « VII 19 m² », variante non identifiée ici ; une Chauvière 23211 pour le S.VII à Hispano 200 ch.
+- **Moteur ordinaire (8Aa)** : six hélices de 2,35 à 2,50 m et de P/D 0,74 à 0,81 (Régy 353 annulée comprise) ; trois d'entre elles ont le P/D de D' (0,80 à 0,81) : Éclair 6 (2,40 m), Levasseur 485 (2,45 m), Gallia 3 (2,50 m).
+- **Définition du pas** : une seule ligne la précise, pour une Régy du SPAD XII : « pas mesuré aux 2/3 de la pale ». C'est le premier indice écrit d'une convention française. Il ne dit pas si toutes les autres lignes suivent la même. Pour une hélice à pas constant comme D', pas à 2/3 et pas moyen coïncident à 1 % près (§ 7.5.5).
+- **Quelle hélice sur le S.VII ?** Le texte (p. 13) dit des hélices Éclair : « elles propulsent [...] les avions Letord LA3 et surtout le SPAD type VII (hélice Eclair type 6 et 100) ». Il dit aussi que Levasseur parvient à faire homologuer ses produits sur les avions les plus populaires, dont le SPAD VII (p. 15). **Éclair est donc présentée comme le fournisseur principal du S.VII**, sans dire lequel des deux types dominait. Secondaire, confiance C.
+
+**R&M 586 : introuvable en ligne depuis l'environnement.** D'après l'index R&M 3555 (téléchargé, `sources/aerade/arc-rm-3555.pdf`, tables 3 et 5) [LU-OCR], c'est une monographie publiée en brochure et jamais reprise dans les volumes annuels. Les archives de Cranfield n'en ont pas de copie : leur fonds de 1919-1922 compte une dizaine de rapports seulement (dirigeables, théorie), et les recherches par titre, par mot et par date ne le trouvent pas. HathiTrust refuse les accès automatiques (réponse 403 du site). Reste une demande manuelle : HathiTrust, la bibliothèque de la Royal Aeronautical Society, ou les National Archives (série DSIR 23).
+
 ## 8. Fiabilité et défauts connus (pour les pannes et l'ambiance, pas pour le M1)
 - Surchauffe par temps chaud, mise en température difficile par temps froid, bâti moteur à renforcer sur les premiers S.VII (`spad7.md` S5 [RÉSUMÉ]).
 - Surchauffe vers 4 000 m d'un moteur reconstruit : il faut réduire les gaz et piquer pour refroidir (Hall, `spad7.md` S3 [LU]).
@@ -744,3 +777,9 @@ Fichiers PDF et texte extrait de NASA NTRS, téléchargés par le coordinateur l
   - Candidates si l'hypothèse se vérifie : Levasseur 561 (2,50 × 2,05 m), Gallia série 3, Éclair 100. **Rien n'est changé dans les données.**
 - **Sens de rotation.** Le marquage « R H Tractor S7 » d'AB 723 concorde avec le § 7.3. Confiance inchangée (C) : la convention n'est pas définie.
 - **Priorité documentaire.** Le R&M 586 passe en tête (§ 7.5.9) : ses essais de plusieurs hélices sur un Hispano de 150 hp sans réducteur sont le seul document repéré qui puisse séparer l'hélice du moteur.
+
+**Septième passe (2026-10-24 ; dossier Hartmann lu, coordinateur)**
+- Le tableau des hélices homologuées est lu sur l'image (§ 7.5.10) : colonnes confirmées, quatre lignes de plus, un indice sur la définition du pas (« aux 2/3 de la pale », une ligne).
+- **Éclair est présentée comme le fournisseur principal du S.VII** (types 6 et 100). La référence Levasseur 485 du 2026-10-23 reste une hélice autorisée, mais le texte pèse désormais en faveur de l'Éclair 6 (2,40 × 1,95 m, même P/D que D') ou de l'Éclair 100 (2,35 × 1,75 m). Choix laissé au joueur (voir `spad7-calculs.md` § 7).
+- R&M 586 : pas en ligne (Cranfield, HathiTrust) ; à demander à la main.
+

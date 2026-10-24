@@ -1166,3 +1166,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - chemin : menu de l'environnement dans la barre de titre de la session, **Edit**, puis **Network access**, domaines à ajouter à la liste autorisée (https://code.claude.com/docs/en/cloud-environments#network-access) ;
   - domaines à ajouter : `reports.aerade.cranfield.ac.uk`, `www.hydroretro.net` et `hydroretro.net` ; en option `catalog.hathitrust.org` et `babel.hathitrust.org` (Eiffel 1919) ;
   - déjà autorisé : `archive.org`. `gallica.bnf.fr` répond 403 sans qu'on sache si le refus vient du proxy ou du site.
+
+- **R** Le joueur a autorisé les deux domaines (« C'est fait »). Accès vérifié : Cranfield et hydroretro passent ; HathiTrust et Gallica refusent par eux-mêmes (403 du site).
+- **A** Dossier Hartmann téléchargé et lu en entier ; tableau vérifié sur l'image des pages 19-20.
+  - Colonnes confirmées (diamètre, pas, épaisseur du moyeu) ; quatre lignes de plus que le résumé ;
+  - un indice sur le pas, sur une seule ligne : « pas mesuré aux 2/3 de la pale » ;
+  - le texte présente **Éclair (types 6 et 100) comme le fournisseur principal du S.VII**, Levasseur étant homologué aussi.
+- **⚠** R&M 586 introuvable en ligne. C'est une brochure (index R&M 3555, tables 3 et 5) ; Cranfield n'en a pas de copie ; HathiTrust refuse les accès automatiques. Reste une demande manuelle.
+- **R** Fourchette des trois hélices autorisées de P/D 0,80 (`spad7-calculs.md` § 7) :
+  - Éclair 6 (2,40 m) : régime juste (+0,8 à +1,5 %), mais montées 7 à 11 % trop rapides ;
+  - Levasseur 485 (2,45 m, modèle actuel) : montées justes, régime −3 % ;
+  - Gallia 3 (2,50 m) : régime −7,5 %, montées 6 à 9 % trop lentes.
+
+  S46 tombe dans la fourchette, mais aucune hélice ne tient régime et montée à la fois : l'écart restant est du côté de la montée.
+- **D** Rien de changé dans les données. Le choix de l'hélice de référence (Levasseur 485 ou Éclair 6) est soumis au joueur.

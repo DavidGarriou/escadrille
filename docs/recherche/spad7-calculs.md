@@ -224,3 +224,16 @@ Avec l'incertitude de K mesuré (±0,004, soit ±0,004 sur k) : **k = 0,020 ± 0
 2. **Calcul par éléments de pale** sur la géométrie de la D' (Report 301, fig. 5), contrôlé sur son tableau à 2,39 m, puis appliqué aux hélices documentées : Levasseur 2,45 / 1,95 m, Gallia 2,45 / 2,10 m, Éclair 2,35 / 1,75 m (diamètre / pas). C'est le **pas**, plus que le diamètre, qui sépare le régime à la vitesse maximale (J ≈ 0,77) de celui de la montée (J ≈ 0,53).
 3. **Postes à faible J du tableau d'hélice** : les +5 à +6,4 % de traction rendus pour la traînée de souffle du VE-7 reposent sur des surfaces estimées (E:). ±50 % sur ces surfaces font environ ±3 % de traction en montée, soit ±5 % de vitesse ascensionnelle. La géométrie du VE-7 est documentée : on peut les passer en C:.
 4. Présenter le résultat comme une enveloppe. Si S46 tombe dedans, on rapporte et on s'arrête. L'hélice se choisit par le document, jamais par le régime.
+
+**Fourchette des hélices autorisées** (2026-10-24 ; tableau Hartmann lu, `hispano-suiza-8a.md` § 7.5.10). Pour le moteur ordinaire, trois hélices ont le P/D de la table D' (0,80 à 0,81) ; on peut les simuler en changeant seulement le diamètre. Puissance installée 0,973, k = 0,020, 74 % de carburant :
+
+| Hélice | Diamètre | Vitesse 2 000 / 3 000 / 4 000 m (km/h) | Régime (tr/min) | Montée à 2 000 / 3 000 / 4 000 m (min) | Plafond |
+|---|---|---|---|---|---|
+| cible S46 | — | 192,3 / 179,4 / 173,8 | 1 720 / 1 680 / 1 640 | 6,67 / 11,5 / 19,5 | 5 486 m |
+| Éclair 6 | 2,40 m | 193,8 / 188,7 / 181,0 | 1 734 / 1 706 / 1 664 (+0,8 à +1,5 %) | 6,13 / 10,69 / 17,33 (−8 / −7 / −11 %) | 5 917 m (+7,9 %) |
+| Levasseur 485 (modèle actuel) | 2,45 m | 191,8 / 185,6 / 177,4 | 1 665 / 1 629 / 1 585 (−3,0 à −3,3 %) | 6,52 / 11,47 / 18,93 (−2 / 0 / −3 %) | 5 696 m (+3,8 %) |
+| Gallia 3 | 2,50 m | 188,6 / 182,2 / 173,7 | 1 590 / 1 555 / 1 512 (−7,4 à −7,8 %) | 7,05 / 12,52 / 21,07 (+6 / +9 / +8 %) | 5 471 m (−0,3 %) |
+
+- **Chaque cible de S46 est dans la fourchette**, mais **aucune hélice ne tient à la fois le régime et la montée**. Au bon régime (Éclair 6), le modèle monte 7 à 11 % trop vite : c'est l'écart caché que la revue annonçait, maintenant chiffré sur une hélice documentée.
+- Les hélices de P/D 0,74 à 0,77 (Éclair 100, Chauvière 2066) demandent une autre table (I à P/D 0,70 du Report 301, ou 3713 à 0,76 du Report 292, mesurée en vol). Avec un pas plus faible, elles tourneraient plus vite encore, et monteraient sans doute mieux.
+- **Ce qui reste à chercher est donc du côté de la montée**, pas de l'hélice : traction de la table à faible J (surfaces E: du VE-7, § 2) ; puissance du moteur vers 1 450–1 500 tr/min (forme de la courbe du Report 46) ; convention de chronométrage de S46 (depuis le lâcher des freins ?).
