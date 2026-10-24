@@ -202,9 +202,20 @@ fn refuses_inconsistent_references() {
     assert!(invalid_message(&data).contains("BadInstalledPower"));
     let data = edited(
         "altitude_law: Density,",
-        "altitude_law: Density, temperature_exponent: 0.5, // E: test",
+        "altitude_law: Density, temperature_exponent: Some(0.5), // E: test",
     );
     assert!(invalid_message(&data).contains("BadTemperatureExponent"));
+    // A pressure law must say how the temperature acts, with its origin.
+    let data = edited(
+        "altitude_law: Density,",
+        "altitude_law: Pressure(0.93), // E: test",
+    );
+    assert!(invalid_message(&data).contains("temperature_exponent"));
+    let data = edited(
+        "altitude_law: Density,",
+        "altitude_law: Pressure(0.93), temperature_exponent: Some(0.4), // E: test",
+    );
+    assert!(data.build(&FULL).is_ok());
 }
 
 #[test]

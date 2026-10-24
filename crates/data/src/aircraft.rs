@@ -218,10 +218,11 @@ pub struct InlineEngineSpec {
     /// Fraction of the bench indicated power delivered in flight (1 by default).
     #[serde(default = "full_power")]
     pub installed_power: f64,
-    /// Exponent m of (T_std / T) on the indicated power at constant pressure, pressure
-    /// altitude law only (0 by default: no temperature effect).
+    /// Exponent m of (T_std / T) on the indicated power at constant pressure: required
+    /// with a pressure altitude law (0 for no temperature effect, with its origin like any
+    /// number), refused with the density law (which amounts to m = 1).
     #[serde(default)]
-    pub temperature_exponent: f64,
+    pub temperature_exponent: Option<f64>,
     pub idle_throttle: f64,
     pub stall_speed: RotationSpeed,
 }
@@ -685,14 +686,17 @@ impl AircraftData {
             altitude_law,
         )
         .and_then(|engine| engine.with_installed_power(e.installed_power))
-        .and_then(|engine| match e.altitude_law {
-            AltitudeLawSpec::Pressure(_) => {
-                engine.with_temperature_exponent(e.temperature_exponent)
-            }
-            AltitudeLawSpec::Density if e.temperature_exponent == 0.0 => Ok(engine),
-            AltitudeLawSpec::Density => Err(EngineError::BadTemperatureExponent),
+        .and_then(|engine| match (e.altitude_law, e.temperature_exponent) {
+            (AltitudeLawSpec::Pressure(_), Some(m)) => engine.with_temperature_exponent(m),
+            (AltitudeLawSpec::Density, None) => Ok(engine),
+            _ => Err(EngineError::BadTemperatureExponent),
         })
-        .map_err(|err| self.invalid(format!("engine {}: {err:?}", e.name)))?;
+        .map_err(|err| {
+            self.invalid(format!(
+                "engine {}: {err:?} (temperature_exponent: required with Pressure, refused with Density)",
+                e.name
+            ))
+        })?;
 
         let travel = ControlTravel {
             aileron: f.travel.aileron.si(),

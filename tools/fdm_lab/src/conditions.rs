@@ -21,7 +21,7 @@ use crate::performance::{CLIMB_STEP, PerformanceError, best_climb, integrate_cli
 /// pressure altitudes.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct NonStandardDay {
-    pub delta_t: f64,
+    delta_t: f64,
 }
 
 /// Largest temperature offset accepted, K: beyond any climate (and the temperature must
@@ -32,6 +32,11 @@ impl NonStandardDay {
     /// A day `delta_t` warmer than the standard atmosphere, or `None` beyond ±[`MAX_DELTA_T`].
     pub fn new(delta_t: f64) -> Option<Self> {
         (delta_t.abs() <= MAX_DELTA_T).then_some(Self { delta_t })
+    }
+
+    /// Offset to the standard temperature, K.
+    pub fn delta_t(&self) -> f64 {
+        self.delta_t
     }
 }
 

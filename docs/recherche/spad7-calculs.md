@@ -298,10 +298,10 @@ ISA +20 K jusqu'à 4 000 m sort de la climatologie : la moyenne estivale en alti
 - **10 à 15 s en tout**, soit +2,5 à +3,7 % à 2 000 m, si le chronomètre partait des cales.
 
 **Deux indices contre une explication par les seules conditions** :
-- **les vitesses du même tableau tirent en sens inverse** (chiffres de la revue, avec m = 0,5) : à ISA +10 K, vitesses +1,1 / +5,4 / +4,4 % ; à ISA −10 K, +0,4 / +4,7 / +3,8 %. Les vitesses demandent un jour froid, les montées un jour chaud ;
-- **la tranche de 3 000 à 4 000 m** : en atmosphère type, −8,0 % de 0 à 2 000 m, −5,6 % de 2 000 à 3 000 m, mais −17 % de 3 000 à 4 000 m. À ISA +10 K (m = 0,5), cette dernière tranche reste à −8,4 %. Départ, terrain et décollage ne touchent que la première tranche. L'arrondi des temps de S46 vaut environ ±6 % sur la dernière tranche : c'est un indice, pas une preuve. La piste de la loi d'altitude reste ouverte (richesse du carburateur Zenith sans correcteur, surchauffe vers 4 000 m selon Hall).
+- **les vitesses du même tableau tirent en sens inverse** (m = 0,4) : à ISA +10 K, vitesses +1,3 / +5,7 / +4,8 % et régimes +1,5 / +2,2 / +2,3 % ; à ISA −10 K, vitesses +0,2 / +4,5 / +3,5 %. Les vitesses demandent un jour froid, les montées un jour chaud ;
+- **la tranche de 3 000 à 4 000 m** : en atmosphère type, −8,0 % de 0 à 2 000 m, −5,6 % de 2 000 à 3 000 m, mais −17 % de 3 000 à 4 000 m. À ISA +10 K (m = 0,4), cette dernière tranche reste à −10,0 %. Départ, terrain et décollage ne touchent que la première tranche. L'arrondi des temps de S46 vaut environ ±6 % sur la dernière tranche : c'est un indice, pas une preuve. La piste de la loi d'altitude reste ouverte (richesse du carburateur Zenith sans correcteur, surchauffe vers 4 000 m selon Hall).
 
-**Lecture** (reformulée d'après la revue). Les conditions inconnues de l'essai déplacent les temps d'environ −20 à +12 % : température, terrain, zéro et graduation de l'altimètre, réduction éventuelle à une atmosphère type, départ du chronomètre, trajectoire. S46 ne départage donc pas un écart de ±10 % : l'écart actuel n'est **ni la preuve d'un défaut, ni une validation**. Deux indices vont contre une explication par les seules conditions : les vitesses du même tableau, et la tranche de 3 000 à 4 000 m. Les tolérances ne bougent pas.
+**Lecture** (reformulée d'après la revue). Les conditions inconnues de l'essai déplacent les temps d'environ −22 à +7 % (+8 % avec le décollage), sur ±15 K : température, terrain, zéro et graduation de l'altimètre, réduction éventuelle à une atmosphère type, départ du chronomètre, trajectoire. S46 ne départage donc pas un écart de ±10 % : l'écart actuel n'est **ni la preuve d'un défaut, ni une validation**. Deux indices vont contre une explication par les seules conditions : les vitesses du même tableau, et la tranche de 3 000 à 4 000 m. Les tolérances ne bougent pas.
 
 **Après la dixième passe de l'historien** (`spad7.md` § 5.7) et la lecture des documents qu'il désigne, téléchargés par le coordinateur :
 - **départ du chronomètre français : inconnu.** La pratique britannique de 1917 (Tizard, *Flight*, mars 1917) ramène les temps à une montée en vol depuis la hauteur type 0. Un temps britannique corrigé est donc déjà dans la convention du modèle ;
@@ -322,3 +322,20 @@ ISA +20 K jusqu'à 4 000 m sort de la climatologie : la moyenne estivale en alti
 - et la piste « traction à faible J » (surfaces E: du VE-7, ±5 % de vitesse ascensionnelle).
 
 Le rapport n° 96 lui-même (Kew, AIR 1/1196/204/5/2600) fixerait sa convention et sa masse.
+
+## 9. Décrochage : le sens du départ n'est pas significatif (2026-10-24)
+
+Revue de l'aérodynamicien, essais avec un facteur sur le tourbillon K du souffle (copie hors dépôt) :
+
+| Facteur sur K | SPAD, moteur réduit | Biplan d'essai |
+|---|---|---|
+| 1 (modèle) | à droite, +78°, nez −21° | à droite, +62°, nez qui monte |
+| 0,5 | à gauche, −54°, nez −15° | abattée de 5°, inclinaison au plus 3° |
+| 0 | à gauche, −52°, nez −13° | à gauche, −55°, nez qui monte |
+
+- Le départ en roulis existe **sans aucun tourbillon** : c'est la dynamique propre du biplan au décrochage (autorotation, couplage inertiel p·r).
+- Le tourbillon ne fait qu'en choisir le **sens**, contre la réaction du couple.
+- Or la théorie des bandes surestime son effet sur des ailes dans un souffle étroit : le moment de roulis calculé, environ 40 N·m, dépasse le couple de l'hélice (24,5 N·m). Référence : Smelt et Davies, R&M 1788, 1937.
+- **Le côté du départ (« à droite ») n'est donc pas significatif** tant que le souffle sur les ailes n'est pas étalonné. Seuls comptent la présence du départ et l'abattée.
+- Cet étalonnage passe en tête des tâches hors plan : avant toute conclusion sur le décrochage ou les effets de couple, et avant l'embardée au décollage du M2.
+

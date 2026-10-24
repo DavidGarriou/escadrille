@@ -1242,4 +1242,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - « départ des cales » au lieu de « lâcher des freins » ;
   - ligne ISA +20 K retirée (hors climatologie).
 - **R** Campagne en atmosphère type inchangée par ces corrections. Enveloppe avec m = 0,4 : de −22 à +7 % selon les conventions (`spad7-calculs.md` § 8).
+- **R** Seconde revue de l'aérodynamicien (commit 50ae4f9) : **plus rien de bloquant**. Le tourbillon est continu en T = 0, et les 61 incidences d'un balayage fin convergent avec le solveur seul. À corriger :
+  - **le côté du départ au décrochage dépend du tourbillon**, le terme le moins sûr du modèle. Avec un facteur 0,5 ou 0 sur K, le SPAD part à gauche ; le départ en roulis existe aussi sans tourbillon (dynamique propre du biplan). Le côté n'est donc pas significatif ;
+  - deux chiffres du § 8 étaient périmés : enveloppe de −22 à +7 % (et non −20 à +12 %), indices recalculés avec m = 0,4 (tranche de 3 000 à 4 000 m à ISA +10 K : −10 %).
+- **A** Corrections :
+  - § 8 mis à jour ;
+  - nouveau § 9 de `spad7-calculs.md` (sens du départ non significatif) ; réserve ajoutée à la description du scénario dans `essais.ron` ;
+  - étalonnage du souffle sur les ailes (Smelt et Davies) passé en tête des tâches hors plan ;
+  - `temperature_exponent` obligatoire avec une loi `Pressure`, refusé avec `Density` ;
+  - champ de `NonStandardDay` privé ;
+  - test du signe du roulis de l'hélice arrêtée ;
+  - test de symétrie de la cellule sans propulsion.
 

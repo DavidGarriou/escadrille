@@ -282,10 +282,50 @@ fn a_stopped_propeller_in_the_flow_turns_the_air() {
     // Rotor at rest: the flow drives the twisted blades (it would windmill), and the
     // reaction swirls the slipstream against the normal rotation (review of 2026-10-24:
     // the swirl no longer depends on the sign of the thrust).
-    let d = biplane().evaluate(&flying(40.0, 0.06, 0.0), &GLIDE, &SEA_LEVEL);
-    let p = d.propeller.unwrap();
-    assert!(p.thrust < 0.0 && d.loads.rotor.propeller < 0.0);
-    assert!(d.loads.wrench.moment.x.abs() > 0.0, "{:?}", d.loads.wrench);
+    let a = biplane();
+    let stopped = a.evaluate(&flying(40.0, 0.06, 0.0), &GLIDE, &SEA_LEVEL);
+    let p = stopped.propeller.unwrap();
+    assert!(p.thrust < 0.0 && stopped.loads.rotor.propeller < 0.0);
+    // Absorbing power, the propeller swirls the air the other way: the rolling moment
+    // of the swirl on the wings changes sign with the propeller torque.
+    let absorbing = a.evaluate(&flying(40.0, 0.06, 250.0), &GLIDE, &SEA_LEVEL);
+    assert!(absorbing.propeller.unwrap().torque > 0.0);
+    let (roll_stopped, roll_absorbing) = (
+        stopped.loads.wrench.moment.x,
+        absorbing.loads.wrench.moment.x,
+    );
+    assert!(
+        roll_stopped * roll_absorbing < 0.0,
+        "{roll_stopped} {roll_absorbing}"
+    );
+}
+
+#[test]
+fn the_airframe_alone_has_no_lateral_load_in_a_symmetric_glide() {
+    // Without propulsion (no torque, swirl nor P-factor), the mirrored airframe gives
+    // no side force, rolling or yawing moment.
+    let a = biplane();
+    let glider = Aircraft::new(
+        a.mass,
+        a.lifting.clone(),
+        a.drag.clone(),
+        a.bodies.clone(),
+        None,
+        a.downwash.clone(),
+        a.travel,
+    )
+    .unwrap();
+    let w = glider
+        .evaluate(&flying(40.0, 0.06, 0.0), &GLIDE, &SEA_LEVEL)
+        .loads
+        .wrench;
+    let scale = w.force.length();
+    assert!(
+        w.force.y.abs() < 1e-9 * scale
+            && w.moment.x.abs() < 1e-9 * scale
+            && w.moment.z.abs() < 1e-9 * scale,
+        "{w:?}"
+    );
 }
 
 #[test]
