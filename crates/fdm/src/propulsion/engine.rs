@@ -32,7 +32,7 @@
 //! ramp up to twice the stall speed; friction fades linearly to zero at rest, which
 //! avoids a torque jump.
 
-use crate::atmosphere::AtmosphereState;
+use crate::atmosphere::{AtmosphereState, standard_temperature_at_pressure};
 use crate::constants::{P0, RHO0};
 
 /// One point of a sea-level power curve.
@@ -68,13 +68,22 @@ pub enum EngineError {
 pub enum AltitudeLaw {
     /// Proportional to the density ratio σ = ρ / ρ₀ (with friction: Gagg-Farrar).
     Density,
-    /// Proportional to (p / p₀)ⁿ, independent of the temperature. The exponent applies to
-    /// the indicated power, friction being taken off afterwards: a measured law of the
+    /// Proportional to (p / p₀)ⁿ in the standard atmosphere. The exponent applies to the
+    /// indicated power, friction being taken off afterwards: a measured law of the
     /// *brake* power must be converted with the engine's friction curve (R&M 462 measures
     /// a brake power in (p / p₀)^1.04 on a 150 hp Hispano-Suiza; with the friction of
     /// NACA Report 46, the indicated exponent is about 0.93, aerodynamicist's review).
+    /// On a day warmer or colder than the standard atmosphere, the charge also varies as
+    /// (T_std / T)^[`TEMPERATURE_EXPONENT`], T_std being the standard temperature at the
+    /// same pressure: 1 in the standard atmosphere.
     Pressure(f64),
 }
+
+/// Exponent of the temperature at constant pressure in [`AltitudeLaw::Pressure`]: on the
+/// dynamometer, with carburettor intake air at about 10 and 26 °C, the brake power of a
+/// Wright-Hispano « varied closely as 1/√T » at constant speed and pressure (NACA Report
+/// 220, Durand and Lesley, 1926, p. 7; C: applied to the indicated power).
+pub const TEMPERATURE_EXPONENT: f64 = 0.5;
 
 /// Engine torques on the crankshaft, N·m: the `engine` and `friction` terms of
 /// [`crate::rigid_body::RotorTorques`].
@@ -191,7 +200,11 @@ impl InlineEngine {
     pub fn charge_ratio(&self, atmosphere: &AtmosphereState) -> f64 {
         let law = match self.altitude_law {
             AltitudeLaw::Density => atmosphere.density / RHO0,
-            AltitudeLaw::Pressure(n) => (atmosphere.pressure / P0).max(0.0).powf(n),
+            AltitudeLaw::Pressure(n) => {
+                let temperature =
+                    standard_temperature_at_pressure(atmosphere.pressure) / atmosphere.temperature;
+                (atmosphere.pressure / P0).max(0.0).powf(n) * temperature.powf(TEMPERATURE_EXPONENT)
+            }
         };
         self.installed * law
     }
@@ -383,6 +396,34 @@ pub(crate) mod tests {
             AltitudeLaw::Pressure(-1.0),
         );
         assert_eq!(bad, Err(EngineError::BadAltitudeLaw));
+    }
+
+    #[test]
+    fn a_hot_day_lowers_the_charge_at_the_same_pressure() {
+        let curve = [(150.0, 90e3), (220.0, 110e3)]
+            .map(|(speed, power)| EnginePoint { speed, power })
+            .to_vec();
+        let engine = |law| InlineEngine::new(curve.clone(), scaled(&curve, 0.1), 0.1, 30.0, law);
+        let pressure = engine(AltitudeLaw::Pressure(0.93)).unwrap();
+        let density = engine(AltitudeLaw::Density).unwrap();
+        let standard = crate::atmosphere::isa(2_000.0);
+        let hot = AtmosphereState {
+            temperature: standard.temperature + 20.0,
+            density: standard.density * standard.temperature / (standard.temperature + 20.0),
+            ..standard
+        };
+        let ratio = standard.temperature / hot.temperature;
+        assert!(close(
+            pressure.charge_ratio(&hot),
+            pressure.charge_ratio(&standard) * ratio.sqrt(),
+            1e-12
+        ));
+        // The density law already holds the temperature, as 1/T.
+        assert!(close(
+            density.charge_ratio(&hot),
+            density.charge_ratio(&standard) * ratio,
+            1e-12
+        ));
     }
 
     #[test]

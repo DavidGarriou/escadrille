@@ -12,8 +12,9 @@ use escadrille_data::masses::load_masses;
 use escadrille_fdm::aircraft::Aircraft;
 use escadrille_fdm::environment::{Environment, StandardEnvironment};
 use fdm_lab::campaign::{self, validated};
+use fdm_lab::conditions::{NonStandardDay, time_to_pressure_altitude};
 use fdm_lab::modes::{Mode, lateral, linearise, longitudinal, static_stability};
-use fdm_lab::performance::{envelope, max_level_speed};
+use fdm_lab::performance::{ceiling, envelope, max_level_speed};
 use fdm_lab::plots::{self, Panel, Series};
 use fdm_lab::polar::{AirframePolar, Reference, airframe_polar};
 use fdm_lab::report::{Cruise, Report, markdown, time_step_change};
@@ -63,6 +64,18 @@ enum Command {
         aircraft: String,
         #[arg(long, default_value_t = 1_000.0)]
         altitude_m: f64,
+    },
+    /// Times to climb to the heights of essais.ron, and the ceiling, on days warmer or
+    /// colder than the standard atmosphere (pressure altitudes, as a period altimeter),
+    /// from sea level and from an airfield, its altimeter zeroed on the ground or not.
+    Montee {
+        aircraft: String,
+        /// Temperature offsets to the standard atmosphere, K.
+        #[arg(long, value_delimiter = ',', default_values_t = [0.0, 10.0, 20.0])]
+        delta_t_k: Vec<f64>,
+        /// Airfield altitude above sea level, m.
+        #[arg(long, default_value_t = 0.0)]
+        airfield_m: f64,
     },
     /// Empty mass, centre of gravity and inertia from the mass build-up (masses.ron), as
     /// the mass block of aircraft.ron, checked against it.
@@ -415,6 +428,61 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
         && qualitative.iter().all(|o| o.finite()))
 }
 
+/// `fdm_lab montee`: climbs of essais.ron under other test conditions.
+fn montee(assets: &Path, id: &str, deltas: &[f64], airfield: f64) -> Result<bool, String> {
+    let essais = load_essais(assets, id).map_err(|e| e.to_string())?;
+    let built = build(assets, id, essais.conditions.fuel_fraction)?;
+    let aircraft = &built.aircraft;
+    let mut climbs = Vec::new();
+    let mut ceiling_target = None;
+    for q in &essais.quantitative {
+        match q {
+            Quantitative::ClimbTime {
+                from, to, target, ..
+            } if from.si() == 0.0 => climbs.push((to.si(), target.si())),
+            Quantitative::Ceiling {
+                climb_rate, target, ..
+            } if climb_rate.si() == 0.0 => ceiling_target = Some(target.si()),
+            _ => {}
+        }
+    }
+    let minutes = |t: f64| format!("{:.0} min {:02.0} s", (t / 60.0).floor(), t % 60.0);
+    let gap = |t: f64, target: f64| format!("{:+.1} %", 100.0 * (t / target - 1.0));
+    println!(
+        "Montées de {id} ({:.0} % de carburant), altitudes-pression, meilleure vitesse ascensionnelle, sans le décollage :",
+        100.0 * essais.conditions.fuel_fraction
+    );
+    let mut conventions = vec![("depuis 0 m", 0.0, 0.0)];
+    if airfield != 0.0 {
+        conventions.push(("terrain, altimètre sur la mer", airfield, 0.0));
+        conventions.push(("terrain, altimètre à zéro au sol", airfield, airfield));
+    }
+    for &delta_t in deltas {
+        let day = NonStandardDay { delta_t };
+        for &(name, start, zero) in &conventions {
+            let mut line = format!("  ISA {delta_t:+.0} K, {name} :");
+            for &(to, target) in &climbs {
+                let t = time_to_pressure_altitude(aircraft, &day, start, zero + to)
+                    .map_err(|e| format!("{e:?}"))?;
+                line += &format!("  {:.0} m en {} ({})", to, minutes(t), gap(t, target));
+            }
+            let c = ceiling(aircraft, &day, 0.0).map_err(|e| format!("{e:?}"))?;
+            let reading = c.altitude - zero;
+            line += &format!("  ; plafond {reading:.0} m");
+            if let Some(target) = ceiling_target {
+                line += &format!(" ({})", gap(reading, target));
+            }
+            println!("{line}");
+        }
+    }
+    let targets: Vec<String> = climbs
+        .iter()
+        .map(|&(to, t)| format!("{to:.0} m en {}", minutes(t)))
+        .collect();
+    println!("  cibles : {}", targets.join(", "));
+    Ok(true)
+}
+
 fn inertia(assets: &Path, id: &str) -> Result<bool, String> {
     let masses = load_masses(assets, id)
         .map_err(|e| e.to_string())?
@@ -497,6 +565,11 @@ fn main() -> ExitCode {
             out,
         } => essai(&cli.assets, &aircraft, &confidence, &out),
         Command::Inertia { aircraft } => inertia(&cli.assets, &aircraft),
+        Command::Montee {
+            aircraft,
+            delta_t_k,
+            airfield_m,
+        } => montee(&cli.assets, &aircraft, &delta_t_k, airfield_m),
         Command::Polaire {
             aircraft,
             altitude_m,

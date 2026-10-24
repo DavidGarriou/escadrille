@@ -13,7 +13,7 @@ use crate::trim::{
 const SPEED_TOLERANCE: f64 = 0.1;
 
 /// Altitude step of the time-to-climb integration, m.
-const CLIMB_STEP: f64 = 250.0;
+pub const CLIMB_STEP: f64 = 250.0;
 
 /// Tolerance of the ceiling search, m.
 const CEILING_TOLERANCE: f64 = 2.0;

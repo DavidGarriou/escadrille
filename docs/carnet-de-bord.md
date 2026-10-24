@@ -1195,3 +1195,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - vitesses +0,8 / +5,2 / +4,2 % (3 000 m en échec de peu) ;
   - **montées −8,0 / −7,1 / −11,1 %, plafond +7,8 % : en échec** ;
   - décrochage en roulis à droite (+5 / +37 / +78° à 1, 2 et 3 s), plané 7,4 ; polaire inchangée.
+- **A** Question posée à l'historien : comment les montées officielles françaises étaient chronométrées et mesurées (départ du chrono, terrain, altimètre, saison), et le décollage du S.VII.
+- **A** Nouvelle commande **`fdm_lab montee`** : temps de montée et plafond sur des jours non standard (altitudes-pression, comme un altimètre), depuis un terrain en altitude, altimètre calé sur la mer ou à zéro au sol. Quatre tests.
+- **⚠** Premier résultat absurde : par jour chaud, le plafond **montait**. La loi `Pressure(0.93)` ignorait la température ; l'air plus léger freinait moins l'hélice, et le moteur tournait plus vite. **Modification du modèle de vol** : la charge suit (T_type/T)^0,5 à pression égale (NACA Report 220, p. 7, mesure au banc sur un Wright-Hispano). Le facteur vaut 1 en atmosphère type : la campagne habituelle est identique au chiffre près. Tests ajoutés (inversion de l'atmosphère type, charge par jour chaud). Revue de l'aérodynamicien à faire.
+- **R** Enveloppe (`spad7-calculs.md` § 8), écarts aux cibles de montée :
+  - atmosphère type, depuis 0 m : −8 / −7 / −11 % ;
+  - ISA +10 K : −2 / −0,5 / −4 % ;
+  - terrain de 180 m avec altimètre à zéro au sol : −4 / −2 / −5 % ;
+  - ISA +20 K, depuis le terrain : +9 / +12 / +12 %.
+
+  Décollage estimé à environ 10 s (roulage de 6 à 7 s sur 85 à 95 m, puis 3 s d'accélération), soit +2,5 % à 2 000 m. **L'écart de montée est du même ordre que l'incertitude sur les conditions de l'essai.**

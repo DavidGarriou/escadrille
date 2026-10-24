@@ -202,7 +202,8 @@ pub enum AltitudeLawSpec {
     /// Proportional to the density ratio.
     Density,
     /// Indicated power proportional to the pressure ratio to this power (not the exponent
-    /// of a measured brake-power law: see `AltitudeLaw::Pressure`).
+    /// of a measured brake-power law: see `AltitudeLaw::Pressure`), and to (T_std / T)^0.5
+    /// on a non-standard day.
     Pressure(f64),
 }
 

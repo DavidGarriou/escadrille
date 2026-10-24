@@ -252,3 +252,35 @@ Campagne avec l'Éclair 6 :
 
 L'écart de montée, croissant avec l'altitude, est désormais l'objet des recherches.
 
+
+## 8. Conditions des essais de 1919 : enveloppe des temps de montée (2026-10-24)
+
+Le modèle chronomètre ses montées depuis 0 m, en vol, à la vitesse de meilleure montée, en atmosphère type. Les conditions de l'essai de S46 sont inconnues. On encadre donc ce qu'elles ajoutent au temps, sans rien changer au modèle.
+
+**Outil** : `fdm_lab montee spad7 --delta-t-k=-10,0,10,20 --airfield-m 180` (`tools/fdm_lab/src/conditions.rs`). Les altitudes sont des altitudes-pression, comme sur un altimètre. 180 m est un ordre de grandeur pour Villacoublay, en attendant l'historien.
+
+**Correction du modèle faite au passage.** La loi `Pressure(0.93)` ne dépendait pas de la température. Par jour chaud, l'air plus léger freinait moins l'hélice, le moteur tournait plus vite et donnait **plus** de puissance ; le plafond montait. La charge suit maintenant (T_type/T)^0,5 à pression égale (NACA Report 220, p. 7). Le facteur vaut 1 en atmosphère type : la campagne habituelle est inchangée au chiffre près.
+
+**Enveloppe** (Éclair 6, 74 % de carburant ; écart aux cibles 6:40 / 11:30 / 19:30 et 5 486 m) :
+
+| Jour | Départ et altimètre | 2 000 m | 3 000 m | 4 000 m | Plafond |
+|---|---|---|---|---|---|
+| ISA −10 K | 0 m | −13,7 % | −13,3 % | −17,9 % | +10,4 % |
+| ISA | 0 m (convention du modèle) | −8,0 % | −7,1 % | −11,1 % | +7,8 % |
+| ISA | terrain de 180 m, altimètre sur la mer | −14,7 % | −11,0 % | −13,4 % | +7,8 % |
+| ISA | terrain de 180 m, altimètre à zéro au sol | −3,9 % | −2,3 % | −5,3 % | +4,6 % |
+| ISA +10 K | 0 m | −2,1 % | −0,5 % | −3,8 % | +5,3 % |
+| ISA +10 K | terrain, altimètre à zéro au sol | +2,3 % | +4,8 % | +2,9 % | +2,0 % |
+| ISA +20 K | 0 m | +4,0 % | +6,4 % | +4,2 % | +2,6 % |
+| ISA +20 K | terrain, altimètre à zéro au sol | +8,9 % | +12,3 % | +11,9 % | −0,7 % |
+
+**Décollage** (estimation hors outil, C/E ; le modèle de sol viendra au M2) :
+- au point fixe, 1 593 tr/min et 4,0 kN de traction (T/W 0,58), comparables aux 1 640 tr/min de la D' au point fixe sur le VE-7 ;
+- roulage, queue haute, jusqu'à 89 km/h (1,1 V_s) : 6,2 à 6,9 s et 85 à 95 m, pour un frottement de 0,05 à 0,10 ;
+- puis accélération jusqu'à la vitesse de meilleure montée (116 km/h) : 3,3 s ;
+- **environ 10 s en tout**, soit +2,5 % à 2 000 m, +1,4 % à 3 000 m et +0,9 % à 4 000 m, si le chronomètre partait au début du roulage.
+
+**Lecture.**
+- Un jour de 10 K au-dessus de l'atmosphère type, ou un altimètre calé à zéro sur le terrain, suffit à ramener les montées du modèle dans la tolérance. Les deux ensemble, avec le décollage, les dépassent un peu. L'écart de −7 à −11 % n'est donc **pas, à lui seul, la preuve d'un défaut du modèle** : il est du même ordre que l'incertitude sur les conditions de l'essai.
+- Le plafond suit la même enveloppe : +7,8 % en atmosphère type, de +2 à +5 % pour un jour chaud ou un altimètre calé au sol.
+- Pour trancher, il faut les conditions réelles de l'essai (question posée à l'historien) : départ du chronomètre, terrain, zéro de l'altimètre, saison.

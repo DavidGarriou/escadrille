@@ -3,6 +3,7 @@
 //! command line around this library.
 
 pub mod campaign;
+pub mod conditions;
 pub mod modes;
 pub mod performance;
 pub mod plots;

@@ -69,6 +69,13 @@ pub fn isa(altitude: f64) -> AtmosphereState {
     }
 }
 
+/// Temperature of the standard atmosphere at the altitude where its pressure is
+/// `pressure` (the pressure altitude), K: what a non-standard day is compared with.
+pub fn standard_temperature_at_pressure(pressure: f64) -> f64 {
+    let t11 = T0 + LAPSE_RATE * TROPOPAUSE_ALTITUDE;
+    (T0 * (pressure / P0).powf(1.0 / pressure_exponent())).max(t11)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -107,6 +114,15 @@ mod tests {
             assert!(close(a.temperature, t, 1e-9), "{h} m: {a:?}");
             assert!(close(a.pressure, p, 1e-5), "{h} m: {a:?}");
             assert!(close(a.density, rho, 1e-4), "{h} m: {a:?}");
+        }
+    }
+
+    #[test]
+    fn standard_temperature_at_pressure_inverts_the_standard_atmosphere() {
+        for h in [-300.0, 0.0, 2_000.0, 6_000.0, 11_000.0, 15_000.0] {
+            let s = isa(h);
+            let t = standard_temperature_at_pressure(s.pressure);
+            assert!((t - s.temperature).abs() < 1e-9, "{h}: {t} {s:?}");
         }
     }
 
