@@ -1158,3 +1158,11 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **Document décisif** : le R&M 586 (1921), plusieurs hélices sur un Hispano de 150 hp sans réducteur.
 - **A** Contrôle sur le modèle : ce rapport vaut 0,87 au sol et 0,91 à 4 000 m, en limite basse des mesures du VE-7. Plausible.
 - **⚠** Le proxy de l'environnement refuse `reports.aerade.cranfield.ac.uk` (R&M 586) et `www.hydroretro.net` (dossier Hartmann). Pour les lire, le joueur doit les ajouter aux domaines autorisés de l'environnement.
+
+## 2026-10-24 — Session 4 (suite)
+
+- **Q** Comment autoriser les deux domaines depuis l'application iOS, et les retrouver dans l'application de bureau ? **R** :
+  - le réglage appartient à l'environnement cloud, enregistré sur le compte et non sur l'appareil : modifié depuis une application, il vaut pour toutes ;
+  - chemin : menu de l'environnement dans la barre de titre de la session, **Edit**, puis **Network access**, domaines à ajouter à la liste autorisée (https://code.claude.com/docs/en/cloud-environments#network-access) ;
+  - domaines à ajouter : `reports.aerade.cranfield.ac.uk`, `www.hydroretro.net` et `hydroretro.net` ; en option `catalog.hathitrust.org` et `babel.hathitrust.org` (Eiffel 1919) ;
+  - déjà autorisé : `archive.org`. `gallica.bnf.fr` répond 403 sans qu'on sache si le refus vient du proxy ou du site.
