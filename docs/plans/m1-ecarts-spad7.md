@@ -119,3 +119,5 @@ Revue de l'aérodynamicien : rien de bloquant. Points corrigés :
   - plané : la finesse de 7,4 inclut la petite traction de l'hélice au ralenti.
 - Nom du champ `fabric_drag_rise` : il porte plus que la toile (priorité basse).
 - Historien : hélice réelle du S.VII 150 ch, régime en montée, bord d'attaque des ailes (contreplaqué ou toile).
+- Table d'hélice linéaire par morceaux : ses cassures de pente, en particulier au-delà de J = 1,10 où elle rejoint le point « hélice arrêtée », bloquent parfois le solveur de trim au ralenti (résidu de 10⁻⁷ pour une tolérance de 10⁻¹⁰). La recherche du décrochage tolère maintenant ces échecs isolés (2026-10-24). Une interpolation lisse (cubique monotone), ou un point de table à J ≈ 1,3, serait plus propre ; à voir avec l'aérodynamicien.
+

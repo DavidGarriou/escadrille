@@ -279,6 +279,9 @@ pub struct Stall {
 /// Starting speeds of the stall sweep, m/s.
 const STALL_START_SPEEDS: [f64; 5] = [40.0, 30.0, 50.0, 60.0, 25.0];
 
+/// Failed incidences in a row that end the stall sweep (0.015 rad).
+const STALL_MISSES: u32 = 3;
+
 /// Stall speed at idle: the lowest speed of a steady glide, sweeping the angle of attack
 /// up to the stall (or to the end of the elevator travel).
 pub fn stall_speed(
@@ -301,25 +304,32 @@ pub fn stall_speed_at(
     let mut guess = Flight::guess(altitude, 40.0, throttle);
     guess.flight_path = if throttle > 0.5 { 0.1 } else { -0.1 };
     let mut best: Option<Stall> = None;
+    let mut misses = 0;
     let mut alpha = 0.05;
     while alpha < 0.45 {
         guess.alpha = alpha;
-        // Until a first steady flight is found, try several starting speeds, then the
-        // next incidence; past it, each solution starts the next one.
-        let trim = if best.is_some() {
-            solve_robust(aircraft, env, guess, AT_ALPHA).ok()
-        } else {
-            STALL_START_SPEEDS.iter().find_map(|&speed| {
-                solve_robust(aircraft, env, Flight { speed, ..guess }, AT_ALPHA).ok()
-            })
-        };
+        // Each solution starts the next one; when that fails (before the first steady
+        // flight, or at an isolated point where the solver stalls on a kink of the
+        // tables), try several starting speeds, then the next incidence. Only
+        // STALL_MISSES failures in a row end the sweep past the stall.
+        let trim = best
+            .and_then(|_| solve_robust(aircraft, env, guess, AT_ALPHA).ok())
+            .or_else(|| {
+                STALL_START_SPEEDS.iter().find_map(|&speed| {
+                    solve_robust(aircraft, env, Flight { speed, ..guess }, AT_ALPHA).ok()
+                })
+            });
         let Some(trim) = trim else {
             if best.is_some() {
-                break;
+                misses += 1;
+                if misses >= STALL_MISSES {
+                    break;
+                }
             }
             alpha += 0.005;
             continue;
         };
+        misses = 0;
         if trim.commands(aircraft).pitch.abs() > 1.0 {
             if let Some(b) = best.as_mut() {
                 b.elevator_limited = true;
@@ -384,6 +394,25 @@ mod tests {
         let h = ceiling(&a, &STILL_AIR, target).unwrap().altitude;
         let rate = best_climb(&a, &STILL_AIR, h).unwrap().rate;
         assert!((rate - target).abs() < 0.01, "ceiling {h} m, rate {rate}");
+    }
+
+    #[test]
+    fn an_isolated_trim_failure_does_not_end_the_stall_sweep() {
+        // SPAD with its 2.40 m propeller: the idle glide at 1 000 m fails to converge at
+        // one incidence near 3°, the windmilling propeller sitting past the end of its
+        // table (J ≈ 1.3, piecewise-linear coefficients). The sweep must go on to the
+        // real stall, about 14° and 85 km/h.
+        let assets = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let a = escadrille_data::aircraft::load_aircraft(&assets, "spad7")
+            .unwrap()
+            .build(&escadrille_data::aircraft::Loading {
+                fuel_fraction: 0.739,
+            })
+            .unwrap()
+            .aircraft;
+        let stall = stall_speed(&a, &STILL_AIR, 1_000.0).unwrap();
+        assert!(stall.alpha > 10f64.to_radians(), "{stall:?}");
+        assert!(stall.speed < 100.0 / 3.6, "{stall:?}");
     }
 
     #[test]

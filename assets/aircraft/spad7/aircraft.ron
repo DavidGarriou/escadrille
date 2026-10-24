@@ -168,12 +168,12 @@ Aircraft(
 
     propeller: (
         table: "aircraft/spad7/propeller.ron",
-        diameter: M(2.45),                                                     // C: three documents out of four for the 150 ch (hispano-suiza-8a.md § 7.1)
+        diameter: M(2.40),                                                     // C: Éclair type 6, 2.40 × 1.95 m (P/D 0.81, that of the D' table), « approuvé » for the SPAD VII with the 150 ch; Hartmann names Éclair (types 6 and 100) as the main propeller of the S.VII (hispano-suiza-8a.md § 7.5.10); player's choice of 2026-10-24, Levasseur 485 (2.45 m) and Éclair 100 kept as variants (spad7-calculs.md § 7)
         hub_m: (0.78, 0.0, -0.38),                                             // C: 1917 drawing, hub 0.36 to 0.41 m above the lower leading edge (aerodynamicist's reading)
         rotation: Clockwise,                                                   // C: clockwise seen by the pilot, five concordant clues (hispano-suiza-8a.md § 7.3)
-        p_factor_m: 1.1,                                                       // C: blade elements on the D' geometry (Report 301, fig. 5): 1.16 to 1.68 m with frozen inflow at the climbing J, × 0.75 for the induced-velocity feedback
+        p_factor_m: 1.08,                                                      // C: blade elements on the D' geometry (Report 301, fig. 5): 1.16 to 1.68 m with frozen inflow at the climbing J, × 0.75 for the induced-velocity feedback, scaled with the diameter from 2.45 to 2.40 m (1.1 × 0.98)
         normal_force: 0.038,                                                   // C: blade elements, c_n 0.034 to 0.038 for J 0.6 to 0.76, × 1.1 for the upwash ahead of the wings
-        rotor_inertia_kg_m2: 7.0,                                              // C: wooden propeller of 22 kg (E:), m R² / 5 = 6.6, plus 0.3 to 0.6 of crankshaft
+        rotor_inertia_kg_m2: 6.7,                                              // C: wooden propeller of 22 kg (E:), m R² / 5 = 6.3 at 2.40 m, plus 0.3 to 0.6 of crankshaft
     ),
 
     travel: (aileron: Deg(20.0), elevator: Deg(25.0), rudder: Deg(30.0)),      // E: usual period throws, no SPAD source (the XIII manual, S38, still to be found)

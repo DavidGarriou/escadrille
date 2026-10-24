@@ -27,7 +27,7 @@ La théorie retrouve le RAF 15 mesuré à 0,3° et 0,005 près ; on n'en garde q
 
 ## 2. Hélice (`assets/aircraft/spad7/propeller.ron`)
 
-**Comparable** : hélice en bois Navy D' (P/D 0,8, 2,39 m) mesurée sur le VE-7 complet, NACA Report 301, tableau III (`hispano-suiza-8a.md` § 7.4). Le diamètre du S.VII retenu est **2,45 m** (trois documents sur quatre, `hispano-suiza-8a.md` § 7.1) ; à P/D 0,8, le pas vaut 1,96 m, celui de la Levasseur série 485 (1,95 m). Les coefficients, sans dimension, sont repris tels quels.
+**Comparable** : hélice en bois Navy D' (P/D 0,8, 2,39 m) mesurée sur le VE-7 complet, NACA Report 301, tableau III (`hispano-suiza-8a.md` § 7.4). Les coefficients, sans dimension, sont repris tels quels. **Diamètre** : 2,45 m (Levasseur 485) jusqu'au 2026-10-23, puis **2,40 m, Éclair type 6** (2,40 × 1,95 m, P/D 0,81), choix du joueur le 2026-10-24 : Hartmann présente Éclair (types 6 et 100) comme le fournisseur principal du S.VII (`hispano-suiza-8a.md` § 7.5.10 ; fourchette au § 7). Effet P et inertie du rotor suivent le diamètre (1,08 m ; 6,7 kg·m²).
 
 **De la traction effective à la traction de l'hélice** : le Report 301 donne une traction « effective », diminuée du surcroît de traînée que le souffle impose à l'avion. Le modèle de vol calcule lui-même cette traînée sur les éléments placés dans le souffle : la reprendre compterait deux fois. On rajoute donc la traînée de souffle du VE-7 :
 - ΔC_T = ½ Σ (f/D²) [(J + s·ν)² − J²], avec ν = v_i/(nD) solution de C_T = (π/2) ν (J + ν) (Froude) et s = 1 + x/√(x² + R²), la loi du souffle du modèle à la distance x derrière le disque ;
@@ -237,3 +237,18 @@ Avec l'incertitude de K mesuré (±0,004, soit ±0,004 sur k) : **k = 0,020 ± 0
 - **Chaque cible de S46 est dans la fourchette**, mais **aucune hélice ne tient à la fois le régime et la montée**. Au bon régime (Éclair 6), le modèle monte 7 à 11 % trop vite : c'est l'écart caché que la revue annonçait, maintenant chiffré sur une hélice documentée.
 - Les hélices de P/D 0,74 à 0,77 (Éclair 100, Chauvière 2066) demandent une autre table (I à P/D 0,70 du Report 301, ou 3713 à 0,76 du Report 292, mesurée en vol). Avec un pas plus faible, elles tourneraient plus vite encore, et monteraient sans doute mieux.
 - **Ce qui reste à chercher est donc du côté de la montée**, pas de l'hélice : traction de la table à faible J (surfaces E: du VE-7, § 2) ; puissance du moteur vers 1 450–1 500 tr/min (forme de la courbe du Report 46) ; convention de chronométrage de S46 (depuis le lâcher des freins ?).
+
+**Hélice de référence : Éclair 6** (décision du joueur, 2026-10-24, sur recommandation). Raisons :
+- le texte de Hartmann la désigne ;
+- les deux erreurs qui se compensaient avec la Levasseur 485 sont séparées ;
+- la cause de la montée se cherche avec l'hélice documentée.
+
+Biais déclaré : on savait avant la lecture que 2,40 m donne le bon régime. Levasseur 485 et Éclair 100 restent des variantes.
+
+Campagne avec l'Éclair 6 :
+- **régimes réussis** : +0,8 / +1,5 / +1,5 % ;
+- vitesses +0,8 / +5,2 / +4,2 % : 3 000 m en échec de peu (B) ;
+- **montées −8,0 / −7,1 / −11,1 %**, plafond +7,8 % : en échec.
+
+L'écart de montée, croissant avec l'altitude, est désormais l'objet des recherches.
+

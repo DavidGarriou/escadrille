@@ -1184,3 +1184,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **hélice** : passer à l'Éclair 6, avec Levasseur 485 et Éclair 100 en variantes. Raisons : le texte de Hartmann, des deux erreurs qui se compensent aujourd'hui, et des recherches sur la montée à mener avec l'hélice documentée. Biais déclaré : on savait déjà que 2,40 m donne le bon régime ;
   - **suite** : d'abord les conditions des essais de 1919 (départ du chrono, altitude du terrain, température), parce que c'est peu coûteux et que cela chiffre l'incertitude de la cible ; puis la traction à faible J (surfaces du VE-7 à sourcer) ; enfin la courbe du moteur vers 1 500 tr/min et la loi d'altitude, puisque l'excès croît avec l'altitude (−8 / −7 / −11 %) ;
   - en attente de la décision du joueur.
+- **Q** « D'accord » : le joueur valide les deux recommandations. **D** Hélice de référence : Éclair 6 (2,40 m). Suite : les conditions des essais de 1919.
+- **A** Hélice passée à 2,40 m ; effet P (1,10 → 1,08 m) et inertie du rotor (7,0 → 6,7 kg·m²) mis à l'échelle du diamètre.
+- **⚠** Première campagne fausse :
+  - avec la nouvelle hélice, la recherche du décrochage au ralenti rendait 128 km/h à 2,9° d'incidence ; décrochage qualitatif, plané et polaire étaient faussés à sa suite ;
+  - cause : un trim isolé ne converge pas (résidu 10⁻⁷ pour 10⁻¹⁰), l'hélice en moulinet étant au-delà de la fin de sa table (J ≈ 1,3, coefficients linéaires par morceaux), et la recherche s'arrêtait au premier échec ;
+  - correction : nouvel essai de plusieurs vitesses de départ, puis saut de l'incidence, avec trois échecs de suite avant de conclure. Test de non-régression sur le SPAD, vérifié en échec sans la correction.
+- **R** Campagne avec l'Éclair 6 :
+  - régimes +0,8 / +1,5 / +1,5 % : **réussis** ;
+  - vitesses +0,8 / +5,2 / +4,2 % (3 000 m en échec de peu) ;
+  - **montées −8,0 / −7,1 / −11,1 %, plafond +7,8 % : en échec** ;
+  - décrochage en roulis à droite (+5 / +37 / +78° à 1, 2 et 3 s), plané 7,4 ; polaire inchangée.

@@ -780,6 +780,6 @@ Fichiers PDF et texte extrait de NASA NTRS, téléchargés par le coordinateur l
 
 **Septième passe (2026-10-24 ; dossier Hartmann lu, coordinateur)**
 - Le tableau des hélices homologuées est lu sur l'image (§ 7.5.10) : colonnes confirmées, quatre lignes de plus, un indice sur la définition du pas (« aux 2/3 de la pale », une ligne).
-- **Éclair est présentée comme le fournisseur principal du S.VII** (types 6 et 100). La référence Levasseur 485 du 2026-10-23 reste une hélice autorisée, mais le texte pèse désormais en faveur de l'Éclair 6 (2,40 × 1,95 m, même P/D que D') ou de l'Éclair 100 (2,35 × 1,75 m). Choix laissé au joueur (voir `spad7-calculs.md` § 7).
+- **Éclair est présentée comme le fournisseur principal du S.VII** (types 6 et 100). La référence Levasseur 485 du 2026-10-23 reste une hélice autorisée, mais le texte pèse désormais en faveur de l'Éclair 6 (2,40 × 1,95 m, même P/D que D') ou de l'Éclair 100 (2,35 × 1,75 m). Choix laissé au joueur (voir `spad7-calculs.md` § 7). **Décision du joueur (2026-10-24) : Éclair 6 (2,40 × 1,95 m) devient l'hélice de référence du modèle** ; Levasseur 485 et Éclair 100 restent des variantes.
 - R&M 586 : pas en ligne (Cranfield, HathiTrust) ; à demander à la main.
 

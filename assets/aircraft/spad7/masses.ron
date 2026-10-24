@@ -22,7 +22,7 @@ Masses(
         ),
         (
             name: "hélice et moyeu",
-            mass: Kg(22.0),                               // E: wooden two-bladed propeller of 2.45 m, 20 to 25 kg (aerodynamicist)
+            mass: Kg(22.0),                               // E: wooden two-bladed propeller of 2.40 to 2.45 m, 20 to 25 kg (aerodynamicist)
             position_m: (0.78, 0.0, -0.38),               // C: hub on the 1917 drawing, 0.36 to 0.41 m above the lower leading edge (aerodynamicist's reading; spad7-calculs.md § 3)
             shape: Own(ixx: 6.6, iyy: 3.3, izz: 3.3),     // C: m R² / 5 about the shaft; half of it about the other axes, averaged over a turn of the two blades
         ),
