@@ -20,6 +20,8 @@ use escadrille_fdm::environment::Environment;
 use escadrille_fdm::rigid_body::RigidBodyState;
 use glam::DVec3;
 
+use crate::trim::Trim;
+
 /// One tail-off test of TN 1146.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct TunnelPoint {
@@ -64,6 +66,62 @@ pub const TN1146: [TunnelPoint; 3] = [
 pub fn tn1146_speed() -> f64 {
     let q = 4.09 * 47.880_26;
     (2.0 * q / RHO0).sqrt()
+}
+
+/// What the slipstream's swirl does to an aircraft in one state, for the lifting surfaces
+/// (drag items and bodies are left out: they only gain side forces).
+#[derive(Debug, Clone, PartialEq)]
+pub struct SwirlBalance {
+    /// Propeller torque, N·m, positive when absorbing.
+    pub torque: f64,
+    /// For each lifting surface: rolling moment of the swirl along the propeller's rotation
+    /// axis, N·m (positive: taking back the torque), and thrust power it takes back, W.
+    pub surfaces: Vec<(String, f64, f64)>,
+    /// Thrust power the surfaces take back from the swirl, W.
+    pub recovered_power: f64,
+    /// Kinetic energy carried by the swirl through the disc, W.
+    pub rotational_power: f64,
+}
+
+/// The swirl's share of the lifting loads in a trimmed flight: the aircraft's lifting
+/// surfaces in its own slipstream, less the same without the swirl.
+pub fn swirl_balance(
+    aircraft: &Aircraft,
+    env: &dyn Environment,
+    trim: &Trim,
+) -> Option<SwirlBalance> {
+    let state = trim.flight.state();
+    let deflections = &trim.flight.deflections;
+    let throttle = trim.commands(aircraft).throttle;
+    let d = aircraft.evaluate_deflected(&state, deflections, throttle, env);
+    let loads = d.propeller?;
+    let slipstream = aircraft.slipstream(&loads, d.density)?;
+    let axis = aircraft.propulsion()?.propeller.rotation_axis();
+    let with = aircraft.lifting_loads(&state, deflections, env, Some(&slipstream));
+    let without =
+        aircraft.lifting_loads(&state, deflections, env, Some(&slipstream.without_swirl()));
+    let speed = d.air_velocity.length();
+    let along = d.air_velocity / speed;
+    let surfaces = aircraft
+        .lifting()
+        .surfaces()
+        .iter()
+        .zip(with.surface_wrenches.iter().zip(&without.surface_wrenches))
+        .map(|(s, (w, n))| {
+            let roll = (w.moment - n.moment).dot(axis);
+            (
+                s.name().to_owned(),
+                roll,
+                (w.force - n.force).dot(along) * speed,
+            )
+        })
+        .collect();
+    Some(SwirlBalance {
+        torque: loads.torque,
+        surfaces,
+        recovered_power: (with.wrench.force - without.wrench.force).dot(along) * speed,
+        rotational_power: slipstream.rotational_power(d.density),
+    })
 }
 
 /// The TN 1146 model with the propeller of one blade angle, from the comparison assets
@@ -173,6 +231,34 @@ mod tests {
             let taken = roll.recovered_fraction();
             assert!((0.36..=0.54).contains(&taken), "{point:?}: {taken}");
         }
+    }
+
+    /// The balance adds up, and on the SPAD climbing at full throttle the swirl takes back
+    /// part of the torque and gives thrust. Whether that thrust stays below the swirl's
+    /// energy is not asserted: strip theory breaks this bound on the synthetic biplane
+    /// (plan docs/plans/m1-souffle-ailes.md, step 5).
+    #[test]
+    fn the_swirl_balance_adds_up() {
+        use escadrille_data::aircraft::{Loading, load_aircraft};
+
+        use crate::performance::best_climb;
+
+        let game = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let spad = load_aircraft(&game, "spad7")
+            .unwrap()
+            .build(&Loading {
+                fuel_fraction: 0.74,
+            })
+            .unwrap()
+            .aircraft;
+        let climb = best_climb(&spad, &STILL_AIR, 0.0).unwrap().trim;
+        let b = swirl_balance(&spad, &STILL_AIR, &climb).unwrap();
+        let power: f64 = b.surfaces.iter().map(|s| s.2).sum();
+        assert!((power - b.recovered_power).abs() < 1e-6 * b.recovered_power.abs());
+        let roll: f64 = b.surfaces.iter().map(|s| s.1).sum();
+        assert!(roll > 0.2 * b.torque && roll < 2.0 * b.torque, "{b:?}");
+        assert!(b.recovered_power > 0.0 && b.rotational_power > 0.0, "{b:?}");
+        assert_eq!(b.surfaces.len(), spad.lifting().surfaces().len());
     }
 
     #[test]

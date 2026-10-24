@@ -104,6 +104,7 @@ Aircraft(
         tail: ["tailplane"],
         factor: 0.125,                                                         // C: two flat vortex sheets in the Trefftz plane, 2S/(πb²) = 0.187 × 0.84 (tail at mid-gap) × 0.86 (near wake) × 0.915 (DATCOM); equivalent monoplane 0.122
         tail_arm: M(3.96),                                                     // C: wing quarter chord (x −0.30) to the tailplane mean-chord quarter chord (x −4.26)
+        swirl_left: 0.5,                                                       // C: half the swirl straightened by a wing in the slipstream (NACA Report 747; NACA TN 1146 used it and matched the fin forces within 10 to 15 %); a monoplane value: two planes in the slipstream may straighten more (E:, plan docs/plans/m1-souffle-ailes.md)
     )),
 
     // Element by element (Hoerner); no 3/5 interference factor (S43 had no propeller; the

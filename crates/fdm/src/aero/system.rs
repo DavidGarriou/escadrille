@@ -61,6 +61,8 @@ pub struct LiftingSystem {
 #[derive(Debug, Clone, PartialEq)]
 pub struct SystemLoads {
     pub wrench: Wrench,
+    /// Force and moment of each surface about the centre of gravity, body axes.
+    pub surface_wrenches: Vec<Wrench>,
     /// Lift coefficient of each surface (strip dynamic pressure × area weighted).
     pub lift_coefficients: Vec<f64>,
     /// Induced angle each surface receives from the others, rad.
@@ -147,13 +149,16 @@ impl LiftingSystem {
 
         let angles = mutual_angles(&cl);
         let mut wrench = Wrench::default();
+        let mut surface_wrenches = Vec::with_capacity(n);
         for (i, &angle) in angles.iter().enumerate() {
             let (w, c) = surface_loads(i, angle);
             wrench += w;
+            surface_wrenches.push(w);
             cl[i] = c;
         }
         SystemLoads {
             wrench,
+            surface_wrenches,
             lift_coefficients: cl,
             mutual_angles: angles,
         }

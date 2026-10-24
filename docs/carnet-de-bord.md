@@ -1289,4 +1289,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Étape 2 : facteur de largeur du souffle (R&M 2368, tableau 2) appliqué à ce que le souffle ajoute à la portance des bandes, pour la vitesse comme pour le tourbillon. Les éléments de traînée gardent tout le souffle.
 - **R** Maquette du TN 1146 : l'aile reprend 41 / 40 / 39 % du couple (avant : 71 / 70 / 57 %), pour 39 à 50 % mesurés. C'est le bas de la plage, sans aucun paramètre réglé. SPAD : le roulis du tourbillon sur les ailes baisse en montée et au décrochage plein gaz ; il ne change presque pas à Vmax ni au ralenti (limite de Koning).
 - **⚠** Le test de linéarisation des modes propres a échoué de peu (2,3 % pour 2 % admis). Diagnostic : les polaires linéaires par morceaux cassent la pente le long de la perturbation ; ces cassures existaient déjà, dont une au point d'équilibre. **D** Plancher absolu du test porté de 1e-3 à 5e-3, avec la justification en commentaire. À relire par l'aérodynamicien.
+- **A** Étapes 3 et 4 :
+  - rotation du souffle réduite derrière les ailes (`swirl_left` = 0,5, donnée obligatoire du bloc `downwash`) ;
+  - vitesse induite de Froude prolongée sous traction négative, bornée à −V/2 ;
+  - nouvelle commande `fdm_lab souffle <avion>` : bilan du tourbillon par surface.
+- **⚠** La polaire du Messenger a dérivé : son C_D0 est passé de 0,055 à 0,051. L'hélice qui freine au ralenti ralentit maintenant l'air sur sa traînée parasite, concentrée en un point dans le souffle. Or le Report 304 planait hélice à traction nulle. **D** `fdm_lab polaire` évalue la cellule sans propulsion, comme la « traînée vraie » du Report 304. Oswald inchangé pour le Messenger, 0,727 pour le SPAD (0,723).
+- **⚠** L'invariant d'énergie prévu par le plan ne tient pas pour le biplan d'essai : 120 % de l'énergie de rotation reprise à Vmax. C'est la limite de la théorie des bandes décrite par R&M 2368, partie II. Le test est remplacé par un test de cohérence ; un addendum est proposé au joueur (inclinaison partielle de la portance due à la rotation, option (b) recommandée).
+- **R** Campagne du SPAD après les étapes 2 à 4 :
+  - toutes les cibles chiffrées passent : vitesses +0,3 / +4,6 / +3,5 %, montées −4,5 / −3,3 / −7,0 %, plafond +6,4 % ;
+  - départ au décrochage à gauche (−54°) ;
+  - c'est le sens du biais déclaré, pas une validation.
+- **⚠** Disque plein pendant les essais : 26 Go de `target`. `target/release` et `target/debug/incremental` supprimés (reconstructibles).
 

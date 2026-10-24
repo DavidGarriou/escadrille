@@ -21,10 +21,12 @@ use glam::DVec3;
 use crate::aero::body::SlenderBody;
 use crate::aero::drag::DragItem;
 use crate::aero::surface::ControlDeflections;
-use crate::aero::system::LiftingSystem;
+use crate::aero::system::{LiftingSystem, SystemLoads};
 use crate::environment::Environment;
 use crate::propulsion::engine::{EngineTorques, InlineEngine};
-use crate::propulsion::propeller::{Propeller, PropellerLoads};
+use crate::propulsion::propeller::{
+    Propeller, PropellerGeometry, PropellerLoads, Slipstream, WingWake,
+};
 use crate::rigid_body::{
     AUX_STATES, Loads, MassProperties, RigidBodyState, RotorTorques, step_rk4,
 };
@@ -67,6 +69,9 @@ pub struct Downwash {
     pub factor: f64,
     /// Distance travelled by the downwash from the wings to the tail, m.
     pub tail_arm: f64,
+    /// Fraction of the slipstream's swirl left behind the wings, which straighten the rest
+    /// (C: about one half, NACA Report 747 and TN 1146), 0 to 1.
+    pub swirl_left: f64,
 }
 
 /// Propeller and the engine that drives it.
@@ -93,6 +98,8 @@ pub struct Aircraft {
     bodies: Vec<SlenderBody>,
     propulsion: Option<Propulsion>,
     downwash: Option<Downwash>,
+    /// Where the wings straighten the slipstream's swirl (with a propeller and wings).
+    wing_wake: Option<WingWake>,
     travel: ControlTravel,
 }
 
@@ -141,7 +148,8 @@ impl Aircraft {
                 && d.factor.is_finite()
                 && d.factor >= 0.0
                 && d.tail_arm.is_finite()
-                && d.tail_arm > 0.0;
+                && d.tail_arm > 0.0
+                && (0.0..=1.0).contains(&d.swirl_left);
             if !valid {
                 return Err(AircraftError::BadDownwash);
             }
@@ -153,6 +161,10 @@ impl Aircraft {
         {
             return Err(AircraftError::BadTravel);
         }
+        let wing_wake = match (&propulsion, &downwash) {
+            (Some(p), Some(d)) => Some(wing_wake(&lifting, d, p.propeller.geometry())),
+            _ => None,
+        };
         Ok(Self {
             mass,
             lifting,
@@ -160,6 +172,7 @@ impl Aircraft {
             bodies,
             propulsion,
             downwash,
+            wing_wake,
             travel,
         })
     }
@@ -184,6 +197,21 @@ impl Aircraft {
     /// Wing downwash on the tail, and which surfaces are the wings.
     pub fn downwash(&self) -> Option<&Downwash> {
         self.downwash.as_ref()
+    }
+
+    /// Where the wings straighten the slipstream's swirl.
+    pub fn wing_wake(&self) -> Option<WingWake> {
+        self.wing_wake
+    }
+
+    /// The same airframe without propeller and engine: no thrust and no slipstream, as in
+    /// the « true drag » of full-scale glide tests flown at zero thrust (NACA Report 304).
+    pub fn without_propulsion(&self) -> Self {
+        Self {
+            propulsion: None,
+            wing_wake: None,
+            ..self.clone()
+        }
     }
 
     /// Control surface deflections for the pilot's commands.
@@ -229,32 +257,24 @@ impl Aircraft {
                 let loads = p
                     .propeller
                     .loads(air_velocity, omega, state.rotor_speed, density);
-                let slipstream = p.propeller.slipstream(&loads, density);
+                let slipstream = self.slipstream(&loads, density);
                 let engine =
                     p.engine
                         .torques(shaft_speed, throttle, p.engine.charge_ratio(&atmosphere));
-                (Some(loads), Some(slipstream), engine)
+                (Some(loads), slipstream, engine)
             }
             None => (None, None, EngineTorques::default()),
         };
         let blown = |r: DVec3| slipstream.map_or(DVec3::ZERO, |s| s.local_flow(r));
-
         let downwash = state.aux[AUX_DOWNWASH];
-        let downwash_velocity = downwash_velocity(air_velocity, downwash);
-        let is_tail = |i: usize| self.downwash.as_ref().is_some_and(|d| d.tail.contains(&i));
-        let surfaces = self.lifting.surfaces();
-        let lifting = self
-            .lifting
-            .loads(air_velocity, omega, density, deflections, |i, strip| {
-                let blown = slipstream.map_or(DVec3::ZERO, |s| {
-                    s.lifting_flow(strip.position, strip.chord, surfaces[i].section_slope())
-                });
-                if is_tail(i) {
-                    blown + downwash_velocity
-                } else {
-                    blown
-                }
-            });
+        let lifting = self.lifting_in(
+            air_velocity,
+            omega,
+            density,
+            downwash,
+            deflections,
+            slipstream.as_ref(),
+        );
 
         let mut wrench = lifting.wrench;
         for item in &self.drag {
@@ -269,6 +289,7 @@ impl Aircraft {
 
         let mut aux_rates = [0.0; AUX_STATES];
         if let Some(d) = &self.downwash {
+            let surfaces = self.lifting.surfaces();
             let (mut lift, mut area) = (0.0, 0.0);
             for &i in &d.wings {
                 let s: f64 = surfaces[i].strips().iter().map(|strip| strip.area).sum();
@@ -301,6 +322,61 @@ impl Aircraft {
         }
     }
 
+    /// The propeller's slipstream for these propeller loads, straightened behind the wings.
+    pub fn slipstream(&self, propeller: &PropellerLoads, density: f64) -> Option<Slipstream> {
+        let p = self.propulsion.as_ref()?;
+        let free = p.propeller.slipstream(propeller, density);
+        Some(self.wing_wake.map_or(free, |w| free.behind_wings(w)))
+    }
+
+    /// Loads of the lifting surfaces in a state, in a given slipstream: the aircraft's own
+    /// ([`Self::slipstream`]) in [`Self::evaluate`], or a variant of it for diagnostics.
+    pub fn lifting_loads(
+        &self,
+        state: &RigidBodyState,
+        deflections: &ControlDeflections,
+        env: &dyn Environment,
+        slipstream: Option<&Slipstream>,
+    ) -> SystemLoads {
+        let position = state.position_ned;
+        let wind_body = state.attitude.conjugate() * env.wind_ned(position);
+        self.lifting_in(
+            state.velocity_body - wind_body,
+            state.angular_velocity_body,
+            env.atmosphere(position).density,
+            state.aux[AUX_DOWNWASH],
+            deflections,
+            slipstream,
+        )
+    }
+
+    /// Lifting surfaces in the slipstream (reduced by the jet-width factor), with the lagged
+    /// wing downwash on the tail.
+    fn lifting_in(
+        &self,
+        air_velocity: DVec3,
+        omega: DVec3,
+        density: f64,
+        downwash: f64,
+        deflections: &ControlDeflections,
+        slipstream: Option<&Slipstream>,
+    ) -> SystemLoads {
+        let downwash_velocity = downwash_velocity(air_velocity, downwash);
+        let is_tail = |i: usize| self.downwash.as_ref().is_some_and(|d| d.tail.contains(&i));
+        let surfaces = self.lifting.surfaces();
+        self.lifting
+            .loads(air_velocity, omega, density, deflections, |i, strip| {
+                let blown = slipstream.map_or(DVec3::ZERO, |s| {
+                    s.lifting_flow(strip.position, strip.chord, surfaces[i].section_slope())
+                });
+                if is_tail(i) {
+                    blown + downwash_velocity
+                } else {
+                    blown
+                }
+            })
+    }
+
     /// Loads for a state (gravity excluded).
     pub fn loads(
         &self,
@@ -320,6 +396,28 @@ impl Aircraft {
         dt: f64,
     ) -> RigidBodyState {
         step_rk4(state, &self.mass, dt, |s| self.loads(s, controls, env))
+    }
+}
+
+/// The wings' wake in the slipstream: from their rearmost trailing edge, over their mean
+/// chord, down to the swirl the wings leave.
+fn wing_wake(
+    lifting: &LiftingSystem,
+    downwash: &Downwash,
+    propeller: &PropellerGeometry,
+) -> WingWake {
+    let surfaces = lifting.surfaces();
+    let (mut start, mut area, mut chord_area) = (f64::NEG_INFINITY, 0.0, 0.0);
+    for strip in downwash.wings.iter().flat_map(|&i| surfaces[i].strips()) {
+        let trailing_edge = strip.position - strip.chord_axis * (0.75 * strip.chord);
+        start = start.max(-(trailing_edge - propeller.hub).dot(propeller.thrust_axis));
+        area += strip.area;
+        chord_area += strip.area * strip.chord;
+    }
+    WingWake {
+        start,
+        length: chord_area / area,
+        swirl_left: downwash.swirl_left,
     }
 }
 

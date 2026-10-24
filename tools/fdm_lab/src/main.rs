@@ -14,11 +14,11 @@ use escadrille_fdm::environment::{Environment, StandardEnvironment};
 use fdm_lab::campaign::{self, validated};
 use fdm_lab::conditions::{NonStandardDay, time_to_pressure_altitude};
 use fdm_lab::modes::{Mode, lateral, linearise, longitudinal, static_stability};
-use fdm_lab::performance::{ceiling, envelope, max_level_speed};
+use fdm_lab::performance::{best_climb, ceiling, envelope, glide, max_level_speed, stall_speed_at};
 use fdm_lab::plots::{self, Panel, Series};
 use fdm_lab::polar::{AirframePolar, Reference, airframe_polar};
 use fdm_lab::report::{Cruise, Report, markdown, time_step_change};
-use fdm_lab::slipstream::{TN1146, tail_off_roll, tn1146_model, tn1146_speed};
+use fdm_lab::slipstream::{TN1146, swirl_balance, tail_off_roll, tn1146_model, tn1146_speed};
 use fdm_lab::trim::{Flight, LEVEL_AT_SPEED, Trim, solve_robust};
 use fdm_lab::{qualitative, robustness};
 
@@ -78,9 +78,10 @@ enum Command {
         #[arg(long, default_value_t = 0.0)]
         airfield_m: f64,
     },
-    /// Rolling moment of the slipstream on the powered model of NACA TN 1146, tail off,
-    /// against the measurement (run with `--assets tools/fdm_lab/comparison`).
-    Souffle,
+    /// Without an aircraft: rolling moment of the slipstream on the powered model of NACA
+    /// TN 1146, tail off, against the measurement (run with `--assets
+    /// tools/fdm_lab/comparison`). With one: what the swirl does to it in a few flights.
+    Souffle { aircraft: Option<String> },
     /// Empty mass, centre of gravity and inertia from the mass build-up (masses.ron), as
     /// the mass block of aircraft.ron, checked against it.
     Inertia { aircraft: String },
@@ -582,7 +583,10 @@ fn main() -> ExitCode {
             delta_t_k,
             airfield_m,
         } => montee(&cli.assets, &aircraft, &delta_t_k, airfield_m),
-        Command::Souffle => souffle(&cli.assets),
+        Command::Souffle { aircraft: None } => souffle(&cli.assets),
+        Command::Souffle {
+            aircraft: Some(aircraft),
+        } => build(&cli.assets, &aircraft, 0.74).and_then(|built| swirl_report(&built.aircraft)),
         Command::Polaire {
             aircraft,
             altitude_m,
@@ -611,6 +615,53 @@ fn main() -> ExitCode {
             ExitCode::from(2)
         }
     }
+}
+
+/// Prints what the swirl does to an aircraft at its maximum speed (2 000 m), best climb
+/// (sea level), in a glide at idle and at the stall at full throttle (1 000 m).
+fn swirl_report(aircraft: &Aircraft) -> Result<bool, String> {
+    let e = |e: fdm_lab::performance::PerformanceError| format!("{e:?}");
+    let flights = [
+        (
+            "Vmax 2 000 m",
+            max_level_speed(aircraft, &STILL_AIR, 2_000.0).map_err(e)?,
+        ),
+        (
+            "meilleure montée 0 m",
+            best_climb(aircraft, &STILL_AIR, 0.0).map_err(e)?.trim,
+        ),
+        (
+            "plané 35 m/s",
+            glide(aircraft, &STILL_AIR, 1_000.0, 35.0).map_err(e)?,
+        ),
+        (
+            "décrochage plein gaz",
+            stall_speed_at(aircraft, &STILL_AIR, 1_000.0, 1.0)
+                .map_err(e)?
+                .trim,
+        ),
+    ];
+    for (name, trim) in &flights {
+        let b = swirl_balance(aircraft, &STILL_AIR, trim).ok_or("no propeller")?;
+        let total: f64 = b.surfaces.iter().map(|s| s.1).sum();
+        println!(
+            "{name} : {:.1} m/s, couple {:.1} N·m ; roulis du tourbillon {:.2} Q ; puissance reprise {:.2} kW sur {:.2} kW d'énergie de rotation ({:.0} %)",
+            trim.flight.speed,
+            b.torque,
+            total / b.torque,
+            b.recovered_power / 1e3,
+            b.rotational_power / 1e3,
+            100.0 * b.recovered_power / b.rotational_power
+        );
+        for (surface, roll, power) in &b.surfaces {
+            println!(
+                "    {surface:<12} roulis {:+.2} Q, puissance {:+.2} kW",
+                roll / b.torque,
+                power / 1e3
+            );
+        }
+    }
+    Ok(true)
 }
 
 /// Prints the TN 1146 comparison; `Ok(true)` when every blade angle falls in the

@@ -121,6 +121,48 @@ Chaque étape : `just check`, `just test`, carnet de bord, commit et push.
 - **Réserve** : en charge légère (croisière, ralenti), la théorie (R&M 2368, partie II) garde la théorie des bandes pour le tourbillon. La mesure du NACA ne couvre que la forte traction.
 - **Test des modes propres** : son plancher absolu passe de 1e-3 à 5e-3. Les tables linéaires par morceaux (polaires) cassent la pente le long de la perturbation : environ 7e-5 sur une réponse en lacet de 3e-3 seulement. Ces cassures existaient déjà, dont une au point d'équilibre lui-même ; le facteur les a déplacées.
 
+### Étapes 3 et 4 (2026-10-24) : rotation derrière les ailes, Froude sous traction négative
+
+- FDM :
+  - nouvelle donnée obligatoire `swirl_left` du bloc `downwash` (0,5 pour le SPAD, C:) : derrière le bord de fuite le plus en arrière des ailes, la rotation tombe à cette fraction, sur une corde moyenne ;
+  - vitesse induite de Froude des deux côtés de T = 0, bornée à −V/2 ; la surface du tube au plus triplée ;
+  - nouveaux accès pour les outils : `Aircraft::slipstream`, `Aircraft::lifting_loads`, `Aircraft::without_propulsion`, efforts de chaque surface, `Slipstream::without_swirl` et `Slipstream::rotational_power`.
+- `fdm_lab polaire` : la convention de « traînée vraie » du Report 304 (planés à traction nulle) évalue désormais la cellule sans propulsion. Sans cela, l'hélice qui freine au ralenti ralentissait l'air sur la traînée parasite du Messenger, concentrée en un point dans le souffle, et son C_D0 tombait de 0,055 à 0,051.
+  - Messenger poli : Oswald 0,889, inchangé ;
+  - SPAD : 0,727 (0,723 avant).
+- Bilan du tourbillon (`fdm_lab souffle <avion>`), sur les surfaces portantes :
+
+| Vol | SPAD : roulis | SPAD : puissance reprise / énergie de rotation | Biplan d'essai : roulis | Biplan d'essai : puissance / énergie |
+|---|---|---|---|---|
+| Vmax, 2 000 m | 1,21 Q | 83 % | 1,46 Q | **120 %** |
+| Meilleure montée, 0 m | 0,98 Q | 47 % | 1,19 Q | 85 % |
+| Décrochage plein gaz | 0,65 Q | 26 % | 0,85 Q | 51 % |
+
+- **⚠ L'invariant d'énergie prévu à l'étape 5 ne tient pas** : la cellule du biplan d'essai reprend à Vmax 120 % de l'énergie de rotation du souffle.
+  - Explication, R&M 2368 partie II : en ligne portante, la déflexion propre de l'aile dans le jet incline vers l'arrière la portance due à la rotation. Le moment de roulis reste celui de la théorie des bandes (aile infinie), mais la poussée reprise tombe à 28 à 37 % de l'énergie de rotation.
+  - La théorie des bandes, elle, incline toute la portance de l'angle entier du souffle. Pour une aile infinie en rotation solide, elle reprend environ dix fois plus que la ligne portante.
+  - Le test d'invariant est remplacé par un test de cohérence du bilan. **Décision demandée au joueur** : voir l'addendum ci-dessous.
+- Campagne du SPAD après les étapes 2 à 4 :
+
+| Mesure | Avant | Après |
+|---|---|---|
+| Vitesses maximales (2 000 / 3 000 / 4 000 m) | +0,8 / **+5,2** / +4,2 % | +0,3 / +4,6 / +3,5 % |
+| Montées (2 000 / 3 000 / 4 000 m) | **−8,0 / −7,1 / −11,1 %** | −4,5 / −3,3 / −7,0 % |
+| Plafond | **+7,8 %** | +6,4 % |
+| Départ au décrochage moteur réduit (à 3 s) | à droite, +78° | **à gauche, −54°** |
+
+  - Toutes les cibles chiffrées passent désormais. **C'est le sens du biais déclaré** : ce n'est pas une validation, puisque les conditions de S46 déplacent les temps de −22 à +7 % (§ 8).
+  - Autres changements, à regarder en revue : vol sur le dos (après 10 s, 175,6 km/h et 134 m perdus, contre 146,0 km/h et 71 m) ; glissade sur la queue (79,5 km/h contre 91,2) ; piqué à 60° plein gaz (242 km/h au plus, contre 225).
+
+### Addendum proposé (à valider) : inclinaison de la portance due à la rotation
+
+- Problème : l'écart d'énergie ci-dessus. Il pèse aussi sur les performances, car la poussée reprise au tourbillon aide la montée : 1,27 kW pour le SPAD en meilleure montée.
+- Correction, dans les bandes : l'incidence due à la rotation change la grandeur de la portance, ce qui garde le moment de roulis. En revanche, la direction de la force ne suit qu'une fraction τ de l'inclinaison du souffle. Deux options :
+  - **(a)** τ = 0 : aucune poussée reprise. Simple, mais la ligne portante en donne 28 à 37 % de l'énergie de rotation ; effet sur la montée du SPAD, environ −4 %.
+  - **(b)** τ tiré de R&M 2368 partie II (tableau 1, comparé à la théorie des bandes pour la même aile) : de 0,04 à 0,22 quand 2R/c va de 0,8 à 3,1, en croissant avec la largeur du jet ; environ 0,4 par extrapolation pour le SPAD (C:, avec une part d’E: puisque la partie II suppose une rotation solide). Effet sur la montée, environ −2 %.
+- Recommandation : **(b)**, fidèle à la source ; (a) supprimerait aussi la part réelle. Dans les deux cas, l'invariant d'énergie redevient un test.
+- Même biais : la montée ralentirait encore un peu, et resterait dans les tolérances de S46.
+
 ## Effets attendus sur le SPAD (ordres de grandeur, à vérifier)
 
 - **Montée plus lente, d'environ 5 %**, parce que la cellule reprend moins d'énergie au tourbillon.

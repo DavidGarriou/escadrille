@@ -1,6 +1,6 @@
 //! Drag polar of the airframe from steady glides at idle, in the convention of the
-//! full-scale glide tests of NACA Report 304: the propeller's own forces are taken out
-//! ("true drag"), so that the lift-dependent drag of the model can be compared with a
+//! full-scale glide tests of NACA Report 304: the propeller's forces and slipstream are
+//! taken out ("true drag", glides at zero thrust), so that the lift-dependent drag of the model can be compared with a
 //! measured aeroplane through its Oswald factor (plan `docs/plans/m1-ecarts-spad7.md`).
 
 use escadrille_fdm::aircraft::Aircraft;
@@ -83,19 +83,20 @@ pub fn line_fit(points: &[(f64, f64)]) -> Option<(f64, f64)> {
     Some(((sy - slope * sx) / n, slope))
 }
 
-/// Lift and drag coefficients of the airframe in a steady glide: aerodynamic force less
-/// the propeller's, in wind axes.
+/// Lift and drag coefficients of the airframe in a steady glide, in wind axes: the
+/// aerodynamic force of `airframe` (the aircraft without propulsion) in the glide's state,
+/// with neither the propeller's forces nor its slipstream. Report 304 glided with the
+/// propeller at zero thrust and corrected the rest; at idle the model's propeller brakes
+/// and slows the air behind it, which the measured airframe did not feel.
 fn coefficients(
-    aircraft: &Aircraft,
+    airframe: &Aircraft,
     env: &dyn Environment,
     trim: &crate::trim::Trim,
     reference: &Reference,
 ) -> PolarPoint {
     let state = trim.flight.state();
-    let controls = trim.commands(aircraft);
-    let d = aircraft.evaluate_deflected(&state, &trim.flight.deflections, controls.throttle, env);
-    let propeller = d.propeller.map_or(DVec3::ZERO, |p| p.wrench.force);
-    let force = d.loads.wrench.force - propeller;
+    let d = airframe.evaluate_deflected(&state, &trim.flight.deflections, 0.0, env);
+    let force = d.loads.wrench.force;
     let air = d.air_velocity;
     let speed = air.length();
     let along = air / speed;
@@ -123,11 +124,12 @@ pub fn airframe_polar(
     let high = (2.0 * weight / (density * reference.area * FASTEST_GLIDE_CL * FIT_RANGE.0))
         .sqrt()
         .max(low);
+    let airframe = aircraft.without_propulsion();
     let mut points = Vec::new();
     for i in 0..GLIDES {
         let speed = low + (high - low) * f64::from(i) / f64::from(GLIDES - 1);
         if let Ok(trim) = glide(aircraft, env, altitude, speed) {
-            points.push(coefficients(aircraft, env, &trim, &reference));
+            points.push(coefficients(&airframe, env, &trim, &reference));
         }
     }
     let fit: Vec<(f64, f64)> = points

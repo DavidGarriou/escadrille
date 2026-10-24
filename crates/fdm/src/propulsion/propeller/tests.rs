@@ -282,7 +282,7 @@ fn slipstream_fades_smoothly_at_its_edge() {
 }
 
 #[test]
-fn a_windmilling_propeller_swirls_the_air_without_induced_speed() {
+fn a_windmilling_propeller_slows_and_swirls_the_air() {
     let p = propeller();
     let windmilling = p.loads(
         DVec3::new(75.0, 0.0, 0.0),
@@ -295,13 +295,41 @@ fn a_windmilling_propeller_swirls_the_air_without_induced_speed() {
         "{windmilling:?}"
     );
     let s = p.slipstream(&windmilling, RHO);
-    assert_eq!(s.induced_speed(), 0.0);
+    // Froude on the braking side: T = 2 ρ A (V + v_i) v_i with v_i < 0.
+    let vi = s.induced_speed();
+    assert!(vi < 0.0 && vi > -37.5, "{vi}");
+    assert!(close(
+        windmilling.thrust,
+        2.0 * RHO * p.disc_area() * (75.0 + vi) * vi,
+        1e-9
+    ));
     // Driven by the air, it turns the air against its rotation: K = Q / ṁ < 0.
-    let mass_flow = RHO * p.disc_area() * 75.0;
+    let mass_flow = RHO * p.disc_area() * (75.0 + vi);
     assert!(close(s.swirl() * mass_flow, windmilling.torque, 1e-12));
     let hub = p.geometry().hub;
     let behind = s.local_flow(hub + DVec3::new(-2.0, 0.0, -0.8));
-    assert!(behind.x.abs() < 1e-12 && behind.y < 0.0, "{behind:?}");
+    // Slowed air: it moves forwards relative to the free stream.
+    assert!(behind.x > 0.0 && behind.y < 0.0, "{behind:?}");
+}
+
+#[test]
+fn a_hard_braking_propeller_stops_at_half_the_speed_and_a_bounded_tube() {
+    // Far beyond the turbulent wake state: v_i held at −V/2, the tube at most three times
+    // its area.
+    let p = propeller();
+    let mut braking = p.loads(DVec3::new(30.0, 0.0, 0.0), DVec3::ZERO, 0.0, RHO);
+    braking.thrust = -5_000.0;
+    let s = p.slipstream(&braking, RHO);
+    assert_eq!(s.induced_speed(), -15.0);
+    for x in [0.0, 1.0, 5.0, 100.0] {
+        let r = s.tube_radius(x);
+        assert!(
+            r.is_finite() && r <= 1.25 * 3f64.sqrt() + 1e-12,
+            "x {x}: {r}"
+        );
+    }
+    let behind = s.local_flow(p.geometry().hub + DVec3::new(-50.0, 0.0, 0.3));
+    assert!(behind.is_finite() && behind.x > 25.0, "{behind:?}");
 }
 
 #[test]
@@ -616,4 +644,54 @@ fn at_rest_a_strip_feels_the_root_of_eta_of_the_jet_speed() {
     let eta = jet_width_factor(0.0, 5.5 * 1.5 / (8.0 * PI * s.tube_radius(1.5)));
     assert!(jet > 5.0);
     assert!(close(felt, eta.sqrt() * jet, 1e-12), "{felt} {jet} {eta}");
+}
+
+#[test]
+fn the_wings_leave_the_fraction_of_the_swirl_they_do_not_straighten() {
+    let (s, point) = blowing();
+    let hub = point + DVec3::new(1.5, -0.6, 0.0);
+    let wake = WingWake {
+        start: 1.0,
+        length: 0.5,
+        swirl_left: 0.4,
+    };
+    let behind = s.behind_wings(wake);
+    let at = |s: &Slipstream, distance: f64| s.local_flow(hub + DVec3::new(-distance, 0.6, 0.0));
+    // Ahead of the trailing edge, nothing changes; past the wake, 40 % of the swirl.
+    assert_eq!(at(&behind, 0.9), at(&s, 0.9));
+    let (free, left) = (at(&s, 2.0), at(&behind, 2.0));
+    assert_eq!(left.x, free.x);
+    assert!(
+        (left.z - 0.4 * free.z).abs() < 1e-12 && free.z.abs() > 0.5,
+        "{free:?}"
+    );
+    // Smoothly in between.
+    let mut previous = at(&behind, 0.9).z;
+    for i in 1..=800 {
+        let value = at(&behind, 0.9 + f64::from(i) * 1e-3).z;
+        assert!((value - previous).abs() < 0.01 * free.z.abs(), "{i}");
+        previous = value;
+    }
+    assert!(at(&s.without_swirl(), 2.0).z.abs() < 1e-15);
+}
+
+#[test]
+fn the_rotational_power_is_the_swirl_energy_through_the_disc() {
+    // ½ ρ ∫ v_θ² v_x dA just behind the disc, by quadrature over the tube.
+    let (s, point) = blowing();
+    let hub = point + DVec3::new(1.5, -0.6, 0.0);
+    let distance = 0.1 * 1.25;
+    let (tube, axial) = (s.tube_radius(distance), 20.0 + s.axial_speed_at(distance));
+    let n = 20_000;
+    let mut energy = 0.0;
+    for i in 0..n {
+        let r = (f64::from(i) + 0.5) / f64::from(n) * 1.2 * tube;
+        let flow = s.local_flow(hub + DVec3::new(-distance, r, 0.0));
+        let dr = 1.2 * tube / f64::from(n);
+        energy += 0.5 * RHO * flow.z * flow.z * (20.0 - flow.x) * 2.0 * PI * r * dr;
+    }
+    let expected = s.rotational_power(RHO) * axial / (20.0 + s.induced_speed());
+    // The formula leaves out the blend at the tube's edge: within a few per cent.
+    assert!(close(energy, expected, 0.05), "{energy} {expected}");
+    assert!(expected > 0.0);
 }

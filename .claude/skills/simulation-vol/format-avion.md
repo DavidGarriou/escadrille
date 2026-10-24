@@ -64,7 +64,8 @@ Aircraft(
         // lower_wing, tailplane (+ Elevator), fin (Vertical, + Rudder)
     ],
     interference: [(planes: ("upper_wing", "lower_wing"), sigma: 0.0)], // C: Prandtl, NACA TN 182, écartement / envergure
-    downwash: Some((wings: ["upper_wing", "lower_wing"], tail: ["tailplane"], factor: 0.0, tail_arm: M(0.0))), // C:
+    downwash: Some((wings: ["upper_wing", "lower_wing"], tail: ["tailplane"], factor: 0.0, tail_arm: M(0.0), // C:
+        swirl_left: 0.5)),                                // C: fraction de la rotation du souffle laissée derrière les ailes (monoplan : environ ½, NACA Report 747 et TN 1146), de 0 à 1, obligatoire
 
     parasite_drag: [                                      // traînées axiales, dans le souffle de l'hélice
         (name: "fuselage",          cd: 0.0, reference_area: M2(1.0), position_m: (0.0, 0.0, 0.0)), // C: contrôle de traînée globale

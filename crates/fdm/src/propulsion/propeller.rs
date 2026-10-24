@@ -38,10 +38,11 @@
 //! The swirl comes from the torque:
 //! r v_θ is conserved along a streamline of an inviscid axisymmetric flow, so it is zero
 //! ahead of the disc and K = Q / ṁ just behind it (blended over ±5 % of the radius, C¹),
-//! with a solid-body core near the hub (E:). The induced axial speed exists only with a
-//! positive thrust, but the swirl does not depend on its sign: a windmilling propeller
-//! turns the air against its rotation. The slipstream runs straight back along the
-//! thrust axis (E:).
+//! with a solid-body core near the hub (E:). Behind the wings only a fraction of it is
+//! left ([`WingWake`]). The induced axial speed follows Froude on both sides of T = 0
+//! (slowed air behind a braking propeller, held at −V/2), and the swirl does not depend on
+//! the thrust's sign: a windmilling propeller turns the air against its rotation. The
+//! slipstream runs straight back along the thrust axis (E:).
 
 use std::f64::consts::{FRAC_PI_2, PI};
 
@@ -348,11 +349,13 @@ impl Propeller {
     /// Slipstream of the propeller for these loads (momentum theory).
     pub fn slipstream(&self, loads: &PropellerLoads, density: f64) -> Slipstream {
         let free_stream = loads.axial_speed.max(0.0);
-        let induced = if loads.thrust > 0.0 && density > 0.0 {
+        // Froude, T = 2 ρ A (V + v_i) v_i, on both sides of T = 0: a braking propeller
+        // slows the air behind it (v_i < 0). At v_i = −V/2 the far wake would stop and
+        // momentum theory fails (turbulent wake state): v_i is held there (E:).
+        let induced = if density > 0.0 {
             let disc_loading = 2.0 * loads.thrust / (density * self.disc_area());
-            0.5 * ((free_stream * free_stream + disc_loading).sqrt() - free_stream)
+            0.5 * ((free_stream * free_stream + disc_loading).max(0.0).sqrt() - free_stream)
         } else {
-            // Windmilling (braking) states are outside simple momentum theory.
             0.0
         };
         // Angular momentum flux: Q = ṁ r v_θ far downstream, whatever the sign of the
@@ -375,8 +378,21 @@ impl Propeller {
             free_stream,
             induced,
             swirl,
+            wing_wake: None,
         }
     }
+}
+
+/// Wake of the wings in the slipstream: behind them only a fraction of the swirl is left,
+/// the wings having straightened the rest (NACA Report 747, NACA TN 1146).
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct WingWake {
+    /// Distance of the wings' trailing edge behind the disc, m: the swirl falls from there.
+    pub start: f64,
+    /// Distance over which it falls to `swirl_left` (the wings' mean chord), m.
+    pub length: f64,
+    /// Fraction of the swirl left behind the wings, 0 to 1.
+    pub swirl_left: f64,
 }
 
 /// Slipstream from Froude's momentum theory (`modele-aero.md`): induced speed v_i at the
@@ -393,9 +409,36 @@ pub struct Slipstream {
     induced: f64,
     /// K = r v_θ far downstream, m²/s.
     swirl: f64,
+    wing_wake: Option<WingWake>,
 }
 
+/// Largest expansion of the stream tube's area behind a braking propeller: momentum
+/// theory's at v_i = −0.4 V, where the turbulent wake state begins (Glauert; E:).
+const MAX_TUBE_EXPANSION: f64 = 3.0;
+
 impl Slipstream {
+    /// The same slipstream, its swirl partly straightened behind the wings.
+    pub fn behind_wings(self, wake: WingWake) -> Self {
+        Self {
+            wing_wake: Some(wake),
+            ..self
+        }
+    }
+
+    /// The same slipstream without its swirl (diagnostics: what the swirl does).
+    pub fn without_swirl(self) -> Self {
+        Self { swirl: 0.0, ..self }
+    }
+
+    /// Kinetic energy carried by the swirl through the disc, W: ½ ρ ∫ v_θ² (V + v_i) dA
+    /// over the free vortex and its solid-body core, π ρ (V + v_i) K² (ln(1/c) + ¼) with
+    /// c = [`SWIRL_CORE`] (the blend at the tube's edge left out). What the airframe can
+    /// take back from the swirl as thrust is bounded by it.
+    pub fn rotational_power(&self, density: f64) -> f64 {
+        let through = (self.free_stream + self.induced).max(0.0);
+        PI * density * through * self.swirl * self.swirl * ((1.0 / SWIRL_CORE).ln() + 0.25)
+    }
+
     /// Induced axial speed at the disc, m/s.
     pub fn induced_speed(&self) -> f64 {
         self.induced
@@ -412,10 +455,16 @@ impl Slipstream {
         self.induced * (1.0 + distance / (distance * distance + r * r).sqrt())
     }
 
-    /// Radius of the stream tube at `distance` behind the disc, m.
+    /// Radius of the stream tube at `distance` behind the disc, m; its area grows at most
+    /// [`MAX_TUBE_EXPANSION`] times behind a braking propeller.
     pub fn tube_radius(&self, distance: f64) -> f64 {
-        let ratio =
-            (self.free_stream + self.induced) / (self.free_stream + self.axial_speed_at(distance));
+        let through = self.free_stream + self.induced;
+        let ratio = through / (self.free_stream + self.axial_speed_at(distance));
+        let ratio = if ratio.is_finite() && ratio >= 0.0 {
+            ratio.min(MAX_TUBE_EXPANSION)
+        } else {
+            MAX_TUBE_EXPANSION
+        };
         self.radius * ratio.sqrt()
     }
 
@@ -437,7 +486,10 @@ impl Slipstream {
         let behind = smoothstep(distance / (2.0 * SWIRL_STEP * self.radius) + 0.5);
         // Free vortex outside the core, solid-body rotation inside.
         let core = SWIRL_CORE * self.tube_radius(distance);
-        let circulation = self.swirl * behind;
+        let straightened = self.wing_wake.map_or(1.0, |w| {
+            1.0 - (1.0 - w.swirl_left) * smoothstep((distance - w.start) / w.length)
+        });
+        let circulation = self.swirl * behind * straightened;
         let tangential = if radial > 0.0 {
             let speed = if radial >= core {
                 circulation / radial
@@ -483,9 +535,6 @@ impl Slipstream {
             return DVec3::ZERO;
         };
         let (free, jet) = (self.free_stream, self.free_stream + p.axial);
-        if jet <= 0.0 {
-            return -self.axis * p.axial + p.tangential;
-        }
         let narrowness = section_slope * chord / (8.0 * PI * self.tube_radius(p.distance));
         let eta = jet_width_factor(free / jet, narrowness);
         let effective = (free * free + eta * (jet * jet - free * free))
