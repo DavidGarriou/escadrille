@@ -11,4 +11,5 @@ pub mod polar;
 pub mod qualitative;
 pub mod report;
 pub mod robustness;
+pub mod slipstream;
 pub mod trim;

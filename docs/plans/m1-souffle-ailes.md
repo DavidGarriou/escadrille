@@ -1,6 +1,6 @@
 # Plan — Souffle d'hélice sur les ailes et l'empennage
 
-- Statut : **proposé** au joueur le 2026-10-24
+- Statut : **validé** par le joueur le 2026-10-24
 - Contexte : première tâche « prioritaire » hors plan de `m1-ecarts-spad7.md`. Le tourbillon du souffle choisit le côté du départ au décrochage (`spad7-calculs.md` § 9), et le modèle le croit plus fort que le couple de l'hélice. À régler avant toute conclusion sur le décrochage ou les effets de couple, et avant l'embardée au décollage du M2.
 - Règle inchangée : **aucun coefficient réglé sur les cibles du SPAD**. On étalonne sur un objet mesuré (ici une maquette motorisée du NACA), on source, on teste, l'aérodynamicien relit, et on rapporte l'écart qui reste.
 
@@ -66,6 +66,34 @@ Trois défauts :
    - rapport au joueur, sans réglage.
 
 Chaque étape : `just check`, `just test`, carnet de bord, commit et push.
+
+## Résultats
+
+### Étape 1 (2026-10-24) : la maquette du TN 1146 mesure l'écart
+
+- Maquette modélisée dans `tools/fdm_lab/comparison/aircraft/naca_tn1146`. Commande : `fdm_lab --assets tools/fdm_lab/comparison souffle`.
+  - Géométrie : tableau I et figure 1. Aile basse en W inversé (−0,73° puis 7,75°), plan de corde 4,3 à 4,5 in sous l'axe de traction, quart de corde à 0,65 D derrière l'hélice.
+  - Profil : NACA 66(215)-216, l'équivalent du 66,2-216, relu sur l'image du NACA Report 824 (p. 236) au plus petit nombre de Reynolds de la page, 2,9 × 10⁶. La grille a été repérée par analyse d'image ; le scan est tourné de 0,7°.
+  - Hélice : une table par calage, tirée de la figure 7 et passant exactement par le point mesuré T_c′ = 1,25.
+  - Vérification de la lecture : le roulis « calculé » du NACA (−Q_c′/2) retombe exactement sur leur courbe de la figure 13.
+- Mesure (figure 13, points sans empennage) contre le modèle actuel :
+
+| Calage | Repris par l'aile, mesure | Repris par l'aile, modèle | Rapport |
+|---|---|---|---|
+| 15° | 47,5 à 50 % | 71 % | 1,4 à 1,5 |
+| 25° | 39 à 45 % | 70 % | 1,6 à 1,8 |
+| 35° | 43,5 à 46 % | 57 % | 1,2 à 1,3 |
+
+- À 35°, le tourbillon donne des incidences de 15 à 20° près du moyeu : les bandes décrochent, ce qui limite déjà la réponse du modèle.
+- Sensibilité :
+  - aile 0,3 in plus haute ou plus basse : ±3 à 4 points ;
+  - pente du profil réduite de 10 %, pour un Reynolds plus bas : −6 points ;
+  - même en cumulant les deux dans le sens favorable, le modèle reste au-dessus de la mesure (51 à 61 %).
+- Réserves :
+  - profil relu à 2,9 × 10⁶, alors que la maquette volait à 0,5 × 10⁶ (0,8 × 10⁶ effectif) ;
+  - T_c′ « effectif » (traction moins traînée du souffle) ;
+  - fuselage non modélisé.
+- **Conclusion** : la surestimation est confirmée, d'un facteur 1,2 à 1,8. C'est moins que le facteur 2 estimé dans le plan.
 
 ## Effets attendus sur le SPAD (ordres de grandeur, à vérifier)
 

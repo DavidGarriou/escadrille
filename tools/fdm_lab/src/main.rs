@@ -18,6 +18,7 @@ use fdm_lab::performance::{ceiling, envelope, max_level_speed};
 use fdm_lab::plots::{self, Panel, Series};
 use fdm_lab::polar::{AirframePolar, Reference, airframe_polar};
 use fdm_lab::report::{Cruise, Report, markdown, time_step_change};
+use fdm_lab::slipstream::{TN1146, tail_off_roll, tn1146_model, tn1146_speed};
 use fdm_lab::trim::{Flight, LEVEL_AT_SPEED, Trim, solve_robust};
 use fdm_lab::{qualitative, robustness};
 
@@ -77,6 +78,9 @@ enum Command {
         #[arg(long, default_value_t = 0.0)]
         airfield_m: f64,
     },
+    /// Rolling moment of the slipstream on the powered model of NACA TN 1146, tail off,
+    /// against the measurement (run with `--assets tools/fdm_lab/comparison`).
+    Souffle,
     /// Empty mass, centre of gravity and inertia from the mass build-up (masses.ron), as
     /// the mass block of aircraft.ron, checked against it.
     Inertia { aircraft: String },
@@ -578,6 +582,7 @@ fn main() -> ExitCode {
             delta_t_k,
             airfield_m,
         } => montee(&cli.assets, &aircraft, &delta_t_k, airfield_m),
+        Command::Souffle => souffle(&cli.assets),
         Command::Polaire {
             aircraft,
             altitude_m,
@@ -606,6 +611,38 @@ fn main() -> ExitCode {
             ExitCode::from(2)
         }
     }
+}
+
+/// Prints the TN 1146 comparison; `Ok(true)` when every blade angle falls in the
+/// measured range.
+fn souffle(assets: &Path) -> Result<bool, String> {
+    let speed = tn1146_speed();
+    println!("Maquette du NACA TN 1146, sans empennage, α = 0, V = {speed:.2} m/s");
+    println!();
+    println!(
+        "| Calage | J | Couple (N·m) | Repris par la cellule | Roulis net / couple | Mesure |"
+    );
+    println!("|---|---|---|---|---|---|");
+    let mut inside = true;
+    for point in &TN1146 {
+        let aircraft = tn1146_model(assets, point)?;
+        let roll = tail_off_roll(&aircraft, &STILL_AIR, speed, point.advance_ratio)
+            .ok_or("the model has no propeller")?;
+        let (lo, hi) = point.measured;
+        let net = roll.net_fraction();
+        inside &= (lo..=hi).contains(&net);
+        println!(
+            "| {:.0}° | {:.3} | {:.3} | {:.0} % | {:.3} | {:.3} à {:.3} |",
+            point.blade_angle,
+            point.advance_ratio,
+            roll.torque,
+            100.0 * roll.recovered_fraction(),
+            net,
+            lo,
+            hi
+        );
+    }
+    Ok(inside)
 }
 
 #[cfg(test)]

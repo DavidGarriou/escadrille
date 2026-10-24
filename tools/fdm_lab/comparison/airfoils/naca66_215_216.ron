@@ -1,0 +1,45 @@
+// NACA 66(215)-216 section, the comparable of the NACA 66,2-216 of the NACA TN 1146 model
+// (same series, thickness, design lift and low-drag range; the comma form only takes the
+// basic thickness form of the 16 % section). For the comparison model of fdm_lab
+// (plan docs/plans/m1-souffle-ailes.md, step 1); not a game aerofoil.
+// Read on the page image of NACA Report 824 (Abbott, von Doenhoff and Stivers, 1945),
+// p. 236, at the lowest Reynolds number of the page, 2.9 × 10⁶ (circles). The TN 1146 model
+// ran at 0.5 × 10⁶ (0.8 × 10⁶ effective): its slope and maximum lift were probably a little
+// lower, a reserve kept in the comparison. Grid of the page located on the image, scan
+// rotated by 0.7° and corrected; points read to about ±0.15° and ±0.01.
+Airfoil(
+    name: "NACA 66(215)-216 (Re 2,9 × 10⁶)",
+    source: "NACA Report 824, p. 236 (figure de la section NACA 66(215)-216, cercles) ; plan docs/plans/m1-souffle-ailes.md",
+    convention: Absolute,
+    moment_reference: QuarterChord,
+    test_wing: None,
+    points: [
+        //! E: negative stall, not measured at 2.9 × 10⁶ (the circles stop at −12°): minimum C_L about −1.0 as at 6 × 10⁶ (squares, −1.15 at −14° then an abrupt drop), dropped one degree earlier, drag rising as after the positive stall
+        (alpha: Deg(-18.0), cl: -0.50, cd: 0.200, cm: -0.060),
+        (alpha: Deg(-15.0), cl: -0.55, cd: 0.120, cm: -0.040),
+        (alpha: Deg(-13.0), cl: -1.00, cd: 0.030, cm: -0.035),
+
+        //! S: NACA Report 824, p. 236, circles (R 2.9 × 10⁶): lift and moment read against the incidence, drag read against the lift (cd within about ±0.001); C: cd interpolated at the lift of each point
+        (alpha: Deg(-12.15), cl: -0.940, cd: 0.0230, cm: -0.040),
+        (alpha: Deg(-10.12), cl: -0.782, cd: 0.0165, cm: -0.040),
+        (alpha: Deg(-8.18), cl: -0.618, cd: 0.0123, cm: -0.040),
+        (alpha: Deg(-6.08), cl: -0.400, cd: 0.0102, cm: -0.040),
+        (alpha: Deg(-0.15), cl: 0.190, cd: 0.0048, cm: -0.048),
+        (alpha: Deg(1.94), cl: 0.414, cd: 0.0045, cm: -0.052),
+        (alpha: Deg(3.89), cl: 0.534, cd: 0.0062, cm: -0.046),
+        (alpha: Deg(5.96), cl: 0.697, cd: 0.0110, cm: -0.042),
+        (alpha: Deg(8.07), cl: 0.851, cd: 0.0150, cm: -0.039),
+        (alpha: Deg(9.98), cl: 0.997, cd: 0.0204, cm: -0.035),
+        (alpha: Deg(11.97), cl: 1.132, cd: 0.0262, cm: -0.032),
+        (alpha: Deg(12.96), cl: 1.206, cd: 0.0305, cm: -0.031),
+
+        //! S: NACA Report 824, p. 236, circles: lift and moment; E: drag past C_L 1.2, beyond the drag plot (rising as after the stall of the RAF 15 of Report 233)
+        (alpha: Deg(14.13), cl: 1.241, cd: 0.035, cm: -0.031),
+        (alpha: Deg(16.02), cl: 1.326, cd: 0.045, cm: -0.030),
+        (alpha: Deg(17.07), cl: 1.339, cd: 0.060, cm: -0.035),
+        (alpha: Deg(18.17), cl: 1.301, cd: 0.090, cm: -0.041),
+        (alpha: Deg(20.07), cl: 1.019, cd: 0.160, cm: -0.070),
+        (alpha: Deg(22.20), cl: 0.970, cd: 0.200, cm: -0.094),
+        (alpha: Deg(24.34), cl: 0.837, cd: 0.240, cm: -0.153),
+    ],
+)

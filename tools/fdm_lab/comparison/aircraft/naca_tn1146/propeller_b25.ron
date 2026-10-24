@@ -1,0 +1,27 @@
+// Propeller of the NACA TN 1146 model at a blade angle of 25° at 0.75 R, for the comparison
+// of fdm_lab (plan docs/plans/m1-souffle-ailes.md): three-bladed, 27.2 in, measured on the
+// model at q = 4.09 lb/sq ft, tail off, α = 0 (TN 1146, figure 7). Only the operating point
+// T_c' = 1.25 of the yaw tests (J = 0.406) is used; the rest of the table keeps it smooth.
+// C_T = T_c' S J² / (2 D²) and C_P = 2π Q_c J², with T_c' = T / (q S), S = 9.40 sq ft,
+// D = 2.27 ft, and Q_c = Q / (ρ V² D³): this definition of the torque coefficient of the
+// figure reproduces its efficiency curve and the « −Q_c'/2 » line of figure 13. Not a game
+// propeller. Reading: 0.398 point (T_c' 1.30, Q_c 0.175) replaced by the operating point 0.008 further, read on the faired curves.
+Propeller(
+    name: "NACA TN 1146, calage 25°",
+    source: "NACA TN 1146 (Purser et Spear, 1946), figure 7 ; plan docs/plans/m1-souffle-ailes.md",
+    points: [
+        (j: 0.0, ct: 0.190, cp: 0.170), // E: static point, not measured: thrust and power levelled from the lowest measured J
+
+        //! C: T_c' and Q_c read on figure 7 of TN 1146 (±0.01 and ±0.003), converted as in the header
+        (j: 0.331, ct: 0.19087, cp: 0.18036),
+        (j: 0.353, ct: 0.18981, cp: 0.18399),
+        (j: 0.406, ct: 0.18794, cp: 0.17607),
+        (j: 0.443, ct: 0.18348, cp: 0.17510),
+        (j: 0.532, ct: 0.17296, cp: 0.19028),
+    ],
+    anchors: (
+        stopped: (ct: -0.15, cq: -0.005),           // E: unused at the operating point; chosen so that the table never creates energy beyond its last point (checked by the FDM)
+        reversed_flow: (ct: 0.09, cq: 0.01),        // E: as the synthetic propeller of the Messenger
+        reversed_rotation: (ct: -0.03, cq: -0.006), // E: as the synthetic propeller of the Messenger
+    ),
+)

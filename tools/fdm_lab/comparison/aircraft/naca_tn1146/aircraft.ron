@@ -1,0 +1,77 @@
+// Comparison model, not a game aircraft: the powered 1/5-scale model of a single-engine
+// low-wing fighter of NACA TN 1146 (Purser and Spear, 1946), tail off, as tested in the
+// Langley 7 by 10-foot tunnel at q = 4.09 lb/sq ft and α = 0. Its measured rolling moment
+// without tail (50 to 60 % of the propeller torque, figure 13) calibrates the effect of the
+// slipstream swirl on a wing (plan docs/plans/m1-souffle-ailes.md, step 1). Only the
+// aerodynamic loads at that point are used: mass, engine and control throws are E:.
+// Geometry from table I and figure 1 (page image, inches). Datum: propeller hub centre, on
+// the thrust line. The propeller table is the one of the 25° blade angle; fdm_lab swaps in
+// those of 15° and 35°.
+Aircraft(
+    id: "naca_tn1146",
+    name: "Maquette motorisée du NACA TN 1146 (aile basse, sans empennage)",
+    research: "NACA TN 1146 (1946), tableau I et figures 1, 7 et 13 ; plan docs/plans/m1-souffle-ailes.md",
+    datum: "centre du moyeu de l'hélice, sur l'axe de traction",
+
+    mass: (
+        empty: Kg(100.0),                                          // E: model on the balance strut; no effect on the loads at a fixed state
+        cg_empty_m: (-0.4653, 0.0, 0.0287),                        // S: figure 1, 18.32 in behind the propeller plane, 0.072 c' (1.14 in) below the thrust line, at 0.282 c'
+        inertia_empty_kg_m2: (ixx: 10.0, iyy: 20.0, izz: 30.0, ixz: 0.0), // E: no effect on the loads at a fixed state
+        pilot: Kg(1.0),                                            // E: none on the model
+        pilot_m: (-0.4653, 0.0, 0.0287),                           // E: at the centre of gravity
+        fuel: (capacity: L(1.0), density_kg_per_l: 0.72, position_m: (-0.4653, 0.0, 0.0287)), // E: none on the model, at the centre of gravity
+        payload: [],
+    ),
+
+    surfaces: [
+        (
+            name: "wing",
+            kind: Horizontal,
+            mirrored: true,
+            panels: [
+                (
+                    root_m: (-0.4526, 0.1422, 0.1092), tip_m: (-0.4526, 0.4699, 0.1133), // C: unswept quarter chord (table I) 0.032 c' ahead of the c.g. (0.282 c'); side of the 11.3 in cowling (front view) to the break at 18.5 in; chord plane 4.3 to 4.5 in below the thrust line (front view), dihedral −0.73° (table I)
+                    chord_root: M(0.4812), chord_tip: M(0.4077),           // C: straight taper from 20.2 in at the centre to 10.1 in at the tip (table I, figure 1)
+                    incidence: Deg(0.0),                                   // S: table I, to the thrust line
+                    strips: 8,                                             // E: discretisation, 1.6 in strips across a slipstream of about 12 in radius
+                ),
+                (
+                    root_m: (-0.4526, 0.4699, 0.1133), tip_m: (-0.4526, 1.1443, 0.0216), // C: outboard panel to the 90.1 in span (figure 1), dihedral 7.75° (table I)
+                    chord_root: M(0.4077), chord_tip: M(0.2565),           // C: straight taper, 10.1 in theoretical tip chord (table I)
+                    incidence: Deg(0.0),                                   // S: table I
+                    strips: 8,                                             // E: discretisation
+                ),
+            ],
+            airfoil: "airfoils/naca66_215_216.ron",
+            span_efficiency: 0.95,                                         // C: 1/(1 + δ) ≈ 0.98 for a taper of 0.5 at aspect ratio 6 (TR 416), × 0.97 for the fuselage
+            aspect_ratio: Some(6.0),                                       // S: table I (9.40 sq ft, fuselage part included)
+        ),
+    ],
+
+    engine: Inline((
+        name: "moteur électrique de 56 ch (E:)",
+        power_curve: [
+            (speed: Rpm(2000.0), power: Hp(30.0)),                     // E: 56 hp electric motor (TN 1146); unused at a fixed rotor speed
+            (speed: Rpm(5000.0), power: Hp(56.0)),                     // E:
+        ],
+        friction: Curve([
+            (speed: Rpm(2000.0), power: Hp(1.0)),                      // E:
+            (speed: Rpm(5000.0), power: Hp(2.0)),                      // E:
+        ]),
+        altitude_law: Density,
+        idle_throttle: 0.05,                                           // E:
+        stall_speed: Rpm(100.0),                                       // E:
+    )),
+
+    propeller: (
+        table: "aircraft/naca_tn1146/propeller_b25.ron",
+        diameter: M(0.691),                                            // S: 27.2 in (figure 1), 2.27 ft
+        hub_m: (0.0, 0.0, 0.0),                                        // C: datum
+        rotation: Clockwise,                                           // C: negative (left) rolling moment of figure 13, the reaction of a propeller turning clockwise seen from behind
+        p_factor_m: 0.2,                                               // E: no effect at α = 0 and no yaw
+        normal_force: 0.03,                                            // E: no effect at α = 0 and no yaw
+        rotor_inertia_kg_m2: 0.05,                                     // E: no effect at a fixed rotor speed
+    ),
+
+    travel: (aileron: Deg(20.0), elevator: Deg(25.0), rudder: Deg(25.0)), // E: no control surface on the model as flown here
+)

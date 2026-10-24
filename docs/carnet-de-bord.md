@@ -1277,3 +1277,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Invariant d'énergie, campagne et § 9 refait.
 
   En attente de la validation du joueur.
+- **Q** Le joueur : « Je valide le plan ». **D** Plan `m1-souffle-ailes.md` validé ; début de l'étape 1 (maquette du TN 1146).
+- **A** Étape 1 : maquette du TN 1146 comme avion de comparaison.
+  - Géométrie : tableau I et figure 1.
+  - Profil : NACA 66(215)-216, relu sur le NACA Report 824.
+  - Hélice : une table par calage, tirée de la figure 7.
+  - Nouvelle commande `fdm_lab souffle`.
+  - La lecture des figures est vérifiée : le roulis calculé par le NACA retombe sur leur courbe.
+- **R** Le modèle actuel fait reprendre à l'aile 57 à 71 % du couple de l'hélice ; la mesure donne 39 à 50 %. Surestimation d'un facteur 1,2 à 1,8, moindre que le facteur 2 estimé ; elle résiste aux incertitudes de la maquette. Détail dans le plan, « Résultats ».
+- **⚠** Les ancres « hélice arrêtée » recopiées du Messenger faisaient créer de l'énergie à la table à 15°. Remplacées par des valeurs qui passent le contrôle du FDM ; elles ne servent pas au point mesuré.
+
