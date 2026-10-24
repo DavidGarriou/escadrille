@@ -284,3 +284,33 @@ Le modèle chronomètre ses montées depuis 0 m, en vol, à la vitesse de meille
 - Un jour de 10 K au-dessus de l'atmosphère type, ou un altimètre calé à zéro sur le terrain, suffit à ramener les montées du modèle dans la tolérance. Les deux ensemble, avec le décollage, les dépassent un peu. L'écart de −7 à −11 % n'est donc **pas, à lui seul, la preuve d'un défaut du modèle** : il est du même ordre que l'incertitude sur les conditions de l'essai.
 - Le plafond suit la même enveloppe : +7,8 % en atmosphère type, de +2 à +5 % pour un jour chaud ou un altimètre calé au sol.
 - Pour trancher, il faut les conditions réelles de l'essai (question posée à l'historien) : départ du chronomètre, terrain, zéro de l'altimètre, saison.
+
+**Après la dixième passe de l'historien** (`spad7.md` § 5.7) et la lecture des documents qu'il désigne, téléchargés par le coordinateur (2026-10-24) :
+- **Départ du chronomètre français : inconnu.** La pratique britannique de 1917 (Tizard, *Flight*, mars 1917) ramène les temps à une montée en vol depuis la hauteur type 0. Un temps britannique corrigé est donc déjà dans la convention du modèle.
+- **Altimètres** : le NACA Report 126 (1922, instruments d'altitude, p. 3-5) [LU-OCR] dit que l'échelle des altimètres tourne « pour faire le zéro au départ du vol », et que les altimètres français sont gradués selon la loi de Radau. La note NACA TN 20 (règles des concours français de 1920) cite une « atmosphère type du S.T.Aé » (T₀ = 288 K, 760 mm, loi de Radau) : elle date de 1920, après les essais de S46. L'altimètre calé à zéro sur le terrain était donc l'usage courant (C), sans preuve pour l'essai de S46.
+- **Terrain** : Villacoublay, 178 m (585 ft).
+
+Enveloppe recommandée par l'historien (terrain de 178 m, ±15 K autour de l'atmosphère type ; décollage non compté, environ +10 s depuis le début du roulage) :
+
+| Jour | Depuis 0 m | Terrain, altimètre sur la mer | Terrain, altimètre à zéro au sol |
+|---|---|---|---|
+| ISA −15 K | −16 / −16 / −21 % | −23 / −20 / −23 % | −13 / −12 / −16 % |
+| ISA | −8 / −7 / −11 % | −15 / −11 / −13 % | −4 / −2 / −5 % |
+| ISA +15 K | +1 / +3 / 0 % | −6 / −1 / −2 % | +6 / +8 / +7 % |
+
+Les cibles de S46 sont dans l'enveloppe, qui est très large : les conditions de l'essai français ne permettent pas de juger le modèle à mieux que ±10 % près.
+
+**La comparaison qui reste discriminante : le rapport britannique n° 96** (avril 1917 ; chiffres vus en résumé seulement, `spad7.md` S11 ; temps sans doute ramenés à la convention du modèle) :
+
+| Altitude | Rapport n° 96 | Modèle (atmosphère type, depuis 0 m) | Écart |
+|---|---|---|---|
+| 6 500 ft (1 981 m) | 6,3 min | 6,06 min | −3,8 % |
+| 10 000 ft (3 048 m) | 11,5 min | 10,95 min | −4,8 % |
+| 15 000 ft (4 572 m) | 24,5 min | 23,04 min | −5,9 % |
+| Plafond estimé | 19 000 ft (5 791 m), « probablement un peu faible » | 5 917 m | +2,2 % |
+
+**Bilan.** Avec l'Éclair 6, le modèle monte probablement **4 à 6 % trop vite**. Une large part de l'écart à S46 (−7 à −11 %) tient sans doute aux conditions de l'essai français, mais pas tout. Ce reste est du même ordre que :
+- les incertitudes connues : masse de l'avion britannique inconnue ; atmosphère britannique de 1917 un peu plus dense sous 2 000 m ; k = 0,020 ± 0,005 ; puissance installée de 0,96 à 1,0 ;
+- et la piste « traction à faible J » (surfaces E: du VE-7, ±5 % de vitesse ascensionnelle).
+
+Le rapport n° 96 lui-même (Kew, AIR 1/1196/204/5/2600) fixerait sa convention et sa masse.

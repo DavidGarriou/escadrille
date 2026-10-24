@@ -1205,3 +1205,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - ISA +20 K, depuis le terrain : +9 / +12 / +12 %.
 
   Décollage estimé à environ 10 s (roulage de 6 à 7 s sur 85 à 95 m, puis 3 s d'accélération), soit +2,5 % à 2 000 m. **L'écart de montée est du même ordre que l'incertitude sur les conditions de l'essai.**
+- **R** Dixième passe de l'historien (`spad7.md` § 5.7) :
+  - départ du chronomètre français : non trouvé ;
+  - pratique britannique de 1917 : temps ramenés à une montée en vol depuis la hauteur type 0 (Tizard) ;
+  - pas d'atmosphère type française avant 1920 ;
+  - Villacoublay à 178 m ;
+  - conditions de l'essai de S46 : inconnues ;
+  - aucun chiffre de décollage d'époque.
+- **A** Documents téléchargés par le coordinateur (son outil de lecture échoue sur ces sites) : NACA TM 15, TN 20, Report 126, Report 218, dossier Hartmann « Reims 1911 ». Le Report 126 dit que les altimètres ont une échelle tournante « pour faire le zéro au départ du vol » ; les altimètres français sont gradués selon la loi de Radau ; l'atmosphère type du STAé date de 1920.
+- **R** Enveloppe recommandée (178 m, ±15 K) : de −23 % à +8 % selon les conventions ; S46 est dedans, l'enveloppe est trop large pour juger le modèle.
+- **R** Comparaison avec le rapport britannique n° 96 (vu en résumé, convention sans doute celle du modèle) : modèle −3,8 / −4,8 / −5,9 %, plafond +2,2 %. **Le modèle monte probablement 4 à 6 % trop vite** ; c'est le reste à expliquer, du même ordre que les incertitudes connues.

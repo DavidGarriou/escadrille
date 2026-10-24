@@ -1,8 +1,8 @@
 # SPAD S.VII C.1 — fiche de recherche
 
 - Identifiant : `spad7` (même nom que `assets/aircraft/spad7/`)
-- Dernière mise à jour : 2026-10-23
-- État : **en cours** (neuvième passe). Sont désormais sourcés par des documents d'époque lus :
+- Dernière mise à jour : 2026-10-24
+- État : **en cours** (dixième passe). Sont désormais sourcés par des documents d'époque lus :
   - le profil « Spad » (B) ;
   - les polaires du RAF 15 (A pour ce profil) ;
   - la courbe de puissance et la loi d'altitude du Hispano de 180 hp (B pour un 8Ab) ;
@@ -17,6 +17,12 @@
     - aucun régime relevé en montée sur un S.VII (§ 5.6) ; régimes mesurés en vol sur un avion comparable, le VE-7 (`hispano-suiza-8a.md` § 7.5) ;
     - hélice de l'avion de S46 non trouvée ; liste des hélices autorisées pour le S.VII à Hispano de 150 ch vue en résumé (`hispano-suiza-8a.md` § 7.5) ;
     - bord d'attaque des ailes du S.VII : aucune source directe ; indices de famille contradictoires (§ 2.6).
+  - **dixième passe (2026-10-24), conditions réelles des essais de montée** (§ 5.7) :
+    - départ du chronomètre des essais français : **non trouvé** ;
+    - pratique britannique de 1917 lue (Tizard, S75) : temps réduits par intégration depuis la hauteur type 0, donc en vol, comme le modèle ;
+    - pas d'atmosphère type officielle en France avant le 15 avril 1920 (S79, en résumé) ;
+    - terrain d'essai probable : Villacoublay, environ 178 m (C) ; date et saison de l'essai de S46 : non trouvées ;
+    - ordres de grandeur calculés pour l'enveloppe (§ 5.7.5) et documents à télécharger (§ 5.7.7).
 - Fiches liées : [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (moteur et hélice), [`profil-spad7.md`](profil-spad7.md) (profil d'aile)
 - Contexte de jeu visé : escadrille SPA 3 (« Cigognes », Groupe de Combat 12), Flandres, été 1917
 
@@ -87,6 +93,14 @@ Méthode et accès :
 - **Outil de lecture** : échec DNS le 2026-10-23 pour tous les sites visés (woodenpropeller.com, theaerodrome.com, archive.org, gallica.bnf.fr, francearchives.gouv.fr, catalog.hathitrust.org, reports.aerade.cranfield.ac.uk). Tout ce qui vient du web est donc **[RÉSUMÉ]**.
 - **Relus localement** : les NACA Reports 220 et 292, lus sur l'image [LU-IMG] ; les passages « Spad », « propeller », « screw », « leading edge » et « plywood » de *Flight* (208 numéros), dont S48 et S49, et du volume II du rapport ACA 1917-18 [LU-OCR].
 - **Rien n'a été téléchargé.**
+
+**Dixième passe (2026-10-24) : conditions réelles des essais de montée.** Objet : savoir comment les montées d'époque étaient chronométrées et mesurées, pour chiffrer ce que les conditions d'essai ajoutent au temps (§ 5.7).
+- **Relus localement, comme des données** [LU-OCR] :
+  - les 208 numéros de *Flight* (1916-1919), sur les termes de méthode : « leaving the ground », « start of the climb », « barograph », « aneroid », « standard atmosphere », « Villacoublay », « French method », « Section technique », « official trials ». Trois textes utiles : la conférence de Tizard de mars 1917 (S75), le règlement des essais certifiés du Royal Aero Club (S76) et l'article de Dines (S77) ;
+  - le volume II du rapport ACA 1917-18 : R&M 462 relu ; aucun autre texte sur la méthode des essais de montée ;
+  - le dossier Hartmann sur les héliciers [LU].
+- **Web** : environ 30 requêtes en français, anglais et italien, toutes vues en **résumé**. L'outil de lecture échoue toujours (DNS) sur www.hydroretro.net, archive.org, ntrs.nasa.gov, www.academie-technologies.fr et resair420.free.fr (testés le 2026-10-24).
+- **Rien n'a été téléchargé.** Les documents qui répondraient sont listés au § 5.7.7.
 
 ## 1. Identification et contexte
 
@@ -557,6 +571,8 @@ Précautions :
 | Mesure de la vitesse | Méthode non donnée | — |
 | Version | S46 : 8Aa explicite ; S47 : incertaine | S47 en variante seulement |
 
+> **Dixième passe** : chronométrage, zéro des altitudes, atmosphère de référence et terrain sont repris au § 5.7, qui ajoute la pratique britannique lue (S75) et les conventions à calculer.
+
 #### 5.5.3 Cohérence interne et entre tableaux
 
 **a) Vitesses du 150 ch dans S46** (192, 179 et 174 km/h à 2 000, 3 000 et 4 000 m).
@@ -618,7 +634,7 @@ Au M1, seuls les essais de confiance D sont non bloquants (skill `simulation-vol
 **Consignes** (à valider par l'aérodynamicien) :
 1. **Ordre de calage.** Caler d'abord sur les montées et la vitesse à 2 000 m, puis contrôler 3 000 et 4 000 m. **Ne pas ajuster de coefficient** pour atteindre 179 km/h à 3 000 m au détriment des 192 km/h à 2 000 m ou des montées.
 2. **Diagnostic.** Si le modèle, calé sur les montées avec la loi R&M 462, donne de lui-même environ 185 km/h à 2 000 m, c'est le groupe 179-174 km/h qui l'emporte. Le signaler à l'historien plutôt que de forcer.
-3. **Chronométrage.** Calculer chaque montée de deux façons : depuis le lâcher des freins, décollage compris, et depuis 0 m en vol à la vitesse de meilleure montée. Déclarer l'essai réussi si la cible tombe dans l'intervalle formé par ces deux temps, élargi de la tolérance.
+3. **Chronométrage.** Calculer chaque montée de deux façons : depuis le lâcher des freins, décollage compris, et depuis 0 m en vol à la vitesse de meilleure montée. Déclarer l'essai réussi si la cible tombe dans l'intervalle formé par ces deux temps, élargi de la tolérance. *(Dixième passe : le S.VII n'a pas de freins, l'avion part de l'arrêt ; le zéro des altitudes et le terrain ajoutent deux autres variantes, § 5.7.6.)*
 4. **Plafond.** Utiliser `Ceiling` à vitesse ascensionnelle **nulle**, et non à 100 ft/min, valeur par défaut du format qui correspond au plafond pratique britannique. Si possible, extrapoler aussi comme à l'époque : prolonger jusqu'à zéro la droite des vitesses ascensionnelles du modèle entre 2 000 et 4 000 m, et rapporter les deux valeurs.
 5. **Masse.** 703 kg ; les 705 kg des ouvrages (0,3 % d'écart) sont sans effet. Rapporter la sensibilité des montées à ±10 kg.
 6. **Atmosphère.** Atmosphère type, marquée `E:` : les conditions des essais ne sont pas connues.
@@ -666,6 +682,192 @@ Corrections faites dans cette passe : page de la présentation de S46 (p. 201, e
 - le R&M 586, qui essaie plusieurs hélices sur un Hispano de 150 hp sans réducteur (`hispano-suiza-8a.md` § 7.5.9) ;
 - le rapport de Martlesham n° 96 (P10 ; AIR 1/1196/204/5/2600, § 9.6) ;
 - les procès-verbaux d'essais du STAé (S69).
+
+### 5.7 Dixième passe : conditions réelles des essais de montée (2026-10-24)
+
+**Pourquoi.** Le modèle du 150 ch (8Aa, 703 kg) monte plus vite que S46 : −8 % à 2 000 m, −7 % à 3 000 m, −11 % à 4 000 m, et son plafond est trop haut de 7,8 %. Il chronomètre depuis 0 m, en vol, déjà à la vitesse de meilleure montée, en atmosphère type. Avant de chercher la cause dans le modèle, il faut savoir ce que les conditions réelles des essais ajoutent au temps. Documents relus et limites : § 0 (dixième passe).
+
+**Réponses en bref.**
+
+| Question | Réponse | Statut et confiance |
+|---|---|---|
+| 1. Départ du chronomètre, essais officiels français | **Non trouvé.** Pratique britannique de 1917 : temps réduits, intégrés depuis la hauteur type 0, donc en vol (S75). Essais civils britanniques de 1919 : départ à 100 ft au-dessus du sol (S76). Italie : non trouvé | France : — ; Royaume-Uni : [LU-OCR], A pour la méthode décrite |
+| 2. Instrument, zéro, corrections, atmosphère type | France : non trouvé pour S46. **Atmosphère type officielle adoptée seulement le 15 avril 1920** (S79). Royaume-Uni : anéroïde bloqué sur 760 mm, correction de température, réduction à une hauteur type définie par la densité moyenne (S75) | France : [RÉSUMÉ], C ; Royaume-Uni : [LU-OCR], A |
+| 2 bis. Terrain | Villacoublay, centre d'essais du STAé (S78, S81) ; environ 178 m (S80). Le lieu de l'essai de S46 n'est pas documenté | B pour l'altitude ; C pour l'attribution |
+| 3. Date, saison et charge de l'essai de S46 | **Non trouvé.** Fenêtre déduite : de mi-1916 à mi-1917 (C). Charge de référence de 703 kg (§ 5.5.1) | C |
+| 4. Décollage du S.VII | **Non trouvé** pour 1916-1918. Seul chiffre : environ 150 ft (46 m) de roulage, sur un S.VII à Wright-Hispano de 180 ch des années 1960 (S31) | [RÉSUMÉ], D |
+
+#### 5.7.1 Départ du chronomètre
+
+**France (STAé, Villacoublay, 1916-1918) : non trouvé.** Aucun règlement, aucune instruction et aucun procès-verbal lu ne dit si le temps de montée part du début du roulage, du décollage ou du passage d'une hauteur.
+- **Pistes essayées** :
+  - les 208 numéros de *Flight* (termes au § 0), le volume II du rapport ACA 1917-18 et le dossier Hartmann ;
+  - des requêtes en français (« temps de montée », « compté à partir du décollage », « barographe », « procès-verbal d'essais », « réception »), en anglais et en italien (« tempo di salita », « collaudo »).
+  - *L'Aérophile*, *La Guerre aérienne illustrée* et *L'Aéronautique* sont sur Gallica, qui refuse les accès automatiques.
+- **Ce qui est établi sur le cadre, sans la méthode** :
+  - une section des essais en vol, rattachée au Service technique, est créée à Villacoublay en 1915. Elle contrôle notamment le temps de montée, les vitesses en palier à plusieurs altitudes et le plafond (S81 [RÉSUMÉ]) ;
+  - Hartmann situe à Villacoublay le centre d'essais du Service technique de l'aéronautique, où l'hélice Éclair est présentée en 1915, après des essais à Buc. Il mentionne aussi la réception des essais en vol des Farman à Buc (S78, p. 12 [LU]) ;
+  - des essais officiels du Morane-Saulnier AI ont lieu à Villacoublay en août 1917, le troisième et dernier jour étant le 9 août (S84 [RÉSUMÉ]). Le Morane AI figure dans le même tableau S46.
+- **Indice britannique sur les altitudes françaises.** Tizard écrit en mars 1917 que les hauteurs types britanniques de 6 500, 10 000, 13 000 et 16 500 ft ont été choisies pour correspondre aux altitudes d'essai françaises de 2 000 et 3 000 m, puis aux kilomètres suivants (S75, note du 8 mars et texte du 22 mars 1917) [LU-OCR].
+  - L'OCR de la note porte « a T ooo metres » ; je rétablis « 2,000 metres » par le contexte (C).
+  - Ce passage confirme l'usage français des kilomètres ronds. Il ne dit rien du chronométrage.
+- **Avant-guerre (piste).** Au concours militaire de Reims de 1911, une épreuve préliminaire aurait demandé d'atteindre 500 m **au-dessus du point de départ** (S83 [RÉSUMÉ]). Un autre résumé parle plutôt de tenir 500 m pendant quinze minutes (S83). Le règlement reste à lire (S82). Le mode de chronométrage n'est pas connu.
+
+**Royaume-Uni : Testing Squadron du RFC, 1916-1917 (S75, Tizard) [LU-OCR].**
+- **Statut du texte.** Il décrit les méthodes « en usage » au Testing Squadron. Celui-ci s'installe à Martlesham Heath en janvier 1917 (S85 [RÉSUMÉ]) ; le rapport n° 96 y aurait été établi en avril 1917 (S11 [RÉSUMÉ]).
+- **Relevés pendant la montée** : hauteur à l'anéroïde tous les 1 000 ft, temps écoulé « depuis le début de la montée » (*from the start of the climb*), température, vitesse indiquée, régime. Le « début de la montée » n'est pas défini plus précisément (15 mars 1917).
+- **Répétition.** Chaque nouvel avion fait au moins deux montées jusqu'à 16 000 ft ou plus à l'anéroïde, trois si le temps le permet. Le résultat publié est la moyenne, ramenée à un « jour type ».
+- **Réduction** :
+  - les temps observés sont tracés en fonction de la hauteur à l'anéroïde ;
+  - la vitesse ascensionnelle est la pente de cette courbe tous les 1 000 ft, corrigée de la température ;
+  - elle est reportée en fonction de la hauteur type, puis le temps de montée est obtenu **par intégration graphique** ;
+  - dans l'exemple publié (tableau IV, essai du 27 décembre 1916, 36 °F à 0 ft d'anéroïde), la colonne réduite part de 0 à la hauteur type 0. Elle donne 1,20 min à 1 000 ft, 2,56 min à 2 000 ft et 21,61 min à 10 000 ft.
+- **Conséquence (C).** Un temps britannique réduit ne dépend pas du départ réel du chronomètre. C'est le temps d'une montée **en vol, depuis la hauteur type 0**, à la vitesse ascensionnelle mesurée et prolongée vers le bas : la convention du modèle.
+  - Le rapport n° 96 a très probablement été réduit ainsi (C). Il vient de la même unité, un mois après la conférence. Tizard ajoute que les essais officiels de l'armée et de la marine sont désormais tous réduits à la même base.
+- **Plafond.** Tizard appelle plafond le point où la courbe des vitesses ascensionnelles, prolongée, coupe l'axe des hauteurs (15 mars 1917). Le § 5.5.3 d) supposait cette définition pour le plafond « théorique » de S46. Elle est désormais lue dans un texte d'époque, britannique ; pour S46, elle reste une interprétation (C).
+
+**Royaume-Uni : essais civils certifiés du Royal Aero Club, 1919 (S76) [LU-OCR].**
+- L'essai de vitesse ascensionnelle commence quand l'avion s'est élevé de 100 ft au barographe.
+- Le certificat donne le temps de chaque tranche de 1 000 ft **au-dessus de ce niveau de départ**.
+- Pour les essais de hauteur, un observateur note à part l'heure où l'avion quitte le sol.
+- C'est un règlement civil de 1919 : il montre une pratique britannique, pas celle du STAé.
+
+**Italie (S47) : non trouvé.**
+- Les temps à 1 000 m de S47 sont anormalement courts sur plusieurs lignes du tableau (§ 5.5.3 c).
+- Un chronomètre déclenché en vol, ou des hauteurs comptées au-dessus d'un terrain, raccourciraient surtout cette première tranche. C'est une **hypothèse**, appuyée sur aucun document.
+
+**Déduction sur un essai au barographe (C).**
+- Un barographe trace la pression en fonction du temps. Sur le tracé, l'origine naturelle est le moment où la pression commence à baisser, c'est-à-dire le **décollage**. Le roulage n'y laisse pas de trace. Le seuil de 100 ft du Royal Aero Club suggère que même le décollage était difficile à repérer sur le tracé (interprétation).
+- Si les temps français ont été lus sur un barogramme, ce que je n'ai pas pu vérifier, leur origine est donc plutôt le décollage que le début du roulage.
+- Un chronométreur au sol pouvait au contraire partir du début du roulage. Aucun document ne le dit.
+
+**Pas de freins.** Aucun document lu ne décrit la mise en route d'un essai de montée : avion retenu par des cales ou par les mécaniciens, moteur au régime, puis lâché. Je ne comble pas ce point.
+
+#### 5.7.2 Altitudes : instrument, zéro, corrections, atmosphère type
+
+**Royaume-Uni (S75) [LU-OCR].**
+- **Contexte.** Selon Tizard, pendant les premiers mois de la guerre, une montée à 3 000 ou 5 000 ft à l'anéroïde et un passage sur une base de vitesse suffisaient comme essai d'un avion neuf (8 mars 1917).
+- **Trois sens possibles.** « 10 000 ft » peut désigner la lecture de l'anéroïde, la hauteur au-dessus du point de départ, ou la hauteur au-dessus du niveau de la mer. Tizard en conclut qu'il faut comparer les essais à densité égale (8 mars 1917). Au début de 1917, l'usage n'était donc pas unifié.
+- **Zéro.** Pour les essais, l'anéroïde est **bloqué** : son zéro est fixé sur la pression type de 760 mm, sans réglage au sol. Il sert de manomètre (15 mars 1917).
+- **Correction de température.** L'anéroïde est gradué pour une colonne d'air uniforme à 50 °F (10 °C). Il lit donc trop haut dès que l'air est plus froid : en hiver, l'erreur peut atteindre 2 000 ft à 16 000 ft. Les hauteurs sont corrigées par un facteur de température (8 mars 1917).
+- **Atmosphère de réduction.** C'est une atmosphère moyenne, tirée des observations de J. S. Dines (tableau I : 1 014 mb et 282 K au niveau de la mer). La hauteur type est la hauteur moyenne qui correspond à la densité mesurée.
+- **Comparaison avec l'atmosphère type internationale (C, calcul fait ici).**
+  - Densités du tableau I, de 0 à 5 km : 1,253, 1,128, 1,014, 0,909, 0,818 et 0,735 kg/m³. Atmosphère type internationale : 1,225, 1,112, 1,007, 0,909, 0,819 et 0,736.
+  - Écarts : +2,3 % au niveau de la mer, +1,5 % à 1 km, +0,7 % à 2 km, moins de 0,3 % de 3 à 5 km.
+  - Sous 2 000 m, l'échelle britannique est donc un peu plus dense. Un temps réduit britannique y est un peu plus court qu'en atmosphère type internationale, de l'ordre de 1 à 3 % (estimation grossière, C). Au-dessus de 3 000 m, les deux échelles se confondent.
+  - L'OCR du tableau I porte 568 mb à 5 km. La densité (0,735) et la température (255 K) imprimées impliquent environ 540 mb : erreur d'OCR (C).
+- **Biais saisonnier de la réduction.** R&M 462 (mars 1918) montre que la réduction à densité égale pénalise les essais faits par temps froid (§ 18 à 21 ; `hispano-suiza-8a.md`, H21) [LU-OCR, déjà cité au § 5.5.2] :
+  - S.E.5a à moteur Viper : deux montées à 15 000 ft, le 28 février et le 6 mars 1918, diffèrent d'environ six minutes avec l'ancienne méthode ; elles sont pratiquement identiques avec la réduction en pression ;
+  - N.E.1 à Hispano de 200 hp : deux montées à 10 000 ft, le 13 septembre et le 15 octobre 1917, diffèrent d'environ deux minutes avec l'ancienne méthode ;
+  - même réduits, des temps de 1917 gardent donc un biais saisonnier de plusieurs pour cent (C).
+- **États-Unis (piste).** Selon un document du Bureau of Standards vu en résumé, les altimètres américains sont étalonnés depuis 1917 pour une atmosphère isotherme à +10 °C (S86 [RÉSUMÉ], attribution à vérifier).
+
+**France.**
+- **Instrument** : non documenté pour S46. Des altimètres enregistreurs Jules Richard, gradués jusqu'à 5 000 m, existaient en 1917 (S88 [RÉSUMÉ]). Rien ne dit qu'ils servaient aux essais du STAé.
+- **Zéro** : non trouvé. Seule piste : des hauteurs comptées au-dessus du point de départ en 1911 (S83 [RÉSUMÉ]).
+- **Graduation et correction de température** des instruments français : non trouvées. Le rapport du NACA sur les instruments d'altitude, qui décrit aussi les instruments français, devrait répondre (§ 5.7.7).
+- **Atmosphère type.**
+  - Le 15 avril 1920, le sous-secrétaire d'État à l'Aéronautique adopte comme atmosphère type **pour les essais officiels d'avions en France** la loi dite de la S.T.Aé. : température de 15 − 0,0065 z (°C, z en mètres) jusqu'à 11 000 m, pression de 760 mm au niveau de la mer (S79 [RÉSUMÉ]).
+  - A. Toussaint avait publié les premières études de cette loi dans *L'Aéronautique*, n° 5, octobre 1919 (S79).
+  - La S.T.Aé. l'aurait d'abord diffusée en mars 1920 comme projet d'accord interallié, et appliquée à partir du 1er mai 1920 (S87 [RÉSUMÉ]).
+  - **Réponse à la question (C) : aucune atmosphère type officielle française n'a été trouvée avant 1920.** Une méthode de réduction interne au STAé pendant la guerre n'est pas exclue, mais aucun document ne la décrit.
+  - Le même article de Grimault illustre l'effet des conditions de référence : la vitesse d'un Breguet XIV à 3 000 m varie d'environ 183 à 186 km/h selon elles (S79 [RÉSUMÉ]).
+- **Chiffres bruts ou réduits ? Non tranché.**
+  - Pour des chiffres bruts : la compilation date de 1918, avant toute atmosphère type française, et les écarts irréguliers de la ligne 8Aa plaident contre un lissage (§ 5.5.5).
+  - Pour une analyse de la courbe de montée : le plafond « théorique » est une extrapolation.
+  - Conclusion : chiffres bruts, ou réduits par une méthode du STAé inconnue (C).
+
+**Terrain.**
+- Villacoublay est le centre d'essais du STAé (S78 [LU], S81 [RÉSUMÉ]), et des essais officiels y sont attestés en 1917 (S84 [RÉSUMÉ]).
+- Altitude de référence actuelle de l'aérodrome : **585 ft, soit environ 178 m** (AIP France, S80 [RÉSUMÉ]). Le plateau n'a pas changé d'altitude : environ 175 à 180 m en 1916-1918 (B pour l'ordre de grandeur).
+- Le lieu de l'essai du S.VII de S46 **n'est pas documenté** ; Villacoublay est le plus probable (C). Buc servait à des essais de réception (Farman, S78), mais aucun document lu ne le rattache aux essais officiels du SPAD.
+
+#### 5.7.3 Date et conditions de l'essai du S.VII 150 ch de S46
+
+**Non trouvé** : ni date, ni saison, ni température, ni pression, ni masse pesée.
+
+**Ce qui encadre l'essai (C)** :
+- il est postérieur au premier marché de série, du 10 mai 1916 (§ 1.1) ;
+- il est antérieur à la compilation américaine de 1918, où le S.VII n'est plus marqué comme livré (§ 5.5.1) ;
+- le 8Ab de 180 ch équipe les avions neufs à partir du printemps 1917 (§ 1.2) ;
+- la fenêtre la plus probable va donc de **mi-1916 à mi-1917**. Elle contient un hiver et un été : **la saison reste inconnue**.
+
+**Autres éléments** :
+- la charge de 703 kg est une charge de référence, pas une pesée (§ 5.5.1) ;
+- le chiffre du prototype, 4,5 min à 2 000 m (S5 [RÉSUMÉ]), vient d'un autre essai, sur un autre avion ;
+- flyingmachines.ru donne, à côté de 6 min 40 s, une seconde valeur de 6 min 55 s à 2 000 m pour le 150 ch (S12 [RÉSUMÉ]). Au moins deux chiffres français ont donc pu circuler ; piste à vérifier sur les procès-verbaux (S69).
+
+#### 5.7.4 Décollage du S.VII
+
+**Non trouvé** pour 1916-1918, ni pour le 150 ch ni pour le 180 ch : ni distance, ni durée de roulage, ni vitesse de décollage. S46, S47 et S48 n'ont pas de colonne de décollage.
+
+**Seul chiffre vu** : un récit attribué à Frank Tallman, sur un S.VII à moteur Wright-Hispano E de 180 ch, dans les années 1960 (S31 [RÉSUMÉ]) :
+- la queue se lève presque aussitôt ;
+- l'avion est en l'air et monte après environ **150 ft (46 m)** ;
+- la meilleure montée se fait vers **60 à 65 mph (97 à 105 km/h)** ;
+- le décrochage moteur réduit a lieu vers 47 mph (§ 5.3).
+
+**Confiance D** : avion et moteur postérieurs ; masse, vent et terrain inconnus ; reprise informelle d'un livre. Ce chiffre ne doit pas servir de cible ; tout au plus de contrôle grossier de la vitesse de meilleure montée.
+
+#### 5.7.5 Ordres de grandeur pour l'enveloppe (C, à refaire avec le modèle)
+
+**Loi utilisée.** Une vitesse ascensionnelle qui décroît linéairement avec l'altitude, de r₀ ≈ 6,2 m/s au niveau de la mer à zéro vers H ≈ 5 400 m, reproduit les temps de S46. Elle donne 400, 701 et 1 167 s à 2 000, 3 000 et 4 000 m, contre 400, 690 et 1 170 s imprimés (§ 5.5.3 c). Les écarts ci-dessous sont des ordres de grandeur ; l'aérodynamicien les refera avec le modèle.
+
+**Cas 1 : terrain à 178 m, altitudes comptées au-dessus du terrain, chronomètre lancé en vol au niveau du terrain** (décollage non compris).
+
+| Altitude lue | Temps selon la loi, depuis 0 m | Temps selon la loi, de 178 m à 178 m + altitude lue | Écart |
+|---|---|---|---|
+| 2 000 m | 400 s | 418 s | **+17 s (+4,4 %)** |
+| 3 000 m | 701 s | 739 s | **+38 s (+5,4 %)** |
+| 4 000 m | 1 167 s | 1 256 s | **+89 s (+7,6 %)** |
+
+Dans ce cas, le plafond théorique de 5 486 m serait lu au-dessus du terrain, soit environ 5 664 m au-dessus de la mer. L'excès de 7,8 % du modèle tomberait vers **+4,4 %** (C).
+
+**Cas 2 : altimètre bloqué sur 760 mm, à la britannique, chronomètre lancé au sol à 178 m.** L'avion ne monte que de 178 m jusqu'à l'altitude lue. Le temps diminue d'environ **29 s** à chaque altitude, soit **−7 % à 2 000 m** et −2,5 % à 4 000 m. **Le sens de l'effet dépend donc entièrement de la convention du zéro.**
+
+**Température (non chiffrée ici).**
+- Dines donne au sol, dans le sud de l'Angleterre, des températures de 20 à 80 °F (−7 à +27 °C). La température seule fait varier la densité d'environ ±6 % ; avec la pression, des écarts de 8 % ne sont pas impossibles. Au-dessus de 5 000 ft, les variations sont bien plus faibles (S77 [LU-OCR]). Ce sont des données britanniques, transposées à la région parisienne (C).
+- Un instrument gradué pour une colonne isotherme et non corrigé se trompe d'environ 0,35 % de la hauteur par kelvin d'écart entre la température moyenne de la colonne et sa température de graduation (C, formule du nivellement barométrique).
+- Un été chaud allonge le temps nécessaire pour atteindre une altitude lue ; un hiver le raccourcit. La température de graduation des instruments français est inconnue.
+
+**Décollage : non chiffré**, faute de données (§ 5.7.4). C'est au modèle de le calculer : départ arrêté, plein gaz, roulage, décollage, puis accélération jusqu'à la vitesse de meilleure montée.
+
+**Comparaison avec le rapport n° 96 (C).**
+- Supposons que ses chiffres, vus en résumé, soient exacts, et qu'il ait été réduit selon la méthode de Tizard. Il serait alors presque dans la convention du modèle : en vol depuis la hauteur type 0, avec une densité proche de l'atmosphère type au-dessus de 2 000 m.
+- Or le modèle est aussi plus rapide que lui : d'environ 4 % à 2 000 m, 5 % à 3 000 m et 5 à 9 % à 4 000 m (calcul fait ici à partir du § 5.5.3 c). L'échelle britannique, un peu plus dense sous 2 000 m, rend même ce rapport légèrement optimiste.
+- **Les conditions d'essai françaises ne suffiraient donc peut-être pas à expliquer tout l'écart.** Cette conclusion reste fragile tant que le rapport n° 96 n'est pas lu (P10).
+
+#### 5.7.6 Ce que je recommande de retenir pour l'enveloppe des temps de montée
+
+1. **Départ du chronomètre** : non tranché pour le STAé. Calculer trois bornes :
+   - (a) en vol, au niveau du terrain, à la vitesse de meilleure montée. Avec un terrain au niveau de la mer, c'est la convention du modèle et, par construction, celle des temps réduits britanniques ;
+   - (b) au décollage, roues quittant le sol : origine naturelle d'un barogramme (C) ;
+   - (c) au début du roulage, avion arrêté, plein gaz, puisqu'il n'y a pas de freins.
+2. **Altitude du terrain** : Villacoublay, **178 m** (B pour l'altitude, C pour l'attribution de l'essai).
+3. **Zéro des altitudes** : calculer les deux cas.
+   - (i) zéro au sol du terrain : hauteurs au-dessus du point de départ (piste de 1911) ;
+   - (ii) zéro sur la pression de 760 mm : altitude-pression, comme l'anéroïde bloqué britannique ;
+   - **ne pas retenir la convention qui arrange le modèle** : aucune source ne permet de choisir.
+4. **Température** : atmosphère type au terrain (13,8 °C à 178 m), et ±15 K autour (`E:`), d'après la fourchette de Dines (S77). Pour un instrument isotherme non corrigé, prendre 10 °C en hypothèse (`E:`) : c'est la convention britannique et américaine, non prouvée pour la France.
+5. **Masse** : 703 kg, inchangée.
+6. **Cibles** : celles du § 5.5.6 et leurs tolérances **ne changent pas**. Je propose de comparer chaque cible à l'enveloppe formée par ces variantes plutôt qu'à un seul temps. Décision à l'aérodynamicien.
+7. **Diagnostic** : si le modèle reste plus rapide que le rapport n° 96 une fois celui-ci lu, la cause est probablement dans le modèle, pas dans les conditions d'essai.
+
+#### 5.7.7 Documents à télécharger (dixième passe)
+
+| Priorité | Document | Adresse | Ce qu'on y cherche |
+|---|---|---|---|
+| 1 | P. Grimault, « On the definition of the standard atmosphere », NACA TM 15, avril 1921, traduit du français (S79) | NTRS 19930080725 : `https://ntrs.nasa.gov/api/citations/19930080725/downloads/19930080725.pdf` | pratique française avant avril 1920 ; réduction des essais officiels ; exemple du Breguet XIV |
+| 1 | Bureau of Standards, « Aeronautic instruments. Section II: altitude instruments », rapport du NACA (n° 126 ou 127, vers 1921 ; **numéro à vérifier**) | UNT : `https://digital.library.unt.edu/ark:/67531/metadc65776/`. Sur NTRS, sans doute 19930091189, entre la section I (19930091188) et la section III (19930091190) : **identifiant non vérifié** | graduation (température, formule) et réglage du zéro des altimètres et barographes français, britanniques et italiens |
+| 1 | Images à 300 dpi du tableau IV de Tizard (*Flight*, 15 mars 1917) et de sa note sur la « French test height » (*Flight*, 8 mars 1917, p. 233) | items archive.org `Flight_International_Magazine_1917-03-15-pdf` et `Flight_International_Magazine_1917-03-08-pdf` | origine réelle du temps dans la colonne brute (0,0 min à 0 ft d'anéroïde ?) ; lecture « 2,000 metres » de la note |
+| 2 | W. Margoulis, « Notes on specifications for French airplane competitions », NACA TN 20, 1er octobre 1920 | NTRS 19930080812 : `https://ntrs.nasa.gov/api/citations/19930080812/downloads/19930080812.pdf` | règles françaises de 1920 (Aéro-Club de France, Villacoublay) : départ du chronomètre, mesure des hauteurs |
+| 2 | Rapport du NACA « Standard atmosphere – tables and data » (S87 probable) | NTRS 19930091285 : `https://ntrs.nasa.gov/api/citations/19930091285/downloads/19930091285.pdf` | historique : projet interallié de la S.T.Aé. de mars 1920, pratiques antérieures |
+| 2 | G. Hartmann, « Le grand concours d'aviation militaire, Reims 1911 » (S82) | `https://www.hydroretro.net/etudegh/grand_concours_d_aviation_militaire__reims_1911.pdf` | règlement de l'épreuve de hauteur : zéro au départ, chronométrage, barographe |
+| 2 | G. Hartmann, « Les Nieuport de la guerre » | `https://www.hydroretro.net/etudegh/les_nieuports_de_la_guerre.pdf` | transcriptions d'essais du STAé avec leurs conditions (comparable de méthode) |
+| 2 | Comité pour l'histoire de l'aéronautique, *Un demi-siècle d'aéronautique en France : centres et moyens d'essais*, t. 1, coord. J.-P. Marec, 2013 (S81) | `https://www.academie-technologies.fr/wp-content/uploads/2013/08/UN-DEMI-SIECLE-DAERONAUTIQUE-EN-FRANCE-CENTRES-ET-MOYENS-DESSAIS-T1.-COORD.-PAR-J.P.-MAREC-COMITE-POUR-LHISTOIRE-DE-LAERONAUTIQUE-2013.pdf` | historique de la section des essais de Villacoublay (1915-1918) et de ses méthodes |
+| 2 | « Les essais en vol à Villacoublay » (PDF, auteur non relevé) | `http://resair420.free.fr/popote%20des%20ailes/les_essais_en_vol_a_villacoublay.pdf` | idem |
+| 3 | A. Toussaint, article sur la loi de température, *L'Aéronautique*, n° 5, octobre 1919 | Gallica (accès automatique refusé) ; à chercher aussi sur archive.org | atmosphère et réduction des essais français avant 1920 |
+| rappel | SHD, fonds Dorand (DE 2012 ZL 245) ; The National Archives, AIR 1/1196/204/5/2600 | § 5.5.7 et § 9.6 | procès-verbaux du STAé (date, température, chronométrage) ; rapport n° 96 et sa méthode de réduction |
 
 ## 6. Qualités de vol, témoignages et réputation
 
@@ -880,6 +1082,12 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **S67** — « Record of Performance of American Planes », *Flight*, 20 février 1919, p. 238 (présentation « More statistics », même page). Même item que S47. **[LU-IMG]**. Utilisé pour la perte de vitesse en altitude de deux S.E.5 à moteur Hispano et du VE-7, avec leurs régimes. Primaire (compilation).
 - **S68** — « Wounded on Trial Trip » (Heurtaux), *Flight*, 11 octobre 1917, p. 1063. `Flight_International_Magazine_1917-10-11-pdf`. **[LU-OCR]**. Presse d'époque.
 
+**Lues en dixième passe (2026-10-24)**. Pagination lue dans l'OCR, à une page près.
+- **S75** — Capt. H. T. Tizard (RFC), « Methods of Measuring Aircraft Performances ». Conférence lue devant l'Aeronautical Society of Great Britain le 7 mars 1917, reproduite par *Flight* en trois parties : 8 mars 1917, p. 232-233 ; 15 mars 1917, p. 252-254 ; 22 mars 1917, p. 278-280, discussion comprise. Items `Flight_International_Magazine_1917-03-08-pdf`, `…-1917-03-15-pdf` et `…-1917-03-22-pdf`. **[LU-OCR]** ; tableaux en partie désordonnés dans l'OCR. Primaire : méthodes du Testing Squadron du RFC. Passages utilisés : note sur les altitudes d'essai françaises ; anéroïde bloqué et correction de température ; relevés de montée et réduction par intégration ; tableau IV (essai du 27 décembre 1916) ; définition du plafond ; choix des hauteurs types. Publiée aussi dans *The Aeronautical Journal* en 1917 (notice Cambridge, https://resolve.cambridge.org/core/journals/aeronautical-journal/article/abs/methods-of-measuring-aircraft-performances/F201C6804CFF2FB0E852A74B2E4E78E2, vue en résumé le 2026-10-24).
+- **S76** — Royal Aero Club, « Certified Trials » : règlements des essais de vitesse ascensionnelle et de hauteur, *Flight*, 3 juillet 1919, p. 872-873 environ (avis officiels du club). `Flight_International_Magazine_1919-07-03-pdf`. **[LU-OCR]**. Primaire (règlement civil).
+- **S77** — W. H. Dines, « Meteorology in Relation to Aeronautics », *Flight*, 20 décembre 1917, p. 1344-1346 environ. `Flight_International_Magazine_1917-12-20-pdf`. **[LU-OCR]**. Primaire, écrite par un météorologue ; ne pas confondre avec J. S. Dines, dont Tizard cite les observations. Utilisée pour les variations de température et de densité au sol, formule du nivellement barométrique.
+- **S78** — G. Hartmann, « Les héliciers français », PDF de 23 pages, hydroretro.net, 2008, p. 12 : centre d'essais du Service technique de l'aéronautique à Villacoublay ; réception des Farman à Buc. Même document que H9 de `hispano-suiza-8a.md`, téléchargé par le coordinateur (`sources/hartmann/heliciersfrancais.txt`). **[LU]**. Secondaire.
+
 ### 9.2 Vues seulement en résumé de recherche [RÉSUMÉ] (pages non ouvertes ; consultées le 2026-10-20)
 - **S5** — Wikipedia (en), « SPAD S.VII », https://en.wikipedia.org/wiki/SPAD_S.VII (wiki : piste).
 - **S6** — Wikipédia (fr), « SPAD S.VII », https://fr.wikipedia.org/wiki/SPAD_VII (wiki : piste).
@@ -938,6 +1146,23 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **S11 (complément)** — même fil que S11, résumé du 2026-10-23 : « Air Board summary », Hispano de 150 hp coté à 1 600 tr/min (1 800 tr/min au maximum), renvoi au rapport M.96 et à N6210 « supposé » ; résumés contradictoires (§ 5.6).
 - Hélices : sources H8 à H10 et H24 à H36 de `hispano-suiza-8a.md` § 9.
 
+**Dixième passe (consultées en résumé le 2026-10-24 ; échec DNS de l'outil de lecture sur toutes ces pages)**
+- **S79** — P. Grimault, « On the definition of the standard atmosphere », NACA Technical Memorandum n° 15, 1er avril 1921, traduction du bureau de Paris du NACA. NTRS 19930080725, https://ntrs.nasa.gov/citations/19930080725. Contenu vu en résumé : adoption, le 15 avril 1920, de la « loi de la S.T.Aé. » comme atmosphère type des essais officiels français ; renvoi à A. Toussaint (*L'Aéronautique*, n° 5, octobre 1919) ; exemple d'un Breguet XIV à 3 000 m.
+- **S80** — Service de l'information aéronautique (SIA), AIP France, carte et fiche de l'aérodrome LFPV (Vélizy-Villacoublay), par exemple https://www.sia.aviation-civile.gouv.fr/media/dvd/eAIP_09_JUL_2026/Atlas-VAC/PDF_AIPparSSection/VACH/AD/AD-3.LFPV.pdf : altitude de référence de 585 ft. Officielle, mais moderne.
+- **S81** — Comité pour l'histoire de l'aéronautique (Académie des technologies), *Un demi-siècle d'aéronautique en France : centres et moyens d'essais*, t. 1, coord. J.-P. Marec, 2013, PDF (adresse au § 5.7.7). Vu en résumé : section des essais en vol créée à Villacoublay en 1915, rattachée au Service technique ; contrôle du temps de montée, des vitesses en palier et du plafond. Secondaire institutionnelle.
+- **S82** — G. Hartmann, « Le grand concours d'aviation militaire, Reims 1911 », hydroretro.net, PDF (adresse au § 5.7.7). Vu en résumé : règlement publié en octobre 1910. Secondaire.
+- **S83** — Pistes sur les épreuves de 1911 :
+  - document en allemand de la Dolnośląska Biblioteka Cyfrowa, https://dbc.wroc.pl//Content/18456/PDF/20621.pdf (titre non relevé) : 500 m « au-dessus du point de départ » ;
+  - page d'histoire de la base aérienne 112 de Reims (franco.wiki) : tenir 500 m pendant quinze minutes.
+  - Les deux résumés divergent. Pistes seulement.
+- **S84** — historyofwar.org, « 9 August 1917 », https://www.historyofwar.org/firstworldwar/daybyday/1917_08_09.html : troisième et dernier jour des essais officiels du Morane-Saulnier AI à Villacoublay. Vulgarisation.
+- **S85** — Martlesham Heath Aviation Society, « History », https://www.mhas.org.uk/history/ : Testing Squadron installé à Martlesham Heath en janvier 1917 ; station ouverte le 16 janvier 1917. Association locale.
+- **S86** — Bureau of Standards et NACA, documents sur les instruments d'altitude vus en résumé : « Aeronautic instruments. Section II: altitude instruments », https://digital.library.unt.edu/ark:/67531/metadc65776/, et lettre circulaire 190 du NBS, https://nvlpubs.nist.gov/nistpubs/Legacy/LC/nbslettercircular190.pdf. L'un d'eux indique un étalonnage des altimètres américains à +10 °C isotherme depuis 1917 ; **lequel, je ne sais pas**. Primaires, non lues.
+- **S87** — Rapport du NACA sur l'atmosphère type, vu en résumé (sans doute « Standard atmosphere – tables and data », NTRS 19930091285 ; attribution à vérifier) : loi diffusée par la S.T.Aé. en mars 1920 comme projet d'accord interallié, appliquée à partir du 1er mai 1920, puis adoptée par l'Angleterre, la Belgique et l'Espagne, et par le NACA en 1921.
+- **S88** — PATSTEC (patrimoine scientifique et technique contemporain), fiches d'altimètres enregistreurs Jules Richard, https://www.patstec.fr/pdfgen.php?id=25010 et https://www.patstec.fr/pdfgen.php?id=16263 : instrument gradué jusqu'à 5 000 m, numéro de série de 1917 environ. Fiche muséale.
+- **S31 (complément)** — même fil CombatACE que S31, résumé du 2026-10-24 : avion en l'air après environ 150 ft, meilleure montée vers 60 à 65 mph.
+- **S12 (complément)** — flyingmachines.ru, résumé du 2026-10-24 : seconde valeur de 6 min 55 s à 2 000 m pour le 150 ch.
+
 ### 9.3 Pistes bibliographiques [PISTE] (non consultées ; éditions à vérifier)
 - **P1** — J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8, Albatros Productions, 1988 (fiche de catalogue de libraire).
 - **P2** — T. Gronczewski et S. M. Fleischer, *Spad VII C.1*, Aviatik Vintage Aircraft n° 1, 2004 (14 pages de plans selon une revue).
@@ -977,6 +1202,8 @@ Ajoutées en septième passe (géométrie de détail) :
 albindenis.free.fr ; en.wikipedia.org ; fr.wikipedia.org ; it.wikisource.org ; catalog.hathitrust.org ; gallica.bnf.fr (403 selon le coordinateur) ; www.gutenberg.org (direct) ; projekt-gutenberg.org ; www.theaerodrome.com ; flyingmachines.ru ; www.avionslegendaires.net ; historynet.com ; www.flightglobal.com (archives de *Flight*) ; www.thisdayinaviation.com ; www.hydroretro.net ; digital.library.unt.edu ; bibliotheques-numeriques.defense.gouv.fr ; m-selig.ae.illinois.edu ; aergistal.github.io ; web.archive.org ; www.google.com. Seuls github.com, raw.githubusercontent.com et, par intermittence, api.github.com répondent.
 
 **Cas particulier** : archive.org et ntrs.nasa.gov répondent au `curl` du conteneur (coordinateur, 2026-10-20), mais **pas** à l'outil de lecture de l'historien (DNS en échec). Ils ne sont exploitables que par téléchargement préalable (§ 9.6).
+
+**Dixième passe (2026-10-24)** : échec DNS de l'outil de lecture pour www.hydroretro.net, archive.org, ntrs.nasa.gov, www.academie-technologies.fr et resair420.free.fr.
 
 **Neuvième passe (2026-10-23)** : échec DNS de l'outil de lecture pour woodenpropeller.com, www.woodenpropeller.com, archive.org, gallica.bnf.fr, francearchives.gouv.fr, www.theaerodrome.com, catalog.hathitrust.org et reports.aerade.cranfield.ac.uk.
 
@@ -1020,6 +1247,7 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 | 1 (9e passe) | G. Eiffel, *Études sur l'hélice aérienne faites au laboratoire d'Auteuil* (1921, 2 vol.) | BnF (CCFr `ark:/16871/00111293469`), Gallica à chercher ; Smithsonian Libraries TL705 .E5X 1921 | dessin et essais d'une hélice de SPAD à Hispano de 150 hp (piste H28 de la fiche moteur) |
 | 2 (9e passe) | Plans d'usine du S.VII (nervures, bord d'attaque), et P1 | calques attribués à Roger Freeman, copies chez Leo Opdycke (S74 [RÉSUMÉ]) ; Windsock Datafile n° 8 | bord d'attaque coffré ou entoilé (§ 2.6), nervures, fausses nervures |
 | 2 (9e passe) | Fil S11, page entière | `https://theaerodrome.com/forum/threads/climbing-performance-of-the-spad-vii.30985/` | texte exact de l'« Air Board summary » et du rapport M.96, avec leurs références (§ 5.6) |
+| 1 et 2 (10e passe) | Dix documents sur les conditions des essais de montée : NACA TM 15 (Grimault), rapport du NACA sur les instruments d'altitude, images de Tizard dans *Flight* (mars 1917), NACA TN 20, dossiers Hartmann (Reims 1911, Nieuport), histoire des essais de Villacoublay, Toussaint 1919 | adresses exactes au § 5.7.7 | départ du chronomètre, zéro et graduation des altimètres français, atmosphère de réduction avant 1920 |
 
 ## 10. Journal des décisions
 - **2026-10-20 — Sous-version pour la SPA 3, été 1917.** S5, S8 et S16 font du 8Ab de 180 ch le moteur des S.VII neufs à partir du printemps 1917 (« avril 1917 » pour S16). Guynemer juge le 150 ch insuffisant dès décembre 1916 (S1). Aucun état des appareils de la SPA 3 n'a été trouvé. **Retenu : S.VII 180 ch (8Ab), confiance C**, en sachant que la SPA 3 alignait sans doute encore des 150 ch et quelques SPAD XIII à partir de fin juillet 1917 (S18, S1). Ce choix sera à revoir dès que l'historique d'Albin Denis ou les journaux de marche seront accessibles.
@@ -1123,3 +1351,21 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
   - Bord d'attaque entoilé sur fausses nervures : C (seule description d'époque de la famille, sur le S.XI, S49).
   - Aucune valeur n'est retenue. Le terme de traînée calé sur un avion américain de 1922 reste un comparable, à étiqueter comme tel.
 - **2026-10-23 — Origine de S46.** Rien de confirmé. La piste « Air Board summary » (§ 5.6) est notée sans être utilisée : résumés contradictoires, document non lu.
+
+**Dixième passe (2026-10-24 ; conditions réelles des essais de montée)**
+- **2026-10-24 — Départ du chronomètre des essais français : non tranché.**
+  - Aucune source sur la pratique du STAé ; je n'ai rien comblé.
+  - Retenu pour le calcul : trois bornes (en vol au niveau du terrain, au décollage, au début du roulage), § 5.7.6.
+  - La borne « au décollage » s'appuie seulement sur une déduction (C) : c'est l'origine naturelle d'un barogramme.
+- **2026-10-24 — Temps britanniques réduits : convention du modèle (C).**
+  - Tizard (S75, lu dans l'OCR) décrit des temps obtenus par intégration de la vitesse ascensionnelle réduite depuis la hauteur type 0. Ils ne dépendent donc pas du départ réel du chronomètre.
+  - Le rapport n° 96 est supposé réduit ainsi (C) : même unité, un mois après la conférence.
+  - Sous 2 000 m, l'échelle de densité britannique est de 0,7 à 2,3 % plus dense que l'atmosphère type internationale, et se confond avec elle au-dessus de 3 000 m (calcul C).
+  - Conséquence : le rapport n° 96 est le meilleur point de comparaison pour le modèle, dès qu'il sera lu. Ses chiffres restent [RÉSUMÉ].
+- **2026-10-24 — Atmosphère type française.** Adoption officielle le 15 avril 1920 (S79 [RÉSUMÉ]). **Retenu (C)** : aucune atmosphère type officielle avant 1920. Les chiffres de S46 sont donc bruts, ou réduits par une méthode du STAé inconnue : **non tranché**.
+- **2026-10-24 — Terrain.** Villacoublay à 178 m, retenu comme **hypothèse de travail**. Altitude : B (AIP actuelle, plateau inchangé). Attribution de l'essai de S46 : C, puisque le lieu n'est pas documenté.
+- **2026-10-24 — Zéro des altitudes : non tranché.** Deux cas à calculer. Selon la loi de S46 (C), ils agissent en sens opposés : +4 à +8 % avec un zéro au terrain, −29 s avec un zéro à 760 mm. **Consigne : ne pas retenir la convention qui arrange le modèle.**
+- **2026-10-24 — Date et saison de l'essai : non trouvées.** Fenêtre de mi-1916 à mi-1917 (C). Température : atmosphère type ±15 K en `E:`, d'après la fourchette de Dines (S77).
+- **2026-10-24 — Décollage : non trouvé.** Le chiffre de Tallman (environ 46 m) est classé en D et n'est pas une cible.
+- **2026-10-24 — Cibles inchangées.** Le § 5.5.6 n'est pas modifié. Proposition à l'aérodynamicien : comparer chaque cible à l'enveloppe des variantes du § 5.7.6.
+- **2026-10-24 — Écart avec le rapport n° 96.** Le modèle serait aussi plus rapide que ce rapport, de 4 à 9 % (calcul C sur des chiffres [RÉSUMÉ]). Les conditions d'essai françaises n'expliqueraient alors pas tout l'écart. Conclusion signalée comme **fragile** tant que le rapport n'est pas lu.
