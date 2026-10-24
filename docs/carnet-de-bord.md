@@ -1180,3 +1180,7 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
   S46 tombe dans la fourchette, mais aucune hélice ne tient régime et montée à la fois : l'écart restant est du côté de la montée.
 - **D** Rien de changé dans les données. Le choix de l'hélice de référence (Levasseur 485 ou Éclair 6) est soumis au joueur.
+- **Q** Le joueur demande des recommandations pour les deux décisions. **R** :
+  - **hélice** : passer à l'Éclair 6, avec Levasseur 485 et Éclair 100 en variantes. Raisons : le texte de Hartmann, des deux erreurs qui se compensent aujourd'hui, et des recherches sur la montée à mener avec l'hélice documentée. Biais déclaré : on savait déjà que 2,40 m donne le bon régime ;
+  - **suite** : d'abord les conditions des essais de 1919 (départ du chrono, altitude du terrain, température), parce que c'est peu coûteux et que cela chiffre l'incertitude de la cible ; puis la traction à faible J (surfaces du VE-7 à sourcer) ; enfin la courbe du moteur vers 1 500 tr/min et la loi d'altitude, puisque l'excès croît avec l'altitude (−8 / −7 / −11 %) ;
+  - en attente de la décision du joueur.
