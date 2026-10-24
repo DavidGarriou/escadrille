@@ -335,7 +335,7 @@ Revue de l'aérodynamicien, essais avec un facteur sur le tourbillon K du souffl
 
 - Le départ en roulis existe **sans aucun tourbillon** : c'est la dynamique propre du biplan au décrochage (autorotation, couplage inertiel p·r).
 - Le tourbillon ne fait qu'en choisir le **sens**, contre la réaction du couple.
-- Or la théorie des bandes surestime son effet sur des ailes dans un souffle étroit : le moment de roulis calculé, environ 40 N·m, dépasse le couple de l'hélice (24,5 N·m). Référence : Smelt et Davies, R&M 1788, 1937.
+- Or la théorie des bandes surestime son effet sur des ailes dans un souffle étroit : le moment de roulis calculé, environ 40 N·m, dépasse le couple de l'hélice (24,5 N·m). ~~Référence : Smelt et Davies, R&M 1788, 1937.~~ Référence précisée le 2026-10-24 : R&M 1788 traite la hausse de portance, pas le tourbillon. Pour le tourbillon, la mesure est celle du NACA TN 1146 : l'aile et le fuselage reprennent 40 à 50 % du couple. La ligne portante de R&M 2368 (partie II) ne réduit pas, elle, le moment d'une aile infinie. Voir `docs/plans/m1-souffle-ailes.md`.
 - **Le côté du départ (« à droite ») n'est donc pas significatif** tant que le souffle sur les ailes n'est pas étalonné. Seuls comptent la présence du départ et l'abattée.
 - Cet étalonnage passe en tête des tâches hors plan : avant toute conclusion sur le décrochage ou les effets de couple, et avant l'embardée au décollage du M2.
 

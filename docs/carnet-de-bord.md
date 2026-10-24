@@ -1254,3 +1254,26 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - test du signe du roulis de l'hélice arrêtée ;
   - test de symétrie de la cellule sans propulsion.
 
+
+### Souffle d'hélice sur les ailes : sources, mesure et plan
+
+- **Q** Le joueur : « On travaille par priorité, étape 1 ». **D** Étalonnage du souffle d'hélice sur les ailes (Smelt et Davies, R&M 1788). Comme il s'agit d'une modification du FDM touchant plusieurs choses, un plan sera soumis au joueur avant le code.
+- **A** Sources lues :
+  - R&M 2368 (Squire et Chester), parties I et II ;
+  - R&M 2732, qui cite la formule de Smelt et Davies (éq. 6) ;
+  - R&M 2701 ;
+  - sur le serveur de la NASA : NACA TN 1146, Report 747 et TM 874 (Stüper).
+
+  R&M 1788 n'est pas en ligne : la base AERADE de Cranfield ne l'a pas.
+- **⚠** L'attribution faite au § 9 était inexacte. Smelt et Davies traitent la hausse de portance due à la vitesse du souffle, pas le tourbillon. Pour une aile infinie, la ligne portante de R&M 2368 donne même au tourbillon le **même** moment que la théorie des bandes. C'est la **mesure** du NACA TN 1146 qui le contredit : sans empennage, le roulis net vaut 50 à 60 % du couple, donc l'aile et le fuselage n'en reprennent que 40 à 50 %. Le § 9 et le plan précédent sont corrigés, avec l'ancienne référence barrée.
+- **A** Mesure sur le SPAD, avec un test temporaire non commité : le moment de roulis du tourbillon vaut 1,1 à 1,7 fois le couple selon le vol. L'empennage en porte 0,6 Q, car il voit tout le tourbillon.
+- **⚠** Incohérence d'énergie : la cellule reprend au tourbillon **151 %** de son énergie de rotation à Vmax, et **106 %** en montée. La théorie donne au plus 37 % pour une aile, la mesure environ la moitié. L'hélice installée du modèle est donc trop efficace, de 1,5 à 2,5 % de la puissance sur l'arbre.
+- **⚠** En rédigeant le plan, j'ai d'abord lu à l'envers le signe des écarts de montée : ce sont des écarts de temps, donc le modèle monte trop vite. Corrigé avant la publication. La correction prévue ralentirait la montée d'environ 5 %, dans le sens des cibles : **biais déclaré** dans le plan.
+- **D** Plan proposé : `docs/plans/m1-souffle-ailes.md`.
+  - Maquette du TN 1146 comme avion de comparaison.
+  - Facteur de largeur du souffle tiré de R&M 2368 (tableau 2).
+  - Tourbillon divisé par deux derrière les ailes (Report 747, TN 1146).
+  - Vitesse induite de Froude pour une traction négative.
+  - Invariant d'énergie, campagne et § 9 refait.
+
+  En attente de la validation du joueur.
