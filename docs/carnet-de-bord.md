@@ -1470,3 +1470,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - revues : l'aérodynamicien a relu après chaque changement, l'historien a relu la fiche et la chronologie (huitième passe).
 - **A** Texte de l'essai qualitatif « décrochage moteur réduit » mis à jour : le côté du départ (à gauche) résiste à toutes les variantes, probable, confiance C.
 - **A** Onzième passe confiée à l'historien : compensation du couple sur le S.VII (calage dissymétrique, haubans, dérive), témoignages sur le pied à tenir, sens de rotation de l'hélice.
+- **Q** Le joueur : « explique ce qui manque avant le modèle 3D ».
+- **R** Six préalables, vérifiés dans le dépôt :
+  1. un ADR sur la chaîne d'axes Blender → glTF → Bevy → modèle de vol, et sur l'origine du modèle. Aucun ADR ne la fixe (0001 à 0005), et `crates/game/src/flight/bridge.rs`, l'unique conversion prévue par CLAUDE.md, n'existe pas ;
+  2. la liste minimale des nœuds d'un modèle provisoire, tirée du contrat de `pipeline-assets` ;
+  3. l'outil `tools/asset_check`, absent. `aircraft.ron` ne porte ni longueur ni hauteur hors tout (elles sont dans la fiche : 6,08 à 6,20 m et 2,20 m) ;
+  4. un générateur en Rust, puisque Blender n'est pas installé dans le conteneur. Il demande une dépendance directe pour écrire le glTF (`gltf-json` ou `serde_json`, déjà dans `Cargo.lock` par Bevy), à approuver ;
+  5. des cotes estimées (E:) : section du fuselage, œil du pilote, bouche de la Vickers, train ;
+  6. rien n'affiche encore un avion dans le jeu : le pont FDM ↔ ECS et les caméras sont au M2.
+- **D** Proposition : faire le modèle provisoire au début du M2, avec un plan à valider. Décision laissée au joueur.
