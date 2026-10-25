@@ -1,0 +1,17 @@
+[package]
+name = "asset_check"
+description = "Checks the 3D models of Panache blanc against the aircraft data (nodes, hinges, propeller, dimensions, licences)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+escadrille_data.workspace = true
+glam.workspace = true
+gltf.workspace = true
+
+[lints]
+workspace = true

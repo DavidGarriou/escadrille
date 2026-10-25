@@ -27,4 +27,17 @@ Mockup(
     gun_muzzles_m: [
         (0.45, 0.0, -0.95),                                          // E: Vickers on the cowling (drag item of aircraft.ron at x −0.05), barrel about 1.1 m
     ],
+    accepted_deviations: [
+        //! Checks of `just test` (tools/asset_check) that this model fails, awaiting the player's agreement (carnet, 2026-10-25)
+        (
+            check: "length",
+            measured: M(6.264),                                      // C: hub (x 0.78) to the trailing edge of the rudder's root strip (x −5.48), against x −5.32 on the drawing
+            reason: "the tail is the flight model's equivalent one, unswept with the area kept: its rudder ends 0.16 m behind the drawing's",
+        ),                                                           // C: spad7-calculs.md § 3 (the drawing, scaled on an overall length of 6.10 m) and § 5 (unswept tail): above the tailplane, the equivalent fin has a root chord of 1.61 m on a straight quarter-chord line
+        (
+            check: "height",
+            measured: M(2.355),                                      // C: at rest on the wheels and the skid (tail down 13.7°); 2.530 m in the flying attitude
+            reason: "2.20 m cannot be the flying attitude, and at rest the drawing's undercarriage stands 2.30 to 2.36 m: drawing and tables disagree",
+        ),                                                           // C: in flight, the fin top (z −1.40) and the propeller tip (z 0.82) alone span 2.22 m; at rest 2.304 m with the drawing's 0.58 m wheels, 2.355 m with 700 mm; spad7.md § 2.1 (2.12 to 2.35 m in the sources, attitude not given)
+    ],
 )

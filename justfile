@@ -28,6 +28,10 @@ release:
 essai avion:
     cargo run -p fdm_lab -- essai {{avion}}
 
+# Provisional 3D model of an aircraft: assets/aircraft/<avion>/model.glb (boxes and plates).
+mockup avion:
+    cargo run -p mockup -- {{avion}}
+
 # Run the game in development mode (dynamic linking for faster rebuilds).
 run:
     cargo run -p escadrille --features dev

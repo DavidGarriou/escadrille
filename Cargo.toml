@@ -1,6 +1,13 @@
 [workspace]
 resolver = "3"
-members = ["crates/fdm", "crates/data", "crates/game", "tools/fdm_lab"]
+members = [
+    "crates/fdm",
+    "crates/data",
+    "crates/game",
+    "tools/fdm_lab",
+    "tools/mockup",
+    "tools/asset_check",
+]
 
 [workspace.package]
 version = "0.1.0"
@@ -26,6 +33,11 @@ clap = { version = "4.6.7", features = ["derive"] }
 thiserror = "2.0.21"
 # Tools only (CLAUDE.md, M1 plan): eigenvalues of the linearised flight model.
 nalgebra = { version = "0.35.0", default-features = false, features = ["std"] }
+# Tools only (player's decision of 2026-10-25, plan docs/plans/modele-3d-provisoire.md):
+# write (tools/mockup) and read back (tools/asset_check) glTF models. The version of
+# bevy_gltf 0.20, to avoid two copies: follow it when Bevy moves.
+gltf = { version = "=1.4.1", default-features = false, features = ["names", "utils"] }
+gltf-json = { version = "=1.4.1", features = ["names"] }
 # Tools only (player's decision of 2026-10-22): PNG plots of fdm_lab, without system fonts;
 # text drawn through ab_glyph with the Go font embedded in fdm_lab.
 plotters = { version = "0.3.7", default-features = false, features = ["bitmap_backend", "bitmap_encoder", "line_series", "point_series", "ab_glyph"] }

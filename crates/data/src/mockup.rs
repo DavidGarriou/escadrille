@@ -1,6 +1,7 @@
 //! Provisional 3D model files (`assets/aircraft/<id>/maquette.ron`): the geometry that a
 //! box-and-plate model needs and `aircraft.ron` does not give (fuselage sections, wheels,
-//! tail skid, pilot's eye, guns, struts). `tools/mockup` builds the model from both files
+//! tail skid, pilot's eye, guns, struts), and the checks of `tools/asset_check` that it
+//! fails for a known, accepted reason. `tools/mockup` builds the model from both files
 //! (plan `docs/plans/modele-3d-provisoire.md`). Positions are from the datum of
 //! `aircraft.ron`, body axes (x forwards, y right, z down), metres.
 
@@ -38,6 +39,17 @@ pub struct StrutSpec {
     pub y_m: f64,
 }
 
+/// A check of `tools/asset_check` that the provisional model fails for a known reason,
+/// accepted with the player's agreement: it passes while the model measures `measured`
+/// (a change of the data that moves it must be looked at again).
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct AcceptedDeviation {
+    /// Name of the check, as `asset_check` prints it (`span`, `length`, `height`).
+    pub check: String,
+    pub measured: Length,
+    pub reason: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename = "Mockup")]
 pub struct MockupFile {
@@ -50,6 +62,8 @@ pub struct MockupFile {
     pub pilot_eye_m: [f64; 3],
     /// Muzzle of each gun, firing along +x.
     pub gun_muzzles_m: Vec<[f64; 3]>,
+    #[serde(default)]
+    pub accepted_deviations: Vec<AcceptedDeviation>,
 }
 
 /// The provisional model file of an aircraft, if it has one.
@@ -85,6 +99,15 @@ pub fn load_mockup(assets: &Path, id: &str) -> Result<Option<MockupFile>, DataEr
     if file.gun_muzzles_m.is_empty() {
         return Err(invalid("at least one gun muzzle"));
     }
+    if file
+        .accepted_deviations
+        .iter()
+        .any(|d| !positive(d.measured) || d.reason.trim().is_empty())
+    {
+        return Err(invalid(
+            "an accepted deviation needs a measured value and a reason",
+        ));
+    }
     Ok(Some(file))
 }
 
@@ -104,6 +127,12 @@ mod tests {
         assert_eq!(m.fuselage.len(), 6);
         assert!((m.wheels.diameter.si() - 0.70).abs() < 1e-12);
         assert_eq!(m.gun_muzzles_m.len(), 1);
+        let deviations: Vec<&str> = m
+            .accepted_deviations
+            .iter()
+            .map(|d| d.check.as_str())
+            .collect();
+        assert_eq!(deviations, ["length", "height"]);
         assert!(
             load_mockup(&assets(), "no_such_aircraft")
                 .unwrap()

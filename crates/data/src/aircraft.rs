@@ -386,22 +386,28 @@ fn add(a: Inertia, b: Inertia) -> Inertia {
 }
 
 /// A strip with the panel it comes from and its position along it (0 root, 1 tip).
-struct PlacedStrip {
-    strip: Strip,
-    panel: usize,
-    along: f64,
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct PlacedStrip {
+    pub strip: Strip,
+    pub panel: usize,
+    pub along: f64,
 }
 
 /// Strips of one surface (positions from the datum), its area and its span.
-struct Generated {
-    strips: Vec<PlacedStrip>,
-    area: f64,
+#[derive(Debug, Clone, PartialEq)]
+pub struct Generated {
+    /// The panels' strips root to tip, then their mirror images for a mirrored surface;
+    /// the order of the flight model's strips.
+    pub strips: Vec<PlacedStrip>,
+    pub area: f64,
     /// Largest distance between panel ends across the flow (tip to tip, gaps for the
     /// fuselage included).
-    span: f64,
+    pub span: f64,
 }
 
-fn surface_strips(spec: &SurfaceSpec) -> Result<Generated, String> {
+/// The strips of a surface as the flight model gets them, positions from the datum and
+/// no control yet (the 3D model tools draw the same plates).
+pub fn surface_strips(spec: &SurfaceSpec) -> Result<Generated, String> {
     let mut strips = Vec::new();
     let mut ends = Vec::new();
     for (index, panel) in spec.panels.iter().enumerate() {

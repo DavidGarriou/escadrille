@@ -10,6 +10,7 @@ pub mod essais;
 pub mod frames;
 pub mod masses;
 pub mod mockup;
+pub mod model;
 pub mod origin;
 pub mod propeller;
 pub mod units;
