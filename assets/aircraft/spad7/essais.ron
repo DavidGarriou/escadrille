@@ -49,7 +49,7 @@ Essais(
         ),
         (
             name: "décrochage moteur réduit",
-            description: "Décrochage brutal à basse vitesse : abattée nette et départ en roulis (à confirmer, aucun témoignage direct lu). Le côté du départ simulé dépend du tourbillon du souffle sur les ailes, non étalonné : il n'est pas significatif (spad7-calculs.md § 9)",
+            description: "Décrochage brutal à basse vitesse : abattée nette et départ en roulis (à confirmer, aucun témoignage direct lu). Le côté du départ simulé (à gauche) résiste à toutes les variantes de la rotation derrière les ailes ; probable, confiance C, faute de témoignage (spad7-calculs.md § 9)",
             source: "T9, T16 (spad7.md § 6.2)",
             manoeuvre: Some(PowerOffStall(altitude: M(1000.0))), // E: test height
         ),

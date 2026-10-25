@@ -1457,3 +1457,16 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Décisions demandées au joueur :
   - lissage des tables de profil (C_m de l'aile, empennage), qui fixe la marge statique : par ADR ;
   - question à l'historien sur un calage différentiel des ailes du S.VII.
+
+### `/nouvel-avion spad7` : reprise du parcours
+
+- **Q** Le joueur lance `/nouvel-avion spad7`. **R** L'avion existe déjà : version et identifiant confirmés au M0/M1 (SPAD S.VII C.1, Hispano-Suiza 8Aa de 150 ch, une Vickers, `spad7`). Je reprends la liste des étapes et ne fais que ce qui manque.
+- **R** État des étapes :
+  - fiche (10 passes de l'historien), profils, hélice, données et cibles : faits ;
+  - inertie : `fdm_lab inertia spad7` concorde avec `aircraft.ron` ;
+  - gains de l'instructeur et de l'IA : l'outil n'existe pas encore (M4, M5) ;
+  - essais : rapport « validé », toutes les cibles quantitatives passent, robustesse verte ;
+  - modèle 3D provisoire et `asset_check` : rien n'existe ;
+  - revues : l'aérodynamicien a relu après chaque changement, l'historien a relu la fiche et la chronologie (huitième passe).
+- **A** Texte de l'essai qualitatif « décrochage moteur réduit » mis à jour : le côté du départ (à gauche) résiste à toutes les variantes, probable, confiance C.
+- **A** Onzième passe confiée à l'historien : compensation du couple sur le S.VII (calage dissymétrique, haubans, dérive), témoignages sur le pied à tenir, sens de rotation de l'hélice.
