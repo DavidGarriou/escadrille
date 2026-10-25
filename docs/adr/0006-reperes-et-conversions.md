@@ -1,6 +1,6 @@
 # 0006 — Repères et conversions : Blender → glTF → Bevy → modèle de vol
 
-- Statut : Proposé
+- Statut : Accepté (validé par le joueur le 2026-10-25)
 - Date : 2026-10-25
 
 ## Contexte

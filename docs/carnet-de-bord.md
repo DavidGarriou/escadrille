@@ -1526,3 +1526,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Fac-similé des *Technical Notes* de l'Air Board (Harris, 1999).
   - Bulletins américains de 1918 (Joyner Library).
   - Fonds de plans Blériot-Spad du Musée de l'Air.
+- **Q** Le joueur : « ok pour l'ADR 0006 ». **D** ADR 0006 (repères et conversions) **accepté** ; statut mis à jour dans le fichier et dans l'index.
