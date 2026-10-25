@@ -256,3 +256,31 @@ fn a_subset_of_the_surfaces_is_loaded_alone() {
     assert_eq!(sum.lift_coefficients, whole.lift_coefficients);
     assert_eq!(sum.surface_wrenches, whole.surface_wrenches);
 }
+
+#[test]
+fn the_swirl_share_of_the_loads_changes_no_lift_coefficient() {
+    // The mutual iteration leaves that share out, the final pass keeps it.
+    let system = biplane((8.0, 1.2), (7.5, 1.1), 0.5);
+    let v = flight(0.08);
+    let swirling = |_: usize, strip: &Strip| {
+        let s = DVec3::new(0.0, 0.0, 0.3 * strip.position.y);
+        StripFlow {
+            velocity: s,
+            swirl: s,
+            swirl_tilt: 0.15,
+        }
+    };
+    let plain = |i: usize, strip: &Strip| swirling(i, strip).velocity;
+    let swirled = system.loads(v, DVec3::ZERO, RHO, &NO_CONTROLS, swirling);
+    let felt = system.loads(v, DVec3::ZERO, RHO, &NO_CONTROLS, plain);
+    assert_eq!(swirled.lift_coefficients, felt.lift_coefficients);
+    assert_eq!(swirled.mutual_angles, felt.mutual_angles);
+    assert!(
+        swirled
+            .swirl_wrenches
+            .iter()
+            .all(|w| w.moment.x.abs() > 1.0),
+        "{swirled:?}"
+    );
+    assert!(felt.swirl_wrenches.iter().all(|w| *w == Wrench::default()));
+}

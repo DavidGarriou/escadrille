@@ -354,7 +354,7 @@ Revue de l'aérodynamicien, essais avec un facteur sur le tourbillon K du souffl
 
 **Statut** : départ à gauche **probable** (confiance C, aucun témoignage lu). Deux réserves :
 - le souffle part tout droit le long de l'axe de traction (E:), ce qui décide si l'empennage est dans le souffle au décrochage ;
-- ~~aucune conclusion sur l'équilibre en roulis et en lacet en croisière : le bilan de moment cinétique y contredit la donnée (§ 10).~~ Levée le 2026-10-25 : la rotation derrière les ailes suit désormais ce bilan (voir la mise à jour ci-dessous).
+- ~~aucune conclusion sur l'équilibre en roulis et en lacet en croisière : le bilan de moment cinétique y contredit la donnée (§ 10).~~ Levée le 2026-10-25 : la rotation derrière les ailes suit désormais ce bilan. Conclusion de confiance D : en palier et en montée, le couple est presque compensé (2 % de la course au plus) ; il se sent surtout près du décrochage (§ 10).
 
 
 ## 10. Souffle d'hélice sur les ailes et l'empennage (2026-10-24 et 25)
@@ -365,14 +365,14 @@ Plan `docs/plans/m1-souffle-ailes.md`, validé par le joueur ; détail des étap
   - Sur la maquette motorisée du NACA TN 1146, l'aile reprend 38 à 39 % du couple ; mesure : 39 à 50 %, le modèle restant sous la mesure. Avant : 57 à 71 %.
   - Pour le SPAD, la correction est faible en croisière (jet à peine plus rapide que l'avion) et forte au décrochage plein gaz.
 - **Rotation derrière les ailes** : ~~divisée par deux (`swirl_left`, C:, Report 747 et TN 1146)~~. Depuis le 2026-10-25 (plan `docs/plans/m1-rotation-derriere-ailes.md`), elle suit le **bilan de moment cinétique** : le jet garde ṁK − M_ailes, M_ailes étant le moment que la rotation exerce sur les ailes (C:).
-  - SPAD : 0,07 à Vmax, 0,28 en meilleure montée, 0 au plané, 0,59 au décrochage plein gaz ; plus encore pendant un départ, à mesure que les ailes décrochent.
+  - SPAD (16 bandes par demi-aile, convergé) : 0,21 à Vmax, 0,33 en meilleure montée, 0,07 au plané, 0,52 au décrochage plein gaz ; plus encore pendant un départ, à mesure que les ailes décrochent. ⚠ Les premiers chiffres (0,07 / 0,28 / 0 / 0,59) venaient de 8 bandes, trop peu pour le jet (revue du 2026-10-25).
   - Sous forte traction, cohérent avec le TN 1146 (aile à 40-50 % du couple, dérive conforme à 10-15 % près avec la moitié de la rotation).
   - **Limite** : en croisière, le moment des ailes (0,9 Q et plus) est dans la zone où R&M 2368 juge sa théorie peu sûre (corde > D/3). Le bilan le transmet tel quel à l'empennage : l'erreur éventuelle reste dans la réponse de l'aile.
-  - En croisière et en montée, l'avion tient presque sans ailerons ni direction (moins de 3 et 6 % de la course) : résultat du modèle, non validé.
-  - Effet de bord expliqué : marge statique 5,9 → 4,9 %, par le creux de pente du profil d'empennage près de la portance nulle, que la rotation masquait.
+  - En palier et en montée, l'avion tient avec 2 % de la course au plus, ailes horizontales et dérapage libre (0,7° à Vmax, 2,0° en montée) ; au décrochage plein gaz, 8 % d'ailerons et 10 % de direction. Confiance **D**, non validé.
+  - ~~Marge statique 5,9 → 4,9 %~~ : bruit de mesure (tangente sur un segment de table). Par sécante sur ±1° : 3,8 à 5,1 % de 140 à 156 km/h, puis 1,2 % à 170 km/h ; elle dépend du lissage des tables (C_m de l'aile surtout), à décider.
 - **Inclinaison de la portance due à la rotation** : la poussée reprise au tourbillon ne vaut que τ fois celle de la théorie des bandes (R&M 2368, partie II ; τ ≈ 0,15 pour l'aile du SPAD).
   - Avant, la cellule reprenait jusqu'à 120 % de l'énergie de rotation, ce qui est impossible.
-  - Maintenant : 4 à 18 % pour le SPAD, sous la ligne portante (28 à 37 %) et sous l'attente du Report 747 (environ la moitié). Depuis que la rotation derrière les ailes suit le moment cinétique, l'empennage en reprend moins : −1 à 7 % (la montée à −1 %, les ailes y perdant de la puissance par la traînée de profil).
+  - Maintenant : 4 à 18 % pour le SPAD, sous la ligne portante (28 à 37 %) et sous l'attente du Report 747 (environ la moitié). Depuis que la rotation derrière les ailes suit le moment cinétique, l'empennage en reprend moins : 1 à 8 % (montée à 1 %, les ailes y perdant de la puissance par la traînée de profil, l'empennage en reprenant).
 - **Froude sous traction négative** : l'air ralentit derrière une hélice qui freine, sans dépasser −0,4 V.
 - **Campagne du SPAD**, cibles A et B de S46 :
 

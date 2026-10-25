@@ -849,3 +849,61 @@ fn the_loads_stay_continuous_when_the_torque_crosses_zero() {
     assert!((b.force - c.force).length() < 1e-3, "{below:?} {above:?}");
     assert!((b.moment - c.moment).length() < 1e-3, "{below:?} {above:?}");
 }
+
+#[test]
+fn a_left_hand_propeller_mirrors_the_lateral_loads() {
+    // Locks the sign of what the wings take from the swirl: the same moment, the other
+    // way, leaves the same fraction (aerodynamicist review of 2026-10-25).
+    let a = biplane();
+    let geometry = PropellerGeometry {
+        right_handed: false,
+        ..*a.propulsion().unwrap().propeller.geometry()
+    };
+    let propeller = Propeller::new(table(), anchors(), geometry).unwrap();
+    let rotor = Rotor {
+        axis: propeller.rotation_axis(),
+        inertia: a.mass.rotor().unwrap().inertia,
+    };
+    let inertia = Inertia {
+        ixx: 1_100.0,
+        iyy: 1_300.0,
+        izz: 2_200.0,
+        ixz: 40.0,
+    };
+    let left = Aircraft::new(
+        MassProperties::new(a.mass.mass(), inertia, Some(rotor)).unwrap(),
+        a.lifting.clone(),
+        a.drag.clone(),
+        a.bodies.clone(),
+        Some(Propulsion {
+            propeller,
+            engine: engine(),
+        }),
+        a.downwash.clone(),
+        a.travel,
+    )
+    .unwrap();
+    assert_eq!(left.mass.airframe_inertia(), a.mass.airframe_inertia());
+    for state in [flying(40.0, 0.05, 200.0), flying(25.0, 0.25, 220.0)] {
+        let (r, l) = (
+            a.evaluate(&state, &FULL, &SEA_LEVEL),
+            left.evaluate(&state, &FULL, &SEA_LEVEL),
+        );
+        let (fr, fl) = (r.loads.wrench.force, l.loads.wrench.force);
+        let (mr, ml) = (r.loads.wrench.moment, l.loads.wrench.moment);
+        let tol = 1e-9 * fr.length().max(mr.length());
+        assert!((r.swirl_left.unwrap() - l.swirl_left.unwrap()).abs() < 1e-12);
+        assert!(r.swirl_left.unwrap() < 1.0, "{r:?}");
+        assert!(
+            (fr.x - fl.x).abs() < tol && (fr.z - fl.z).abs() < tol,
+            "{fr} {fl}"
+        );
+        assert!((fr.y + fl.y).abs() < tol, "{fr} {fl}");
+        assert!(
+            (mr.x + ml.x).abs() < tol && (mr.z + ml.z).abs() < tol,
+            "{mr} {ml}"
+        );
+        assert!((mr.y - ml.y).abs() < tol, "{mr} {ml}");
+        assert!(mr.x.abs() > 10.0, "{mr}");
+    }
+}

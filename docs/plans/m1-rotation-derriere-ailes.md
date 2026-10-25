@@ -15,6 +15,8 @@ Derrière les ailes, l'empennage voit une fraction fixe de la rotation du souffl
 | Plané, 35 m/s | 1,12 Q | 0 | 0,5 |
 | Décrochage plein gaz | 0,41 Q | 0,59 | 0,5 |
 
+(Chiffres à 8 bandes par demi-aile. Avec des bandes convergées, les ailes reprennent 0,79 / 0,67 / 0,93 / 0,48 Q : voir la revue dans les résultats.)
+
 Conséquences :
 - à Vmax, la cellule reprend 1,2 Q, plus que ce que l'hélice a mis dans l'air ;
 - l'équilibre en roulis et en lacet en croisière n'est pas interprétable ;
@@ -99,54 +101,87 @@ Conséquences :
   - continuité des efforts quand le couple de l'hélice change de signe ;
   - paire mutuelle à cheval refusée ; hélice propulsive sans fraction.
 
-### Rotation laissée et commandes à l'équilibre
+### Revue de l'aérodynamicien (2026-10-25)
 
-`fdm_lab souffle spad7`. « Avant » : le même code, fraction figée à 0,5 (l'ancienne donnée).
+Verdict : à corriger. Le code est juste : aucune erreur de signe, aucun double compte, aucune discontinuité des efforts. Mais les premiers chiffres publiés n'étaient pas convergés.
+
+- **Bloquant : discrétisation.**
+  - Avec 8 bandes par demi-aile (0,44 à 0,49 m), le jet n'était couvert que par 1,5 à 2 bandes par demi-largeur.
+  - Or la fraction, 1 − M/Q, est une petite différence entre deux grands nombres. À Vmax, 14 % d'erreur sur M (0,93 Q au lieu de 0,80 Q) triplaient la rotation laissée (0,07 au lieu de 0,21).
+  - **Artefacts** de la première version, retirés des documents :
+    - la cellule qui reprenait plus que le couple au plané ;
+    - la borne 0 atteinte ;
+    - le bilan d'énergie à −1 % en montée.
+  - **Corrigé** : SPAD à 16 bandes par demi-aile, empennage et dérive doublés (C:, convergence). Nouveau test `the_swirl_left_converges_with_the_strips` : doubler encore change la fraction de moins de 0,02, et les commandes à l'équilibre de moins de 0,005 de la course (0,01 au décrochage plein gaz, équilibré au maximum de portance, où le décrochage de chaque bande est lui aussi discrétisé : 0,0065 mesuré).
+- **Important 1 : la marge statique était du bruit de mesure.**
+  - La différence centrée de 1e-4 m/s lisait la pente d'un seul segment des tables linéaires par morceaux. La marge sautait de 2 à 6 % selon la vitesse de trim. L'écart 5,9 → 4,9 % ne voulait donc rien dire. Le creux du profil d'empennage existe, mais il est dans la dispersion d'une table à trois décimales tous les 1,5°. La symétrisation l'a recopié de part et d'autre de α = 0.
+  - **Corrigé** : marge et dérivées latérales par sécante sur ±1° d'incidence, de dérapage et de déflexion, et ±2 % de régime (`static_stability`).
+  - **Reste** la pente avec la vitesse (ci-dessous), surtout due au C_m de l'aile : d'un segment à l'autre, dC_m/dC_L va de −0,046 à +0,044. Lisser les tables (droite des moindres carrés de l'empennage, C_m de l'aile) est un choix de traitement des données, **à décider par le joueur** (ADR).
+- **Important 2 : coût.**
+  - Le calcul « sans rotation » tournait à chaque passe de l'itération mutuelle, soit 15,6 % des instructions par évaluation (mesure callgrind de la revue). Or l'itération n'utilise que les C_L, que la part de rotation ne change pas.
+  - **Corrigé** : l'itération passe l'écoulement sans sa part de rotation ; seule la passe finale la sépare. Un test vérifie que les C_L et les angles mutuels sont identiques. `just test` passe de 145 à 65 s.
+  - Reste le vrai poste : environ 12 passes d'itération mutuelle à 1e-13. Un Newton sur les C_L est à faire avant les avions de l'IA (hors plan).
+- **Important 3 : test d'énergie.** La borne |P| < 5 % ne teste plus rien de physique, puisque le signe du total est dans le bruit de discrétisation. Ce qui est robuste, c'est le partage : ailes négatives en montée (−0,09 kW), empennage positif. Une estimation à la main de la revue rend ce signe plausible : poussée τ ΔC_L δ ≈ 0,007 q S, contre environ 0,009 de montée de la traînée de profil. **Gardé** comme non-régression ; un test de la décomposition (traînée de profil figée) est noté dans les suites.
+- **Important 4 : ce qu'on peut dire de l'équilibre.**
+  - Le trim est ailes horizontales, dérapage libre : « sans ailerons ni direction » s'entend avec 0,7° de dérapage à Vmax et 2,0° en montée. Bille au centre, il faudrait environ 120 N·m de lacet en montée.
+  - Confiance **D** :
+    - c/D = 0,5, au-delà du D/3 de R&M 2368 ;
+    - la seule mesure (TN 1146, c/D ≈ 0,8) est sous forte traction, et le modèle y reste en dessous.
+  - Le 0,80 Q de croisière est bien la théorie des bandes : la revue trouve 0,77 Q à la main, ce n'est pas un bogue.
+  - Le témoignage T8 (Meister, SPAD XIII : « beaucoup de pied ») porte sur un autre avion, à réducteur, à rotation inverse et au couple double. Ce n'est pas une contradiction, mais c'est un signal.
+- **Suggestions retenues** :
+  - test miroir (hélice à gauche : même fraction, efforts latéraux exactement opposés), ajouté ;
+  - borne 0 justifiée par l'argument des grilles d'aubes (une aube sans cambrure dans le plan de la rotation ne sur-dévie pas), et biais de la borne 1 au décrochage (moins de rotation sur l'empennage), écrits dans le code et dans `modele-aero.md`.
+- **Réponses** : la différence « avec − sans rotation » est le bon moment pour ce modèle. Le roulis, le dérapage et les ailerons font un sillage latéral sur toute l'envergure, qu'il faudrait modéliser globalement, pas par le seul jet. Les bornes sont défendables en E: ; une fois les bandes convergées, aucun des quatre vols ne les atteint. Pas de retard au M1.
+
+### Rotation laissée et commandes à l'équilibre (bandes convergées)
+
+`fdm_lab souffle spad7`, 16 bandes par demi-aile. « Avant » : le même code, fraction figée à 0,5 (l'ancienne donnée).
 
 | Vol | Fraction laissée | Roulis du tourbillon sur la cellule, avant → après | Ailerons, avant → après | Direction, avant → après |
 |---|---|---|---|---|
-| Vmax, 2 000 m | 0,07 | 1,20 → 0,97 Q | −0,004 → +0,000 | +0,031 → −0,024 |
-| Meilleure montée, 0 m | 0,28 | 0,97 → 0,86 Q | +0,005 → +0,011 | +0,057 → +0,001 |
-| Plané, 35 m/s | 0 | 1,40 → 1,12 Q | −0,001 → −0,000 | +0,002 → −0,005 |
-| Décrochage plein gaz | 0,59 | 0,65 → 0,69 Q | +0,099 → +0,092 | +0,098 → +0,128 |
+| Vmax, 2 000 m | 0,21 | 1,08 → 0,91 Q | −0,001 → +0,003 | +0,033 → −0,004 |
+| Meilleure montée, 0 m | 0,33 | 0,94 → 0,85 Q | +0,008 → +0,013 | +0,062 → +0,019 |
+| Plané, 35 m/s | 0,07 | 1,23 → 0,97 Q | −0,000 → +0,000 | +0,002 → −0,004 |
+| Décrochage plein gaz | 0,52 | 0,73 → 0,73 Q | +0,080 → +0,079 | +0,095 → +0,100 |
 
 - Commandes en fraction de la course, positives pour roulis à droite et nez à droite.
-- La cellule ne reprend plus plus que le couple, sauf au plané : là, les ailes seules en reprennent 1,12 Q, et l'empennage ne voit plus rien.
-- Biplan d'essai : fraction 0,09 / 0,31 / 0 / 0,49. À Vmax, l'empennage reprend 0,10 Q d'un souffle qui n'en porte plus que 0,09 : même excès de la théorie des bandes, à l'empennage cette fois.
-- **Lecture** : en croisière et en montée, les ailes compensent presque tout le couple, et l'avion tient sans ailerons ni direction. C'est un résultat du modèle, **pas une validation** : il repose sur le moment des ailes en charge légère, que la théorie juge peu sûr et qu'aucune mesure ne confirme.
+- La cellule ne reprend plus nulle part plus que le couple. Puissance reprise au tourbillon : 8 / 1 / 13 / 7 % de l'énergie de rotation (le plané porte presque rien).
+- Biplan d'essai (synthétique, non modifié) : 0,09 / 0,31 / 0 / 0,49 à 6 bandes par demi-aile. Il ne converge pas aussi bien : 0 / 0,11 / 0 / 0,38 à 12 bandes, et 0,02 / 0,16 / 0 / 0,39 à 24. Au plané, ses ailes reprennent 1,08 Q à toute finesse : c'est sa géométrie (corde large devant le jet), pas la discrétisation.
+- **Lecture**, confiance D : dans le modèle, le couple se sent surtout près du décrochage (8 % d'ailerons, 10 % de direction au décrochage plein gaz) et, au M2, au décollage. En palier et en montée, il en faut 2 % au plus. Même l'ancienne moitié de rotation n'en demandait que 3 à 6 % en montée.
 
 ### Campagne du SPAD
 
-| Mesure | Avant | Après |
+| Mesure | Avant le plan (8 bandes, fraction 0,5) | Après (16 bandes, bilan de moment cinétique) |
 |---|---|---|
 | Vitesses maximales (2 000 / 3 000 / 4 000 m) | −0,2 / +4,1 / +2,8 % | −0,2 / +4,0 / +2,7 % |
-| Montées (2 000 / 3 000 / 4 000 m) | −1,7 / 0,0 / −3,3 % | −1,5 / +0,1 / −3,2 % |
-| Plafond | +5,0 % | +5,0 % |
-| Marge statique (croisière, 153 km/h, 2 000 m) | 5,9 % | **4,9 %** |
+| Montées (2 000 / 3 000 / 4 000 m) | −1,7 / 0,0 / −3,3 % | −1,5 / +0,2 / −3,1 % |
+| Plafond | +5,0 % | +4,9 % |
+| Commandes en croisière (153 km/h, 2 000 m) : ailerons, direction | −0,00, +0,03 | +0,00, −0,00 |
 | Départ au décrochage moteur réduit (à 3 s) | à gauche, −54°, nez −15° | à gauche, −55°, nez −17° |
 
 - **Performances** : moins de 0,2 point, comme prévu.
-- **Marge statique** : −1 point, expliqué.
-  - Sonde à 150 km/h : 5,7 % avec la fraction du modèle (≈ 0,1), 5,7 % figée à 0,1, 6,7 % figée à 0,5. C'est donc le niveau de rotation derrière les ailes qui compte, pas sa variation avec l'incidence.
-  - Toute la différence est dans le plan fixe : −683 N·m/(m/s) avec la moitié de la rotation, −645 avec 0,1.
-  - Mécanisme : le profil d'empennage (RAF 15 décambré puis symétrisé, `spad_empennage.ron`) a une pente plus faible près de la portance nulle. Elle vaut 0,069 par degré entre −0,75° et +0,75°, contre 0,076 à 0,081 au-delà. Le plan fixe travaille dans ce creux en croisière ; la rotation, de quelques degrés, l'en sortait en partie.
-  - Conséquence du modèle, sensible à cette particularité du profil, qui vient d'une mesure de 1918 (Report 233) déplacée et symétrisée (C:). À regarder si la marge devient une cible.
-- **Départ au décrochage moteur réduit**, sensibilité (§ 9 de `spad7-calculs.md`), avec une copie du binaire munie de variantes temporaires, retirées depuis :
+- **Marge statique**, désormais par sécante (Important 1) : 3,8 / 5,0 / 5,1 / 4,7 / 4,0 / 3,2 / 1,2 % à 140 / 145 / 150 / 153 / 156 / 160 / 170 km/h, 5,5 % au trim du rapport (153,5 km/h). Elle baisse avec la vitesse et reste sensible aux tables (C_m de l'aile surtout). On ne cite pas un chiffre seul.
+- **Départ au décrochage moteur réduit**, sensibilité (§ 9 de `spad7-calculs.md`), avec une copie du binaire munie de variantes temporaires, jamais commitées :
 
-| Variante | Départ (à 3 s) |
-|---|---|
-| Modèle | à gauche, −55° |
-| Contre-rotation permise (borne basse −1) | à gauche, −55° |
-| Chute sur une demi-corde / sur deux cordes | à gauche, −56° / −55° |
-| Fraction figée à 0,3 / 0,7 | à gauche, −53° / −56° |
-| Fraction figée à 1 (aucun redressement) | à droite, +78° |
+(en cours de calcul avec les bandes convergées)
 
-  Le côté résiste à toutes les variantes physiques. Seule l'absence de tout redressement, que contredisent les mesures du NACA, le change.
-- **Robustesse** : vol sur le dos (164 km/h et 106 m perdus après 10 s, contre 176 et 136), glissade sur la queue (113 km/h contre 80, assiette 62° contre 69°), piqué à 60° (225 km/h au plus, contre 243). Ce sont des scénarios en boucle ouverte, sensibles à la rotation sur l'empennage. Le piqué retrouve sa valeur d'avant le sillage des ailes (225 km/h).
+- **Robustesse** (boucle ouverte, sensible à la rotation sur l'empennage) :
+  - vol sur le dos : 161 km/h et 99 m perdus après 10 s, contre 176 et 136 ;
+  - glissade sur la queue : 112 km/h contre 80, assiette 62° contre 69° ;
+  - piqué à 60° : 224 km/h au plus, contre 243, sa valeur d'avant le sillage des ailes.
 
 ## Hors de ce plan
 
-- **Retard** de la rotation entre les ailes et l'empennage (état auxiliaire, comme la déflexion).
+- **Retard** de la rotation entre les ailes et l'empennage (état auxiliaire, comme la déflexion), à la vitesse du jet V + 2v_i : environ 0,06 s à Vmax, 0,1 s au décrochage plein gaz.
+- **Lissage des tables** (droite des moindres carrés de l'empennage, C_m de l'aile) : décide de la marge statique et de sa pente avec la vitesse. À trancher par le joueur, en ADR.
+- **Newton sur les C_L de l'induction mutuelle**, à la place d'une douzaine de passes à 1e-13 : le vrai poste de coût, à faire avant les avions de l'IA.
+- **Test d'énergie par décomposition** : traînée de profil figée, la puissance des ailes doit être positive et au plus 0,28 à 0,37 de l'énergie de rotation interceptée ; la part de profil, négative.
+- **Bornes** : exposer le rapport non borné dans les diagnostics, compter quand la borne joue dans les scénarios de robustesse, envisager une saturation C¹ pour le trim et la linéarisation.
+- **Redressement uniforme sur le rayon** (E:) : la contre-rotation des ailes est concentrée près de l'axe et aux bords du jet ; le plan fixe, 0,32 m au-dessus de l'axe, en voit sans doute plus que la moyenne.
+- **Oubliés du bilan** : mâts, câbles et fuselage reprennent aussi de la rotation, sans entrer dans M.
+- **Questions pour l'historien** : les ailes du S.VII étaient-elles calées différemment à gauche et à droite pour compenser le couple ? Ce serait une mesure indirecte du couple en croisière.
+- **Essai manette en main** (M2) : montée plein gaz vers 115 km/h, palonnier lâché ; l'avion doit dériver lentement à gauche. À consigner dans `docs/gdd/retours.md`.
 - **Réponse de l'aile au tourbillon en charge légère** (0,9 Q et plus) : aucune mesure trouvée ; seule la ligne portante à matrice d'influence, ou une source nouvelle, pourrait la trancher.
 - **Décalage du biplan** : le plan inférieur, en arrière du plan supérieur, voit encore toute la rotation.
 - **Empennage du TN 1146** : comparer les forces latérales mesurées sur la dérive (figure 13) contrôlerait la réponse de la dérive à la rotation, sous forte traction. Utile, mais ne départage pas l'ancienne donnée et le bilan, qui y donnent presque la même chose.

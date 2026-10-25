@@ -78,6 +78,30 @@ pub fn derivative(
 
 /// Linearises the flight model around a trim by central differences.
 pub fn linearise(aircraft: &Aircraft, env: &dyn Environment, trim: &Trim) -> Linear {
+    linearise_with(
+        aircraft,
+        env,
+        trim,
+        [1e-4, 1e-4, 1e-4, 1e-5, 1e-5, 1e-5, 1e-6, 1e-6, 1e-3, 1e-7],
+    )
+}
+
+/// Half-step of the static stability in incidence, sideslip and downwash, rad: a secant
+/// over ±1°. The tangent of [`linearise`] reads the slope of a single segment of the
+/// piecewise-linear tables (polars, propeller), and the margin jumped with the trim speed,
+/// 2 to 6 % from 140 to 170 km/h on the SPAD (aerodynamicist review of 2026-10-25).
+const SECANT_ANGLE: f64 = 1.0 * std::f64::consts::PI / 180.0;
+
+/// Half-step of the static stability in rotor speed, fraction of the trimmed speed.
+const SECANT_ROTOR: f64 = 0.02;
+
+/// Same as [`linearise`] with the given half-steps of central differences.
+fn linearise_with(
+    aircraft: &Aircraft,
+    env: &dyn Environment,
+    trim: &Trim,
+    steps: [f64; STATES],
+) -> Linear {
     let f = trim.flight;
     let state = f.state();
     let v = state.velocity_body;
@@ -93,7 +117,6 @@ pub fn linearise(aircraft: &Aircraft, env: &dyn Environment, trim: &Trim) -> Lin
         f.rotor_speed,
         f.downwash,
     ];
-    let steps = [1e-4, 1e-4, 1e-4, 1e-5, 1e-5, 1e-5, 1e-6, 1e-6, 1e-3, 1e-7];
     let mut a = DMatrix::<f64>::zeros(STATES, STATES);
     for j in 0..STATES {
         let (mut plus, mut minus) = (x0, x0);
@@ -278,8 +301,24 @@ pub struct StaticStability {
     pub l_v: f64,
 }
 
-/// Static margin and lateral derivatives from the linear model.
-pub fn static_stability(aircraft: &Aircraft, linear: &Linear) -> Option<StaticStability> {
+/// Static margin and lateral derivatives around a trim, from a linear model by secants
+/// ([`SECANT_ANGLE`], [`SECANT_ROTOR`]).
+pub fn static_stability(
+    aircraft: &Aircraft,
+    env: &dyn Environment,
+    trim: &Trim,
+) -> Option<StaticStability> {
+    let f = trim.flight;
+    let (speed, angle) = (f.speed * SECANT_ANGLE.tan(), SECANT_ANGLE);
+    let rotor = (SECANT_ROTOR * f.rotor_speed).max(1e-3);
+    let linear = &linearise_with(
+        aircraft,
+        env,
+        trim,
+        [
+            speed, speed, speed, 1e-5, 1e-5, 1e-5, 1e-6, 1e-6, rotor, angle,
+        ],
+    );
     // Longitudinal: u, w, q, θ with Ω and ε eliminated.
     let long = reduced(linear, &[0, 2, 4, 7], &[8, 9])?;
     let (z_w, m_w) = (long[(1, 1)], long[(2, 1)]);
@@ -409,7 +448,7 @@ mod tests {
         let spiral = named(&lat, "spirale").expect("spiral");
         assert!(spiral.time_to_half_or_double > 10.0, "slow: {spiral:?}");
 
-        let st = static_stability(&a, &lin).unwrap();
+        let st = static_stability(&a, &STILL_AIR, &trim).unwrap();
         assert!(st.n_v > 0.0 && st.l_v < 0.0, "{st:?}");
         assert!(st.static_margin > 0.0 && st.static_margin < 0.3, "{st:?}");
 

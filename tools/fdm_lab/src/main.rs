@@ -360,7 +360,7 @@ fn essai(assets: &Path, id: &str, confidence: &str, out: &Path) -> Result<bool, 
                 commands: trim.commands(aircraft),
                 longitudinal: longitudinal(&linear),
                 lateral: lateral(&linear),
-                stability: static_stability(aircraft, &linear),
+                stability: static_stability(aircraft, &STILL_AIR, &trim),
                 trim,
             }
         });
@@ -563,7 +563,7 @@ fn main() -> ExitCode {
             let linear = linearise(&b.aircraft, &STILL_AIR, &trim);
             print_modes("Modes longitudinaux", &longitudinal(&linear));
             print_modes("Modes latéraux", &lateral(&linear));
-            if let Some(st) = static_stability(&b.aircraft, &linear) {
+            if let Some(st) = static_stability(&b.aircraft, &STILL_AIR, &trim) {
                 println!(
                     "Marge statique {:.1} % ; N_v = {:+.1} N·m/(m/s) ; L_v = {:+.1} N·m/(m/s)",
                     100.0 * st.static_margin,

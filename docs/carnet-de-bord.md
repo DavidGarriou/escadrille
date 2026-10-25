@@ -1405,3 +1405,37 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
   **D** Le départ à gauche reste « probable » (confiance C).
 - **⚠** Pendant les variantes, le hook d'arrêt a exigé un commit alors que l'arbre contenait du code temporaire. **A** Version propre commitée par l'index (`c8a5fa8`), variantes poursuivies sur une copie du binaire, sources propres remises.
+
+### Revue de l'aérodynamicien (suite 1) et corrections
+
+- **R** Verdict : à corriger. Le code est juste (signes, bilan, continuité), mais les chiffres publiés n'étaient pas convergés.
+- **⚠** Bloquant : avec 8 bandes par demi-aile, 1,5 à 2 bandes seulement couvraient chaque demi-largeur du jet. La fraction 1 − M/Q, petite différence de deux grands nombres, tombait à 0,07 à Vmax au lieu d'environ 0,21.
+  - Étaient des artefacts : la cellule qui reprenait plus que le couple au plané, la borne 0 atteinte, le −1 % d'énergie en montée.
+  - Les chiffres de l'entrée précédente (0,07 / 0,28 / 0 / 0,59, commandes, marge) sont remplacés ci-dessous.
+- **A** SPAD à 16 bandes par demi-aile, empennage et dérive doublés (C:, convergence). Test `the_swirl_left_converges_with_the_strips` : doubler encore change la fraction de moins de 0,02 et les commandes de moins de 0,005 de la course, 0,01 au décrochage plein gaz (0,0065 mesuré, décrochage des bandes discrétisé).
+- **⚠** Important : la marge statique était du bruit de mesure (tangente sur un seul segment des tables), de 2 à 6 % selon la vitesse. L'écart 5,9 → 4,9 % et son explication par le profil d'empennage ne tiennent pas. **A** Marge par sécante sur ±1° (`static_stability`) : 3,8 / 5,0 / 5,1 / 4,7 / 4,0 / 3,2 / 1,2 % de 140 à 170 km/h. **D** Le lissage des tables (C_m de l'aile surtout, empennage) est laissé au joueur, en ADR.
+- **A** Coût : l'itération mutuelle ne sépare plus la part de rotation, qui ne change aucun C_L (test). La revue mesurait 15,6 % des instructions perdues ; `just test` passe de 145 à 65 s.
+- **A** Test miroir (hélice à gauche : même fraction, efforts latéraux exactement opposés). Bornes justifiées dans le code (grille d'aubes ; la borne haute laisse moins de rotation à l'empennage près du décrochage).
+- **R** Bandes convergées, SPAD :
+  - fraction 0,21 / 0,33 / 0,07 / 0,52 (Vmax, montée, plané, décrochage plein gaz) ;
+  - la cellule ne reprend plus nulle part plus que le couple ;
+  - puissance reprise au tourbillon : 8 / 1 / 13 / 7 %.
+- **R** Commandes à l'équilibre, avant (fraction 0,5) → après :
+  - direction à Vmax +0,033 → −0,004, en montée +0,062 → +0,019, au décrochage plein gaz +0,095 → +0,100 ;
+  - ailerons au plus 0,013 en vol attaché, 0,08 au décrochage.
+
+  Ailes horizontales, dérapage libre (0,7° à Vmax, 2,0° en montée). **D** Confiance D : c/D = 0,5, au-delà du domaine sûr de R&M 2368.
+- **R** Campagne :
+  - vitesses −0,2 / +4,0 / +2,7 % ;
+  - montées −1,5 / +0,2 / −3,1 % ;
+  - plafond +4,9 % ;
+  - départ au décrochage moteur réduit à gauche, 55°.
+- **R** Biplan d'essai (synthétique, laissé à 6 bandes) : il ne converge pas aussi bien (0,09 / 0 / 0,02 à Vmax pour 6 / 12 / 24 bandes). Au plané, ses ailes reprennent 1,08 Q à toute finesse : c'est sa géométrie.
+- **D** Suites notées dans le plan :
+  - lissage des tables (ADR à décider) ;
+  - Newton de l'induction mutuelle (coût, avant l'IA) ;
+  - test d'énergie par décomposition ;
+  - retard ailes → empennage à la vitesse du jet ;
+  - exposition du rapport non borné ;
+  - question à l'historien sur un calage différentiel des ailes du S.VII ;
+  - essai manette en main au M2.

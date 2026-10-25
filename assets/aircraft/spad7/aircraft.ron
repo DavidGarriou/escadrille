@@ -32,7 +32,7 @@ Aircraft(
                 root_m: (-0.3025, 0.0, -1.27), tip_m: (-0.3025, 3.91, -1.27), // C: quarter chord of the 1.21 m chord, no stagger (vertical struts on the 1917 drawing); S: span 7.82 m (spad7.md § 2.1), gap 4 ft 2 in (S48)
                 chord_root: M(1.21), chord_tip: M(1.21),                       // C: published area (A) over the gross rectangle, ratio 0.94 of the SPAD family (spad7-calculs.md § 3)
                 incidence: Deg(2.3),                                           // C: fuselage level at 170 km/h and 2 000 m (aerodynamicist's criterion), decalage +0.5° of the XIII (S15)
-                strips: 8,                                                     // E: discretisation
+                strips: 16,                                                    // C: convergence in the slipstream: doubling again moves the swirl left behind the wings by less than 0.02 and the trimmed roll and yaw commands by less than 0.005 (fdm_lab test the_swirl_left_converges_with_the_strips; aerodynamicist review of 2026-10-25: 8 per half-wing left 1.5 to 2 strips per half-jet)
             )],
             airfoil: "airfoils/spad.ron",
             span_efficiency: 0.92,                                             // C: 1/(1 + δ) = 0.952 (TR 416) × 0.979 fuselage gap × 0.985 cut-out and rounded tips
@@ -48,7 +48,7 @@ Aircraft(
                 root_m: (-0.3025, 0.40, 0.0), tip_m: (-0.3025, 3.91, 0.0),    // C: from the side of the fuselage (0.80 m wide) to the tip; equal spans (S48, S16)
                 chord_root: M(1.21), chord_tip: M(1.21),                       // C: as the upper plane
                 incidence: Deg(1.8),                                           // C: fuselage level at 170 km/h and 2 000 m
-                strips: 8,                                                     // E: discretisation
+                strips: 16,                                                    // C: convergence in the slipstream: doubling again moves the swirl left behind the wings by less than 0.02 and the trimmed roll and yaw commands by less than 0.005 (fdm_lab test the_swirl_left_converges_with_the_strips; aerodynamicist review of 2026-10-25: 8 per half-wing left 1.5 to 2 strips per half-jet)
             )],
             airfoil: "airfoils/spad.ron",
             span_efficiency: 0.92,                                             // C: as the upper plane
@@ -61,7 +61,7 @@ Aircraft(
                 root_m: (-4.26, 0.0, -0.70), tip_m: (-4.26, 1.405, -0.70),    // C: unswept quarter chord at the mean aerodynamic chord (the loader widens swept strips); span 2.81 m and height on the drawing
                 chord_root: M(1.14), chord_tip: M(0.50),                       // C: drawing, area kept
                 incidence: Deg(0.0),                                           // C: horizontal on the drawing; S.XI tailplane at 0° (S49)
-                strips: 3,                                                     // E: discretisation
+                strips: 6,                                                     // C: convergence in the slipstream: doubling again moves the swirl left behind the wings by less than 0.02 and the trimmed roll and yaw commands by less than 0.005 (fdm_lab test the_swirl_left_converges_with_the_strips; aerodynamicist review of 2026-10-25: 8 per half-wing left 1.5 to 2 strips per half-jet)
             )],
             airfoil: "airfoils/spad_empennage.ron",
             span_efficiency: 0.80,                                             // C: Helmbold lift slope at aspect ratio 3.4 reproduced by the lifting line
@@ -79,13 +79,13 @@ Aircraft(
                     root_m: (-4.8825, 0.0, -0.31), tip_m: (-4.8825, 0.0, -0.70), // C: rudder below the tailplane, down to the bottom of the fuselage (drawing)
                     chord_root: M(0.53), chord_tip: M(0.53),                     // C: drawing
                     incidence: Deg(0.0),                                         // E: no offset
-                    strips: 1,                                                   // E: discretisation
+                    strips: 2,                                                   // C: convergence in the slipstream: doubling again moves the swirl left behind the wings by less than 0.02 and the trimmed roll and yaw commands by less than 0.005 (fdm_lab test the_swirl_left_converges_with_the_strips; aerodynamicist review of 2026-10-25: 8 per half-wing left 1.5 to 2 strips per half-jet)
                 ),
                 (
                     root_m: (-4.353, 0.0, -0.70), tip_m: (-4.353, 0.0, -1.40),  // C: fin and rudder above the tailplane, unswept quarter chord at the mean chord (drawing)
                     chord_root: M(1.61), chord_tip: M(0.39),                     // C: drawing
                     incidence: Deg(0.0),                                         // E: no offset
-                    strips: 3,                                                   // E: discretisation
+                    strips: 6,                                                   // C: convergence in the slipstream: doubling again moves the swirl left behind the wings by less than 0.02 and the trimmed roll and yaw commands by less than 0.005 (fdm_lab test the_swirl_left_converges_with_the_strips; aerodynamicist review of 2026-10-25: 8 per half-wing left 1.5 to 2 strips per half-jet)
                 ),
             ],
             airfoil: "airfoils/spad_empennage.ron",

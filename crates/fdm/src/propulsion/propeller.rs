@@ -453,10 +453,16 @@ impl Slipstream {
     /// Fraction of the swirl left once the airframe has taken the moment `moment` from it
     /// (N·m about the propeller's axis, positive along the rotation): the slipstream
     /// carries the angular momentum flux ṁ K, ṁ = ρ A (V + v_i), and keeps ṁ K − M of it
-    /// (C:, conservation of angular momentum). Bounded to [0, 1]: no counter-rotation,
-    /// which R&M 2368 part II would allow where its authors find it unreliable, and no
-    /// amplification by stalled strips whose lift falls with the incidence the swirl adds
-    /// (E:). 1 without swirl.
+    /// (C:, conservation of angular momentum). Bounded to [0, 1] (E:):
+    /// - no counter-rotation: a blade without camber in the plane of the rotation does
+    ///   not turn the flow past straight, as in a cascade; strip theory would, where
+    ///   R&M 2368 part II finds itself unreliable;
+    /// - no amplification by stalled strips, whose lift falls with the incidence the swirl
+    ///   adds (the mechanism of autorotation, physically possible): near the stall this
+    ///   leaves less swirl on the tail than the strips would.
+    ///
+    /// 1 without swirl. With strips that sample the jet finely, no trimmed flight of the
+    /// SPAD reaches either bound (aerodynamicist review of 2026-10-25).
     pub fn swirl_left_after(&self, moment: f64, density: f64) -> f64 {
         let flux = density * self.disc_area() * (self.free_stream + self.induced) * self.swirl;
         if flux == 0.0 || !flux.is_finite() {

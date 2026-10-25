@@ -327,6 +327,60 @@ mod tests {
         assert_eq!(b.surfaces.len(), spad.lifting().surfaces().len());
     }
 
+    /// The swirl left behind the wings, 1 − M / Q, is a small difference of two large
+    /// numbers: the strips must sample the jet finely (aerodynamicist review of 2026-10-25:
+    /// 8 strips per half-wing left 1.5 to 2 per half-jet, and the fraction at Vmax was 0.07
+    /// instead of about 0.2). Doubling the SPAD's strips again moves it by less than 0.02,
+    /// and the trimmed roll and yaw commands by less than 0.005 of their travel; 0.01 at
+    /// the full-throttle stall, trimmed at the maximum lift, where the stall of each strip
+    /// is discretised too (0.0065 measured on the rudder).
+    #[test]
+    fn the_swirl_left_converges_with_the_strips() {
+        use escadrille_data::aircraft::{Loading, load_aircraft};
+
+        use crate::performance::{best_climb, glide, max_level_speed, stall_speed_at};
+
+        let game = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let data = load_aircraft(&game, "spad7").unwrap();
+        let mut fine = data.clone();
+        for panel in fine.file.surfaces.iter_mut().flat_map(|s| &mut s.panels) {
+            panel.strips *= 2;
+        }
+        let build = |d: &escadrille_data::aircraft::AircraftData| {
+            d.build(&Loading {
+                fuel_fraction: 0.74,
+            })
+            .unwrap()
+            .aircraft
+        };
+        let (coarse, fine) = (build(&data), build(&fine));
+        let flights = |a: &Aircraft| {
+            [
+                max_level_speed(a, &STILL_AIR, 2_000.0).unwrap(),
+                best_climb(a, &STILL_AIR, 0.0).unwrap().trim,
+                glide(a, &STILL_AIR, 1_000.0, 35.0).unwrap(),
+                stall_speed_at(a, &STILL_AIR, 1_000.0, 1.0).unwrap().trim,
+            ]
+        };
+        for ((c, f), commands) in flights(&coarse)
+            .iter()
+            .zip(&flights(&fine))
+            .zip([0.005, 0.005, 0.005, 0.01])
+        {
+            let left = |a: &Aircraft, t: &Trim| {
+                swirl_balance(a, &STILL_AIR, t).unwrap().swirl_left.unwrap()
+            };
+            let (lc, lf) = (left(&coarse, c), left(&fine, f));
+            assert!((lc - lf).abs() < 0.02, "{:?}: {lc} {lf}", c.flight);
+            let (cc, cf) = (c.commands(&coarse), f.commands(&fine));
+            assert!(
+                (cc.roll - cf.roll).abs() < commands && (cc.yaw - cf.yaw).abs() < commands,
+                "{:?}: {cc:?} {cf:?}",
+                c.flight
+            );
+        }
+    }
+
     #[test]
     fn the_measured_points_are_those_of_figure_13() {
         for point in &TN1146 {

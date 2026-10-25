@@ -148,6 +148,24 @@ impl LiftingSystem {
                 mutual,
             )
         };
+        // The iteration needs the lift coefficients only, which the swirl's share of the
+        // loads does not change: that share (a second solve of each strip in a swirl) is
+        // left to the final pass (aerodynamicist review of 2026-10-25).
+        let lift_coefficient = |i: usize, mutual: f64| {
+            self.surfaces[i]
+                .loads_with_mutual(
+                    air_velocity,
+                    angular_velocity,
+                    density,
+                    controls,
+                    |strip| StripFlow {
+                        swirl: DVec3::ZERO,
+                        ..local_flow(i, strip).into()
+                    },
+                    mutual,
+                )
+                .lift_coefficient
+        };
         let mutual_angles = |cl: &[f64]| {
             let mut angles = vec![0.0; n];
             for m in &self.mutual {
@@ -164,7 +182,7 @@ impl LiftingSystem {
             let angles = mutual_angles(&cl);
             let mut change: f64 = 0.0;
             for &i in &coupled {
-                let new = surface_loads(i, angles[i]).lift_coefficient;
+                let new = lift_coefficient(i, angles[i]);
                 change = change.max((new - cl[i]).abs());
                 cl[i] = new;
             }
