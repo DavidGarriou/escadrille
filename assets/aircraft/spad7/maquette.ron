@@ -37,7 +37,7 @@ Mockup(
         (
             check: "height",
             measured: M(2.355),                                      // C: at rest on the wheels and the skid (tail down 13.7°); 2.530 m in the flying attitude
-            reason: "2.20 m cannot be the flying attitude, and at rest the drawing's undercarriage stands 2.30 to 2.36 m: drawing and tables disagree",
-        ),                                                           // C: in flight, the fin top (z −1.40) and the propeller tip (z 0.82) alone span 2.22 m; at rest 2.304 m with the drawing's 0.58 m wheels, 2.355 m with 700 mm; spad7.md § 2.1 (2.12 to 2.35 m in the sources, attitude not given)
+            reason: "2.20 m cannot be the flying attitude, and at rest the drawing's undercarriage stands 2.30 to 2.36 m before its tyres and rubber cords settle under the weight (not modelled): drawing and tables disagree",
+        ),                                                           // C: in flight, the fin top (z −1.40) and the propeller tip (z 0.82) alone span 2.22 m; at rest 2.304 m with the drawing's 0.58 m wheels, 2.355 m with 700 mm, the upper leading edge highest; 3 to 6 cm of static compression would give 2.26 to 2.33 m (aerodynamicist's review, 2026-10-25); spad7.md § 2.1 (2.12 to 2.35 m in the sources, attitude not given)
     ],
 )

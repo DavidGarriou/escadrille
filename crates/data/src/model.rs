@@ -115,16 +115,16 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
                 control: None,
             });
         }
-        // Members of each node: (strip index, chord ratio), in the order the controls come.
-        let mut nodes: Vec<(String, Vec<(usize, f64)>)> = Vec::new();
+        // Members of each node, one group per control and side: the strips it covers, its
+        // chord ratio and its span on the panel (fractions), in the order the controls come.
+        let mut nodes: Vec<(String, Vec<Group>)> = Vec::new();
         for control in &spec.controls {
             // One node per side for ailerons; one node for an elevator or a rudder, even
             // spread over several panels (the SPAD's rudder, below and above the tailplane).
-            let sides: &[f64] = match control.control {
-                Control::Aileron => &[1.0, -1.0],
-                Control::Elevator | Control::Rudder => &[0.0],
-            };
-            for &side in sides {
+            // Each side is a group of its own: a mirrored panel has the same fractions on
+            // both.
+            let mut covered = false;
+            for side in [1.0, -1.0, 0.0] {
                 let node = match control.control {
                     Control::Aileron => format!(
                         "ctrl_aileron_{}_{}",
@@ -134,50 +134,79 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
                     Control::Elevator => "ctrl_elevator".to_owned(),
                     Control::Rudder => "ctrl_rudder".to_owned(),
                 };
-                let members: Vec<(usize, f64)> = generated
+                let strips: Vec<usize> = generated
                     .strips
                     .iter()
                     .enumerate()
                     .filter(|(_, placed)| {
-                        (side == 0.0 || placed.strip.position.y * side > 0.0)
+                        side_of(placed.strip.position.y) == side
                             && placed.panel == control.panel
                             && (control.span_from..=control.span_to).contains(&placed.along)
                     })
-                    .map(|(k, _)| (k, control.chord_ratio))
+                    .map(|(k, _)| k)
                     .collect();
-                if members.is_empty() {
-                    return Err(invalid(format!("{}: {node} covers no strip", spec.name)));
+                if strips.is_empty() {
+                    continue;
                 }
+                if control.control == Control::Aileron && side == 0.0 {
+                    return Err(invalid(format!(
+                        "{}: an aileron on the plane of symmetry",
+                        spec.name
+                    )));
+                }
+                covered = true;
+                let group = Group {
+                    strips,
+                    ratio: control.chord_ratio,
+                    span: (control.span_from, control.span_to),
+                };
                 match nodes.iter_mut().find(|(name, _)| *name == node) {
-                    Some((_, list)) => list.extend(members),
-                    None => nodes.push((node, members)),
+                    Some((_, groups)) => groups.push(group),
+                    None => nodes.push((node, vec![group])),
                 }
+            }
+            if !covered {
+                return Err(invalid(format!(
+                    "{}: a {:?} that covers no strip",
+                    spec.name, control.control
+                )));
             }
         }
-        for (node, members) in nodes {
+        for (node, groups) in nodes {
             let hinge_index = hinges.len();
-            let (mut axis, mut centre) = (DVec3::ZERO, DVec3::ZERO);
-            let mut points = Vec::new();
-            for &(k, ratio) in &members {
-                let sign = flight[k]
-                    .control
-                    .map(|c| c.alpha_per_rad.signum())
-                    .ok_or_else(|| invalid(format!("{node}: strip without control")))?;
-                let plate = &mut plates[first + k];
-                plate.control = Some((hinge_index, ratio));
-                axis += sign * plate.span_axis();
-                let point = plate.hinge(ratio);
-                centre += point;
-                points.push(point);
+            let mut axis = DVec3::ZERO;
+            let mut segments = Vec::new();
+            for group in &groups {
+                let mut points = Vec::new();
+                for &k in &group.strips {
+                    let sign = flight[k]
+                        .control
+                        .map(|c| c.alpha_per_rad.signum())
+                        .ok_or_else(|| invalid(format!("{node}: strip without control")))?;
+                    let plate = &mut plates[first + k];
+                    plate.control = Some((hinge_index, group.ratio));
+                    axis += sign * plate.width * plate.span_axis();
+                    points.push((generated.strips[k].along, plate.hinge(group.ratio), *plate));
+                }
+                segments.push(segment(&points, group.span));
             }
-            // A straight hinge along the span through the strips' hinge points: with a
-            // constant chord ratio on a tapered panel they are not quite in line.
+            // One straight hinge for the node, through the length-weighted middle of its
+            // segments: on a tapered panel, a constant chord ratio puts the strips' hinge
+            // points on a line that leans from the span axis.
             let axis = axis.normalize();
-            let centre = centre / points.len() as f64;
-            let along = points.iter().map(|p| (*p - centre).dot(axis));
-            let (low, high) = along.fold((f64::INFINITY, f64::NEG_INFINITY), |(lo, hi), t| {
-                (lo.min(t), hi.max(t))
-            });
+            let length: f64 = segments.iter().map(|(a, b)| (*b - *a).length()).sum();
+            let centre = segments
+                .iter()
+                .map(|(a, b)| (*b - *a).length() * 0.5 * (*a + *b))
+                .sum::<DVec3>()
+                / length;
+            let (low, high) = segments
+                .iter()
+                .flat_map(|(a, b)| [*a, *b])
+                .map(|p| (p - centre).dot(axis))
+                .fold((f64::INFINITY, f64::NEG_INFINITY), |(lo, hi), t| {
+                    (lo.min(t), hi.max(t))
+                });
             let line = (centre + axis * low, centre + axis * high);
             hinges.push(Hinge {
                 node,
@@ -205,6 +234,47 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
         propeller,
         required,
     })
+}
+
+/// 1 on the right, −1 on the left, 0 on the plane of symmetry.
+fn side_of(y: f64) -> f64 {
+    if y > 1e-9 {
+        1.0
+    } else if y < -1e-9 {
+        -1.0
+    } else {
+        0.0
+    }
+}
+
+/// The strips of one control on one side of one panel.
+struct Group {
+    strips: Vec<usize>,
+    ratio: f64,
+    /// Fractions of the panel, root to tip.
+    span: (f64, f64),
+}
+
+/// The hinge of one control on one panel, between the ends of its span. The hinge point
+/// is linear along a straight panel (leading edge and chord are): fitted on the strips'
+/// points by least squares, so that it does not depend on how many strips there are. A
+/// single strip gives its own width along its span axis.
+fn segment(points: &[(f64, DVec3, Plate)], span: (f64, f64)) -> (DVec3, DVec3) {
+    if let [(_, point, plate)] = points {
+        let half = plate.span_axis() * (0.5 * plate.width);
+        return (*point - half, *point + half);
+    }
+    let n = points.len() as f64;
+    let mean_t = points.iter().map(|p| p.0).sum::<f64>() / n;
+    let mean_p = points.iter().map(|p| p.1).sum::<DVec3>() / n;
+    let var = points.iter().map(|p| (p.0 - mean_t).powi(2)).sum::<f64>();
+    let slope = points
+        .iter()
+        .map(|p| (p.1 - mean_p) * (p.0 - mean_t))
+        .sum::<DVec3>()
+        / var;
+    let at = |t: f64| mean_p + slope * (t - mean_t);
+    (at(span.0), at(span.1))
 }
 
 /// « upper », « middle » or « lower » for each wing (the surfaces of the downwash block),
@@ -305,6 +375,41 @@ mod tests {
             c.hinges.iter().filter(|h| h.node == "ctrl_rudder").count(),
             1
         );
+        // Each hinge runs the length of its control: both halves of the elevator, the
+        // rudder from the bottom of the fuselage to the top of the fin.
+        let reach = |name: &str| {
+            let h = hinge(name);
+            (h.line.1 - h.line.0).length()
+        };
+        assert!(
+            (reach("ctrl_elevator") - 2.81).abs() < 0.01,
+            "{}",
+            reach("ctrl_elevator")
+        );
+        assert!(
+            (reach("ctrl_rudder") - 1.09).abs() < 0.01,
+            "{}",
+            reach("ctrl_rudder")
+        );
+        assert!((reach("ctrl_aileron_r_upper") - 1.955).abs() < 0.01);
+    }
+
+    #[test]
+    fn the_hinges_do_not_depend_on_the_number_of_strips() {
+        let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let mut data = load_aircraft(&assets, "spad7").unwrap();
+        let before = contract(&data).unwrap();
+        // The first panel of each surface only: the rudder's two panels change weight.
+        for surface in &mut data.file.surfaces {
+            surface.panels[0].strips *= 2;
+        }
+        let after = contract(&data).unwrap();
+        assert_eq!(before.hinges.len(), after.hinges.len());
+        for (a, b) in before.hinges.iter().zip(&after.hinges) {
+            assert_eq!(a.node, b.node);
+            assert!((a.pivot - b.pivot).length() < 1e-3, "{a:?}\n{b:?}");
+            assert!(a.axis.angle_between(b.axis) < 1e-6, "{a:?}\n{b:?}");
+        }
     }
 
     #[test]

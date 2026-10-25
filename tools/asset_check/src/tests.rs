@@ -119,6 +119,25 @@ fn a_mirrored_model_fails() {
 }
 
 #[test]
+fn an_aileron_on_the_wrong_wing_fails() {
+    // The right aileron, turned the right way, but placed on the left wing: on the line of
+    // its hinge, off its segment.
+    let (data, glb) = spad();
+    let moved = edited(&glb, |root| {
+        let node = root
+            .nodes
+            .iter_mut()
+            .find(|n| n.name.as_deref() == Some("ctrl_aileron_r_upper"))
+            .unwrap();
+        // glTF x is the body's −y (ADR 0006).
+        let t = node.translation.as_mut().unwrap();
+        t[0] = -t[0];
+    });
+    let report = check_model(&data, &moved, "", "", &accepted()).unwrap();
+    assert_eq!(failed(&report), ["ctrl_aileron_r_upper"], "{report:#?}");
+}
+
+#[test]
 fn a_model_turned_back_to_front_fails() {
     // As if the half-turn of ADR 0006 were applied twice.
     let (data, glb) = spad();

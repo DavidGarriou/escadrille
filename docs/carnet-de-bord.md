@@ -1578,3 +1578,18 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - la flèche jaune tourne dans le sens horaire vu de derrière, et la pale du haut est tournée dans ce sens : l'axe local +X du nœud `prop` est bien celui des données.
 - **D** L'ADR 0006 est vérifié à l'œil sur le premier modèle, comme prévu par `pipeline-assets`.
 - **A** Documentation : `pipeline-assets` (conventions d'axes des nœuds, générateur, écarts acceptés, contrôles, empennage équivalent), `format-avion.md` (`accepted_deviations`), bilan d'exécution dans le plan.
+- **A** Revue de l'aérodynamicien, pivots et axes : **rien de bloquant**.
+  - Conformes, vérifiés par le calcul : sens de braquage du contrat (aileron droit bord de fuite en haut, gauche en bas, profondeur en haut, gouvernail vers +y), axe de l'hélice (+x pour `Clockwise`), repères, capture.
+  - Analyse des deux écarts confirmée. Pour la hauteur, une explication de plus : l'écrasement statique des pneus et des sandows, absent du modèle (3 à 6 cm donnent 2,26 à 2,33 m) ; et la tolérance de 1 % (2,2 cm) est plus fine que la donnée elle-même.
+- **⚠** Ma description du point ouvert était fausse. Les axes des charnières du contrat ne penchent pas : ils sont verticaux pour le gouvernail et transversaux pour la profondeur. Ce qui penche, ce sont les points de charnière des bandes. Un modèle fidèle au dessin aurait le bon axe et échouerait sur le **pivot**, à environ 7 cm. Corrigé dans `pipeline-assets` et dans le plan.
+- **A** Corrigé après la revue :
+  - le générateur coupait chaque plaque à la charnière de sa bande, mais le nœud tourne autour de la droite du contrat : jusqu'à 8,7 cm de jour ou de recouvrement au gouvernail braqué à fond. Il coupe désormais sur la droite du nœud (test) ;
+  - le pivot dépendait du nombre de bandes (1,6 cm en doublant le panneau inférieur du gouvernail). La charnière est maintenant prise aux bornes exactes de chaque gouverne et pondérée par la longueur (test, qui échoue avec l'ancienne méthode) ;
+  - en passant, un défaut trouvé : la profondeur mélangeait ses deux côtés dans l'ajustement, sa droite était de longueur nulle. Chaque côté est désormais un groupe (test des longueurs de charnière) ;
+  - `asset_check` mesure le pivot au **segment** de charnière : un aileron droit posé sur l'aile gauche échoue (test) ;
+  - gouvernes en violet, mieux distinctes du beige de l'aile gauche ; raison de l'écart de hauteur complétée.
+- **A** Nouvelle capture `maquette-spad7`, **regardée** : ailerons, profondeur et gouvernail en violet bien visibles ; le gouvernail commence sur une droite verticale ; flèches et vérifications inchangées.
+- **D** En attente du joueur :
+  - accord sur les deux écarts acceptés (longueur, hauteur) ;
+  - charnières de l'empennage pour le modèle définitif. Recommandation de l'aérodynamicien : une charnière déclarée, facultative, par gouverne dans `aircraft.ron` (`hinge_m`, sourcée sur le dessin), avec un garde-fou au chargement. C'est un changement de format ;
+  - ajout de `tools/mockup` et du rôle d'`asset_check` à l'arborescence de `CLAUDE.md` (proposé, non modifié).

@@ -1,8 +1,9 @@
 //! Checks the 3D models against the aircraft data (skill `pipeline-assets`, ADR 0006,
 //! step 4 of `docs/plans/modele-3d-provisoire.md`). For each `assets/aircraft/<id>/model.glb`:
 //! - the glTF is valid and holds the nodes of the model contract (`escadrille_data::model`);
-//! - each control surface turns about its hinge (pivot within [`PIVOT_TOLERANCE_M`],
-//!   axis within [`AXIS_TOLERANCE_DEG`]), the propeller about its axis, on the hub;
+//! - each control surface turns about its hinge (pivot within [`PIVOT_TOLERANCE_M`] of
+//!   the hinge segment, axis within [`AXIS_TOLERANCE_DEG`]), the propeller about its
+//!   axis, on the hub;
 //! - the pilot's eye and the guns look forward;
 //! - the overall dimensions match `aircraft.ron` within [`DIMENSION_TOLERANCE`]: span,
 //!   length, and height in the nearer of the flying and the resting attitudes;
@@ -152,11 +153,16 @@ fn angle_deg(a: DVec3, b: DVec3) -> f64 {
         .to_degrees()
 }
 
-/// Distance from `p` to the line through `a` and `b`.
-fn distance_to_line(p: DVec3, a: DVec3, b: DVec3) -> f64 {
-    let d = (b - a).normalize_or_zero();
-    let v = p - a;
-    (v - d * v.dot(d)).length()
+/// Distance from `p` to the segment from `a` to `b`: a pivot off the end of its hinge,
+/// on the other wing for instance, is as wrong as one beside it.
+fn distance_to_segment(p: DVec3, a: DVec3, b: DVec3) -> f64 {
+    let ab = b - a;
+    let t = if ab.length_squared() > 0.0 {
+        ((p - a).dot(ab) / ab.length_squared()).clamp(0.0, 1.0)
+    } else {
+        0.0
+    };
+    (p - (a + ab * t)).length()
 }
 
 /// Height of a cloud of points (x, z down) resting on the ground: the lowest edge of
@@ -255,7 +261,7 @@ pub fn check_model(
         let Some(node) = find(&hinge.node) else {
             continue;
         };
-        let off = distance_to_line(node.translation, hinge.line.0, hinge.line.1);
+        let off = distance_to_segment(node.translation, hinge.line.0, hinge.line.1);
         let turn = angle_deg(direction(node, DVec3::X), hinge.axis);
         checks.add(
             &hinge.node,

@@ -16,7 +16,7 @@ use std::collections::BTreeMap;
 use escadrille_data::aircraft::{AircraftData, SurfaceKind};
 use escadrille_data::frames::to_gltf;
 use escadrille_data::mockup::MockupFile;
-use escadrille_data::model::{Contract, contract};
+use escadrille_data::model::{Contract, Hinge, Plate, contract};
 use glam::{DMat3, DQuat, DVec3};
 use gltf_json as json;
 use json::validation::Checked::Valid;
@@ -66,11 +66,28 @@ const PAINTS: [(Paint, &str, [f32; 4]); 7] = [
     (Paint::Fuselage, "fuselage", [0.55, 0.55, 0.52, 1.0]),
     (Paint::LeftWing, "aile gauche", [0.85, 0.80, 0.65, 1.0]),
     (Paint::RightWing, "aile droite", [0.40, 0.70, 0.40, 1.0]),
-    (Paint::Control, "gouvernes", [0.90, 0.50, 0.15, 1.0]),
+    (Paint::Control, "gouvernes", [0.55, 0.20, 0.70, 1.0]),
     (Paint::Propeller, "hélice", [0.35, 0.22, 0.12, 1.0]),
     (Paint::Disc, "disque d'hélice", [0.85, 0.85, 0.85, 0.25]),
     (Paint::Metal, "métal", [0.20, 0.20, 0.20, 1.0]),
 ];
+
+/// Where a plate is cut for its control, from its leading edge along the chord: the point
+/// of the chord nearest the node's hinge line, within the chord. On a tapered panel the
+/// strips' own hinge points lean from that line; cutting there would open a gap or make
+/// the parts overlap when the control turns. Parallel lines fall back on the strip's own
+/// chord ratio.
+fn cut(plate: &Plate, hinge: &Hinge, ratio: f64) -> f64 {
+    let (aft, axis) = (-plate.chord_axis, hinge.axis);
+    let from_pivot = plate.leading_edge() - hinge.pivot;
+    let b = aft.dot(axis);
+    let denominator = 1.0 - b * b;
+    if denominator < 1e-9 {
+        return (1.0 - ratio) * plate.chord;
+    }
+    let t = (b * axis.dot(from_pivot) - aft.dot(from_pivot)) / denominator;
+    t.clamp(0.0, plate.chord)
+}
 
 /// Triangles of one paint in one node, in the node's axes (glTF).
 #[derive(Debug, Default)]
@@ -296,7 +313,8 @@ pub fn build_model(data: &AircraftData, mockup: &MockupFile) -> Result<Vec<u8>, 
     body.polygon(Paint::Fuselage, &corners(first), DVec3::X);
     body.polygon(Paint::Fuselage, &corners(last), DVec3::NEG_X);
 
-    // Lifting surfaces: one plate per strip, cut at the hinge of its control.
+    // Lifting surfaces: one plate per strip, cut where the hinge line of its control's
+    // node crosses its chord, so that the moving part turns about the line it is cut on.
     let mut controls: Vec<Node> = contract
         .hinges
         .iter()
@@ -326,7 +344,7 @@ pub fn build_model(data: &AircraftData, mockup: &MockupFile) -> Result<Vec<u8>, 
         match plate.control {
             None => slab(&mut body, paint, trailing, leading),
             Some((h, ratio)) => {
-                let hinge = plate.hinge(ratio);
+                let hinge = leading - c * cut(plate, &contract.hinges[h], ratio);
                 slab(&mut body, paint, hinge, leading);
                 slab(&mut controls[h], Paint::Control, trailing, hinge);
             }

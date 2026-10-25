@@ -105,3 +105,33 @@ fn the_wings_and_the_moving_parts_are_where_the_data_puts_them() {
     assert!(from_gltf(r * DVec3::NEG_Z).dot(DVec3::X) > 0.99999);
     assert!(from_gltf(r * DVec3::Y).dot(DVec3::NEG_Z) > 0.99999);
 }
+
+#[test]
+fn each_plate_is_cut_on_the_hinge_line_of_its_node() {
+    // The moving part turns about the line it is cut on: no gap, no overlap.
+    let (data, _) = spad();
+    let contract = contract(&data).unwrap();
+    let mut cut_inside = 0;
+    for plate in &contract.plates {
+        let Some((h, ratio)) = plate.control else {
+            continue;
+        };
+        let hinge = &contract.hinges[h];
+        let t = cut(plate, hinge, ratio);
+        assert!((0.0..=plate.chord).contains(&t));
+        if t > 0.0 && t < plate.chord {
+            cut_inside += 1;
+            let point = plate.leading_edge() - plate.chord_axis * t;
+            let off = (point - hinge.pivot).cross(hinge.axis).length();
+            assert!(off < 1e-9, "{}: {off} m off", hinge.node);
+        }
+    }
+    assert!(cut_inside > 20, "{cut_inside}");
+    // The rudder's hinge is vertical, through the middle of its segments (x −4.68 m).
+    let rudder = contract
+        .hinges
+        .iter()
+        .find(|h| h.node == "ctrl_rudder")
+        .unwrap();
+    assert!((rudder.pivot.x + 4.6785).abs() < 1e-3, "{rudder:?}");
+}
