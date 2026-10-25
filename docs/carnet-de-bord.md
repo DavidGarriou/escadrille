@@ -1439,3 +1439,6 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - exposition du rapport non borné ;
   - question à l'historien sur un calage différentiel des ailes du S.VII ;
   - essai manette en main au M2.
+- **⚠** Le processus de travail a redémarré pendant les corrections de la revue. Les modifications non commitées étaient intactes ; les calculs en arrière-plan ont été relancés.
+- **Q** Le joueur : « Continue ». **A** Corrections terminées, poussées (`165b57b`, `6dcfd0b`).
+- **A** Sensibilité du départ au décrochage relancée avec les bandes convergées. Premier résultat : contre-rotation permise, départ à gauche, 55°. Les autres variantes sont en cours.
