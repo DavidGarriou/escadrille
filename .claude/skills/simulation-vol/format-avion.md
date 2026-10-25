@@ -64,8 +64,7 @@ Aircraft(
         // lower_wing, tailplane (+ Elevator), fin (Vertical, + Rudder)
     ],
     interference: [(planes: ("upper_wing", "lower_wing"), sigma: 0.0)], // C: Prandtl, NACA TN 182, écartement / envergure
-    downwash: Some((wings: ["upper_wing", "lower_wing"], tail: ["tailplane"], factor: 0.0, tail_arm: M(0.0), // C:
-        swirl_left: 0.5)),                                // C: fraction de la rotation du souffle laissée derrière les ailes, de 0 à 1, obligatoire (monoplan : « environ la moitié », attente du NACA Report 747 reprise par le TN 1146 ; E: pour un biplan). `fdm_lab souffle <avion>` la compare au bilan de moment cinétique du modèle
+    downwash: Some((wings: ["upper_wing", "lower_wing"], tail: ["tailplane"], factor: 0.0, tail_arm: M(0.0))), // C: les `wings` redressent aussi le souffle de l'hélice : derrière elles, la rotation perd le moment cinétique qu'elles lui reprennent (calculé, pas une donnée). Une paire d'`interference` ne peut pas mêler une aile et une autre surface
 
     parasite_drag: [                                      // traînées axiales, dans le souffle de l'hélice
         (name: "fuselage",          cd: 0.0, reference_area: M2(1.0), position_m: (0.0, 0.0, 0.0)), // C: contrôle de traînée globale

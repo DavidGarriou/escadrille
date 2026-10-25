@@ -689,9 +689,10 @@ fn the_wings_leave_the_fraction_of_the_swirl_they_do_not_straighten() {
     let wake = WingWake {
         start: 1.0,
         length: 0.5,
-        swirl_left: 0.4,
     };
-    let behind = s.behind_wings(wake);
+    let behind = s.behind_wings(wake, 0.4);
+    assert_eq!(behind.swirl_left(), 0.4);
+    assert_eq!(s.behind_wings(wake, 1.5).swirl_left(), 1.0);
     let at = |s: &Slipstream, distance: f64| s.local_flow(hub + DVec3::new(-distance, 0.6, 0.0));
     // Ahead of the trailing edge, nothing changes; past the wake, 40 % of the swirl.
     assert_eq!(at(&behind, 0.9), at(&s, 0.9));
@@ -709,6 +710,33 @@ fn the_wings_leave_the_fraction_of_the_swirl_they_do_not_straighten() {
         previous = value;
     }
     assert!(at(&s.without_swirl(), 2.0).z.abs() < 1e-15);
+}
+
+#[test]
+fn the_slipstream_keeps_the_angular_momentum_the_airframe_does_not_take() {
+    let (s, _) = blowing();
+    let flux = RHO * PI * 1.25 * 1.25 * (20.0 + s.induced_speed()) * s.swirl();
+    assert!(flux > 100.0, "{flux}");
+    assert_eq!(s.swirl_left_after(0.0, RHO), 1.0);
+    assert!(close(s.swirl_left_after(0.3 * flux, RHO), 0.7, 1e-12));
+    // Neither counter-rotation nor amplification.
+    assert_eq!(s.swirl_left_after(1.5 * flux, RHO), 0.0);
+    assert_eq!(s.swirl_left_after(-0.2 * flux, RHO), 1.0);
+    // Continuous in the moment, and nothing to straighten without swirl.
+    let step = 1e-6 * flux;
+    let (a, b) = (
+        s.swirl_left_after(0.5 * flux, RHO),
+        s.swirl_left_after(0.5 * flux + step, RHO),
+    );
+    assert!((a - b).abs() < 2e-6, "{a} {b}");
+    assert_eq!(s.without_swirl().swirl_left_after(0.3 * flux, RHO), 1.0);
+    // A windmilling propeller's swirl turns the other way: so does what the wings take.
+    let p = propeller();
+    let windmill = p.loads(DVec3::new(40.0, 0.0, 0.0), DVec3::ZERO, 0.0, RHO);
+    let w = p.slipstream(&windmill, RHO);
+    assert!(w.swirl() < 0.0, "{w:?}");
+    let back = RHO * PI * 1.25 * 1.25 * (40.0 + w.induced_speed()) * w.swirl();
+    assert!(close(w.swirl_left_after(0.25 * back, RHO), 0.75, 1e-12));
 }
 
 #[test]

@@ -393,20 +393,19 @@ impl Propeller {
             induced,
             swirl,
             wing_wake: None,
+            swirl_left: 1.0,
         }
     }
 }
 
-/// Wake of the wings in the slipstream: behind them only a fraction of the swirl is left,
-/// the wings having straightened the rest (NACA Report 747, NACA TN 1146).
+/// Where the wings straighten the slipstream: behind them only part of the swirl is left,
+/// what they took from it ([`Slipstream::swirl_left_after`]).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct WingWake {
     /// Distance of the wings' trailing edge behind the disc, m: the swirl falls from there.
     pub start: f64,
-    /// Distance over which it falls to `swirl_left` (the wings' mean chord), m.
+    /// Distance over which it falls to what is left (the wings' mean chord), m.
     pub length: f64,
-    /// Fraction of the swirl left behind the wings, 0 to 1.
-    pub swirl_left: f64,
 }
 
 /// Slipstream from Froude's momentum theory (`modele-aero.md`): induced speed v_i at the
@@ -424,6 +423,8 @@ pub struct Slipstream {
     /// K = r v_θ far downstream, m²/s.
     swirl: f64,
     wing_wake: Option<WingWake>,
+    /// Fraction of the swirl left behind the wings, 0 to 1.
+    swirl_left: f64,
 }
 
 /// Largest expansion of the stream tube's area behind a braking propeller: momentum
@@ -439,12 +440,44 @@ const WAKE_KNEE: f64 = 0.4;
 const WAKE_FLOOR: f64 = 0.2;
 
 impl Slipstream {
-    /// The same slipstream, its swirl partly straightened behind the wings.
-    pub fn behind_wings(self, wake: WingWake) -> Self {
+    /// The same slipstream, only the fraction `swirl_left` (0 to 1) of its swirl left
+    /// behind the wings.
+    pub fn behind_wings(self, wake: WingWake, swirl_left: f64) -> Self {
         Self {
             wing_wake: Some(wake),
+            swirl_left: swirl_left.clamp(0.0, 1.0),
             ..self
         }
+    }
+
+    /// Fraction of the swirl left once the airframe has taken the moment `moment` from it
+    /// (N·m about the propeller's axis, positive along the rotation): the slipstream
+    /// carries the angular momentum flux ṁ K, ṁ = ρ A (V + v_i), and keeps ṁ K − M of it
+    /// (C:, conservation of angular momentum). Bounded to [0, 1]: no counter-rotation,
+    /// which R&M 2368 part II would allow where its authors find it unreliable, and no
+    /// amplification by stalled strips whose lift falls with the incidence the swirl adds
+    /// (E:). 1 without swirl.
+    pub fn swirl_left_after(&self, moment: f64, density: f64) -> f64 {
+        let flux = density * self.disc_area() * (self.free_stream + self.induced) * self.swirl;
+        if flux == 0.0 || !flux.is_finite() {
+            return 1.0;
+        }
+        let left = 1.0 - moment / flux;
+        if left.is_finite() {
+            left.clamp(0.0, 1.0)
+        } else {
+            1.0
+        }
+    }
+
+    /// Fraction of the swirl left behind the wings, 0 to 1.
+    pub fn swirl_left(&self) -> f64 {
+        self.swirl_left
+    }
+
+    /// Area of the propeller disc, m².
+    fn disc_area(&self) -> f64 {
+        PI * self.radius * self.radius
     }
 
     /// The same slipstream without its swirl (diagnostics: what the swirl does).
@@ -509,7 +542,7 @@ impl Slipstream {
         // Free vortex outside the core, solid-body rotation inside.
         let core = SWIRL_CORE * self.tube_radius(distance);
         let straightened = self.wing_wake.map_or(1.0, |w| {
-            1.0 - (1.0 - w.swirl_left) * smoothstep((distance - w.start) / w.length)
+            1.0 - (1.0 - self.swirl_left) * smoothstep((distance - w.start) / w.length)
         });
         let circulation = self.swirl * behind * straightened;
         let tangential = if radial > 0.0 {

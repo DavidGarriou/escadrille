@@ -193,7 +193,6 @@ fn biplane() -> Aircraft {
             tail: vec![2],
             factor: 0.11,
             tail_arm: 4.7,
-            swirl_left: 0.5,
         }),
         ControlTravel {
             aileron: 0.35,
@@ -457,20 +456,15 @@ fn rejects_inconsistent_aircraft() {
             tail,
             factor: 0.1,
             tail_arm: 4.0,
-            swirl_left: 0.5,
         })
     };
-    let swirl_left =
-        |swirl_left: f64| downwash(vec![0, 1], vec![2]).map(|d| Downwash { swirl_left, ..d });
-    assert!(rebuild(a.mass, swirl_left(0.0), travel).is_ok());
-    assert!(rebuild(a.mass, swirl_left(1.0), travel).is_ok());
+    assert!(rebuild(a.mass, downwash(vec![0, 1], vec![2]), travel).is_ok());
     for bad in [
         downwash(vec![], vec![2]),
         downwash(vec![0], vec![7]),
         downwash(vec![0, 2], vec![2]),
-        swirl_left(-0.1),
-        swirl_left(1.1),
-        swirl_left(f64::NAN),
+        // The lower plane induces on the upper one but would be loaded after it.
+        downwash(vec![0], vec![2]),
     ] {
         assert_eq!(
             rebuild(a.mass, bad, travel),
@@ -554,24 +548,43 @@ fn total_loads_are_the_sum_of_the_components() {
     let p = a.propulsion().unwrap();
     let prop = p.propeller.loads(v, w, state.rotor_speed, rho);
     let wake = a.wing_wake().unwrap();
-    let slip = p.propeller.slipstream(&prop, rho).behind_wings(wake);
-    let blown = |r: DVec3| slip.local_flow(r);
+    let free = p.propeller.slipstream(&prop, rho);
     let downwash = downwash_velocity(v, 0.02);
     let surfaces = a.lifting.surfaces();
-    let lifting = a
-        .lifting
-        .loads(v, w, rho, &ControlDeflections::default(), |i, strip| {
-            let mut felt = slip.lifting_flow(
-                strip.position,
-                strip.chord_axis.cross(strip.normal),
-                strip.chord,
-                surfaces[i].section_slope(),
-            );
-            if i == 2 {
-                felt.velocity += downwash;
-            }
-            felt
-        });
+    let load = |include: &dyn Fn(usize) -> bool, slip: &Slipstream| {
+        a.lifting.loads_of(
+            include,
+            v,
+            w,
+            rho,
+            &ControlDeflections::default(),
+            |i, strip| {
+                let mut felt = slip.lifting_flow(
+                    strip.position,
+                    strip.chord_axis.cross(strip.normal),
+                    strip.chord,
+                    surfaces[i].section_slope(),
+                );
+                if i == 2 {
+                    felt.velocity += downwash;
+                }
+                felt
+            },
+        )
+    };
+    // The wings in the propeller's slipstream, the rest in what they leave of it.
+    let wings = load(&|i| i < 2, &free);
+    let (hub, axis) = (p.propeller.geometry().hub, p.propeller.rotation_axis());
+    let taken: f64 = wings.swirl_wrenches[..2]
+        .iter()
+        .map(|s| (s.moment - hub.cross(s.force)).dot(axis))
+        .sum();
+    let left = free.swirl_left_after(taken, rho);
+    assert!(left > 0.0 && left < 1.0, "{left}");
+    assert_eq!(d.swirl_left, Some(left));
+    let slip = free.behind_wings(wake, left);
+    let lifting = wings.clone().with(load(&|i| i >= 2, &slip));
+    let blown = |r: DVec3| slip.local_flow(r);
     let mut expected = lifting.wrench + prop.wrench;
     for item in &a.drag {
         expected += item.loads(v, w, rho, blown);
@@ -587,12 +600,12 @@ fn total_loads_are_the_sum_of_the_components() {
     assert!((d.loads.wrench.moment - expected.moment).length() < 1e-9);
     assert!(prop.thrust > 0.0);
     // The same pieces through the aircraft's own accessors.
-    assert_eq!(a.slipstream(&prop, rho), Some(slip));
+    assert_eq!(a.slipstream(&prop, rho), Some(free));
     let own = a.lifting_loads(
         &state,
         &ControlDeflections::default(),
         &SEA_LEVEL,
-        Some(&slip),
+        Some(&free),
     );
     assert_eq!(own.wrench, lifting.wrench);
     let sum = own
@@ -620,23 +633,67 @@ fn the_wings_straighten_the_swirl_from_their_trailing_edge() {
     }
     assert!((wake.start - rearmost).abs() < 1e-9, "{wake:?} {rearmost}");
     assert!((wake.length - chords / count).abs() < 1e-9, "{wake:?}");
-    assert_eq!(wake.swirl_left, 0.5);
-    // The aircraft's slipstream carries it: half the swirl at the tail, all at the wings.
-    let state = flying(40.0, 0.05, 200.0);
-    let d = a.evaluate(&state, &FULL, &SEA_LEVEL);
-    let prop = d.propeller.unwrap();
-    let free = a
-        .propulsion()
+}
+
+/// Moment the wings take from the swirl about the propeller's axis, along its rotation,
+/// by difference: their loads in the slipstream less their loads without its swirl.
+fn swirl_taken_by_difference(a: &Aircraft, state: &RigidBodyState, slip: &Slipstream) -> f64 {
+    let none = ControlDeflections::default();
+    let with = a.lifting_loads(state, &none, &SEA_LEVEL, Some(slip));
+    let without = a.lifting_loads(state, &none, &SEA_LEVEL, Some(&slip.without_swirl()));
+    let p = &a.propulsion().unwrap().propeller;
+    let (hub, axis) = (p.geometry().hub, p.rotation_axis());
+    a.downwash()
         .unwrap()
-        .propeller
-        .slipstream(&prop, d.density);
-    let ours = a.slipstream(&prop, d.density).unwrap();
-    let swirl =
-        |s: &Slipstream, distance: f64| s.local_flow(hub + DVec3::new(-distance, 0.6, 0.0)).z;
-    let at_wings = wake.start - wake.length;
-    assert_eq!(swirl(&ours, at_wings), swirl(&free, at_wings));
-    let at_tail = wake.start + 2.0 * wake.length;
-    assert!((swirl(&ours, at_tail) - 0.5 * swirl(&free, at_tail)).abs() < 1e-12);
+        .wings
+        .iter()
+        .map(|&i| {
+            let (w, n) = (with.surface_wrenches[i], without.surface_wrenches[i]);
+            (w.moment - n.moment - hub.cross(w.force - n.force)).dot(axis)
+        })
+        .sum()
+}
+
+#[test]
+fn the_tail_flies_in_the_swirl_the_wings_leave() {
+    let a = biplane();
+    let hub = a.propulsion().unwrap().propeller.geometry().hub;
+    let wake = a.wing_wake().unwrap();
+    let mut lefts = vec![];
+    for alpha in [0.02, 0.1, 0.3, 0.45] {
+        let state = flying(40.0, alpha, 200.0);
+        let d = a.evaluate(&state, &FULL, &SEA_LEVEL);
+        let prop = d.propeller.unwrap();
+        let free = a.slipstream(&prop, d.density).unwrap();
+        // Angular momentum: the slipstream keeps Q less what the wings took.
+        let taken = swirl_taken_by_difference(&a, &state, &free);
+        let left = d.swirl_left.unwrap();
+        assert!(taken > 0.0 && prop.torque > 0.0, "{taken} {prop:?}");
+        assert!(
+            (left - (1.0 - taken / prop.torque)).abs() < 0.01,
+            "α {alpha}: {left} against {taken} / {}",
+            prop.torque
+        );
+        // All the swirl at the wings, what they leave at the tail.
+        let behind = free.behind_wings(wake, left);
+        let swirl =
+            |s: &Slipstream, distance: f64| s.local_flow(hub + DVec3::new(-distance, 0.6, 0.0)).z;
+        let at_wings = wake.start - wake.length;
+        assert_eq!(swirl(&behind, at_wings), swirl(&free, at_wings));
+        let at_tail = wake.start + 2.0 * wake.length;
+        assert!((swirl(&behind, at_tail) - left * swirl(&free, at_tail)).abs() < 1e-12);
+        lefts.push(left);
+    }
+    // Stalled wings (0.45 rad) take less of the swirl and leave more of it.
+    assert!(lefts[3] > lefts[1] + 0.1, "{lefts:?}");
+    // A stopped propeller turns the air against its rotation: the wings straighten that
+    // swirl too.
+    let d = a.evaluate(&flying(40.0, 0.05, 0.0), &GLIDE, &SEA_LEVEL);
+    assert!(d.propeller.unwrap().torque < 0.0);
+    assert!(
+        d.swirl_left.is_some_and(|l| (0.0..1.0).contains(&l)),
+        "{d:?}"
+    );
 }
 
 #[test]
@@ -765,4 +822,30 @@ fn a_pusher_leaves_the_swirl_to_the_tail() {
     .unwrap();
     assert!(a.wing_wake().is_some());
     assert_eq!(pusher.wing_wake(), None);
+    let state = flying(40.0, 0.05, 200.0);
+    assert_eq!(pusher.evaluate(&state, &FULL, &SEA_LEVEL).swirl_left, None);
+    assert!(a.evaluate(&state, &FULL, &SEA_LEVEL).swirl_left.is_some());
+}
+
+#[test]
+fn the_loads_stay_continuous_when_the_torque_crosses_zero() {
+    // The fraction of the swirl left is 0 / 0 there; the swirl the tail feels, K times
+    // that fraction, is not.
+    let a = biplane();
+    let evaluate = |rotor: f64| a.evaluate(&flying(40.0, 0.05, rotor), &GLIDE, &SEA_LEVEL);
+    let torque = |rotor: f64| evaluate(rotor).propeller.unwrap().torque;
+    let (mut lo, mut hi) = (0.0, 400.0);
+    assert!(torque(lo) < 0.0 && torque(hi) > 0.0);
+    for _ in 0..80 {
+        let mid = 0.5 * (lo + hi);
+        if torque(mid) < 0.0 {
+            lo = mid;
+        } else {
+            hi = mid;
+        }
+    }
+    let (below, above) = (evaluate(lo - 1e-6), evaluate(hi + 1e-6));
+    let (b, c) = (below.loads.wrench, above.loads.wrench);
+    assert!((b.force - c.force).length() < 1e-3, "{below:?} {above:?}");
+    assert!((b.moment - c.moment).length() < 1e-3, "{below:?} {above:?}");
 }

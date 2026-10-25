@@ -74,9 +74,12 @@ pub fn tn1146_speed() -> f64 {
 pub struct SwirlBalance {
     /// Propeller torque, N·m, positive when absorbing.
     pub torque: f64,
-    /// For each lifting surface: rolling moment of the swirl along the propeller's rotation
-    /// axis, N·m (positive: taking back the torque), and thrust power it takes back, W.
+    /// For each lifting surface: rolling moment of the swirl about the propeller's axis,
+    /// along its rotation, N·m (positive: taking back the torque), and thrust power it
+    /// takes back, W.
     pub surfaces: Vec<(String, f64, f64)>,
+    /// Fraction of the swirl the model leaves behind the wings (with a wing wake).
+    pub swirl_left: Option<f64>,
     /// Thrust power the surfaces take back from the swirl, W.
     pub recovered_power: f64,
     /// Kinetic energy carried by the swirl through the disc, W.
@@ -96,7 +99,8 @@ pub fn swirl_balance(
     let d = aircraft.evaluate_deflected(&state, deflections, throttle, env);
     let loads = d.propeller?;
     let slipstream = aircraft.slipstream(&loads, d.density)?;
-    let axis = aircraft.propulsion()?.propeller.rotation_axis();
+    let propeller = &aircraft.propulsion()?.propeller;
+    let (hub, axis) = (propeller.geometry().hub, propeller.rotation_axis());
     let with = aircraft.lifting_loads(&state, deflections, env, Some(&slipstream));
     let without =
         aircraft.lifting_loads(&state, deflections, env, Some(&slipstream.without_swirl()));
@@ -108,7 +112,7 @@ pub fn swirl_balance(
         .iter()
         .zip(with.surface_wrenches.iter().zip(&without.surface_wrenches))
         .map(|(s, (w, n))| {
-            let roll = (w.moment - n.moment).dot(axis);
+            let roll = (w.moment - n.moment - hub.cross(w.force - n.force)).dot(axis);
             (
                 s.name().to_owned(),
                 roll,
@@ -121,6 +125,7 @@ pub fn swirl_balance(
         surfaces,
         recovered_power: (with.wrench.force - without.wrench.force).dot(along) * speed,
         rotational_power: slipstream.rotational_power(d.density),
+        swirl_left: d.swirl_left,
     })
 }
 
@@ -271,12 +276,32 @@ mod tests {
                     "{:?}: {b:?}",
                     trim.flight
                 );
+                // The swirl left behind the wings is what they did not take, measured here
+                // by difference (plan docs/plans/m1-rotation-derriere-ailes.md).
+                let wings: f64 = a
+                    .downwash()
+                    .unwrap()
+                    .wings
+                    .iter()
+                    .map(|&i| b.surfaces[i].1)
+                    .sum();
+                let expected = (1.0 - wings / b.torque).clamp(0.0, 1.0);
+                let left = b.swirl_left.unwrap();
+                assert!(
+                    (left - expected).abs() < 0.01,
+                    "{:?}: {left} {b:?}",
+                    trim.flight
+                );
             }
         }
     }
 
     /// The balance adds up, and on the SPAD climbing at full throttle the swirl takes back
-    /// part of the torque and gives thrust.
+    /// part of the torque. Its power is about nil: the profile drag of the lift it adds
+    /// eats on the wings the thrust lifting-line theory gives (28 to 37 % of the swirl
+    /// energy, R&M 2368 part II), and the tail, in the swirl the wings leave, takes back
+    /// little (plan docs/plans/m1-rotation-derriere-ailes.md). A gap reported, not tuned
+    /// (plan docs/plans/m1-souffle-ailes.md, review point 5).
     #[test]
     fn the_swirl_balance_adds_up() {
         use escadrille_data::aircraft::{Loading, load_aircraft};
@@ -297,7 +322,8 @@ mod tests {
         assert!((power - b.recovered_power).abs() < 1e-6 * b.recovered_power.abs());
         let roll: f64 = b.surfaces.iter().map(|s| s.1).sum();
         assert!(roll > 0.2 * b.torque && roll < 2.0 * b.torque, "{b:?}");
-        assert!(b.recovered_power > 0.0 && b.rotational_power > 0.0, "{b:?}");
+        assert!(b.rotational_power > 0.0, "{b:?}");
+        assert!(b.recovered_power.abs() < 0.05 * b.rotational_power, "{b:?}");
         assert_eq!(b.surfaces.len(), spad.lifting().surfaces().len());
     }
 

@@ -227,3 +227,32 @@ fn rejects_inconsistent_pairs() {
         Err(SystemError::NoInducedModel)
     );
 }
+
+#[test]
+fn a_subset_of_the_surfaces_is_loaded_alone() {
+    let (v, omega) = (flight(0.08), DVec3::new(0.3, 0.0, 0.1));
+    let system = biplane((8.0, 1.2), (7.5, 1.1), 0.5);
+    let whole = system.loads(v, omega, RHO, &NO_CONTROLS, still);
+    let all = system.loads_of(|_| true, v, omega, RHO, &NO_CONTROLS, still);
+    assert_eq!(whole, all);
+    // Left out: no loads, no lift, no induced angle, and no induction on the other plane.
+    let upper = system.loads_of(|i| i == 0, v, omega, RHO, &NO_CONTROLS, still);
+    assert_eq!(upper.surface_wrenches[1], Wrench::default());
+    assert_eq!(
+        (upper.lift_coefficients[1], upper.mutual_angles[1]),
+        (0.0, 0.0)
+    );
+    assert_eq!(upper.mutual_angles[0], 0.0);
+    assert!(upper.lift_coefficients[0] > whole.lift_coefficients[0]);
+    // Without interference, the two planes loaded apart make the whole.
+    let apart = biplane((8.0, 1.2), (7.5, 1.1), 0.0);
+    let whole = apart.loads(v, omega, RHO, &NO_CONTROLS, still);
+    let lower = apart.loads_of(|i| i == 1, v, omega, RHO, &NO_CONTROLS, still);
+    let sum = apart
+        .loads_of(|i| i == 0, v, omega, RHO, &NO_CONTROLS, still)
+        .with(lower);
+    assert!((sum.wrench.force - whole.wrench.force).length() < 1e-9);
+    assert!((sum.wrench.moment - whole.wrench.moment).length() < 1e-9);
+    assert_eq!(sum.lift_coefficients, whole.lift_coefficients);
+    assert_eq!(sum.surface_wrenches, whole.surface_wrenches);
+}

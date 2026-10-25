@@ -91,7 +91,6 @@ Aircraft(
         tail: ["tailplane"],
         factor: 0.156,                                                 // C: method of the SPAD, 2S/(πb²) = 0.236 × 0.84 × 0.86 × 0.915 (tail near mid-gap, arm / span 0.48 against 0.51)
         tail_arm: M(2.92),                                             // C: mean quarter chord of the planes (x −0.095) to the tailplane's (x −3.01)
-        swirl_left: 0.5,                                               // C: as the SPAD; only the glides are used
     )),
 
     parasite_drag: [

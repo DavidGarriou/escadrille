@@ -2,9 +2,10 @@
 //! one load model, integrated by [`step_rk4`] (skill `simulation-vol`).
 //!
 //! Order of evaluation for a state: air data (wind, density), propeller (thrust, torque,
-//! slipstream), engine, lifting surfaces (slipstream everywhere, reduced by the jet-width
-//! factor, lagged wing downwash on the tail), parasitic drag (whole slipstream), then the
-//! sum.
+//! slipstream), engine, wings in the propeller's slipstream (reduced by the jet-width
+//! factor), the other lifting surfaces in the slipstream the wings leave (its swirl less
+//! the angular momentum they took from it, lagged wing downwash on the tail), parasitic
+//! drag and fuselage (whole slipstream behind the wings), then the sum.
 //!
 //! Wing downwash at the tail: ε = `factor` × C_L of the wings (Prandtl's lifting-line
 //! result ε ∝ C_L, so that it collapses with the lift at the stall), reaching the tail
@@ -69,9 +70,6 @@ pub struct Downwash {
     pub factor: f64,
     /// Distance travelled by the downwash from the wings to the tail, m.
     pub tail_arm: f64,
-    /// Fraction of the slipstream's swirl left behind the wings, which straighten the rest
-    /// (C: about one half, NACA Report 747 and TN 1146), 0 to 1.
-    pub swirl_left: f64,
 }
 
 /// Propeller and the engine that drives it.
@@ -118,6 +116,9 @@ pub struct Diagnostics {
     pub shaft_speed: f64,
     /// Downwash angle at the tail (lagged state), rad.
     pub downwash: f64,
+    /// Fraction of the slipstream's swirl left behind the wings (with a propeller ahead
+    /// of wings).
+    pub swirl_left: Option<f64>,
 }
 
 impl Aircraft {
@@ -149,7 +150,11 @@ impl Aircraft {
                 && d.factor >= 0.0
                 && d.tail_arm.is_finite()
                 && d.tail_arm > 0.0
-                && (0.0..=1.0).contains(&d.swirl_left);
+                // The wings are loaded before the rest: no mutual induction across.
+                && lifting
+                    .mutual()
+                    .iter()
+                    .all(|m| d.wings.contains(&m.on) == d.wings.contains(&m.from));
             if !valid {
                 return Err(AircraftError::BadDownwash);
             }
@@ -265,9 +270,8 @@ impl Aircraft {
             }
             None => (None, None, EngineTorques::default()),
         };
-        let blown = |r: DVec3| slipstream.map_or(DVec3::ZERO, |s| s.local_flow(r));
         let downwash = state.aux[AUX_DOWNWASH];
-        let lifting = self.lifting_in(
+        let (lifting, behind_wings) = self.lifting_in(
             air_velocity,
             omega,
             density,
@@ -275,6 +279,7 @@ impl Aircraft {
             deflections,
             slipstream.as_ref(),
         );
+        let blown = |r: DVec3| behind_wings.map_or(DVec3::ZERO, |s| s.local_flow(r));
 
         let mut wrench = lifting.wrench;
         for item in &self.drag {
@@ -319,18 +324,20 @@ impl Aircraft {
             engine,
             shaft_speed,
             downwash,
+            swirl_left: self.wing_wake.and(behind_wings).map(|s| s.swirl_left()),
         }
     }
 
-    /// The propeller's slipstream for these propeller loads, straightened behind the wings.
+    /// The propeller's slipstream for these propeller loads, as it reaches the wings (they
+    /// straighten it: [`Self::lifting_loads`]).
     pub fn slipstream(&self, propeller: &PropellerLoads, density: f64) -> Option<Slipstream> {
         let p = self.propulsion.as_ref()?;
-        let free = p.propeller.slipstream(propeller, density);
-        Some(self.wing_wake.map_or(free, |w| free.behind_wings(w)))
+        Some(p.propeller.slipstream(propeller, density))
     }
 
-    /// Loads of the lifting surfaces in a state, in a given slipstream: the aircraft's own
-    /// ([`Self::slipstream`]) in [`Self::evaluate`], or a variant of it for diagnostics.
+    /// Loads of the lifting surfaces in a state, in a given slipstream as it reaches the
+    /// wings: the aircraft's own ([`Self::slipstream`]) in [`Self::evaluate`], or a variant
+    /// of it for diagnostics. The surfaces behind the wings fly in what the wings leave.
     pub fn lifting_loads(
         &self,
         state: &RigidBodyState,
@@ -348,10 +355,18 @@ impl Aircraft {
             deflections,
             slipstream,
         )
+        .0
     }
 
     /// Lifting surfaces in the slipstream (reduced by the jet-width factor), with the lagged
-    /// wing downwash on the tail.
+    /// wing downwash on the tail, and the slipstream behind the wings.
+    ///
+    /// With a propeller ahead of wings, the wings are loaded first, in the propeller's
+    /// slipstream. The moment M their strips take from its swirl, about the propeller's
+    /// axis, is no longer in the air behind them: the other surfaces fly in a slipstream
+    /// whose swirl keeps the fraction [`Slipstream::swirl_left_after`] M of its own, from
+    /// the wings' trailing edge on. Instantaneous: the swirl takes l / V (about 0.1 s) to
+    /// reach the tail, a lag left out (E:).
     fn lifting_in(
         &self,
         air_velocity: DVec3,
@@ -360,25 +375,52 @@ impl Aircraft {
         downwash: f64,
         deflections: &ControlDeflections,
         slipstream: Option<&Slipstream>,
-    ) -> SystemLoads {
+    ) -> (SystemLoads, Option<Slipstream>) {
         let downwash_velocity = downwash_velocity(air_velocity, downwash);
         let is_tail = |i: usize| self.downwash.as_ref().is_some_and(|d| d.tail.contains(&i));
+        let is_wing = |i: usize| self.downwash.as_ref().is_some_and(|d| d.wings.contains(&i));
         let surfaces = self.lifting.surfaces();
-        self.lifting
-            .loads(air_velocity, omega, density, deflections, |i, strip| {
-                let mut flow = slipstream.map_or(StripFlow::default(), |s| {
-                    s.lifting_flow(
-                        strip.position,
-                        strip.chord_axis.cross(strip.normal),
-                        strip.chord,
-                        surfaces[i].section_slope(),
-                    )
-                });
-                if is_tail(i) {
-                    flow.velocity += downwash_velocity;
-                }
-                flow
-            })
+        let load = |include: &dyn Fn(usize) -> bool, slipstream: Option<&Slipstream>| {
+            self.lifting.loads_of(
+                include,
+                air_velocity,
+                omega,
+                density,
+                deflections,
+                |i, strip| {
+                    let mut flow = slipstream.map_or(StripFlow::default(), |s| {
+                        s.lifting_flow(
+                            strip.position,
+                            strip.chord_axis.cross(strip.normal),
+                            strip.chord,
+                            surfaces[i].section_slope(),
+                        )
+                    });
+                    if is_tail(i) {
+                        flow.velocity += downwash_velocity;
+                    }
+                    flow
+                },
+            )
+        };
+        let (Some(wake), Some(propulsion), Some(&free)) =
+            (self.wing_wake, &self.propulsion, slipstream)
+        else {
+            return (load(&|_| true, slipstream), slipstream.copied());
+        };
+        let wings = load(&is_wing, Some(&free));
+        let (hub, axis) = (
+            propulsion.propeller.geometry().hub,
+            propulsion.propeller.rotation_axis(),
+        );
+        let taken: f64 = wings
+            .swirl_wrenches
+            .iter()
+            .map(|w| (w.moment - hub.cross(w.force)).dot(axis))
+            .sum();
+        let behind = free.behind_wings(wake, free.swirl_left_after(taken, density));
+        let rest = load(&|i| !is_wing(i), Some(&behind));
+        (wings.with(rest), Some(behind))
     }
 
     /// Loads for a state (gravity excluded).
@@ -404,9 +446,8 @@ impl Aircraft {
 }
 
 /// The wings' wake in the slipstream: from the rearmost trailing edge of the wing strips
-/// within the propeller's radius of its axis, over their mean chord, down to the swirl the
-/// wings leave. None when no wing strip lies in the disc's shadow, or when the wings are
-/// ahead of the disc (pusher).
+/// within the propeller's radius of its axis, over their mean chord. None when no wing
+/// strip lies in the disc's shadow, or when the wings are ahead of the disc (pusher).
 fn wing_wake(
     lifting: &LiftingSystem,
     downwash: &Downwash,
@@ -428,7 +469,6 @@ fn wing_wake(
     (area > 0.0 && start > 0.0).then(|| WingWake {
         start,
         length: chord_area / area,
-        swirl_left: downwash.swirl_left,
     })
 }
 

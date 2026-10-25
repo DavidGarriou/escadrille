@@ -1361,3 +1361,38 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** § 9 de `spad7-calculs.md` mis à jour : départ à gauche **probable** (confiance C), aucune conclusion sur l'équilibre en croisière. Nouveau § 10 : synthèse du souffle. Le plan `m1-ecarts-spad7.md` marque la tâche prioritaire comme faite.
 
 - **⚠** `just check` refusait `swirled_strip_loads` (8 arguments, clippy `too_many_arguments`). **A** La rotation et sa fraction τ passent dans le `StripFlow` de la bande. `just check` et `just test` (234 tests) passent.
+
+### Suite 1 : rotation derrière les ailes par le bilan de moment cinétique
+
+- **Q** Le joueur : « Prépare le plan de la suite 1 et lance le ». **D** Plan `docs/plans/m1-rotation-derriere-ailes.md` rédigé et lancé dans la même session, sur cette demande.
+- **A** Recherche : aucune mesure de la rotation résiduelle derrière une aile en charge légère (Ribner et MacLachlan 1947 traitent le fuselage ; NACA RM SL53G10, la dérive du XF-91). Relecture du NACA TN 1146 :
+  - sa « moitié » vient du Report 747 (sa référence 11) ;
+  - avec elle, les forces calculées sur la dérive « generally agreed with the computed values within 10 to 15 percent ».
+- **⚠** Le tableau des sources de `m1-souffle-ailes.md` disait l'inverse (forces « tombant à 10-15 % des mesures »). Corrigé, avec renvoi au nouveau plan.
+- **A** FDM :
+  - les ailes sont calculées d'abord ; le moment que la rotation exerce sur elles, autour de l'axe de l'hélice, est retiré au flux de moment cinétique du jet, ṁK ;
+  - le reste de l'avion (empennage, dérive, traînées, fuselage) vole dans le souffle redressé, la fraction étant bornée à [0, 1] ;
+  - la donnée `swirl_left` disparaît (SPAD, Messenger, biplan d'essai, `format-avion.md`) ;
+  - nouveaux accès : `LiftingSystem::loads_of`, `SystemLoads::with`, `Slipstream::swirl_left_after`, `StripState::swirl_force`, `Diagnostics::swirl_left`.
+- **⚠** Première version : la portance ajoutée par la rotation était lue avec la pente à portance nulle. Elle s'écartait du contrôle par différence de 0,02 à 0,05. Deux causes : la pente locale de la table, et la pression dynamique que la rotation change à grande incidence. **D** La part de la rotation est désormais la différence complète entre la bande et la même bande sans rotation. Elle colle au contrôle à 0,01 près sur quatre vols, et c'est un test.
+- **R** Rotation laissée derrière les ailes du SPAD :
+  - 0,07 à Vmax, 0,28 en meilleure montée, 0 au plané, 0,59 au décrochage plein gaz ;
+  - biplan d'essai : 0,09 / 0,31 / 0 / 0,49.
+- **R** Commandes à l'équilibre (avant = même code, fraction figée à 0,5) :
+  - direction en montée +0,057 → +0,001 de la course, à Vmax +0,031 → −0,024, au décrochage plein gaz +0,098 → +0,128 ;
+  - ailerons presque inchangés (au plus 0,01 de la course en croisière).
+
+  Résultat du modèle, non validé : il dépend du moment des ailes en charge légère, que R&M 2368 juge peu sûr.
+- **R** Campagne du SPAD :
+  - vitesses −0,2 / +4,0 / +2,7 % ;
+  - montées −1,5 / +0,1 / −3,2 % ;
+  - plafond +5,0 % ;
+  - départ à gauche, −55°.
+
+  Aucune cible ne dépendait du changement : pas de biais vers elles.
+- **⚠** Marge statique 5,9 → 4,9 %, expliquée par une sonde.
+  - Le niveau de rotation sur le plan fixe compte, pas sa variation avec l'incidence.
+  - Le profil d'empennage (RAF 15 décambré puis symétrisé) a un creux de pente près de la portance nulle (0,069 par degré contre 0,076 à 0,081). La rotation de 0,5 l'en sortait en partie.
+
+  Rapporté ; à regarder si la marge devient une cible.
+- **⚠** Le bilan du tourbillon en montée passe à −1 % de l'énergie de rotation (les ailes y perdent de la puissance par la traînée de profil, l'empennage reprend moins). Le test qui exigeait un gain de puissance est remplacé par une borne, l'écart étant écrit (point 5 de la revue précédente).

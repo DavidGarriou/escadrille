@@ -646,8 +646,8 @@ fn finite_in_any_flight_condition() {
     }
 }
 
-/// A strip in a swirl that raises its incidence: what the strip feels with a tilt fraction
-/// τ, and strip theory's loads.
+/// A strip in a swirl that lowers its incidence (the air moving down, along +z): what the
+/// strip feels with a tilt fraction τ, and strip theory's loads.
 fn swirled(tau: f64) -> (LiftingSurface, Wrench, Wrench, f64, f64) {
     let induced = InducedModel::new(6.0, 0.9).unwrap();
     let s = tail_strip(section(0.02, 0.0), DVec3::NEG_Z, Some(induced));
@@ -667,18 +667,17 @@ fn swirled(tau: f64) -> (LiftingSurface, Wrench, Wrench, f64, f64) {
 #[test]
 fn the_wing_takes_back_as_drag_the_swirl_thrust_its_induced_flow_cancels() {
     let (s, felt, strip_theory, kappa, speed) = swirled(0.15);
-    // The swirl raises the incidence by δ_s = 3 / speed (the flow from below, here along
-    // the normal's opposite): the lift it adds, ΔC_L, is that of δ_s / (1 + k a₀).
+    // The swirl changes the incidence by δ_s = −3 u / speed² (the air moving down): the
+    // lift it adds, ΔC_L, is the strip's lift less its lift without the swirl, both with
+    // their induced angle; the lift it removes here, and the thrust of that, (1 − τ − κ)
+    // ΔL δ_s, still positive, is taken back as drag.
     let strip = &s.strips[0];
     let v = flight(0.03) - DVec3::new(0.0, 0.0, 3.0);
     let (_, state) = s.strip_loads(strip, v, RHO, &NO_CONTROLS, 0.0);
-    let delta = 3.0 * v.x / (speed * speed);
-    let x = state.alpha - state.induced_alpha;
-    let added = s.polar().coefficients(x).cl
-        - s.polar()
-            .coefficients(x - delta / (1.0 + s.induced().unwrap().factor() * s.section_slope()))
-            .cl;
-    assert!(added > 0.1 && delta > 0.03, "{added} {delta}");
+    let (_, still) = s.strip_loads(strip, flight(0.03), RHO, &NO_CONTROLS, 0.0);
+    let delta = -3.0 * v.x / (speed * speed);
+    let added = state.coefficients.cl - still.coefficients.cl;
+    assert!(added < -0.1 && delta < -0.03, "{added} {delta}");
     let drag = (1.0 - 0.15 - kappa) * added * delta * state.dynamic_pressure * strip.area;
     // The extra drag lies along the strip's drag direction, nothing else changes.
     let difference = felt.force - strip_theory.force;
@@ -721,4 +720,39 @@ fn the_swirl_drag_fades_with_the_induction_past_the_stall() {
     let felt = s.loads(v, DVec3::ZERO, RHO, &NO_CONTROLS, |_| flow);
     let strip_theory = s.loads(v, DVec3::ZERO, RHO, &NO_CONTROLS, |_| swirl);
     assert_eq!(felt, strip_theory);
+}
+
+#[test]
+fn a_strip_tells_what_the_swirl_adds_to_its_loads() {
+    let induced = InducedModel::new(6.0, 0.9).unwrap();
+    let s = tail_strip(section(0.02, 0.0), DVec3::NEG_Z, Some(induced));
+    let strip = &s.strips[0];
+    let swirl = DVec3::new(0.0, 0.0, -3.0);
+    let flow = StripFlow {
+        velocity: swirl,
+        swirl,
+        swirl_tilt: 0.15,
+    };
+    // The air moving up raises the incidence by 3.4°: more lift in attached flow (1.7°), less on
+    // the falling side of the stall (21.8°, the induced angle delaying it to 19.2°).
+    for (alpha, more) in [(0.03, true), (0.38, false)] {
+        let v = flight(alpha) - swirl;
+        let (with, state) = s.swirled_strip_loads(strip, v, &flow, RHO, &NO_CONTROLS, 0.0);
+        let (without, _) = s.strip_loads(strip, v + swirl, RHO, &NO_CONTROLS, 0.0);
+        assert_eq!(state.swirl_force, with.force - without.force);
+        let up = state.swirl_force.dot(DVec3::NEG_Z);
+        assert_eq!(up > 0.0, more, "{alpha}: {state:?}");
+        assert!(up.abs() > 10.0, "{alpha}: {up}");
+        // The surface sums them, at the strips' positions.
+        let air = flight(alpha);
+        let loads = s.loads_with_mutual(air, DVec3::ZERO, RHO, &NO_CONTROLS, |_| flow, 0.0);
+        assert_eq!(loads.wrench, with);
+        assert_eq!(
+            loads.swirl,
+            Wrench::force_at(state.swirl_force, strip.position)
+        );
+    }
+    // Nothing without swirl.
+    let (_, state) = s.strip_loads(strip, flight(0.1), RHO, &NO_CONTROLS, 0.0);
+    assert_eq!(state.swirl_force, DVec3::ZERO);
 }

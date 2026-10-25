@@ -222,6 +222,21 @@ pub struct StripState {
     pub induced_alpha: f64,
     pub coefficients: Coefficients,
     pub dynamic_pressure: f64,
+    /// Force that the swirl's incidence adds to the strip (the lift it adds and the swirl
+    /// drag), N, body axes, at the quarter-chord point: what the strip takes from the
+    /// slipstream's rotation.
+    pub swirl_force: DVec3,
+}
+
+/// Loads of one surface ([`LiftingSurface::loads_with_mutual`]).
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct SurfaceLoads {
+    /// Force and moment about the centre of gravity, body axes.
+    pub wrench: Wrench,
+    /// Lift coefficient, weighted by each strip's dynamic pressure and area.
+    pub lift_coefficient: f64,
+    /// The part of `wrench` that the swirl's incidence adds ([`StripState::swirl_force`]).
+    pub swirl: Wrench,
 }
 
 impl LiftingSurface {
@@ -322,12 +337,12 @@ impl LiftingSurface {
             local_flow,
             0.0,
         )
-        .0
+        .wrench
     }
 
     /// Same as [`Self::loads`], with an extra induced angle `mutual` (rad) coming from
     /// the other planes of a biplane ([`super::system::LiftingSystem`]); also returns
-    /// the surface's lift coefficient, weighted by each strip's dynamic pressure and area.
+    /// the surface's lift coefficient and what its strips take from the swirl.
     pub fn loads_with_mutual<F: Into<StripFlow>>(
         &self,
         air_velocity: DVec3,
@@ -336,18 +351,20 @@ impl LiftingSurface {
         controls: &ControlDeflections,
         local_flow: impl Fn(&Strip) -> F,
         mutual: f64,
-    ) -> (Wrench, f64) {
-        let (mut wrench, mut lift, mut weight) = (Wrench::default(), 0.0, 0.0);
+    ) -> SurfaceLoads {
+        let mut loads = SurfaceLoads::default();
+        let (mut lift, mut weight) = (0.0, 0.0);
         for strip in &self.strips {
             let flow: StripFlow = local_flow(strip).into();
             let v = air_velocity + angular_velocity.cross(strip.position) - flow.velocity;
             let (w, state) = self.swirled_strip_loads(strip, v, &flow, density, controls, mutual);
-            wrench += w;
+            loads.wrench += w;
+            loads.swirl += Wrench::force_at(state.swirl_force, strip.position);
             lift += state.coefficients.cl * state.dynamic_pressure * strip.area;
             weight += state.dynamic_pressure * strip.area;
         }
-        let cl = if weight > 0.0 { lift / weight } else { 0.0 };
-        (wrench, cl)
+        loads.lift_coefficient = if weight > 0.0 { lift / weight } else { 0.0 };
+        loads
     }
 
     /// Past the stall, the total induced angle at the stall and the weight that fades it with
@@ -445,6 +462,12 @@ impl LiftingSurface {
     /// κ = k a₀ / (1 + k a₀) of it. The rest, (1 − τ − κ) ΔL δ_s, is taken back as a drag,
     /// faded past the stall as the induction: the strip's base lift keeps strip theory's
     /// inclination (and the yaw it gives), the rolling moment is unchanged.
+    ///
+    /// The swirl's share of the strip's loads is the difference between these loads and the
+    /// strip's in the same flow without the swirl: ΔL comes from it, read on the polar
+    /// with the induced angle solved both ways (past the stall it falls, and may change
+    /// sign, with the polar), and so does [`StripState::swirl_force`], with the dynamic
+    /// pressure the swirl changes at high incidence.
     pub fn swirled_strip_loads(
         &self,
         strip: &Strip,
@@ -472,23 +495,25 @@ impl LiftingSurface {
         let induced = wrap_angle(alpha - effective);
         let coefficients = self.polar.coefficients(effective);
 
-        // The part of the swirl lift's thrust the wing's own induced flow cancels, as drag:
-        // swirl incidence δ_s linearised (the swirl enters `v` with a minus sign), bounded
-        // by |swirl| / |v|, and the lift it adds at the strip's effective incidence.
-        let straightened = (1.0 - flow.swirl_tilt - self.induced_tilt).max(0.0);
-        let swirl_drag = if straightened > 0.0 {
-            let swirl = flow.swirl;
-            let delta =
-                (swirl.dot(strip.normal) * u_c - swirl.dot(strip.chord_axis) * u_n) / speed_sq;
-            let added = coefficients.cl
-                - self
-                    .polar
-                    .coefficients(effective - delta / (1.0 + k * self.section_slope))
-                    .cl;
-            let fade = self.past_stall(alpha, k, mutual).map_or(1.0, |(_, w)| w);
-            straightened * added * delta * fade
+        // The strip without the swirl (it enters `v` with a minus sign), the lift the swirl
+        // adds, and the part of its thrust the wing's own induced flow cancels, as drag:
+        // swirl incidence δ_s linearised, bounded by |swirl| / |v|.
+        let (still, swirl_drag) = if flow.swirl == DVec3::ZERO {
+            (None, 0.0)
         } else {
-            0.0
+            let swirl = flow.swirl;
+            let still = self.strip_loads(strip, v + swirl, density, controls, mutual);
+            let straightened = (1.0 - flow.swirl_tilt - self.induced_tilt).max(0.0);
+            let drag = if straightened > 0.0 {
+                let delta =
+                    (swirl.dot(strip.normal) * u_c - swirl.dot(strip.chord_axis) * u_n) / speed_sq;
+                let added = coefficients.cl - still.1.coefficients.cl;
+                let fade = self.past_stall(alpha, k, mutual).map_or(1.0, |(_, w)| w);
+                straightened * added * delta * fade
+            } else {
+                0.0
+            };
+            (Some(still.0.force), drag)
         };
 
         // Directions in the chord–normal plane: drag along the local flow, lift
@@ -510,6 +535,7 @@ impl LiftingSurface {
             induced_alpha: induced,
             coefficients,
             dynamic_pressure: q,
+            swirl_force: still.map_or(DVec3::ZERO, |f| force - f),
         };
         (wrench, state)
     }

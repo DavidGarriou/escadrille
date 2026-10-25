@@ -89,7 +89,6 @@ Aircraft(
         tail: ["tailplane"],
         factor: 0.11,                                                  // E: synthetic
         tail_arm: M(4.7),                                              // E: synthetic
-        swirl_left: 0.5,                                               // E: synthetic, the monoplane value of NACA Report 747
     )),
 
     parasite_drag: [

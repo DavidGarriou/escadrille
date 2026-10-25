@@ -349,7 +349,7 @@ Revue de l'aérodynamicien, essais avec un facteur sur le tourbillon K du souffl
 
 **Statut** : départ à gauche **probable** (confiance C, aucun témoignage lu). Deux réserves :
 - le souffle part tout droit le long de l'axe de traction (E:), ce qui décide si l'empennage est dans le souffle au décrochage ;
-- aucune conclusion sur l'équilibre en roulis et en lacet en croisière : le bilan de moment cinétique y contredit la donnée (§ 10).
+- ~~aucune conclusion sur l'équilibre en roulis et en lacet en croisière : le bilan de moment cinétique y contredit la donnée (§ 10).~~ Levée le 2026-10-25 : la rotation derrière les ailes suit désormais ce bilan (voir la mise à jour ci-dessous).
 
 
 ## 10. Souffle d'hélice sur les ailes et l'empennage (2026-10-24 et 25)
@@ -359,12 +359,15 @@ Plan `docs/plans/m1-souffle-ailes.md`, validé par le joueur ; détail des étap
 - **Largeur du jet** : la portance qu'ajoute le souffle aux bandes est réduite par le facteur de R&M 2368 (tableau 2).
   - Sur la maquette motorisée du NACA TN 1146, l'aile reprend 38 à 39 % du couple ; mesure : 39 à 50 %, le modèle restant sous la mesure. Avant : 57 à 71 %.
   - Pour le SPAD, la correction est faible en croisière (jet à peine plus rapide que l'avion) et forte au décrochage plein gaz.
-- **Rotation derrière les ailes** : divisée par deux (`swirl_left`, C:, Report 747 et TN 1146).
-  - Cohérent près du décrochage.
-  - **Incohérent en croisière** : les ailes y reprennent déjà 0,9 Q, de sorte que le bilan de moment cinétique ne laisserait presque rien à l'empennage. C'est la limite de R&M 2368 pour une corde supérieure à D/3.
+- **Rotation derrière les ailes** : ~~divisée par deux (`swirl_left`, C:, Report 747 et TN 1146)~~. Depuis le 2026-10-25 (plan `docs/plans/m1-rotation-derriere-ailes.md`), elle suit le **bilan de moment cinétique** : le jet garde ṁK − M_ailes, M_ailes étant le moment que la rotation exerce sur les ailes (C:).
+  - SPAD : 0,07 à Vmax, 0,28 en meilleure montée, 0 au plané, 0,59 au décrochage plein gaz ; plus encore pendant un départ, à mesure que les ailes décrochent.
+  - Sous forte traction, cohérent avec le TN 1146 (aile à 40-50 % du couple, dérive conforme à 10-15 % près avec la moitié de la rotation).
+  - **Limite** : en croisière, le moment des ailes (0,9 Q et plus) est dans la zone où R&M 2368 juge sa théorie peu sûre (corde > D/3). Le bilan le transmet tel quel à l'empennage : l'erreur éventuelle reste dans la réponse de l'aile.
+  - En croisière et en montée, l'avion tient presque sans ailerons ni direction (moins de 3 et 6 % de la course) : résultat du modèle, non validé.
+  - Effet de bord expliqué : marge statique 5,9 → 4,9 %, par le creux de pente du profil d'empennage près de la portance nulle, que la rotation masquait.
 - **Inclinaison de la portance due à la rotation** : la poussée reprise au tourbillon ne vaut que τ fois celle de la théorie des bandes (R&M 2368, partie II ; τ ≈ 0,15 pour l'aile du SPAD).
   - Avant, la cellule reprenait jusqu'à 120 % de l'énergie de rotation, ce qui est impossible.
-  - Maintenant : 4 à 18 % pour le SPAD, sous la ligne portante (28 à 37 %) et sous l'attente du Report 747 (environ la moitié).
+  - Maintenant : 4 à 18 % pour le SPAD, sous la ligne portante (28 à 37 %) et sous l'attente du Report 747 (environ la moitié). Depuis que la rotation derrière les ailes suit le moment cinétique, l'empennage en reprend moins : −1 à 7 % (la montée à −1 %, les ailes y perdant de la puissance par la traînée de profil).
 - **Froude sous traction négative** : l'air ralentit derrière une hélice qui freine, sans dépasser −0,4 V.
 - **Campagne du SPAD**, cibles A et B de S46 :
 
@@ -377,7 +380,8 @@ Plan `docs/plans/m1-souffle-ailes.md`, validé par le joueur ; détail des étap
   - **Biais déclaré** avant le code : la correction allait dans le sens des cibles. Ce n'est pas une validation, puisque les conditions de S46 déplacent les temps de −22 à +7 % (§ 8).
   - Contre le rapport britannique n° 96 (§ 8), le modèle passe d'environ 4 à 6 % trop rapide à un écart d'ordre 0 à 2 %.
 - **Restent** (hors du plan) :
-  - rotation derrière les ailes par le moment cinétique ;
+  - ~~rotation derrière les ailes par le moment cinétique~~ (fait le 2026-10-25) ; son retard des ailes à l'empennage ;
+  - réponse de l'aile au tourbillon en charge légère (aucune mesure trouvée) ;
   - η sur l'empennage à basse vitesse (M2) ;
   - direction du souffle ;
   - terme de toile appliqué bande par bande à la charge de rotation ;

@@ -23,7 +23,7 @@
 
 use glam::DVec3;
 
-use super::surface::{ControlDeflections, LiftingSurface, Strip, StripFlow};
+use super::surface::{ControlDeflections, LiftingSurface, Strip, StripFlow, SurfaceLoads};
 use crate::rigid_body::Wrench;
 
 /// Induction of one plane on another: induced angle on `on` = `factor` × C_L of `from`.
@@ -63,6 +63,9 @@ pub struct SystemLoads {
     pub wrench: Wrench,
     /// Force and moment of each surface about the centre of gravity, body axes.
     pub surface_wrenches: Vec<Wrench>,
+    /// The part of each surface's wrench that the swirl's incidence adds: what it takes
+    /// from the slipstream's rotation ([`super::surface::SurfaceLoads::swirl`]).
+    pub swirl_wrenches: Vec<Wrench>,
     /// Lift coefficient of each surface (strip dynamic pressure × area weighted).
     pub lift_coefficients: Vec<f64>,
     /// Induced angle each surface receives from the others, rad.
@@ -111,6 +114,29 @@ impl LiftingSystem {
         controls: &ControlDeflections,
         local_flow: impl Fn(usize, &Strip) -> F,
     ) -> SystemLoads {
+        self.loads_of(
+            |_| true,
+            air_velocity,
+            angular_velocity,
+            density,
+            controls,
+            local_flow,
+        )
+    }
+
+    /// Same as [`Self::loads`] for the surfaces `i` with `include(i)` only, the others
+    /// having no loads, no lift and no induced angle: the wings before the tail, which flies
+    /// in the slipstream they leave. A plane left out induces nothing on the others, so
+    /// each pair of [`MutualInduction`] should be included or left out together.
+    pub fn loads_of<F: Into<StripFlow>>(
+        &self,
+        include: impl Fn(usize) -> bool,
+        air_velocity: DVec3,
+        angular_velocity: DVec3,
+        density: f64,
+        controls: &ControlDeflections,
+        local_flow: impl Fn(usize, &Strip) -> F,
+    ) -> SystemLoads {
         let n = self.surfaces.len();
         let surface_loads = |i: usize, mutual: f64| {
             self.surfaces[i].loads_with_mutual(
@@ -132,13 +158,13 @@ impl LiftingSystem {
 
         let mut cl = vec![0.0; n];
         let coupled: Vec<usize> = (0..n)
-            .filter(|&i| self.mutual.iter().any(|m| m.on == i || m.from == i))
+            .filter(|&i| include(i) && self.mutual.iter().any(|m| m.on == i || m.from == i))
             .collect();
         for _ in 0..MUTUAL_MAX_ITERATIONS {
             let angles = mutual_angles(&cl);
             let mut change: f64 = 0.0;
             for &i in &coupled {
-                let new = surface_loads(i, angles[i]).1;
+                let new = surface_loads(i, angles[i]).lift_coefficient;
                 change = change.max((new - cl[i]).abs());
                 cl[i] = new;
             }
@@ -147,20 +173,45 @@ impl LiftingSystem {
             }
         }
 
-        let angles = mutual_angles(&cl);
+        let mut angles = mutual_angles(&cl);
         let mut wrench = Wrench::default();
         let mut surface_wrenches = Vec::with_capacity(n);
-        for (i, &angle) in angles.iter().enumerate() {
-            let (w, c) = surface_loads(i, angle);
-            wrench += w;
-            surface_wrenches.push(w);
-            cl[i] = c;
+        let mut swirl_wrenches = Vec::with_capacity(n);
+        for (i, angle) in angles.iter_mut().enumerate() {
+            let loads = if include(i) {
+                surface_loads(i, *angle)
+            } else {
+                *angle = 0.0;
+                SurfaceLoads::default()
+            };
+            wrench += loads.wrench;
+            surface_wrenches.push(loads.wrench);
+            swirl_wrenches.push(loads.swirl);
+            cl[i] = loads.lift_coefficient;
         }
         SystemLoads {
             wrench,
             surface_wrenches,
+            swirl_wrenches,
             lift_coefficients: cl,
             mutual_angles: angles,
+        }
+    }
+}
+
+impl SystemLoads {
+    /// The loads of two disjoint sets of surfaces of the same system, as
+    /// [`LiftingSystem::loads_of`] gives them, put together.
+    pub fn with(self, other: Self) -> Self {
+        let add = |a: Vec<f64>, b: Vec<f64>| a.iter().zip(&b).map(|(x, y)| x + y).collect();
+        let add_wrenches =
+            |a: Vec<Wrench>, b: Vec<Wrench>| a.iter().zip(&b).map(|(x, y)| *x + *y).collect();
+        Self {
+            wrench: self.wrench + other.wrench,
+            surface_wrenches: add_wrenches(self.surface_wrenches, other.surface_wrenches),
+            swirl_wrenches: add_wrenches(self.swirl_wrenches, other.swirl_wrenches),
+            lift_coefficients: add(self.lift_coefficients, other.lift_coefficients),
+            mutual_angles: add(self.mutual_angles, other.mutual_angles),
         }
     }
 }

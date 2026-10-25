@@ -654,6 +654,13 @@ fn swirl_report(aircraft: &Aircraft) -> Result<bool, String> {
             b.rotational_power / 1e3,
             100.0 * b.recovered_power / b.rotational_power
         );
+        let c = trim.commands(aircraft);
+        println!(
+            "    à l'équilibre : ailerons {:+.3}, direction {:+.3} de la course, dérapage {:+.2}°",
+            c.roll,
+            c.yaw,
+            trim.flight.beta.to_degrees()
+        );
         for (surface, roll, power) in &b.surfaces {
             println!(
                 "    {surface:<12} roulis {:+.2} Q, puissance {:+.2} kW",
@@ -662,8 +669,8 @@ fn swirl_report(aircraft: &Aircraft) -> Result<bool, String> {
             );
         }
         // Angular momentum: what the wings take back is no longer in the slipstream behind
-        // them (aerodynamicist review of 2026-10-25).
-        if let Some(d) = aircraft.downwash() {
+        // them (plan docs/plans/m1-rotation-derriere-ailes.md).
+        if let (Some(d), Some(left)) = (aircraft.downwash(), b.swirl_left) {
             let names: Vec<&str> = d
                 .wings
                 .iter()
@@ -676,9 +683,7 @@ fn swirl_report(aircraft: &Aircraft) -> Result<bool, String> {
                 .map(|s| s.1)
                 .sum();
             println!(
-                "    rotation laissée derrière les ailes : {:.2} par la donnée, {:.2} par le moment cinétique (1 − {:.2} Q repris par les ailes){}",
-                d.swirl_left,
-                (1.0 - wings / b.torque).clamp(0.0, 1.0),
+                "    rotation laissée derrière les ailes : {left:.2} (contrôle par différence : 1 − {:.2} Q repris par les ailes){}",
                 wings / b.torque,
                 if total > b.torque {
                     " ; **la cellule reprend plus que le couple**"

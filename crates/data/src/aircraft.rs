@@ -157,9 +157,6 @@ pub struct DownwashSpec {
     /// dε / dC_L of the wings, rad.
     pub factor: f64,
     pub tail_arm: Length,
-    /// Fraction of the slipstream's swirl left behind the wings, 0 to 1 (the wings
-    /// straighten the rest; about one half for a monoplane, NACA Report 747 and TN 1146).
-    pub swirl_left: f64,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -630,7 +627,6 @@ impl AircraftData {
                     .collect::<Result<_, _>>()?,
                 factor: d.factor,
                 tail_arm: d.tail_arm.si(),
-                swirl_left: d.swirl_left,
             }),
             None => None,
         };
