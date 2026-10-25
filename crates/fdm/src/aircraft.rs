@@ -117,7 +117,8 @@ pub struct Diagnostics {
     /// Downwash angle at the tail (lagged state), rad.
     pub downwash: f64,
     /// Fraction of the slipstream's swirl left behind the wings (with a propeller ahead
-    /// of wings).
+    /// of wings). Undefined when the propeller's torque, hence the swirl, vanishes: it
+    /// reads 1 there, which changes no load (the swirl the tail feels is K times it).
     pub swirl_left: Option<f64>,
 }
 
