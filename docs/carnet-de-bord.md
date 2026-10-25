@@ -1527,3 +1527,24 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Bulletins américains de 1918 (Joyner Library).
   - Fonds de plans Blériot-Spad du Musée de l'Air.
 - **Q** Le joueur : « ok pour l'ADR 0006 ». **D** ADR 0006 (repères et conversions) **accepté** ; statut mis à jour dans le fichier et dans l'index.
+
+### Demandes aux archives ; plan du modèle 3D provisoire
+
+- **Q** Le joueur : « je veux un fichier de consigne des demandes à faire, notamment vers les organismes cités (AWM, fac-similé des *Technical Notes* de l'Air Board, bulletins américains de 1918, fonds Blériot-Spad du Musée de l'Air) ; on continue sur le modèle 3D provisoire ».
+- **A** `docs/recherche/demandes.md` :
+  - les quatre demandes citées (D1 à D4), plus trois tirées des fiches : SHD fonds Dorand (D5), TNA AIR 1/1196 (D6), Cranfield R&M 586 (D7) ;
+  - pour chacune : référence, ce qu'on cherche et pourquoi, démarche, message proposé ;
+  - un tableau de suivi et un journal.
+- **D** Règles du fichier :
+  - le joueur envoie les demandes, Claude les prépare et les suit ;
+  - coordonnées et tarifs à vérifier avant l'envoi ;
+  - les reproductions reçues restent hors du dépôt (droits) : seuls les faits et les références vont dans les fiches.
+- **A** Plan `docs/plans/modele-3d-provisoire.md` :
+  - boîtes et plaques générées par un outil Rust (`tools/mockup`) à partir d'`aircraft.ron` et d'un nouveau `maquette.ron` ;
+  - contrôle `tools/asset_check` (nœuds, charnières, hélice, dimensions, licence ; un modèle en miroir doit échouer) ;
+  - scène de capture `maquette-spad7` qui vérifie l'ADR 0006 à l'œil.
+- **D** Quatre décisions demandées au joueur avant le code :
+  - la dépendance `gltf` / `gltf-json` 1.4.1 (déjà dans `Cargo.lock` par Bevy, MIT ou Apache-2.0) ;
+  - le champ `dimensions` d'`aircraft.ron` et le fichier `maquette.ron` ;
+  - l'outil `tools/mockup` et son ajout à l'arborescence de `CLAUDE.md` ;
+  - le plan lui-même.
