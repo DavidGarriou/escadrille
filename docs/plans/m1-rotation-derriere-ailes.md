@@ -188,6 +188,7 @@ Verdict : à corriger. Le code est juste : aucune erreur de signe, aucun double 
 - **Bornes** : exposer le rapport non borné dans les diagnostics, compter quand la borne joue dans les scénarios de robustesse, envisager une saturation C¹ pour le trim et la linéarisation.
 - **Redressement uniforme sur le rayon** (E:) : la contre-rotation des ailes est concentrée près de l'axe et aux bords du jet ; le plan fixe, 0,32 m au-dessus de l'axe, en voit sans doute plus que la moyenne.
 - **Oubliés du bilan** : mâts, câbles et fuselage reprennent aussi de la rotation, sans entrer dans M.
+- **Piste de l'historien (onzième passe de `spad7.md`)** : une mesure en vol de la rotation du souffle derrière le F.E.9 (S94, R&M 408). L'hélice y est propulsive, donc le souffle ne passe pas sur les ailes : à prendre seulement comme borne « sans redressement ».
 - **Questions pour l'historien** : les ailes du S.VII étaient-elles calées différemment à gauche et à droite pour compenser le couple ? Ce serait une mesure indirecte du couple en croisière.
 - **Essai manette en main** (M2) : montée plein gaz vers 115 km/h, palonnier lâché ; l'avion doit dériver lentement à gauche. À consigner dans `docs/gdd/retours.md`.
 - **Réponse de l'aile au tourbillon en charge légère** (0,9 Q et plus) : aucune mesure trouvée ; seule la ligne portante à matrice d'influence, ou une source nouvelle, pourrait la trancher.

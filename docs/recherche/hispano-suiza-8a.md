@@ -276,7 +276,7 @@ Bipale en bois à pas fixe, d'après les fiches de collectionneurs (H8, H11 [RÉ
 
 ### 7.3 Sens de rotation (vu du siège du pilote)
 
-**Retenu : sens horaire vu du pilote, confiance C.** Ce n'est pas une mesure ; c'est une déduction tirée de quatre sources non primaires qui concordent :
+**Retenu : sens horaire vu du pilote, confiance B** (relevée de C le 2026-10-25, voir la fin de cette section). Ce n'est pas une mesure. Au départ, c'était une déduction tirée de quatre sources non primaires qui concordent :
 1. Le Hispano 8B à **réducteur** fait tourner l'hélice dans le sens horaire vu de **face**, ce qu'on appelle une hélice tractive « à gauche » (*left-hand tractor*) (H1, miroir fandom [RÉSUMÉ]).
 2. L'hélice du SPAD XIII (8Be à réducteur) est « à gauche » et **tourne en sens inverse** de celle du S.VII à entraînement direct (H12 [RÉSUMÉ]).
 3. Sur le S.E.5a, le Hispano à réducteur tourne dans le sens **antihoraire vu du pilote**, et le Viper à entraînement direct dans le sens **horaire vu du pilote** (H13 [RÉSUMÉ], revues de maquettes concordantes ; la formulation de Wikipedia diverge, sans doute par confusion du point de vue).
@@ -300,6 +300,18 @@ Bipale en bois à pas fixe, d'après les fiches de collectionneurs (H8, H11 [RÉ
 - *Air Service Information Circular*, vol. 1, n° 5 (14 février 1920) : instructions de calage de l'allumage des Hispano-Suiza modèles E et I.
 
 **Sixième passe (2026-10-23) : un indice de plus, sans changement de confiance.** Une hélice britannique dessinée pour le S.VII porte au moyeu « 140 HP Hispano Suiza », « R H Tractor S7 », « D 2450 », « P 2132 » et, sur l'autre face, le numéro de plan de l'Air Board « AB 723 » (woodenpropeller.com et deux fiches de vente Bonhams, H26 [RÉSUMÉ]). Comme pour les hélices du VE-7 (point 5), le marquage « right hand » n'est défini dans aucun document lu. L'indice concorde avec les points 1 à 5 ; la confiance reste **C**.
+
+**Onzième passe de `spad7.md` (2026-10-25, § 6.5.3) : la convention « right hand » est éclaircie, confiance relevée de C à B.** Deux séries de textes britanniques d'époque, lus en OCR, donnent le sens de « right hand » :
+- *Flight* (S91 de `spad7.md`, 19 juillet 1917) : un moteur « right-hand » fait pencher l'avion à gauche par réaction, donc tourne dans le sens horaire vu du pilote ;
+- les rapports britanniques sur des moteurs allemands capturés (S93 de `spad7.md`) notent « right hand tractor » pour des hélices à prise directe, et « left hand tractor » pour une hélice démultipliée qui tourne dans le sens horaire « facing propeller ».
+
+Le marquage « R H Tractor S7 » de l'hélice britannique AB 723, dessinée pour le S.VII (H26), désigne donc une hélice horaire vue du pilote.
+
+Réserves :
+- *Flight* écrit le 29 mars 1917 qu'aucune définition n'était encore arrêtée : l'usage n'était pas normalisé début 1917 ;
+- le marquage d'AB 723 n'est connu qu'en résumé.
+
+Pour passer en A : une photographie lisible d'une hélice de S.VII montée, ou une notice du S.VII.
 
 **Effets attendus en vol** (C, physique élémentaire, à faire émerger du modèle et non à scripter) : à pleine puissance et à basse vitesse, tendance à partir à gauche, contrée au pied droit ; réaction de couple en roulis vers la gauche.
 

@@ -1506,3 +1506,23 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Index des ADR et règle d'orientation de `pipeline-assets` mis à jour. `just check` passe, ainsi que `just test` (250 tests).
 - **⚠** Un de mes tests attendait −3,0012 au lieu de −2,9988 (signe d'un décalage vers l'est) : erreur du test, corrigée ; le code était juste.
 - **D** En attente : validation de l'ADR par le joueur. Aucune règle de `CLAUDE.md` ne change.
+
+### Onzième passe de l'historien : couple de l'hélice
+
+- **R** Rapport de l'historien (`spad7.md` § 6.5, sources S89 à S100) :
+  - **réglage dissymétrique de la cellule du S.VII** (calage gauche-droite, haubans, dérive) : rien trouvé, pour le S.VII ni pour la famille ; indice faible (C), question non tranchée, cellule symétrique par défaut (E:) ;
+  - **pratique d'époque** sur d'autres avions (Albatros D.I calé 4°/2° aux saumons, dérive décalée du Fokker D VII, manuel britannique de 1919 jugeant la correction « en général plus nécessaire ») : indices contraires, rien à transposer. Le résultat du modèle en croisière n'a donc **aucune cible historique** ;
+  - **témoignages** : aucun témoignage d'époque sur le couple d'un S.VII, en cinq langues. T8 est précisé (le XIII part à droite à l'ouverture des gaz), T9 complété (Tallman, sans difficulté de direction, en résumé) ;
+  - **sens de rotation** : la convention britannique de 1917-1918 (« right hand » = horaire vu du pilote, *Flight* et rapports sur des moteurs capturés) donne son sens au marquage « R H Tractor S7 » de l'hélice AB 723. Proposition : confiance relevée de C à B.
+- **⚠** Mon commit `281f6de` (ADR 0006) a emporté par `git add -A` la onzième passe de l'historien, écrite pendant ce temps. Le contenu est complet et poussé, mais le message du commit ne la mentionne pas ; cette entrée en tient lieu. **D** Désormais, ne commiter que les fichiers du travail en cours quand un subagent écrit en parallèle.
+- **A** Proposition reportée :
+  - dans `hispano-suiza-8a.md` § 7.3 : sens horaire vu du pilote, confiance B ;
+  - dans `aircraft.ron` : commentaire de `rotation: Clockwise` (S:, confiance B).
+
+  La valeur ne change pas.
+- **A** Piste de l'historien pour l'aérodynamicien, ajoutée aux suites du plan : mesure de la rotation du souffle derrière le F.E.9 (R&M 408). L'hélice y est propulsive : borne « sans redressement » seulement.
+- **D** Documents à demander, ce qui revient au joueur : les sites sont inaccessibles depuis le conteneur, et plusieurs documents ne sont pas numérisés.
+  - Australian War Memorial : *Technical notes: SPAD biplane Type S.VII (150 h.p.)*, 1918, reproduction à demander. C'est la source la plus probable d'une épure de réglage.
+  - Fac-similé des *Technical Notes* de l'Air Board (Harris, 1999).
+  - Bulletins américains de 1918 (Joyner Library).
+  - Fonds de plans Blériot-Spad du Musée de l'Air.
