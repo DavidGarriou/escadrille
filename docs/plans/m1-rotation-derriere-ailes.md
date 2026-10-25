@@ -164,7 +164,15 @@ Verdict : à corriger. Le code est juste : aucune erreur de signe, aucun double 
 - **Marge statique**, désormais par sécante (Important 1) : 3,8 / 5,0 / 5,1 / 4,7 / 4,0 / 3,2 / 1,2 % à 140 / 145 / 150 / 153 / 156 / 160 / 170 km/h, 5,5 % au trim du rapport (153,5 km/h). Elle baisse avec la vitesse et reste sensible aux tables (C_m de l'aile surtout). On ne cite pas un chiffre seul.
 - **Départ au décrochage moteur réduit**, sensibilité (§ 9 de `spad7-calculs.md`), avec une copie du binaire munie de variantes temporaires, jamais commitées :
 
-(en cours de calcul avec les bandes convergées)
+| Variante | Départ (à 3 s) |
+|---|---|
+| Modèle | à gauche, −55°, nez −17° |
+| Contre-rotation permise (borne basse −1) | à gauche, −55° |
+| Chute sur une demi-corde / sur deux cordes | à gauche, −55° / −55° |
+| Fraction figée à 0,3 / 0,7 | à gauche, −53° / −54° |
+| Fraction figée à 1 (aucun redressement) | à gauche, −87°, nez −25° |
+
+  Le côté ne dépend plus d'aucune variante. Avec 8 bandes, l'absence de redressement le faisait partir à droite (+78°) : ce basculement était lui aussi un effet de la discrétisation.
 
 - **Robustesse** (boucle ouverte, sensible à la rotation sur l'empennage) :
   - vol sur le dos : 161 km/h et 99 m perdus après 10 s, contre 176 et 136 ;

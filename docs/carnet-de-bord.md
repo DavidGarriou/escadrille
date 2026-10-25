@@ -1443,3 +1443,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur : « Continue ». **A** Corrections terminées, poussées (`165b57b`, `6dcfd0b`).
 - **A** Sensibilité du départ au décrochage relancée avec les bandes convergées. Premier résultat : contre-rotation permise, départ à gauche, 55°. Les autres variantes sont en cours.
 - **R** Sensibilité, bandes convergées : chute de la rotation sur une demi-corde, départ à gauche, 55°.
+- **R** Sensibilité complète, bandes convergées :
+  - modèle et contre-rotation permise : à gauche, 55° ;
+  - chute sur une demi-corde ou deux cordes : à gauche, 55° ;
+  - fraction figée à 0,3 / 0,7 : à gauche, 53° / 54° ;
+  - fraction figée à 1 (aucun redressement) : **à gauche aussi**, 87°.
+- **⚠** Avec 8 bandes, ce dernier cas partait à droite : la sensibilité précédente était faussée par la discrétisation.
+- **D** § 9 : le côté du départ ne dépend plus de la rotation derrière les ailes. Il reste « probable », confiance C, faute de témoignage, avec la réserve de la direction du souffle.
