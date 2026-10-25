@@ -1327,4 +1327,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - départ au décrochage à gauche (−54°).
 
   Toutes les cibles passent : sens du biais déclaré, pas une validation.
+- **A** Revue de l'aérodynamicien reprise sur les étapes 1 à 4 et l'addendum (en cours).
+- **R** Sensibilité du côté du départ au décrochage moteur réduit, addendum compris :
+  - `swirl_left` 0,3 : à gauche, 53° ;
+  - 0,5 : à gauche, 54° ;
+  - 0,7 : à gauche, 61° ;
+  - 1,0 (aucun redressement) : à droite, 42°.
+
+  Même conclusion qu'avant l'addendum : le départ se fait à gauche dans toute la plage des sources.
 
