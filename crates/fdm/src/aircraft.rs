@@ -20,7 +20,7 @@ use glam::DVec3;
 
 use crate::aero::body::SlenderBody;
 use crate::aero::drag::DragItem;
-use crate::aero::surface::ControlDeflections;
+use crate::aero::surface::{ControlDeflections, StripFlow};
 use crate::aero::system::{LiftingSystem, SystemLoads};
 use crate::environment::Environment;
 use crate::propulsion::engine::{EngineTorques, InlineEngine};
@@ -366,14 +366,13 @@ impl Aircraft {
         let surfaces = self.lifting.surfaces();
         self.lifting
             .loads(air_velocity, omega, density, deflections, |i, strip| {
-                let blown = slipstream.map_or(DVec3::ZERO, |s| {
+                let mut flow = slipstream.map_or(StripFlow::default(), |s| {
                     s.lifting_flow(strip.position, strip.chord, surfaces[i].section_slope())
                 });
                 if is_tail(i) {
-                    blown + downwash_velocity
-                } else {
-                    blown
+                    flow.velocity += downwash_velocity;
                 }
+                flow
             })
     }
 

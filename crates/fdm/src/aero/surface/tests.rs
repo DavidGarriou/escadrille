@@ -645,3 +645,64 @@ fn finite_in_any_flight_condition() {
         }
     }
 }
+
+#[test]
+fn the_force_follows_the_tilted_flow_and_the_lift_the_whole_incidence() {
+    // A strip in a flow inclined by 6° whose inclination comes entirely from an untilted
+    // part (a swirl the strip itself straightens): the lift is that of 6°, but it stands
+    // perpendicular to the free stream, and the drag along it.
+    let s = tail_strip(section(0.02, 0.0), DVec3::NEG_Z, None);
+    let strip = &s.strips[0];
+    let v = flight(6f64.to_radians());
+    let untilted = DVec3::new(0.0, 0.0, -v.z);
+    let (plain, state) = s.strip_loads(strip, v, RHO, &NO_CONTROLS, 0.0);
+    let (tilted, tilted_state) = s.tilted_strip_loads(strip, v, untilted, RHO, &NO_CONTROLS, 0.0);
+    assert_eq!(state, tilted_state);
+    let q = state.dynamic_pressure * strip.area;
+    let (cl, cd) = (state.coefficients.cl, state.coefficients.cd);
+    assert!(cl > 0.5);
+    assert!((tilted.force.dot(DVec3::NEG_Z) - q * cl).abs() < 1e-9 * q);
+    assert!((tilted.force.dot(DVec3::NEG_X) - q * cd).abs() < 1e-9 * q);
+    // Without the untilted part: lift and drag of the inclined flow, the same magnitudes.
+    let (lift, drag) = lift_drag(plain.force, v);
+    assert!((lift - q * cl).abs() < 1e-9 * q && (drag - q * cd).abs() < 1e-9 * q);
+    assert!((plain.force.length() - tilted.force.length()).abs() < 1e-9 * q);
+    // A local flow given as a vector has no untilted part.
+    let as_vector = s.loads(v, DVec3::ZERO, RHO, &NO_CONTROLS, |_| DVec3::ZERO);
+    let as_flow = s.loads(v, DVec3::ZERO, RHO, &NO_CONTROLS, |_| StripFlow::default());
+    assert_eq!(as_vector, as_flow);
+}
+
+#[test]
+fn a_strip_straightens_the_swirl_its_own_induced_angle_leaves() {
+    // The force follows the fraction τ of the swirl's inclination in all: the strip's
+    // induced angle already turns it back by k a₀ / (1 + k a₀), the rest is untilted.
+    let induced = InducedModel::new(6.0, 0.9).unwrap();
+    let s = tail_strip(section(0.02, 0.0), DVec3::NEG_Z, Some(induced));
+    let strip = &s.strips[0];
+    let v = flight(0.03);
+    let swirl = DVec3::new(0.0, 0.0, 3.0);
+    let ka = induced.factor() * s.section_slope();
+    for tau in [0.0, 0.15, 0.6, 1.0] {
+        let flow = StripFlow {
+            velocity: swirl,
+            swirl,
+            swirl_tilt: tau,
+        };
+        let loads = s.loads(v, DVec3::ZERO, RHO, &NO_CONTROLS, |_| flow);
+        let untilted = swirl * (1.0 - tau - ka / (1.0 + ka)).max(0.0);
+        let (expected, _) =
+            s.tilted_strip_loads(strip, v - swirl, untilted, RHO, &NO_CONTROLS, 0.0);
+        assert_eq!(loads, expected, "{tau}");
+    }
+    // τ = 1: strip theory.
+    let full = StripFlow {
+        velocity: swirl,
+        swirl,
+        swirl_tilt: 1.0,
+    };
+    assert_eq!(
+        s.loads(v, DVec3::ZERO, RHO, &NO_CONTROLS, |_| full),
+        s.loads(v, DVec3::ZERO, RHO, &NO_CONTROLS, |_| swirl)
+    );
+}

@@ -1310,3 +1310,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   Dans la plage des sources (« environ la moitié »), le départ se fait à gauche ; il dépend surtout de la rotation qui atteint l'empennage. Ce n'est pas encore une conclusion : l'addendum et la revue peuvent la déplacer. § 9 à reprendre à l'étape 6.
 - **D** En attente du joueur : addendum sur l'inclinaison de la portance due à la rotation, option (b) recommandée.
 
+## 2026-10-25 — Session 4 (suite)
+
+### Addendum (b) : inclinaison de la portance due à la rotation
+
+- **⚠** La revue de l'aérodynamicien (étapes 1 à 4) s'est arrêtée sur la limite de session de l'API. Sa dernière note demandait si le Report 747 dit bien « la moitié de la rotation » : oui, « can be expected to remove about half the race rotation ». La revue reste à reprendre.
+- **Q** Le joueur : « Partons sur l'option b ». **D** Addendum validé.
+- **⚠** En recalculant τ : mon « 0,4 extrapolé pour le SPAD » confondait le μ de la partie I de R&M 2368 et le a = 8R/(a₀c) de la partie II (a = μ/π). Pour le SPAD, a ≈ 1,4, dans le tableau : τ ≈ 0,15. Le plan est corrigé.
+- **A** Mise en œuvre : les bandes reçoivent la part due à la rotation et la fraction τ de son inclinaison que la force suit (`StripFlow`, `swirl_tilt`). L'incidence et la portance, donc le moment de roulis, sont inchangées.
+- **⚠** Premier essai : la rotation coûtait de la puissance (−5 à −12 % de son énergie pour le SPAD), contre +28 à 37 % en ligne portante. Double compte : nos bandes inclinent déjà leur force de leur propre angle induit, k a₀/(1 + k a₀) de l'incidence. **D** La part redressée explicitement devient 1 − τ − k a₀/(1 + k a₀).
+- **R** Puissance reprise au tourbillon : SPAD 21 / 6 / 5 % (Vmax, montée, décrochage plein gaz), biplan d'essai 13 à 25 %. C'est sous la ligne portante, à cause de la traînée de profil, et sous le Report 747 (environ la moitié) : écart rapporté, non réglé. L'invariant d'énergie redevient un test (au plus la moitié).
+- **R** Campagne du SPAD :
+  - vitesses −0,2 / +4,1 / +2,8 % ;
+  - montées −1,8 / −0,2 / −3,6 % ;
+  - plafond +5,1 % ;
+  - départ au décrochage à gauche (−54°).
+
+  Toutes les cibles passent : sens du biais déclaré, pas une validation.
+

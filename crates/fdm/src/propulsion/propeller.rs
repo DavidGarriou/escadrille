@@ -34,7 +34,8 @@
 //!   in pitch and yaw.
 //!
 //! Slipstream (momentum theory): axial speed and swirl. Lifting strips feel less of it than
-//! strip theory says, by the jet-width factor of R&M 2368 ([`Slipstream::lifting_flow`]).
+//! strip theory says, by the jet-width factor of R&M 2368, and their force follows only
+//! part of the swirl's inclination ([`Slipstream::lifting_flow`]).
 //! The swirl comes from the torque:
 //! r v_θ is conserved along a streamline of an inviscid axisymmetric flow, so it is zero
 //! ahead of the disc and K = Q / ṁ just behind it (blended over ±5 % of the radius, C¹),
@@ -49,6 +50,7 @@ use std::f64::consts::{FRAC_PI_2, PI};
 use glam::DVec3;
 
 use crate::aero::polar::wrap_angle;
+use crate::aero::surface::StripFlow;
 use crate::rigid_body::Wrench;
 
 /// The advance angle and the reference speed use the blade speed at 0.7 R: 0.7 π n D.
@@ -516,7 +518,8 @@ impl Slipstream {
     }
 
     /// The slipstream as a lifting strip responds to it, at its quarter-chord `point`, for
-    /// its `chord` (m) and section lift slope `section_slope` (per radian).
+    /// its `chord` (m) and section lift slope `section_slope` (per radian): the velocity it
+    /// adds, and the part of the swirl whose inclination the force does not follow.
     ///
     /// A wing crossing a jet of finite width gains less lift than strip theory says: the
     /// jet's edge sheds vortices whose images in the jet reduce the extra lift. Squire and
@@ -530,9 +533,16 @@ impl Slipstream {
     ///
     /// Applying the factor of a jet without rotation to the swirl is an assumption (E:),
     /// checked against the powered model of NACA TN 1146 (`fdm_lab souffle`).
-    pub fn lifting_flow(&self, point: DVec3, chord: f64, section_slope: f64) -> DVec3 {
+    ///
+    /// The swirl changes the strip's incidence, hence its lift and the wing's rolling moment
+    /// (lifting-line theory keeps strip theory's moment, R&M 2368 part II), but the wing's
+    /// own induced flow in the jet turns the force back: it follows only the fraction τ of
+    /// the swirl's inclination ([`swirl_tilt`]), so that the thrust the wing takes back from
+    /// the swirl is that of lifting-line theory, not strip theory's, which can exceed the
+    /// swirl's energy.
+    pub fn lifting_flow(&self, point: DVec3, chord: f64, section_slope: f64) -> StripFlow {
         let Some(p) = self.parts(point) else {
-            return DVec3::ZERO;
+            return StripFlow::default();
         };
         let (free, jet) = (self.free_stream, self.free_stream + p.axial);
         let narrowness = section_slope * chord / (8.0 * PI * self.tube_radius(p.distance));
@@ -545,7 +555,11 @@ impl Slipstream {
         } else {
             DVec3::ZERO
         };
-        -self.axis * (effective - free) + tangential
+        StripFlow {
+            velocity: -self.axis * (effective - free) + tangential,
+            swirl: tangential,
+            swirl_tilt: swirl_tilt(1.0 / (PI * narrowness)),
+        }
     }
 }
 
@@ -575,6 +589,43 @@ const JET_FACTORS: [[f64; 4]; 4] = [
     [1.0, 0.8863, 0.7861, 0.5685],
     [1.0, 1.0, 1.0, 1.0],
 ];
+
+/// Width a = 8R / (a₀ c) of the rows of [`SWIRL_TILTS`] (R&M 2368 part II, with a₀ the
+/// section lift slope: 2R/c = 0.785 to 3.14 for a₀ = 2π), and 0.
+const SWIRL_WIDTHS: [f64; 5] = [0.0, 0.5, 1.0, 1.5, 2.0];
+
+/// Fraction τ of the swirl's inclination the lift follows: thrust taken back from a rigid
+/// rotation by an infinite wing in lifting-line theory, T V / P₁ = 0.280, 0.350, 0.369 and
+/// 0.367 (R&M 2368 part II, table 1; S:), over strip theory's, 32 / (3π a) (C:, the lift
+/// of every strip inclined by the whole swirl angle, with no induced angle), and 0 for
+/// a = 0 (E:). Lifting-line theory holds every induced effect: a strip that already turns
+/// its force back by its own induced angle leaves less to straighten
+/// ([`crate::aero::surface::LiftingSurface::tilted_strip_loads`]).
+const SWIRL_TILTS: [f64; 5] = [
+    0.0,
+    0.280 / (32.0 / (3.0 * PI * 0.5)),
+    0.350 / (32.0 / (3.0 * PI * 1.0)),
+    0.369 / (32.0 / (3.0 * PI * 1.5)),
+    0.367 / (32.0 / (3.0 * PI * 2.0)),
+];
+
+/// Fraction τ of the swirl's inclination that the force of a strip follows, for the width
+/// a = 8R / (a₀ c) of the jet against the chord (R&M 2368 part II; see [`SWIRL_TILTS`]).
+/// Linear in a up to a = 2; beyond, linear in 1/a up to τ = 1 for a jet infinitely wider
+/// than the chord, where strip theory holds (E:: the table stops at a = 2).
+pub fn swirl_tilt(width: f64) -> f64 {
+    if width.is_nan() || width == f64::INFINITY {
+        return 1.0;
+    }
+    let a = width.max(0.0);
+    let last = SWIRL_TILTS[4];
+    if a > 2.0 {
+        return 1.0 - (1.0 - last) * 2.0 / a;
+    }
+    let i = SWIRL_WIDTHS.partition_point(|&w| w <= a).clamp(1, 4);
+    let t = (a - SWIRL_WIDTHS[i - 1]) / (SWIRL_WIDTHS[i] - SWIRL_WIDTHS[i - 1]);
+    SWIRL_TILTS[i - 1] + t * (SWIRL_TILTS[i] - SWIRL_TILTS[i - 1])
+}
 
 /// Jet-width factor η of R&M 2368 (Squire and Chester, 1945, part I, table 2): extra lift
 /// of a wing of infinite span crossing a circular jet, over the extra lift of strip

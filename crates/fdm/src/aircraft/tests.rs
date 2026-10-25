@@ -561,8 +561,12 @@ fn total_loads_are_the_sum_of_the_components() {
     let lifting = a
         .lifting
         .loads(v, w, rho, &ControlDeflections::default(), |i, strip| {
-            let felt = slip.lifting_flow(strip.position, strip.chord, surfaces[i].section_slope());
-            if i == 2 { felt + downwash } else { felt }
+            let mut felt =
+                slip.lifting_flow(strip.position, strip.chord, surfaces[i].section_slope());
+            if i == 2 {
+                felt.velocity += downwash;
+            }
+            felt
         });
     let mut expected = lifting.wrench + prop.wrench;
     for item in &a.drag {

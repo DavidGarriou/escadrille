@@ -233,10 +233,45 @@ mod tests {
         }
     }
 
+    /// The surfaces never take back more power from the swirl than it carries (plan
+    /// docs/plans/m1-souffle-ailes.md: strip theory broke this bound before the lift
+    /// followed only part of the swirl's inclination).
+    #[test]
+    fn the_airframe_takes_back_less_than_the_swirl_energy() {
+        use escadrille_data::aircraft::{Loading, load_aircraft};
+
+        use crate::performance::{best_climb, glide, max_level_speed, stall_speed_at};
+        use crate::trim::tests::biplane;
+
+        let game = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let spad = load_aircraft(&game, "spad7")
+            .unwrap()
+            .build(&Loading {
+                fuel_fraction: 0.74,
+            })
+            .unwrap()
+            .aircraft;
+        for aircraft in [spad, biplane()] {
+            let a = &aircraft;
+            let flights = [
+                max_level_speed(a, &STILL_AIR, 2_000.0).unwrap(),
+                best_climb(a, &STILL_AIR, 0.0).unwrap().trim,
+                glide(a, &STILL_AIR, 1_000.0, 35.0).unwrap(),
+                stall_speed_at(a, &STILL_AIR, 1_000.0, 1.0).unwrap().trim,
+            ];
+            for trim in &flights {
+                let b = swirl_balance(a, &STILL_AIR, trim).unwrap();
+                assert!(
+                    b.recovered_power <= 0.5 * b.rotational_power + 1.0,
+                    "{:?}: {b:?}",
+                    trim.flight
+                );
+            }
+        }
+    }
+
     /// The balance adds up, and on the SPAD climbing at full throttle the swirl takes back
-    /// part of the torque and gives thrust. Whether that thrust stays below the swirl's
-    /// energy is not asserted: strip theory breaks this bound on the synthetic biplane
-    /// (plan docs/plans/m1-souffle-ailes.md, step 5).
+    /// part of the torque and gives thrust.
     #[test]
     fn the_swirl_balance_adds_up() {
         use escadrille_data::aircraft::{Loading, load_aircraft};

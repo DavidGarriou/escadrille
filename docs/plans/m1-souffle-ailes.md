@@ -154,14 +154,47 @@ Chaque étape : `just check`, `just test`, carnet de bord, commit et push.
   - Toutes les cibles chiffrées passent désormais. **C'est le sens du biais déclaré** : ce n'est pas une validation, puisque les conditions de S46 déplacent les temps de −22 à +7 % (§ 8).
   - Autres changements, à regarder en revue : vol sur le dos (après 10 s, 175,6 km/h et 134 m perdus, contre 146,0 km/h et 71 m) ; glissade sur la queue (79,5 km/h contre 91,2) ; piqué à 60° plein gaz (242 km/h au plus, contre 225).
 
-### Addendum proposé (à valider) : inclinaison de la portance due à la rotation
+### Addendum (validé par le joueur le 2026-10-25, option (b)) : inclinaison de la portance due à la rotation
 
 - Problème : l'écart d'énergie ci-dessus. Il pèse aussi sur les performances, car la poussée reprise au tourbillon aide la montée : 1,27 kW pour le SPAD en meilleure montée.
 - Correction, dans les bandes : l'incidence due à la rotation change la grandeur de la portance, ce qui garde le moment de roulis. En revanche, la direction de la force ne suit qu'une fraction τ de l'inclinaison du souffle. Deux options :
   - **(a)** τ = 0 : aucune poussée reprise. Simple, mais la ligne portante en donne 28 à 37 % de l'énergie de rotation ; effet sur la montée du SPAD, environ −4 %.
   - **(b)** τ tiré de R&M 2368 partie II (tableau 1, comparé à la théorie des bandes pour la même aile) : de 0,04 à 0,22 quand 2R/c va de 0,8 à 3,1, en croissant avec la largeur du jet ; environ 0,4 par extrapolation pour le SPAD (C:, avec une part d’E: puisque la partie II suppose une rotation solide). Effet sur la montée, environ −2 %.
+    - **⚠ Erreur corrigée le 2026-10-25** : le « 0,4 extrapolé » venait d'une confusion entre le μ de la partie I et le a = 8R/(a₀c) de la partie II, qui vaut μ/π. Pour le SPAD, a ≈ 1,4 : il est dans le tableau, et τ ≈ 0,15. L'effet annoncé sur la montée (−2 %) était donc sous-estimé.
 - Recommandation : **(b)**, fidèle à la source ; (a) supprimerait aussi la part réelle. Dans les deux cas, l'invariant d'énergie redevient un test.
 - Même biais : la montée ralentirait encore un peu, et resterait dans les tolérances de S46.
+
+### Addendum (b) mis en œuvre (2026-10-25)
+
+- FDM :
+  - les bandes reçoivent, avec l'écoulement local, la part due à la rotation et la fraction τ de son inclinaison que la force doit suivre (`StripFlow`) ;
+  - τ vient du tableau 1 de R&M 2368, partie II, rapporté à la théorie des bandes pour la même aile (`swirl_tilt`), en fonction de a = 8R/(a₀c) ;
+  - l'incidence et la portance gardent toute la rotation, donc le moment de roulis ne change pas.
+- **⚠ Double compte trouvé et corrigé** : avec τ seul, la rotation coûtait de la puissance (−5 à −12 % de son énergie pour le SPAD), contre +28 à 37 % en ligne portante.
+  - Raison : le τ de R&M 2368 contient tout l'effet induit, alors que nos bandes inclinent déjà leur force de leur propre angle induit, d'une fraction k a₀/(1 + k a₀) de l'incidence (environ 0,22 pour le SPAD).
+  - Correction : la part redressée explicitement est 1 − τ − k a₀/(1 + k a₀).
+- Bilan du tourbillon, puissance reprise sur énergie de rotation :
+
+| Vol | SPAD | Biplan d'essai |
+|---|---|---|
+| Vmax, 2 000 m | 21 % | 25 % |
+| Meilleure montée, 0 m | 6 % | 17 % |
+| Décrochage plein gaz | 5 % | 13 % |
+
+  - C'est sous les 28 à 37 % de la ligne portante, qui ne connaît pas la viscosité. L'écart est la traînée de profil, qui monte avec la portance que la rotation ajoute d'un côté et retire de l'autre (tables du RAF 15 et terme de toile).
+  - Le Report 747 mesure davantage, « environ la moitié » de la perte de rotation, sur une aile médiane et non un biplan. **Écart rapporté, non réglé.**
+  - L'invariant d'énergie redevient un test : la puissance reprise ne dépasse jamais la moitié de l'énergie de rotation (SPAD et biplan d'essai, quatre vols).
+- Maquette du TN 1146 : inchangée (41 / 40 / 39 %), le moment de roulis ne dépendant pas de τ.
+- Campagne du SPAD :
+
+| Mesure | Avant l'étape 2 | Après les étapes 2 à 4 | Avec l'addendum |
+|---|---|---|---|
+| Vitesses maximales | +0,8 / +5,2 / +4,2 % | +0,3 / +4,6 / +3,5 % | −0,2 / +4,1 / +2,8 % |
+| Montées | −8,0 / −7,1 / −11,1 % | −4,5 / −3,3 / −7,0 % | −1,8 / −0,2 / −3,6 % |
+| Plafond | +7,8 % | +6,4 % | +5,1 % |
+| Départ au décrochage moteur réduit (à 3 s) | à droite, +78° | à gauche, −54° | à gauche, −54° |
+
+  - Toutes les cibles passent. **Biais déclaré** : c'est le sens annoncé, pas une validation (enveloppe des conditions de S46, § 8).
 
 ## Effets attendus sur le SPAD (ordres de grandeur, à vérifier)
 

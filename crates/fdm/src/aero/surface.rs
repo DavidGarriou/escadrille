@@ -107,6 +107,36 @@ pub struct Strip {
     pub control: Option<StripControl>,
 }
 
+/// Air velocity a strip feels besides the free stream and its own motion, body axes.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct StripFlow {
+    /// Extra air velocity at the strip's quarter-chord point, m/s.
+    pub velocity: DVec3,
+    /// Part of `velocity` from a rotation of the air that the wing partly straightens (the
+    /// slipstream's swirl), m/s: it changes the strip's incidence and lift, but the wing's
+    /// own induced flow turns the force back.
+    pub swirl: DVec3,
+    /// Fraction of the swirl's inclination the force follows in all, the strip's own
+    /// induced angle included (R&M 2368 part II): 1 for strip theory.
+    pub swirl_tilt: f64,
+}
+
+impl Default for StripFlow {
+    fn default() -> Self {
+        DVec3::ZERO.into()
+    }
+}
+
+impl From<DVec3> for StripFlow {
+    fn from(velocity: DVec3) -> Self {
+        Self {
+            velocity,
+            swirl: DVec3::ZERO,
+            swirl_tilt: 1.0,
+        }
+    }
+}
+
 /// Finite-span correction of a surface.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct InducedModel {
@@ -158,6 +188,9 @@ pub struct LiftingSurface {
     polar: Polar,
     induced: Option<InducedModel>,
     section_slope: f64,
+    /// Fraction of an incidence change by which the strip's own induced angle turns its
+    /// force back in the linear range, k a₀ / (1 + k a₀).
+    induced_tilt: f64,
 }
 
 /// Induction is faded out completely beyond this geometric angle of attack (rad), unless
@@ -229,12 +262,17 @@ impl LiftingSurface {
             }
         }
         let section_slope = polar.zero_lift_slope().unwrap_or(THIN_AEROFOIL_SLOPE);
+        let induced_tilt = induced.map_or(0.0, |m| {
+            let ka = m.factor() * section_slope;
+            ka / (1.0 + ka)
+        });
         Ok(Self {
             name,
             strips,
             polar,
             induced,
             section_slope,
+            induced_tilt,
         })
     }
 
@@ -266,15 +304,15 @@ impl LiftingSurface {
     /// `air_velocity` is the velocity of the centre of gravity relative to the free-stream
     /// air, body axes; `local_flow(strip)` is the extra air velocity at the strip's
     /// quarter-chord point (wing downwash on the tail, propeller slipstream, ground
-    /// effect…), body axes, given the whole strip because the slipstream's effect depends
-    /// on its chord; `density` in kg/m³.
-    pub fn loads(
+    /// effect…), body axes, a vector or a [`StripFlow`], given the whole strip because the
+    /// slipstream's effect depends on its chord; `density` in kg/m³.
+    pub fn loads<F: Into<StripFlow>>(
         &self,
         air_velocity: DVec3,
         angular_velocity: DVec3,
         density: f64,
         controls: &ControlDeflections,
-        local_flow: impl Fn(&Strip) -> DVec3,
+        local_flow: impl Fn(&Strip) -> F,
     ) -> Wrench {
         self.loads_with_mutual(
             air_velocity,
@@ -290,19 +328,21 @@ impl LiftingSurface {
     /// Same as [`Self::loads`], with an extra induced angle `mutual` (rad) coming from
     /// the other planes of a biplane ([`super::system::LiftingSystem`]); also returns
     /// the surface's lift coefficient, weighted by each strip's dynamic pressure and area.
-    pub fn loads_with_mutual(
+    pub fn loads_with_mutual<F: Into<StripFlow>>(
         &self,
         air_velocity: DVec3,
         angular_velocity: DVec3,
         density: f64,
         controls: &ControlDeflections,
-        local_flow: impl Fn(&Strip) -> DVec3,
+        local_flow: impl Fn(&Strip) -> F,
         mutual: f64,
     ) -> (Wrench, f64) {
         let (mut wrench, mut lift, mut weight) = (Wrench::default(), 0.0, 0.0);
         for strip in &self.strips {
-            let v = air_velocity + angular_velocity.cross(strip.position) - local_flow(strip);
-            let (w, state) = self.strip_loads(strip, v, density, controls, mutual);
+            let flow: StripFlow = local_flow(strip).into();
+            let v = air_velocity + angular_velocity.cross(strip.position) - flow.velocity;
+            let untilted = flow.swirl * (1.0 - flow.swirl_tilt - self.induced_tilt).max(0.0);
+            let (w, state) = self.tilted_strip_loads(strip, v, untilted, density, controls, mutual);
             wrench += w;
             lift += state.coefficients.cl * state.dynamic_pressure * strip.area;
             weight += state.dynamic_pressure * strip.area;
@@ -382,6 +422,24 @@ impl LiftingSurface {
         controls: &ControlDeflections,
         mutual: f64,
     ) -> (Wrench, StripState) {
+        self.tilted_strip_loads(strip, v, DVec3::ZERO, density, controls, mutual)
+    }
+
+    /// Same as [`Self::strip_loads`], the force following the inclination of `v +
+    /// untilted` instead of `v`: incidence, coefficients and dynamic pressure from `v`,
+    /// directions of lift and drag from `v + untilted`. In the surface's loads, `untilted`
+    /// is the part of the swirl ([`StripFlow`]) that neither the force nor the strip's own
+    /// induced angle follows: swirl × (1 − τ − k a₀ / (1 + k a₀)), so that the force
+    /// follows the fraction τ of the swirl's inclination in all.
+    pub fn tilted_strip_loads(
+        &self,
+        strip: &Strip,
+        v: DVec3,
+        untilted: DVec3,
+        density: f64,
+        controls: &ControlDeflections,
+        mutual: f64,
+    ) -> (Wrench, StripState) {
         let (u_c, u_n) = (v.dot(strip.chord_axis), v.dot(strip.normal));
         let speed_sq = u_c * u_c + u_n * u_n;
         if speed_sq < MIN_STRIP_SPEED * MIN_STRIP_SPEED {
@@ -399,11 +457,19 @@ impl LiftingSurface {
         let induced = wrap_angle(alpha - effective);
         let coefficients = self.polar.coefficients(effective);
 
-        // Directions in the chord–normal plane: drag along the local flow, lift
-        // perpendicular to it (equal to `normal` when the flow is along the chord),
-        // both tilted back by the induced angle.
-        let drag_dir = -(strip.chord_axis * u_c + strip.normal * u_n) / speed;
-        let lift_dir = (strip.normal * u_c - strip.chord_axis * u_n) / speed;
+        // Directions in the chord–normal plane: drag along the local flow (less its untilted
+        // part), lift perpendicular to it (equal to `normal` when the flow is along the
+        // chord), both tilted back by the induced angle.
+        let tilted = v + untilted;
+        let (t_c, t_n) = (tilted.dot(strip.chord_axis), tilted.dot(strip.normal));
+        let tilted_speed = (t_c * t_c + t_n * t_n).sqrt();
+        let (d_c, d_n) = if tilted_speed >= MIN_STRIP_SPEED {
+            (t_c / tilted_speed, t_n / tilted_speed)
+        } else {
+            (u_c / speed, u_n / speed)
+        };
+        let drag_dir = -(strip.chord_axis * d_c + strip.normal * d_n);
+        let lift_dir = strip.normal * d_c - strip.chord_axis * d_n;
         let (s, c) = induced.sin_cos();
         let (lift_dir, drag_dir) = (lift_dir * c + drag_dir * s, drag_dir * c - lift_dir * s);
 
