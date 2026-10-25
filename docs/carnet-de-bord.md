@@ -1479,3 +1479,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   5. des cotes estimées (E:) : section du fuselage, œil du pilote, bouche de la Vickers, train ;
   6. rien n'affiche encore un avion dans le jeu : le pont FDM ↔ ECS et les caméras sont au M2.
 - **D** Proposition : faire le modèle provisoire au début du M2, avec un plan à valider. Décision laissée au joueur.
+- **Q** Le joueur : « qu'est-ce qu'un ADR ? » **R** Une fiche de décision d'architecture (*Architecture Decision Record*) dans `docs/adr/` : le contexte, les options, le choix et ses conséquences. Un ADR accepté ne se modifie pas : on le remplace par un nouveau. Exemples du dépôt : 0001 à 0005, dont 0004 (version de Bevy). Celui des axes fixerait les repères et l'origine du modèle 3D.
