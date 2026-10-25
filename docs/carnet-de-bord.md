@@ -1548,3 +1548,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - le champ `dimensions` d'`aircraft.ron` et le fichier `maquette.ron` ;
   - l'outil `tools/mockup` et son ajout à l'arborescence de `CLAUDE.md` ;
   - le plan lui-même.
+- **Q** Réponses du joueur : `gltf` / `gltf-json` ; les deux changements de format ; nouvel outil `tools/mockup` ; plan validé. **D** Plan `modele-3d-provisoire.md` validé, exécution lancée.
+- **A** Étapes 1 et 2 :
+  - `dimensions` (envergure, longueur, hauteur) dans `aircraft.ron`, optionnel pour les modèles de comparaison. SPAD : 7,82 / 6,08 / 2,20 m, sourcés par la fiche ;
+  - schéma `MockupFile` et chargeur (`crates/data/src/mockup.rs`), et `assets/aircraft/spad7/maquette.ron` (fuselage, roues, béquille, mâts, œil, Vickers), chaque cote avec son origine ;
+  - module `escadrille_data::frames` (`to_bevy`, `from_bevy`, `to_gltf`, `from_gltf`), réutilisé par le pont du jeu : une seule copie, comme le prévoit l'ADR 0006 ;
+  - `format-avion.md` mis à jour.
+- **R** La fiche ne dit pas si la hauteur de 2,20 m est mesurée en ligne de vol ou au sol. **D** Le contrôle prendra la plus proche des deux attitudes.

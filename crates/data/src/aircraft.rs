@@ -269,6 +269,18 @@ pub struct TravelSpec {
     pub rudder: Angle,
 }
 
+/// Overall dimensions of an aircraft (`format-avion.md`).
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct DimensionsSpec {
+    /// Span of the widest plane, tip to tip.
+    pub span: Length,
+    /// Overall length along the body x axis, propeller hub to the tail.
+    pub length: Length,
+    /// Overall height, propeller excluded. Sources seldom say whether it is measured in the
+    /// flying attitude or at rest on the ground: the check takes the nearer of the two.
+    pub height: Length,
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename = "Aircraft")]
 pub struct AircraftFile {
@@ -277,6 +289,10 @@ pub struct AircraftFile {
     pub research: String,
     /// What the positions are measured from.
     pub datum: String,
+    /// Overall dimensions, as the sources give them: the 3D model is checked against them
+    /// (`tools/asset_check`). Required once the aircraft has a model.
+    #[serde(default)]
+    pub dimensions: Option<DimensionsSpec>,
     pub mass: MassSpec,
     pub surfaces: Vec<SurfaceSpec>,
     #[serde(default)]

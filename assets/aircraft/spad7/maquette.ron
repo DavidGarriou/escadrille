@@ -1,0 +1,30 @@
+// Provisional 3D model of the SPAD S.VII C.1: what a box-and-plate model needs beyond
+// aircraft.ron (plan docs/plans/modele-3d-provisoire.md). Body axes from the datum of
+// aircraft.ron (x forward, y right, z down), metres. Built by `just mockup spad7`.
+// No drawing of the S.VII was read (spad7.md § 2.5): the fuselage is an estimate, to be
+// replaced if request D4 (docs/recherche/demandes.md) brings the factory drawings.
+Mockup(
+    fuselage: [
+        //! E: rectangular sections, width 0.80 m as the flight model (lower wing roots), « exceptionally deep » (S48); side area 4.14 m² and plan area 3.09 m² against 4.50 and 3.30 m² of the fuselage block of aircraft.ron (C: drawing, tail left out); tail post under the tailplane (z −0.70) and the bottom of the rudder (z −0.31)
+        (x_m: 0.70, width: M(0.72), top_m: -0.74, bottom_m: -0.02),
+        (x_m: 0.30, width: M(0.80), top_m: -0.80, bottom_m: 0.05),
+        (x_m: -1.20, width: M(0.80), top_m: -0.85, bottom_m: 0.15),
+        (x_m: -2.60, width: M(0.55), top_m: -0.78, bottom_m: -0.02),
+        (x_m: -4.30, width: M(0.15), top_m: -0.72, bottom_m: -0.30),
+        (x_m: -4.80, width: M(0.04), top_m: -0.70, bottom_m: -0.31),
+    ],
+    wheels: (
+        centre_m: (0.12, 0.76, 0.78),                                // E: as the wheel drag items of aircraft.ron; S: track 5 ft (S48)
+        diameter: Mm(700.0),                                         // E: 700 × 75, as aircraft.ron (« 700 × 7… » on the S.XI drawing, S49)
+        width: Mm(75.0),                                             // E: as the diameter
+    ),
+    skid_m: (-4.30, 0.0, 0.05),                                      // E: tail skid of aircraft.ron (x −4.30), tip 0.15 m below its drag centre
+    struts: [
+        (x_m: -0.40, y_m: 3.00),                                     // C: outer struts of aircraft.ron, y read on the front view
+        (x_m: -0.40, y_m: 1.70),                                     // C: intermediate struts of aircraft.ron (S16)
+    ],
+    pilot_eye_m: (-1.05, 0.0, -1.10),                                // E: 0.10 m ahead of the head's centre (drag item of aircraft.ron)
+    gun_muzzles_m: [
+        (0.45, 0.0, -0.95),                                          // E: Vickers on the cowling (drag item of aircraft.ron at x −0.05), barrel about 1.1 m
+    ],
+)

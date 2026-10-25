@@ -1,6 +1,6 @@
 # Plan — Modèle 3D provisoire du SPAD VII
 
-- Statut : **à valider** par le joueur (demandé le 2026-10-25 : « on continue sur le modèle 3D provisoire »)
+- Statut : **validé** par le joueur le 2026-10-25, avec les quatre options recommandées : `gltf` et `gltf-json` pour les outils, champ `dimensions` et fichier `maquette.ron`, outil `tools/mockup`, plan entier
 - Contexte : étape 8 du parcours `/nouvel-avion spad7`. Le modèle provisoire servira au M2 (premier vol : caméras cockpit et poursuite). Il doit respecter le contrat de `pipeline-assets` et l'ADR 0006 (repères).
 - Hors de ce plan :
   - le modèle définitif (Blender, textures, livrées) ;

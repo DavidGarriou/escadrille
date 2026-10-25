@@ -6,7 +6,8 @@
 //!   −Z, east +X, up +Y.
 //!
 //! Both are right-handed, and the body and the world map the same way: the change of
-//! frame is one proper rotation M, (x, y, z) ↦ (y, −z, −x) ([`to_bevy`]). Positions,
+//! frame is one proper rotation M, (x, y, z) ↦ (y, −z, −x) ([`to_bevy`], defined once in
+//! `escadrille_data::frames` for the asset tools and re-exported here). Positions,
 //! velocities, forces and angular velocities all go through it; attitudes are conjugated
 //! by it ([`attitude_to_bevy`]). A glTF scene faces +Z (glTF 2.0): [`GLTF_TO_BEVY`] turns
 //! it to face Bevy's −Z. World positions stay in f64 until the render origin is taken off
@@ -14,16 +15,7 @@
 
 use bevy::math::{DQuat, DVec3, Quat, Vec3};
 use bevy::prelude::Transform;
-
-/// A flight-model vector (body axes or NED) in Bevy axes (local or world).
-pub fn to_bevy(v: DVec3) -> DVec3 {
-    DVec3::new(v.y, -v.z, -v.x)
-}
-
-/// A Bevy vector in flight-model axes: the inverse of [`to_bevy`].
-pub fn from_bevy(v: DVec3) -> DVec3 {
-    DVec3::new(-v.z, v.x, -v.y)
-}
+pub use escadrille_data::frames::{from_bevy, to_bevy};
 
 /// A flight-model attitude (rotation from body to NED axes) as a Bevy rotation (local to
 /// world): the same angle about the axis that [`to_bevy`] gives, (w ; v) ↦ (w ; M v).
@@ -86,28 +78,6 @@ mod tests {
     }
 
     #[test]
-    fn the_axes_map_as_the_adr_says() {
-        // Nose and north to −Z, right wing and east to +X, down to −Y.
-        assert_eq!(to_bevy(DVec3::X), DVec3::NEG_Z);
-        assert_eq!(to_bevy(DVec3::Y), DVec3::X);
-        assert_eq!(to_bevy(DVec3::Z), DVec3::NEG_Y);
-        for v in [DVec3::X, DVec3::Y, DVec3::Z, DVec3::new(1.5, -2.0, 0.25)] {
-            assert_eq!(from_bevy(to_bevy(v)), v);
-            assert_eq!(to_bevy(from_bevy(v)), v);
-        }
-    }
-
-    #[test]
-    fn the_change_of_frame_is_a_proper_rotation() {
-        // Lengths and the cross product kept: no mirror, which would turn the propeller
-        // and the torque the other way on screen.
-        let (a, b) = (DVec3::new(0.3, -1.2, 2.0), DVec3::new(-0.7, 0.4, 1.1));
-        assert!((to_bevy(a).length() - a.length()).abs() < 1e-15);
-        assert!((to_bevy(a.cross(b)) - to_bevy(a).cross(to_bevy(b))).length() < 1e-15);
-        assert!((to_bevy(a).dot(to_bevy(b)) - a.dot(b)).abs() < 1e-15);
-    }
-
-    #[test]
     fn an_attitude_turns_the_converted_vectors_as_it_turns_the_flight_model_s() {
         let q = attitude(37.0, -12.0, 64.0);
         let b = attitude_to_bevy(q);
@@ -158,17 +128,12 @@ mod tests {
         assert!(close(turn.rotation * Vec3::Z, Vec3::NEG_Z));
         assert!(close(turn.rotation * Vec3::NEG_X, Vec3::X));
         assert!(close(turn.rotation * Vec3::Y, Vec3::Y));
-        // The ADR's lines for asset_check and the modeller: body to glTF (−y, −z, x), and
-        // to Blender (−y, −x, −z) through the exporter's (X, Y, Z) ↦ (X, Z, −Y).
-        let body = DVec3::new(1.0, 2.0, 3.0);
-        let gltf = GLTF_TO_BEVY.as_dquat().inverse() * to_bevy(body);
-        assert!(
-            (gltf - DVec3::new(-2.0, -3.0, 1.0)).length() < 1e-15,
-            "{gltf}"
-        );
-        let blender = DVec3::new(gltf.x, -gltf.z, gltf.y);
-        assert_eq!(DVec3::new(blender.x, blender.z, -blender.y), gltf);
-        assert_eq!(blender, DVec3::new(-2.0, -1.0, -3.0));
+        // The model tools write glTF with `escadrille_data::frames::to_gltf`: turned by
+        // this constant, it lands where `to_bevy` puts it.
+        for body in [DVec3::X, DVec3::Y, DVec3::Z, DVec3::new(1.0, 2.0, 3.0)] {
+            let gltf = escadrille_data::frames::to_gltf(body);
+            assert!((GLTF_TO_BEVY.as_dquat() * gltf - to_bevy(body)).length() < 1e-15);
+        }
     }
 
     #[test]

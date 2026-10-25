@@ -32,6 +32,7 @@ Aircraft(
     name: "SPAD S.VII C.1",
     research: "docs/recherche/spad7.md",
     datum: "bord d'attaque de l'emplanture du plan inférieur, dans l'axe",
+    dimensions: Some((span: M(0.0), length: M(0.0), height: M(0.0))), // S: dimensions hors tout de la fiche, obligatoires dès que l'avion a un modèle 3D (`asset_check` s'y compare à 1 % près). Envergure du plus grand plan ; longueur le long de l'axe x du corps, du moyeu à la queue ; hauteur hélice exclue, comparée à la plus proche des deux attitudes (ligne de vol, ou au repos sur le sol), les sources ne disant presque jamais laquelle
 
     mass: (
         empty: Kg(0.0),                                   // S:
@@ -110,6 +111,23 @@ Aircraft(
 ```
 
 Prévus plus tard, hors du schéma actuel : train d'atterrissage (M2), limites structurales (M4), armes (M4).
+
+## `assets/aircraft/<id>/maquette.ron` (modèle 3D provisoire)
+
+Ce que demande un modèle provisoire en boîtes et en plaques, et qu'`aircraft.ron` ne donne pas. `tools/mockup` construit `model.glb` à partir des deux fichiers (`docs/plans/modele-3d-provisoire.md`). Positions depuis le `datum` d'`aircraft.ron`, repère corps, mètres. Chaque nombre a son origine, comme ailleurs.
+
+```ron
+Mockup(
+    fuselage: [                                           // sections rectangulaires, du nez à l'étambot (x décroissant)
+        (x_m: 0.0, width: M(0.0), top_m: 0.0, bottom_m: 0.0), // E: …
+    ],
+    wheels: (centre_m: (0.0, 0.0, 0.0), diameter: Mm(0.0), width: Mm(0.0)), // E: roue droite, symétrisée
+    skid_m: (0.0, 0.0, 0.0),                              // E: point de la béquille qui touche le sol
+    struts: [(x_m: 0.0, y_m: 0.0)],                       // C: paires de mâts, du plan inférieur au plan supérieur, symétrisées
+    pilot_eye_m: (0.0, 0.0, 0.0),                         // E: œil du pilote
+    gun_muzzles_m: [(0.0, 0.0, 0.0)],                     // E: bouche de chaque arme, tir vers +x
+)
+```
 
 ## `assets/airfoils/<id>.ron`
 

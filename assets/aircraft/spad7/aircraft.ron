@@ -8,6 +8,11 @@ Aircraft(
     name: "SPAD S.VII C.1 (Hispano-Suiza 8Aa, 150 ch)",
     research: "docs/recherche/spad7.md",
     datum: "bord d'attaque du plan inférieur, dans l'axe de l'avion (point virtuel)",
+    dimensions: Some((
+        span: M(7.82),                                                         // S: spad7.md § 2.1, A: 25.7 and 25.8 ft (7.83 and 7.86 m) in the two period tables (S46, S47); 7.82 m (S7, S8)
+        length: M(6.08),                                                       // S: spad7.md § 2.1, B: 6.08 m (S6, S7, S8); 20 ft = 6.10 m (S46, S47)
+        height: M(2.20),                                                       // S: spad7.md § 2.1, A: 7.20 ft = 2.19 m (S46), 2.20 m (S6); attitude of measurement not given
+    )),
 
     mass: (
         empty: Lb(1100.0),                                            // S: S46 p. 205, both 7C1 lines, and S47 p. 237 (spad7.md § 3)
