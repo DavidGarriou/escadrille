@@ -222,9 +222,9 @@ pub struct StripState {
     pub induced_alpha: f64,
     pub coefficients: Coefficients,
     pub dynamic_pressure: f64,
-    /// Force that the swirl's incidence adds to the strip (the lift it adds and the swirl
-    /// drag), N, body axes, at the quarter-chord point: what the strip takes from the
-    /// slipstream's rotation.
+    /// Force the swirl adds to the strip: its force less the force it would bear in the
+    /// same flow without the swirl (swirl drag included), N, body axes, at the
+    /// quarter-chord point. What the strip takes from the slipstream's rotation.
     pub swirl_force: DVec3,
 }
 
@@ -235,7 +235,8 @@ pub struct SurfaceLoads {
     pub wrench: Wrench,
     /// Lift coefficient, weighted by each strip's dynamic pressure and area.
     pub lift_coefficient: f64,
-    /// The part of `wrench` that the swirl's incidence adds ([`StripState::swirl_force`]).
+    /// The part of `wrench` that the swirl adds ([`StripState::swirl_force`] of each strip,
+    /// at its quarter-chord point).
     pub swirl: Wrench,
 }
 

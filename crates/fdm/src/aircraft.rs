@@ -363,10 +363,10 @@ impl Aircraft {
     ///
     /// With a propeller ahead of wings, the wings are loaded first, in the propeller's
     /// slipstream. The moment M their strips take from its swirl, about the propeller's
-    /// axis, is no longer in the air behind them: the other surfaces fly in a slipstream
-    /// whose swirl keeps the fraction [`Slipstream::swirl_left_after`] M of its own, from
-    /// the wings' trailing edge on. Instantaneous: the swirl takes l / V (about 0.1 s) to
-    /// reach the tail, a lag left out (E:).
+    /// axis, is no longer in the air behind them: from the wings' trailing edge on, the
+    /// other surfaces fly in a slipstream that keeps only the fraction of its swirl
+    /// [`Slipstream::swirl_left_after`] gives for M. Instantaneous: the swirl takes l / V
+    /// (about 0.1 s) to reach the tail, a lag left out (E:).
     fn lifting_in(
         &self,
         air_velocity: DVec3,
