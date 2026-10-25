@@ -131,6 +131,17 @@ Conséquences :
   - Toute la différence est dans le plan fixe : −683 N·m/(m/s) avec la moitié de la rotation, −645 avec 0,1.
   - Mécanisme : le profil d'empennage (RAF 15 décambré puis symétrisé, `spad_empennage.ron`) a une pente plus faible près de la portance nulle. Elle vaut 0,069 par degré entre −0,75° et +0,75°, contre 0,076 à 0,081 au-delà. Le plan fixe travaille dans ce creux en croisière ; la rotation, de quelques degrés, l'en sortait en partie.
   - Conséquence du modèle, sensible à cette particularité du profil, qui vient d'une mesure de 1918 (Report 233) déplacée et symétrisée (C:). À regarder si la marge devient une cible.
+- **Départ au décrochage moteur réduit**, sensibilité (§ 9 de `spad7-calculs.md`), avec une copie du binaire munie de variantes temporaires, retirées depuis :
+
+| Variante | Départ (à 3 s) |
+|---|---|
+| Modèle | à gauche, −55° |
+| Contre-rotation permise (borne basse −1) | à gauche, −55° |
+| Chute sur une demi-corde / sur deux cordes | à gauche, −56° / −55° |
+| Fraction figée à 0,3 / 0,7 | à gauche, −53° / −56° |
+| Fraction figée à 1 (aucun redressement) | à droite, +78° |
+
+  Le côté résiste à toutes les variantes physiques. Seule l'absence de tout redressement, que contredisent les mesures du NACA, le change.
 - **Robustesse** : vol sur le dos (164 km/h et 106 m perdus après 10 s, contre 176 et 136), glissade sur la queue (113 km/h contre 80, assiette 62° contre 69°), piqué à 60° (225 km/h au plus, contre 243). Ce sont des scénarios en boucle ouverte, sensibles à la rotation sur l'empennage. Le piqué retrouve sa valeur d'avant le sillage des ailes (225 km/h).
 
 ## Hors de ce plan

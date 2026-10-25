@@ -347,6 +347,11 @@ Revue de l'aérodynamicien, essais avec un facteur sur le tourbillon K du souffl
 - au ralenti près du décrochage, les ailes reprennent environ la moitié du couple. Le 0,5 laissé derrière elles est donc cohérent par le moment cinétique : le résultat se tient là où il compte ;
 - le côté dépend surtout de la rotation qui atteint l'empennage.
 
+**Mise à jour du 2026-10-25, rotation derrière les ailes par le moment cinétique** (`docs/plans/m1-rotation-derriere-ailes.md`) : la fraction n'est plus une donnée, et le départ ne change pas (à gauche, −55° à 3 s, nez −17°). Sensibilité :
+- contre-rotation permise derrière les ailes : à gauche, 55° ;
+- chute de la rotation sur une demi-corde ou sur deux cordes : à gauche, 56° et 55° ;
+- pour mémoire, fraction figée à 0,3 / 0,7 : à gauche, 53° / 56° ; à 1 (aucun redressement) : à droite, 78°.
+
 **Statut** : départ à gauche **probable** (confiance C, aucun témoignage lu). Deux réserves :
 - le souffle part tout droit le long de l'axe de traction (E:), ce qui décide si l'empennage est dans le souffle au décrochage ;
 - ~~aucune conclusion sur l'équilibre en roulis et en lacet en croisière : le bilan de moment cinétique y contredit la donnée (§ 10).~~ Levée le 2026-10-25 : la rotation derrière les ailes suit désormais ce bilan (voir la mise à jour ci-dessous).

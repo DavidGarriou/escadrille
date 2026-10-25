@@ -1396,3 +1396,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
   Rapporté ; à regarder si la marge devient une cible.
 - **⚠** Le bilan du tourbillon en montée passe à −1 % de l'énergie de rotation (les ailes y perdent de la puissance par la traînée de profil, l'empennage reprend moins). Le test qui exigeait un gain de puissance est remplacé par une borne, l'écart étant écrit (point 5 de la revue précédente).
+- **R** Sensibilité du départ au décrochage moteur réduit (§ 9) :
+  - modèle : à gauche, 55° ;
+  - contre-rotation permise : à gauche, 55° ;
+  - chute sur une demi-corde ou sur deux cordes : à gauche, 56° et 55° ;
+  - fraction figée à 0,3 / 0,7 : à gauche, 53° / 56° ;
+  - fraction figée à 1 : à droite, 78°.
+
+  **D** Le départ à gauche reste « probable » (confiance C).
+- **⚠** Pendant les variantes, le hook d'arrêt a exigé un commit alors que l'arbre contenait du code temporaire. **A** Version propre commitée par l'index (`c8a5fa8`), variantes poursuivies sur une copie du binaire, sources propres remises.
