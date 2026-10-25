@@ -1,13 +1,21 @@
 //! Reference scenes, rendered by the capture mode and reviewed by Claude.
 //!
-//! Scenes will move to `assets/scenes/<scene>.ron` once there is more than one;
-//! for now `m0-sol` is built in code.
+//! Each scene is built in code, by a system run when the capture asks for it
+//! ([`capture_scene_is`]). `assets/scenes/<scene>.ron` will describe them once their
+//! common shape is known (camera, time of day, weather, aircraft).
 
 use bevy::light::light_consts;
 use bevy::prelude::*;
 
+use crate::dev::capture::CaptureRequest;
+
 /// Names accepted by `--capture`.
-pub const KNOWN_SCENES: &[&str] = &["m0-sol"];
+pub const KNOWN_SCENES: &[&str] = &["m0-sol", super::maquette::SCENE];
+
+/// Run condition: the capture asks for scene `name`.
+pub fn capture_scene_is(name: &'static str) -> impl Fn(Option<Res<CaptureRequest>>) -> bool {
+    move |request| request.is_some_and(|r| r.scene == name)
+}
 
 /// Plain overcast-blue sky, until the atmosphere arrives (M3).
 pub const SKY_COLOR: Color = Color::srgb(0.62, 0.72, 0.82);

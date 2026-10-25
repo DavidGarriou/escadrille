@@ -86,3 +86,13 @@ Chaque étape : `just check`, `just test`, carnet, commit et push.
 2. Le nouveau champ `dimensions` d'`aircraft.ron`, et le fichier `maquette.ron`.
 3. Le nouvel outil `tools/mockup`, et son ajout à l'arborescence de `CLAUDE.md`.
 4. Le plan dans son ensemble.
+
+## Exécution (2026-10-25)
+
+- Étapes 1 à 4 : faites (commits 14f428e et b147874). Le contrat du modèle est calculé par `escadrille_data::model` à partir des bandes du modèle de vol.
+- **Deux cotes manquées** par le modèle généré, acceptées provisoirement dans `maquette.ron` (`accepted_deviations`), **en attente de l'accord du joueur** :
+  - longueur 6,264 m contre 6,08 m : l'empennage dessiné est l'empennage **équivalent** du modèle de vol (sans flèche, surface conservée) ; son gouvernail finit 0,16 m derrière celui du dessin ;
+  - hauteur 2,53 m en ligne de vol, 2,355 m au sol, contre 2,20 m : 2,20 m ne peut pas être mesuré en ligne de vol (dérive et hélice couvrent déjà 2,22 m), et le train du dessin donne 2,30 à 2,36 m au sol. Conflit entre le dessin (C) et les tableaux (A).
+- **Point ouvert pour le modèle définitif** : sur l'empennage équivalent, les charnières du gouvernail et de la profondeur penchent (environ 27° et 8°), alors que les vraies sont droites. Un modèle fidèle au dessin échouerait au contrôle des charnières : à trancher avant le modèle Blender.
+- Étape 5 : scène `maquette-spad7` (`crates/game/src/world/maquette.rs`) rendue sous Xvfb (lavapipe) avec le binaire de développement, faute de place disque pour une compilation optimisée. Les trois vérifications passent à l'œil : nez sur la flèche rouge, aile droite verte du côté vert et plus basse, hélice tournée dans le sens horaire vu de derrière.
+- Le jeu charge désormais ses assets depuis le dossier `assets/` du dépôt (`ASSETS_DIR`, `crates/game/src/main.rs`) : sous `cargo run`, Bevy les cherchait dans `crates/game/assets`.

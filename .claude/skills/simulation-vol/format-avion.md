@@ -126,8 +126,17 @@ Mockup(
     struts: [(x_m: 0.0, y_m: 0.0)],                       // C: paires de mâts, du plan inférieur au plan supérieur, symétrisées
     pilot_eye_m: (0.0, 0.0, 0.0),                         // E: œil du pilote
     gun_muzzles_m: [(0.0, 0.0, 0.0)],                     // E: bouche de chaque arme, tir vers +x
+    accepted_deviations: [                                // facultatif ; avec l'accord du joueur
+        (
+            check: "length",                              // "span", "length" ou "height"
+            measured: M(0.0),                             // C: valeur mesurée par asset_check
+            reason: "…",                                  // cause, affichée par asset_check
+        ),
+    ],
 )
 ```
+
+`accepted_deviations` : cotes que `tools/asset_check` accepte pour ce modèle provisoire, tant qu'il mesure la valeur inscrite (à 5 mm). Si une donnée la fait bouger, le contrôle échoue de nouveau ; s'il revient dans la tolérance, il demande de retirer l'écart (skill `pipeline-assets`).
 
 ## `assets/airfoils/<id>.ron`
 

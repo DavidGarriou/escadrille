@@ -18,6 +18,11 @@ use clap::Parser;
 use dev::capture::{CaptureRequest, parse_size};
 use states::AppState;
 
+/// The game's `assets/` directory, the workspace's: under `cargo run`, Bevy would look in
+/// `crates/game/assets`, and next to the executable otherwise. Where a release finds its
+/// assets is for packaging to decide.
+pub const ASSETS_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets");
+
 #[derive(Debug, Parser)]
 #[command(version, about = "Panache blanc — WWI air combat")]
 struct Cli {
@@ -69,21 +74,28 @@ fn main() -> AppExit {
         });
 
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(WindowPlugin {
-        primary_window: Some(Window {
-            title: "Panache blanc".into(),
-            resolution,
-            resizable: capture.is_none(),
-            // Captures measure frame cost: vsync would cap them at the monitor rate.
-            present_mode: if capture.is_some() {
-                PresentMode::AutoNoVsync
-            } else {
-                PresentMode::AutoVsync
-            },
-            ..default()
-        }),
-        ..default()
-    }))
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Panache blanc".into(),
+                    resolution,
+                    resizable: capture.is_none(),
+                    // Captures measure frame cost: vsync would cap them at the monitor rate.
+                    present_mode: if capture.is_some() {
+                        PresentMode::AutoNoVsync
+                    } else {
+                        PresentMode::AutoVsync
+                    },
+                    ..default()
+                }),
+                ..default()
+            })
+            .set(AssetPlugin {
+                file_path: ASSETS_DIR.into(),
+                ..default()
+            }),
+    )
     .add_plugins(EguiPlugin::default())
     .insert_state(start_state)
     .add_plugins((world::WorldPlugin, dev::DevPlugin));

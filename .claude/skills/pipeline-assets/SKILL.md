@@ -23,7 +23,10 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 
 - Unités : mètres, échelle 1, transformations appliquées.
 - **Orientation** (ADR 0006, `docs/adr/0006-reperes-et-conversions.md`) : dans Blender, **nez vers −Y, dessus vers +Z, aile droite vers −X** ; export glTF avec « +Y Up » (option par défaut), transformations appliquées. Le glTF a alors le nez vers +Z, comme le veut la spécification. Le jeu le tourne d'un demi-tour autour de Y (`GLTF_TO_BEVY`, `crates/game/src/flight/bridge.rs`) ; ne pas activer l'option expérimentale `GltfConvertCoordinates` de Bevy, qui compterait ce demi-tour deux fois. **Origine du modèle** : le `datum` d'`aircraft.ron`. Avec le premier modèle, une scène de test vérifie que le nez, l'aile droite et le sens de l'hélice sont ceux du modèle de vol. `asset_check` contrôle chaque export.
-- **Nœuds obligatoires** (pivot sur l'axe de rotation réel, axe local = axe de charnière) :
+- **Nœuds obligatoires** (pivot sur l'axe de rotation réel). Le contrat est calculé depuis `aircraft.ron` par `escadrille_data::model` :
+  - **gouvernes** : pivot sur la charnière, **axe local +X le long de la charnière**, orienté pour qu'une rotation positive soit la braque positive du modèle de vol (aileron droit : bord de fuite vers le haut ; profondeur : bord de fuite vers le haut ; gouvernail : bord de fuite vers la droite). Une gouverne qui couvre plusieurs panneaux (le gouvernail du SPAD) n'a qu'un nœud ;
+  - **hélice** (`prop`, `prop_blur`) : pivot sur le moyeu, **axe local +X = axe de rotation**, orienté pour que la rotation normale de l'hélice soit positive ;
+  - **œil et armes** (`cam_pilot_eye`, `gun_<n>_muzzle`) : regard ou tir vers le **−Z local**, +Y local vers le haut, comme une caméra Bevy.
 
 | Nœud | Rôle |
 |---|---|
@@ -39,7 +42,17 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 | `<nœud>_LOD1`, `_LOD2`… | niveaux de détail |
 
 - **Dirigeables et ballons** (`assets/airships/<id>/`) : mêmes règles, plus `gas_cell_<n>` (volume de chaque cellule de gaz, masqué), `frame` (structure, visible quand l'enveloppe brûle), `gondola_<n>`, `engine_<n>`, `gunner_<n>` (poste de tir, axe = direction centrale du champ de tir), `ballast_<n>`. LOD poussés : l'objet est visible de très loin.
-- **Dimensions** : le modèle respecte la géométrie de la fiche de recherche. `tools/asset_check` compare les boîtes englobantes (envergure, longueur, hauteur) à `aircraft.ron`, à 1 % près. La source de vérité de la géométrie aérodynamique reste `aircraft.ron`.
+- **Dimensions** : le modèle respecte la géométrie de la fiche de recherche. `tools/asset_check` compare les boîtes englobantes (envergure, longueur, hauteur) à `aircraft.ron`, à 1 % près. La longueur va du moyeu au point le plus en arrière ; la hauteur est prise dans la plus proche de deux attitudes, ligne de vol ou au sol (sur les roues et la béquille). La source de vérité de la géométrie aérodynamique reste `aircraft.ron`.
+- **Empennage équivalent** : `aircraft.ron` peut décrire un empennage aérodynamiquement équivalent (sans flèche, surface conservée), dont les charnières penchent et dont le contour n'est pas celui de l'avion. Le contrat des charnières en découle. Un modèle fidèle au dessin échouerait donc au contrôle des charnières de l'empennage : à trancher avant le premier modèle définitif (SPAD : gouvernail penché d'environ 27°, profondeur d'environ 8°).
+
+## Modèle provisoire (`tools/mockup`)
+
+- `just mockup <avion>` écrit `assets/aircraft/<id>/model.glb` à partir d'`aircraft.ron` et de `maquette.ron` (format : skill `simulation-vol`, `format-avion.md`). Boîtes et plaques, sans Blender ; sortie identique à l'octet d'une génération à l'autre.
+- Une plaque par bande du modèle de vol, coupée à la charnière : la partie mobile va dans le nœud de sa gouverne. Fuselage par sections, mâts, train, béquille, hélice à deux pales, disque flou.
+- Couleurs unies pour lire l'orientation sur une capture : aile droite **verte**, aile gauche **beige**, gouvernes **orange**.
+- Création maison (CC-BY-SA 4.0) : `asset.copyright` porte « Panache blanc », pas d'entrée dans `assets/LICENCES.md`.
+- **Écarts acceptés** : une cote que le modèle provisoire manque pour une raison connue est inscrite dans `accepted_deviations` de `maquette.ron`, avec sa valeur mesurée et sa raison, **avec l'accord du joueur**. Elle ne vaut qu'à 5 mm de la valeur inscrite ; seules les cotes peuvent être acceptées, jamais une charnière, un axe ou une licence. `asset_check` affiche `ok*`.
+- Scène de capture `maquette-spad7` (`crates/game/src/world/maquette.rs`) : modèle placé comme le placera le jeu, axes du modèle de vol en gizmos, hélice tournée avec la flèche de son sens.
 - Budget indicatif : LOD0 de 50 000 à 150 000 triangles, cockpit compris ; LOD choisis selon la taille à l'écran.
 
 ## Textures
@@ -63,4 +76,10 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 
 ## Validation
 
-`tools/asset_check` (lancé par `just test`) : nœuds obligatoires présents, pivots cohérents, dimensions conformes, textures au bon format, toutes les entrées présentes dans `assets/LICENCES.md`.
+`tools/asset_check` (lancé par `just test` sur chaque `assets/aircraft/<id>/model.glb`, ou `cargo run -p asset_check [avion…]`) :
+- glTF valide, nœuds obligatoires présents, échelle uniforme et positive (un miroir par échelle négative est refusé) ;
+- gouvernes : pivot à 1 cm de la charnière, axe à 1° ; hélice : pivot à 1 cm du moyeu, axe à 1° ; œil et armes vers l'avant (5° et 1°) ;
+- envergure, longueur et hauteur à 1 % ;
+- fichier maison ou inscrit dans `assets/LICENCES.md`.
+
+Un modèle en miroir, retourné ou décalé de 5 cm échoue (tests de `tools/asset_check`). À venir : textures (format, espaces colorimétriques).

@@ -3,7 +3,8 @@
 //! M2 brings the fixed step, the interpolation and the floating origin. For now the module
 //! holds the frame conversions of ADR 0006, which everything else will go through.
 
-// Used by the flight plugin from M2 on; until then only its tests use it.
+// The `maquette-spad7` scene places a model with it; the rest serves the flight plugin
+// from M2 on.
 #[cfg_attr(
     not(test),
     expect(dead_code, reason = "used by the flight plugin from M2 on (ADR 0006)")

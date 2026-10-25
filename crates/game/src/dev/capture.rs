@@ -67,12 +67,19 @@ pub fn parse_size(text: &str) -> Result<(u32, u32), String> {
     Ok((parse(w)?, parse(h)?))
 }
 
+/// What the scene is still loading (a 3D model, for instance): the frames before the
+/// capture are counted once it is back to zero.
+#[derive(Resource, Debug, Default)]
+pub struct CaptureHold(pub u32);
+
 /// Frame statistics gathered while the image settles.
 #[derive(Resource, Debug, Default)]
 struct CaptureStats {
     frames: u32,
     total_secs: f64,
     requested: bool,
+    /// Frames spent waiting for the scene to load.
+    loading: u32,
 }
 
 pub struct CapturePlugin;
@@ -80,6 +87,7 @@ pub struct CapturePlugin;
 impl Plugin for CapturePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<CaptureStats>()
+            .init_resource::<CaptureHold>()
             .add_systems(Update, drive_capture.run_if(in_state(AppState::Capture)));
     }
 }
@@ -88,9 +96,21 @@ fn drive_capture(
     mut commands: Commands,
     request: Res<CaptureRequest>,
     mut stats: ResMut<CaptureStats>,
+    hold: Res<CaptureHold>,
     time: Res<Time>,
     mut exit: MessageWriter<AppExit>,
 ) {
+    if hold.0 > 0 {
+        stats.loading += 1;
+        if stats.loading > CAPTURE_TIMEOUT_FRAMES {
+            error!(
+                "capture timed out: the scene is still loading after {} frames",
+                stats.loading
+            );
+            exit.write(AppExit::error());
+        }
+        return;
+    }
     stats.frames += 1;
     stats.total_secs += f64::from(time.delta_secs());
 
@@ -187,6 +207,14 @@ mod tests {
         let r = CaptureRequest::new("m0-sol".into(), 10, (640, 360), None).unwrap();
         assert_eq!(r.png, Path::new("target/captures/m0-sol.png"));
         assert_eq!(r.json, Path::new("target/captures/m0-sol.json"));
+    }
+
+    #[test]
+    fn every_known_scene_can_be_captured() {
+        for scene in KNOWN_SCENES {
+            assert!(CaptureRequest::new((*scene).into(), 10, (640, 360), None).is_ok());
+        }
+        assert!(KNOWN_SCENES.contains(&"maquette-spad7"));
     }
 
     #[test]

@@ -1566,3 +1566,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Ni l'un ni l'autre ne se règle sans décision du joueur : l'empennage relève du modèle de vol, et la hauteur d'un conflit de sources. Les deux écarts sont **acceptés provisoirement** dans `maquette.ron` (`accepted_deviations`), avec leur cause, **en attente de l'accord du joueur**. Un écart accepté ne vaut qu'à la valeur mesurée (5 mm près) : si une donnée le fait bouger, le contrôle échoue de nouveau. Il ne vaut que pour une cote, jamais pour une charnière ou un axe.
 - **R** Conséquence pour le modèle définitif : sur l'empennage équivalent, la charnière du gouvernail penche d'environ 27° et celle de la profondeur d'environ 8°, alors que les vraies sont droites. Un modèle Blender fidèle au dessin échouerait au contrôle des charnières. Point à trancher avant le modèle définitif (proposé dans le rapport au joueur).
 - **A** Place disque : il ne restait que 1,3 Go. Trois anciens exécutables de test du jeu (environ 6 Go) ont été supprimés de `target/debug`.
+- **A** Étape 5, scène de capture `maquette-spad7` (`crates/game/src/world/maquette.rs`) :
+  - le modèle est placé comme le jeu le placera : entité de l'avion au centre de gravité (`render_transform`), modèle en enfant (`model_transform`, demi-tour glTF de l'ADR 0006). Cap à l'est, inclinaison de 30° à droite, 6 m au-dessus du sol ;
+  - gizmos des axes du modèle de vol au centre de gravité (x rouge, y vert, z bleu), dessinés par-dessus le modèle ;
+  - hélice tournée de +30° autour de son axe local depuis la position pales verticales, flèche jaune du sens de rotation tirée du contrat, disque flou masqué ;
+  - registre des scènes : chaque scène a son système, lancé si la capture la demande (`capture_scene_is`) ; la capture attend la fin du chargement du modèle (`CaptureHold`) avant de compter ses images ;
+  - le jeu charge ses assets depuis `assets/` à la racine du dépôt (`ASSETS_DIR`) : sous `cargo run`, Bevy les cherchait dans `crates/game/assets`.
+- **A** Capture sous Xvfb (lavapipe), binaire de développement, 1920 × 1080 ; pas de `just capture`, dont la compilation optimisée ne tient pas sur le disque restant. **Image regardée** :
+  - le nez est du côté de la flèche rouge ;
+  - l'aile droite, verte, est du côté de la flèche verte et plus basse ; la flèche bleue penche à gauche, comme il se doit en virage à droite ;
+  - la flèche jaune tourne dans le sens horaire vu de derrière, et la pale du haut est tournée dans ce sens : l'axe local +X du nœud `prop` est bien celui des données.
+- **D** L'ADR 0006 est vérifié à l'œil sur le premier modèle, comme prévu par `pipeline-assets`.
+- **A** Documentation : `pipeline-assets` (conventions d'axes des nœuds, générateur, écarts acceptés, contrôles, empennage équivalent), `format-avion.md` (`accepted_deviations`), bilan d'exécution dans le plan.
