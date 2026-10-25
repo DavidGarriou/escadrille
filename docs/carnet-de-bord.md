@@ -1450,3 +1450,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - fraction figée à 1 (aucun redressement) : **à gauche aussi**, 87°.
 - **⚠** Avec 8 bandes, ce dernier cas partait à droite : la sensibilité précédente était faussée par la discrétisation.
 - **D** § 9 : le côté du départ ne dépend plus de la rotation derrière les ailes. Il reste « probable », confiance C, faute de témoignage, avec la réserve de la direction du souffle.
+- **R** Rapport final au joueur sur la suite 1 :
+  - mise en œuvre : rotation derrière les ailes par le bilan de moment cinétique, donnée `swirl_left` supprimée ;
+  - revue et corrections : bandes convergées, coût, marge par sécante, test miroir ;
+  - résultats : fraction 0,21 / 0,33 / 0,07 / 0,52 ; couple presque compensé en croisière (confiance D) ; performances inchangées à 0,2 point près ; départ au décrochage à gauche dans toutes les variantes (confiance C).
+- **D** Décisions demandées au joueur :
+  - lissage des tables de profil (C_m de l'aile, empennage), qui fixe la marge statique : par ADR ;
+  - question à l'historien sur un calage différentiel des ailes du S.VII.
