@@ -215,12 +215,15 @@ mod tests {
         }
     }
 
-    /// The wing takes back what TN 1146 measured: 40 to 50 % of the torque (« 50 to 60
-    /// percent » left, p. 13), widened by ±4 points, the effect of the wing height read on
-    /// the drawing (±0.3 in) measured before the jet-width factor existed (plan, step 1).
+    /// Non-regression, not a validation: the wing takes back 39 / 38 / 38 % of the torque
+    /// at the three blade angles, ±2 points (the effect of the wing height read on the
+    /// drawing, ±0.3 in, remeasured after the jet-width factor by the aerodynamicist,
+    /// review of 2026-10-25). The tunnel measured 47.5-50 / 39-45 / 43.5-46 % (figure 13):
+    /// the model is 8.5 to 11 points below at 15°, 1 to 7 at 25° and 5.5 to 8 at 35° (plan
+    /// docs/plans/m1-souffle-ailes.md).
     #[test]
-    fn the_wing_takes_back_what_the_tunnel_measured() {
-        for point in &TN1146 {
+    fn the_wing_takes_back_what_it_took_back_when_compared_with_the_tunnel() {
+        for (point, expected) in TN1146.iter().zip([0.39, 0.38, 0.38]) {
             let roll = tail_off_roll(
                 &model(point),
                 &STILL_AIR,
@@ -229,7 +232,9 @@ mod tests {
             )
             .unwrap();
             let taken = roll.recovered_fraction();
-            assert!((0.36..=0.54).contains(&taken), "{point:?}: {taken}");
+            assert!((taken - expected).abs() <= 0.02, "{point:?}: {taken}");
+            // Never above the measurement: the gap is one-sided.
+            assert!(taken <= 1.0 + point.measured.1, "{point:?}: {taken}");
         }
     }
 

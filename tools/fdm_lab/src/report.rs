@@ -189,7 +189,7 @@ pub fn markdown(r: &Report) -> String {
         let _ = writeln!(t, "\n## Polaire de la cellule\n");
         let _ = writeln!(
             t,
-            "Vols planés stabilisés au ralenti à {:.0} m, forces de l'hélice retranchées (traînée « vraie », convention du NACA Report 304). Ajustement sur {} vols de C_L {:.1} à {:.1} : **C_D = {:.4} + {:.4} C_L²**. Surface de référence {:.2} m², envergure {:.2} m, allongement équivalent b²/(κS) = {:.2} : **coefficient d'Oswald de l'avion complet {:.3}**.",
+            "Vols planés stabilisés au ralenti à {:.0} m, cellule évaluée sans les forces de l'hélice ni son souffle (traînée « vraie » des planés à traction nulle du NACA Report 304). Ajustement sur {} vols de C_L {:.1} à {:.1} : **C_D = {:.4} + {:.4} C_L²**. Surface de référence {:.2} m², envergure {:.2} m, allongement équivalent b²/(κS) = {:.2} : **coefficient d'Oswald de l'avion complet {:.3}**.",
             p.altitude,
             p.fitted,
             FIT_RANGE.0,

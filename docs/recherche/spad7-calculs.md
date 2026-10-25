@@ -339,3 +339,47 @@ Revue de l'aérodynamicien, essais avec un facteur sur le tourbillon K du souffl
 - **Le côté du départ (« à droite ») n'est donc pas significatif** tant que le souffle sur les ailes n'est pas étalonné. Seuls comptent la présence du départ et l'abattée.
 - Cet étalonnage passe en tête des tâches hors plan : avant toute conclusion sur le décrochage ou les effets de couple, et avant l'embardée au décollage du M2.
 
+**Mise à jour du 2026-10-25, après l'étalonnage du souffle** (`docs/plans/m1-souffle-ailes.md`) :
+- au décrochage moteur réduit, le SPAD part désormais **à gauche** : −54° à 3 s, nez −15° ;
+- sensibilité à la part de rotation laissée derrière les ailes :
+  - de 0,3 à 0,7, toujours à gauche (53 à 61°) ;
+  - seule l'absence de tout redressement (1,0), que contredisent les mesures du NACA, ramène le départ à droite ;
+- au ralenti près du décrochage, les ailes reprennent environ la moitié du couple. Le 0,5 laissé derrière elles est donc cohérent par le moment cinétique : le résultat se tient là où il compte ;
+- le côté dépend surtout de la rotation qui atteint l'empennage.
+
+**Statut** : départ à gauche **probable** (confiance C, aucun témoignage lu). Deux réserves :
+- le souffle part tout droit le long de l'axe de traction (E:), ce qui décide si l'empennage est dans le souffle au décrochage ;
+- aucune conclusion sur l'équilibre en roulis et en lacet en croisière : le bilan de moment cinétique y contredit la donnée (§ 10).
+
+
+## 10. Souffle d'hélice sur les ailes et l'empennage (2026-10-24 et 25)
+
+Plan `docs/plans/m1-souffle-ailes.md`, validé par le joueur ; détail des étapes et des revues dans ses « Résultats ».
+
+- **Largeur du jet** : la portance qu'ajoute le souffle aux bandes est réduite par le facteur de R&M 2368 (tableau 2).
+  - Sur la maquette motorisée du NACA TN 1146, l'aile reprend 38 à 39 % du couple ; mesure : 39 à 50 %, le modèle restant sous la mesure. Avant : 57 à 71 %.
+  - Pour le SPAD, la correction est faible en croisière (jet à peine plus rapide que l'avion) et forte au décrochage plein gaz.
+- **Rotation derrière les ailes** : divisée par deux (`swirl_left`, C:, Report 747 et TN 1146).
+  - Cohérent près du décrochage.
+  - **Incohérent en croisière** : les ailes y reprennent déjà 0,9 Q, de sorte que le bilan de moment cinétique ne laisserait presque rien à l'empennage. C'est la limite de R&M 2368 pour une corde supérieure à D/3.
+- **Inclinaison de la portance due à la rotation** : la poussée reprise au tourbillon ne vaut que τ fois celle de la théorie des bandes (R&M 2368, partie II ; τ ≈ 0,15 pour l'aile du SPAD).
+  - Avant, la cellule reprenait jusqu'à 120 % de l'énergie de rotation, ce qui est impossible.
+  - Maintenant : 4 à 18 % pour le SPAD, sous la ligne portante (28 à 37 %) et sous l'attente du Report 747 (environ la moitié).
+- **Froude sous traction négative** : l'air ralentit derrière une hélice qui freine, sans dépasser −0,4 V.
+- **Campagne du SPAD**, cibles A et B de S46 :
+
+| Mesure | Avant le plan | Après |
+|---|---|---|
+| Vitesses maximales (2 000 / 3 000 / 4 000 m) | +0,8 / +5,2 / +4,2 % | −0,2 / +4,1 / +2,8 % |
+| Montées (2 000 / 3 000 / 4 000 m) | −8,0 / −7,1 / −11,1 % | −1,7 / 0,0 / −3,3 % |
+| Plafond | +7,8 % | +5,0 % |
+
+  - **Biais déclaré** avant le code : la correction allait dans le sens des cibles. Ce n'est pas une validation, puisque les conditions de S46 déplacent les temps de −22 à +7 % (§ 8).
+  - Contre le rapport britannique n° 96 (§ 8), le modèle passe d'environ 4 à 6 % trop rapide à un écart d'ordre 0 à 2 %.
+- **Restent** (hors du plan) :
+  - rotation derrière les ailes par le moment cinétique ;
+  - η sur l'empennage à basse vitesse (M2) ;
+  - direction du souffle ;
+  - terme de toile appliqué bande par bande à la charge de rotation ;
+  - cas de comparaison sur l'énergie (Report 747).
+

@@ -341,8 +341,7 @@ impl LiftingSurface {
         for strip in &self.strips {
             let flow: StripFlow = local_flow(strip).into();
             let v = air_velocity + angular_velocity.cross(strip.position) - flow.velocity;
-            let untilted = flow.swirl * (1.0 - flow.swirl_tilt - self.induced_tilt).max(0.0);
-            let (w, state) = self.tilted_strip_loads(strip, v, untilted, density, controls, mutual);
+            let (w, state) = self.swirled_strip_loads(strip, v, &flow, density, controls, mutual);
             wrench += w;
             lift += state.coefficients.cl * state.dynamic_pressure * strip.area;
             weight += state.dynamic_pressure * strip.area;
@@ -351,32 +350,43 @@ impl LiftingSurface {
         (wrench, cl)
     }
 
+    /// Past the stall, the total induced angle at the stall and the weight that fades it with
+    /// the geometric incidence α (rad); `None` in attached flow.
+    fn past_stall(&self, alpha: f64, k: f64, mutual: f64) -> Option<(f64, f64)> {
+        let alpha = wrap_angle(alpha);
+        let target = alpha - mutual;
+        let (neg, pos) = self.polar.stall_points();
+        // Values of α − mutual at which each stall is reached.
+        let (alpha_neg, alpha_pos) = (neg.alpha + k * neg.cl, pos.alpha + k * pos.cl);
+        if target <= alpha_pos && target >= alpha_neg {
+            return None;
+        }
+        // Worked on the positive side (mirrored for the negative stall).
+        let (side, stall, induced) = if target > alpha_pos {
+            (1.0, alpha_pos + mutual, k * pos.cl + mutual)
+        } else {
+            (-1.0, alpha_neg + mutual, k * neg.cl + mutual)
+        };
+        let (a, stall) = (side * alpha, side * stall);
+        // Bounded by 180°, so that the induction is zero there from both sides.
+        let end = INDUCTION_FADE_END
+            .max(stall + INDUCTION_FADE_MARGIN)
+            .min(PI);
+        let weight = if end > stall {
+            ((end - a) / (end - stall)).clamp(0.0, 1.0)
+        } else {
+            0.0
+        };
+        Some((induced, weight))
+    }
+
     /// Effective angle of attack x = α − α_i for geometric angle of attack α (rad),
     /// own-induction factor k and induced angle `mutual` from the other planes.
     fn effective_alpha(&self, alpha: f64, k: f64, mutual: f64) -> f64 {
         let alpha = wrap_angle(alpha);
         let target = alpha - mutual;
         let (neg, pos) = self.polar.stall_points();
-        // Values of α − mutual at which each stall is reached.
-        let (alpha_neg, alpha_pos) = (neg.alpha + k * neg.cl, pos.alpha + k * pos.cl);
-        if target > alpha_pos || target < alpha_neg {
-            // Total induced angle at the stall, faded with the geometric incidence,
-            // worked on the positive side (mirrored for the negative stall).
-            let (side, stall, induced) = if target > alpha_pos {
-                (1.0, alpha_pos + mutual, k * pos.cl + mutual)
-            } else {
-                (-1.0, alpha_neg + mutual, k * neg.cl + mutual)
-            };
-            let (a, stall) = (side * alpha, side * stall);
-            // Bounded by 180°, so that the induction is zero there from both sides.
-            let end = INDUCTION_FADE_END
-                .max(stall + INDUCTION_FADE_MARGIN)
-                .min(PI);
-            let weight = if end > stall {
-                ((end - a) / (end - stall)).clamp(0.0, 1.0)
-            } else {
-                0.0
-            };
+        if let Some((induced, weight)) = self.past_stall(alpha, k, mutual) {
             return alpha - induced * weight;
         }
         // Attached flow: solve x + k C_L(x) = α − mutual on [x_neg, x_pos], where the
@@ -422,20 +432,24 @@ impl LiftingSurface {
         controls: &ControlDeflections,
         mutual: f64,
     ) -> (Wrench, StripState) {
-        self.tilted_strip_loads(strip, v, DVec3::ZERO, density, controls, mutual)
+        self.swirled_strip_loads(strip, v, &StripFlow::default(), density, controls, mutual)
     }
 
-    /// Same as [`Self::strip_loads`], the force following the inclination of `v +
-    /// untilted` instead of `v`: incidence, coefficients and dynamic pressure from `v`,
-    /// directions of lift and drag from `v + untilted`. In the surface's loads, `untilted`
-    /// is the part of the swirl ([`StripFlow`]) that neither the force nor the strip's own
-    /// induced angle follows: swirl × (1 − τ − k a₀ / (1 + k a₀)), so that the force
-    /// follows the fraction τ of the swirl's inclination in all.
-    pub fn tilted_strip_loads(
+    /// Same as [`Self::strip_loads`] for a strip in a swirl: `flow` is the strip's local
+    /// flow (its velocity already in `v`), whose swirl part comes from the rotation of the
+    /// air and whose `swirl_tilt` = τ is the fraction of the swirl's inclination that the
+    /// lift it adds follows in all.
+    ///
+    /// Strip theory inclines the lift ΔL that the swirl adds by the whole swirl incidence
+    /// δ_s, a thrust ΔL δ_s; the strip's own induced angle turns it back by
+    /// κ = k a₀ / (1 + k a₀) of it. The rest, (1 − τ − κ) ΔL δ_s, is taken back as a drag,
+    /// faded past the stall as the induction: the strip's base lift keeps strip theory's
+    /// inclination (and the yaw it gives), the rolling moment is unchanged.
+    pub fn swirled_strip_loads(
         &self,
         strip: &Strip,
         v: DVec3,
-        untilted: DVec3,
+        flow: &StripFlow,
         density: f64,
         controls: &ControlDeflections,
         mutual: f64,
@@ -451,30 +465,43 @@ impl LiftingSurface {
             .map_or(0.0, |c| c.alpha_per_rad * controls.get(c.channel));
         let alpha = wrap_angle((-u_n).atan2(u_c) + control_shift);
 
-        let effective = self.induced.map_or(alpha, |model| {
-            self.effective_alpha(alpha, model.factor(), mutual)
-        });
+        let k = self.induced.map_or(0.0, |model| model.factor());
+        let effective = self
+            .induced
+            .map_or(alpha, |_| self.effective_alpha(alpha, k, mutual));
         let induced = wrap_angle(alpha - effective);
         let coefficients = self.polar.coefficients(effective);
 
-        // Directions in the chord–normal plane: drag along the local flow (less its untilted
-        // part), lift perpendicular to it (equal to `normal` when the flow is along the
-        // chord), both tilted back by the induced angle.
-        let tilted = v + untilted;
-        let (t_c, t_n) = (tilted.dot(strip.chord_axis), tilted.dot(strip.normal));
-        let tilted_speed = (t_c * t_c + t_n * t_n).sqrt();
-        let (d_c, d_n) = if tilted_speed >= MIN_STRIP_SPEED {
-            (t_c / tilted_speed, t_n / tilted_speed)
+        // The part of the swirl lift's thrust the wing's own induced flow cancels, as drag:
+        // swirl incidence δ_s linearised (the swirl enters `v` with a minus sign), bounded
+        // by |swirl| / |v|, and the lift it adds at the strip's effective incidence.
+        let straightened = (1.0 - flow.swirl_tilt - self.induced_tilt).max(0.0);
+        let swirl_drag = if straightened > 0.0 {
+            let swirl = flow.swirl;
+            let delta =
+                (swirl.dot(strip.normal) * u_c - swirl.dot(strip.chord_axis) * u_n) / speed_sq;
+            let added = coefficients.cl
+                - self
+                    .polar
+                    .coefficients(effective - delta / (1.0 + k * self.section_slope))
+                    .cl;
+            let fade = self.past_stall(alpha, k, mutual).map_or(1.0, |(_, w)| w);
+            straightened * added * delta * fade
         } else {
-            (u_c / speed, u_n / speed)
+            0.0
         };
-        let drag_dir = -(strip.chord_axis * d_c + strip.normal * d_n);
-        let lift_dir = strip.normal * d_c - strip.chord_axis * d_n;
+
+        // Directions in the chord–normal plane: drag along the local flow, lift
+        // perpendicular to it (equal to `normal` when the flow is along the chord),
+        // both tilted back by the induced angle.
+        let drag_dir = -(strip.chord_axis * u_c + strip.normal * u_n) / speed;
+        let lift_dir = (strip.normal * u_c - strip.chord_axis * u_n) / speed;
         let (s, c) = induced.sin_cos();
         let (lift_dir, drag_dir) = (lift_dir * c + drag_dir * s, drag_dir * c - lift_dir * s);
 
         let q = 0.5 * density * speed_sq;
-        let force = (lift_dir * coefficients.cl + drag_dir * coefficients.cd) * (q * strip.area);
+        let force = (lift_dir * coefficients.cl + drag_dir * (coefficients.cd + swirl_drag))
+            * (q * strip.area);
         let pitch_axis = strip.chord_axis.cross(strip.normal);
         let mut wrench = Wrench::force_at(force, strip.position);
         wrench.moment += pitch_axis * (q * strip.area * strip.chord * coefficients.cm);

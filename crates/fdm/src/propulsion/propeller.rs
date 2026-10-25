@@ -41,7 +41,7 @@
 //! ahead of the disc and K = Q / ṁ just behind it (blended over ±5 % of the radius, C¹),
 //! with a solid-body core near the hub (E:). Behind the wings only a fraction of it is
 //! left ([`WingWake`]). The induced axial speed follows Froude on both sides of T = 0
-//! (slowed air behind a braking propeller, held at −V/2), and the swirl does not depend on
+//! (slowed air behind a braking propeller, held short of −0.4 V), and the swirl does not depend on
 //! the thrust's sign: a windmilling propeller turns the air against its rotation. The
 //! slipstream runs straight back along the thrust axis (E:).
 
@@ -352,11 +352,23 @@ impl Propeller {
     pub fn slipstream(&self, loads: &PropellerLoads, density: f64) -> Slipstream {
         let free_stream = loads.axial_speed.max(0.0);
         // Froude, T = 2 ρ A (V + v_i) v_i, on both sides of T = 0: a braking propeller
-        // slows the air behind it (v_i < 0). At v_i = −V/2 the far wake would stop and
-        // momentum theory fails (turbulent wake state): v_i is held there (E:).
+        // slows the air behind it (v_i < 0), its far wake moving at √(V² + 2T / (ρA)).
+        // Beyond v_i = −0.4 V (far wake at 0.2 V) momentum theory fails (turbulent wake
+        // state, Glauert): from v_i = −0.3 V on, the square of the far wake speed bends
+        // smoothly (C¹, linear in T before) towards (0.2 V)² without reaching it (E:).
         let induced = if density > 0.0 {
             let disc_loading = 2.0 * loads.thrust / (density * self.disc_area());
-            0.5 * ((free_stream * free_stream + disc_loading).max(0.0).sqrt() - free_stream)
+            let wake_sq = free_stream * free_stream + disc_loading;
+            let (knee, floor) = (
+                (WAKE_KNEE * free_stream).powi(2),
+                (WAKE_FLOOR * free_stream).powi(2),
+            );
+            let wake_sq = if free_stream > 0.0 && wake_sq < knee {
+                floor + (knee - floor) * ((wake_sq - knee) / (knee - floor)).exp()
+            } else {
+                wake_sq.max(0.0)
+            };
+            0.5 * (wake_sq.sqrt() - free_stream)
         } else {
             0.0
         };
@@ -417,6 +429,14 @@ pub struct Slipstream {
 /// Largest expansion of the stream tube's area behind a braking propeller: momentum
 /// theory's at v_i = −0.4 V, where the turbulent wake state begins (Glauert; E:).
 const MAX_TUBE_EXPANSION: f64 = 3.0;
+
+/// Far-wake speed behind a braking propeller, fraction of V, below which it bends
+/// smoothly (v_i = −0.3 V).
+const WAKE_KNEE: f64 = 0.4;
+
+/// Far-wake speed, fraction of V, that a braking propeller's wake approaches without
+/// reaching it (v_i = −0.4 V, start of the turbulent wake state).
+const WAKE_FLOOR: f64 = 0.2;
 
 impl Slipstream {
     /// The same slipstream, its swirl partly straightened behind the wings.
@@ -518,8 +538,13 @@ impl Slipstream {
     }
 
     /// The slipstream as a lifting strip responds to it, at its quarter-chord `point`, for
-    /// its `chord` (m) and section lift slope `section_slope` (per radian): the velocity it
-    /// adds, and the part of the swirl whose inclination the force does not follow.
+    /// its spanwise axis `span`, its `chord` (m) and its section lift slope `section_slope`
+    /// (per radian): the velocity it adds, the swirl part of it, and the fraction of the
+    /// swirl's inclination the lift it adds should follow.
+    ///
+    /// R&M 2368 puts the wing's quarter-chord line on a diameter of the jet: a wing at a
+    /// distance h from the axis crosses a section of half-width √(R² − h²), which stands
+    /// for R in both factors (C:).
     ///
     /// A wing crossing a jet of finite width gains less lift than strip theory says: the
     /// jet's edge sheds vortices whose images in the jet reduce the extra lift. Squire and
@@ -540,12 +565,22 @@ impl Slipstream {
     /// the swirl's inclination ([`swirl_tilt`]), so that the thrust the wing takes back from
     /// the swirl is that of lifting-line theory, not strip theory's, which can exceed the
     /// swirl's energy.
-    pub fn lifting_flow(&self, point: DVec3, chord: f64, section_slope: f64) -> StripFlow {
+    pub fn lifting_flow(
+        &self,
+        point: DVec3,
+        span: DVec3,
+        chord: f64,
+        section_slope: f64,
+    ) -> StripFlow {
         let Some(p) = self.parts(point) else {
             return StripFlow::default();
         };
         let (free, jet) = (self.free_stream, self.free_stream + p.axial);
-        let narrowness = section_slope * chord / (8.0 * PI * self.tube_radius(p.distance));
+        let radius = self.tube_radius(p.distance);
+        let half_width = self
+            .crossing_half_width(point - self.hub, span, radius)
+            .max(MIN_CROSSING * radius);
+        let narrowness = section_slope * chord / (8.0 * PI * half_width);
         let eta = jet_width_factor(free / jet, narrowness);
         let effective = (free * free + eta * (jet * jet - free * free))
             .max(0.0)
@@ -558,10 +593,30 @@ impl Slipstream {
         StripFlow {
             velocity: -self.axis * (effective - free) + tangential,
             swirl: tangential,
-            swirl_tilt: swirl_tilt(1.0 / (PI * narrowness)),
+            swirl_tilt: swirl_tilt(8.0 * half_width / (section_slope * chord)),
         }
     }
 }
+
+impl Slipstream {
+    /// Half-width of the jet section crossed by the wing through `d` (from the hub) along
+    /// `span`: √(R² − h²), h the distance from the axis to that line in the cross-section.
+    fn crossing_half_width(&self, d: DVec3, span: DVec3, radius: f64) -> f64 {
+        let radial = d - self.axis * d.dot(self.axis);
+        let across = span - self.axis * span.dot(self.axis);
+        let h = if across.length() > 1e-9 {
+            let a = across.normalize();
+            (radial - a * radial.dot(a)).length()
+        } else {
+            0.0
+        };
+        (radius * radius - h * h).max(0.0).sqrt()
+    }
+}
+
+/// Smallest half-width of a crossed jet section, fraction of the tube radius: keeps the
+/// factors finite for a wing grazing the tube's edge (the slipstream fades out there).
+const MIN_CROSSING: f64 = 1e-3;
 
 /// Axial and swirl parts of the slipstream at a point.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -600,7 +655,7 @@ const SWIRL_WIDTHS: [f64; 5] = [0.0, 0.5, 1.0, 1.5, 2.0];
 /// of every strip inclined by the whole swirl angle, with no induced angle), and 0 for
 /// a = 0 (E:). Lifting-line theory holds every induced effect: a strip that already turns
 /// its force back by its own induced angle leaves less to straighten
-/// ([`crate::aero::surface::LiftingSurface::tilted_strip_loads`]).
+/// ([`crate::aero::surface::LiftingSurface::swirled_strip_loads`]).
 const SWIRL_TILTS: [f64; 5] = [
     0.0,
     0.280 / (32.0 / (3.0 * PI * 0.5)),
@@ -611,16 +666,16 @@ const SWIRL_TILTS: [f64; 5] = [
 
 /// Fraction τ of the swirl's inclination that the force of a strip follows, for the width
 /// a = 8R / (a₀ c) of the jet against the chord (R&M 2368 part II; see [`SWIRL_TILTS`]).
-/// Linear in a up to a = 2; beyond, linear in 1/a up to τ = 1 for a jet infinitely wider
-/// than the chord, where strip theory holds (E:: the table stops at a = 2).
+/// Linear in a up to a = 2; beyond, the lifting-line thrust keeps its last value, T V / P₁
+/// = 0.367 (the table is flat from a = 1.5), so that τ = 0.367 · 3π a / 32 grows until
+/// strip theory holds, τ = 1 near a = 9.3 (E:, aerodynamicist review of 2026-10-25).
 pub fn swirl_tilt(width: f64) -> f64 {
     if width.is_nan() || width == f64::INFINITY {
         return 1.0;
     }
     let a = width.max(0.0);
-    let last = SWIRL_TILTS[4];
     if a > 2.0 {
-        return 1.0 - (1.0 - last) * 2.0 / a;
+        return (0.367 * 3.0 * PI * a / 32.0).min(1.0);
     }
     let i = SWIRL_WIDTHS.partition_point(|&w| w <= a).clamp(1, 4);
     let t = (a - SWIRL_WIDTHS[i - 1]) / (SWIRL_WIDTHS[i] - SWIRL_WIDTHS[i - 1]);
@@ -634,15 +689,13 @@ pub fn swirl_tilt(width: f64) -> f64 {
 /// R).
 ///
 /// Bilinear in V/v and 1/μ. Beyond the table: a jet narrower than μ = 1 keeps the factor of
-/// μ = 1 (E:); a jet slower than the stream (V/v > 1, braking propeller) takes the factor
-/// of the inverse ratio, its images having the same strength with the opposite sign (E:).
+/// μ = 1 (E:); a jet slower than the stream (V/v > 1, braking propeller) is left to strip
+/// theory, η = 1: there the images change sign and the wing loses more than strip theory
+/// says rather than less (aerodynamicist review of 2026-10-25), no table gives how much
+/// (E:; the slowing is at most a few per cent on the SPAD).
 pub fn jet_width_factor(speed_ratio: f64, narrowness: f64) -> f64 {
-    let ratio = if speed_ratio > 1.0 {
-        1.0 / speed_ratio
-    } else {
-        speed_ratio
-    };
-    if !(ratio.is_finite() && narrowness.is_finite()) {
+    let ratio = speed_ratio;
+    if !(ratio.is_finite() && narrowness.is_finite()) || ratio >= 1.0 {
         return 1.0;
     }
     let locate = |grid: &[f64; 4], x: f64| {

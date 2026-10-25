@@ -561,8 +561,12 @@ fn total_loads_are_the_sum_of_the_components() {
     let lifting = a
         .lifting
         .loads(v, w, rho, &ControlDeflections::default(), |i, strip| {
-            let mut felt =
-                slip.lifting_flow(strip.position, strip.chord, surfaces[i].section_slope());
+            let mut felt = slip.lifting_flow(
+                strip.position,
+                strip.chord_axis.cross(strip.normal),
+                strip.chord,
+                surfaces[i].section_slope(),
+            );
             if i == 2 {
                 felt.velocity += downwash;
             }
@@ -736,4 +740,29 @@ fn downwash_stays_in_the_plane_of_symmetry_and_fades_backwards() {
         DVec3::ZERO
     );
     assert_eq!(downwash_velocity(DVec3::ZERO, 0.05), DVec3::ZERO);
+}
+
+#[test]
+fn a_pusher_leaves_the_swirl_to_the_tail() {
+    // Wings ahead of the disc: no wake of the wings in the slipstream.
+    let a = biplane();
+    let geometry = PropellerGeometry {
+        hub: DVec3::new(-2.5, 0.0, 0.0),
+        ..*a.propulsion().unwrap().propeller.geometry()
+    };
+    let pusher = Aircraft::new(
+        a.mass,
+        a.lifting.clone(),
+        vec![],
+        vec![],
+        Some(Propulsion {
+            propeller: Propeller::new(table(), anchors(), geometry).unwrap(),
+            engine: engine(),
+        }),
+        a.downwash.clone(),
+        a.travel,
+    )
+    .unwrap();
+    assert!(a.wing_wake().is_some());
+    assert_eq!(pusher.wing_wake(), None);
 }

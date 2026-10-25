@@ -1336,3 +1336,28 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
   Même conclusion qu'avant l'addendum : le départ se fait à gauche dans toute la plage des sources.
 
+### Revue de l'aérodynamicien et corrections
+
+- **R** Revue reçue : à corriger, rien de bloquant.
+  - **Important** :
+    - (1) l'addendum inclinait toute la force de la bande, alors que τ ne vaut que pour la portance de rotation ;
+    - (2) `swirl_left` = 0,5 contredit le bilan de moment cinétique du modèle en croisière, où les ailes reprennent 0,9 Q ;
+    - (3) la tolérance du test TN 1146 n'était pas honnête ;
+    - (4) η sur l'empennage à basse vitesse double l'effet d'allongement ;
+    - (5) l'écart d'énergie ne vient qu'en partie de la traînée de profil.
+  - Plusieurs points mineurs, et un point du profil manqué.
+- **A** Corrections :
+  - (1) portance de base inclinée comme en théorie des bandes ; poussée en trop de la seule portance de rotation reprise comme une traînée ;
+  - (2) diagnostic de moment cinétique dans `fdm_lab souffle` ; version calculée à chaque pas mise en tête des suites ;
+  - (3) test de non-régression assumé, écart écrit ; point du profil ajouté (−3,94°) ;
+  - (4) reporté au M2 ;
+  - (5) rapporté ;
+  - points mineurs : τ au-delà de a = 2, η = 1 pour un jet lent, Froude en C¹ vers −0,4 V, aile décalée de l'axe, sillage limité aux bandes dans l'ombre du disque et absent pour une hélice propulsive, commentaires, test des modes propres en différence centrée, nouveaux tests.
+- **R** Maquette du TN 1146 : 39 / 38 / 38 % repris (mesure 47,5-50 / 39-45 / 43,5-46 %), le modèle restant sous la mesure.
+- **R** SPAD :
+  - puissance reprise au tourbillon : 18 / 4 / 6 % ;
+  - vitesses −0,2 / +4,1 / +2,8 %, montées −1,7 / 0,0 / −3,3 %, plafond +5,0 % ;
+  - départ au décrochage à gauche, 54°.
+- **D** § 9 de `spad7-calculs.md` mis à jour : départ à gauche **probable** (confiance C), aucune conclusion sur l'équilibre en croisière. Nouveau § 10 : synthèse du souffle. Le plan `m1-ecarts-spad7.md` marque la tâche prioritaire comme faite.
+
+- **⚠** `just check` refusait `swirled_strip_loads` (8 arguments, clippy `too_many_arguments`). **A** La rotation et sa fraction τ passent dans le `StripFlow` de la bande. `just check` et `just test` (234 tests) passent.

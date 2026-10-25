@@ -313,14 +313,28 @@ fn a_windmilling_propeller_slows_and_swirls_the_air() {
 }
 
 #[test]
-fn a_hard_braking_propeller_stops_at_half_the_speed_and_a_bounded_tube() {
-    // Far beyond the turbulent wake state: v_i held at −V/2, the tube at most three times
-    // its area.
+fn a_hard_braking_propeller_slows_the_air_short_of_the_turbulent_wake() {
+    // Far beyond the turbulent wake state: v_i bent towards −0.4 V without reaching it, the
+    // tube at most three times its area.
     let p = propeller();
     let mut braking = p.loads(DVec3::new(30.0, 0.0, 0.0), DVec3::ZERO, 0.0, RHO);
     braking.thrust = -5_000.0;
     let s = p.slipstream(&braking, RHO);
-    assert_eq!(s.induced_speed(), -15.0);
+    let vi = s.induced_speed();
+    assert!(vi > -12.0 && vi < -11.5, "{vi}");
+    // Monotone in the thrust, with a bounded slope through the knee at −0.3 V (Froude's
+    // own slope there is 1 / (ρ A · 0.4 V)).
+    let slope = 1.0 / (RHO * p.disc_area() * 0.4 * 30.0);
+    let mut previous = 0.0;
+    for i in 1..=5_000 {
+        braking.thrust = -f64::from(i);
+        let vi = p.slipstream(&braking, RHO).induced_speed();
+        assert!(
+            vi < previous && previous - vi < 1.01 * slope,
+            "{i}: {vi} {previous}"
+        );
+        previous = vi;
+    }
     for x in [0.0, 1.0, 5.0, 100.0] {
         let r = s.tube_radius(x);
         assert!(
@@ -329,7 +343,11 @@ fn a_hard_braking_propeller_stops_at_half_the_speed_and_a_bounded_tube() {
         );
     }
     let behind = s.local_flow(p.geometry().hub + DVec3::new(-50.0, 0.0, 0.3));
-    assert!(behind.is_finite() && behind.x > 25.0, "{behind:?}");
+    // The far wake at 0.2 V: the air slowed by 0.8 V = 24 m/s at most.
+    assert!(
+        behind.is_finite() && behind.x > 23.0 && behind.x < 24.0,
+        "{behind:?}"
+    );
 }
 
 #[test]
@@ -347,7 +365,12 @@ fn the_slipstream_is_continuous_when_the_thrust_crosses_zero() {
             advance_angle: 1.2,
         };
         let s = p.slipstream(&loads, RHO);
-        (s.swirl(), s.local_flow(hub + DVec3::new(-1.5, 0.3, -0.8)))
+        let point = hub + DVec3::new(-1.5, 0.3, -0.8);
+        (
+            s.swirl(),
+            s.local_flow(point),
+            s.lifting_flow(point, DVec3::Y, 1.5, 5.5),
+        )
     };
     let (minus, plus) = (at(-1e-6), at(1e-6));
     assert!(
@@ -355,6 +378,13 @@ fn the_slipstream_is_continuous_when_the_thrust_crosses_zero() {
         "{minus:?} {plus:?}"
     );
     assert!((minus.1 - plus.1).length() < 1e-6, "{minus:?} {plus:?}");
+    // What a strip feels too, swirl and tilt fraction included.
+    assert!(
+        (minus.2.velocity - plus.2.velocity).length() < 1e-6,
+        "{minus:?} {plus:?}"
+    );
+    assert!((minus.2.swirl - plus.2.swirl).length() < 1e-6);
+    assert!((minus.2.swirl_tilt - plus.2.swirl_tilt).abs() < 1e-9);
     assert!(plus.0 > 0.0);
     // No flow through the disc: the swirl fades out instead of blowing up.
     let still = PropellerLoads {
@@ -557,9 +587,9 @@ fn the_jet_width_factor_is_monotone_continuous_and_bounded() {
         }
         // Narrower than μ = 1: the factor of μ = 1.
         assert_eq!(jet_width_factor(r, 3.0), jet_width_factor(r, 1.0));
-        // A jet slower than the stream: the factor of the inverse ratio.
+        // A jet slower than the stream: strip theory.
         if r > 0.0 {
-            assert!((jet_width_factor(1.0 / r, 0.3) - jet_width_factor(r, 0.3)).abs() < 1e-12);
+            assert_eq!(jet_width_factor(1.0 / r, 0.3), 1.0);
         }
     }
     assert_eq!(jet_width_factor(f64::NAN, 0.3), 1.0);
@@ -586,7 +616,7 @@ fn a_strip_feels_eta_times_the_lift_the_slipstream_adds() {
     let (s, point) = blowing();
     let (chord, slope) = (1.5, 5.5);
     let full = s.local_flow(point);
-    let felt = s.lifting_flow(point, chord, slope).velocity;
+    let felt = s.lifting_flow(point, DVec3::Y, chord, slope).velocity;
     // Axial parts (the air moves backwards: −x) and swirl parts.
     let (free, jet, effective) = (20.0, 20.0 - full.x, 20.0 - felt.x);
     let (swirl, swirl_felt) = (full.z, felt.z);
@@ -609,7 +639,10 @@ fn a_strip_feels_eta_times_the_lift_the_slipstream_adds() {
 fn a_strip_much_narrower_than_the_jet_feels_all_of_it() {
     let (s, point) = blowing();
     let full = s.local_flow(point);
-    assert!((s.lifting_flow(point, 1e-9, 5.5).velocity - full).length() < 1e-6 * full.length());
+    assert!(
+        (s.lifting_flow(point, DVec3::Y, 1e-9, 5.5).velocity - full).length()
+            < 1e-6 * full.length()
+    );
 }
 
 #[test]
@@ -618,7 +651,7 @@ fn a_strip_feels_the_slipstream_continuously_up_to_its_edge() {
     let hub = point + DVec3::new(1.5, -0.6, 0.0);
     let tube = s.tube_radius(1.5);
     let at = |y: f64| {
-        s.lifting_flow(hub + DVec3::new(-1.5, y, 0.0), 1.5, 5.5)
+        s.lifting_flow(hub + DVec3::new(-1.5, y, 0.0), DVec3::Y, 1.5, 5.5)
             .velocity
     };
     assert_eq!(at(1.11 * tube), DVec3::ZERO);
@@ -643,7 +676,7 @@ fn at_rest_a_strip_feels_the_root_of_eta_of_the_jet_speed() {
     let s = p.slipstream(&w, RHO);
     let point = p.geometry().hub + DVec3::new(-1.5, 0.6, 0.0);
     let jet = -s.local_flow(point).x;
-    let felt = -s.lifting_flow(point, 1.5, 5.5).velocity.x;
+    let felt = -s.lifting_flow(point, DVec3::Y, 1.5, 5.5).velocity.x;
     let eta = jet_width_factor(0.0, 5.5 * 1.5 / (8.0 * PI * s.tube_radius(1.5)));
     assert!(jet > 5.0);
     assert!(close(felt, eta.sqrt() * jet, 1e-12), "{felt} {jet} {eta}");
@@ -710,24 +743,60 @@ fn the_swirl_tilt_is_lifting_line_over_strip_theory() {
     assert_eq!(swirl_tilt(-1.0), 0.0);
     assert_eq!(swirl_tilt(f64::INFINITY), 1.0);
     assert_eq!(swirl_tilt(f64::NAN), 1.0);
+    // Beyond a = 2 the lifting-line thrust stays at 0.367 until strip theory is reached.
+    assert!((swirl_tilt(3.0) - 0.367 * 3.0 * PI * 3.0 / 32.0).abs() < 1e-12);
     let mut previous = 0.0;
     for i in 1..=10_000 {
-        let tau = swirl_tilt(f64::from(i) * 2e-3);
-        assert!(tau > previous && tau - previous < 2e-3 && tau < 1.0, "{i}");
+        let a = f64::from(i) * 2e-3;
+        let tau = swirl_tilt(a);
+        assert!(
+            tau >= previous && tau - previous < 2.5e-4 && tau <= 1.0,
+            "{i}"
+        );
+        assert!(tau < 1.0 || a > 9.2, "{a}");
         previous = tau;
     }
-    assert!(swirl_tilt(1e6) > 0.999);
+    assert_eq!(swirl_tilt(1e6), 1.0);
 }
 
 #[test]
 fn a_strip_is_told_the_swirl_and_the_share_of_its_inclination_to_follow() {
     let (s, point) = blowing();
     let (chord, slope) = (1.5, 5.5);
-    let flow = s.lifting_flow(point, chord, slope);
+    let flow = s.lifting_flow(point, DVec3::Y, chord, slope);
     let swirl = flow.velocity - DVec3::X * flow.velocity.x;
     assert!(swirl.length() > 0.5, "{flow:?}");
     assert!((flow.swirl - swirl).length() < 1e-12, "{flow:?}");
     let width = 8.0 * s.tube_radius(1.5) / (slope * chord);
     assert_eq!(flow.swirl_tilt, swirl_tilt(width));
     assert!(flow.swirl_tilt > 0.05 && flow.swirl_tilt < 0.5, "{flow:?}");
+}
+
+#[test]
+fn a_wing_off_the_axis_crosses_a_narrower_section_of_the_jet() {
+    // A horizontal wing 0.6 m above the axis crosses a chord of the jet of half-width
+    // √(R² − 0.6²), not its diameter.
+    let (s, point) = blowing();
+    let hub = point + DVec3::new(1.5, -0.6, 0.0);
+    let (chord, slope) = (1.5, 5.5);
+    let radius = s.tube_radius(1.5);
+    let half_width = (radius * radius - 0.36).sqrt();
+    let above = s.lifting_flow(hub + DVec3::new(-1.5, 0.3, -0.6), DVec3::Y, chord, slope);
+    assert_eq!(
+        above.swirl_tilt,
+        swirl_tilt(8.0 * half_width / (slope * chord))
+    );
+    // The same wing through the axis: the whole radius.
+    let through = s.lifting_flow(hub + DVec3::new(-1.5, 0.3, 0.0), DVec3::Y, chord, slope);
+    assert_eq!(
+        through.swirl_tilt,
+        swirl_tilt(8.0 * radius / (slope * chord))
+    );
+    // A fin (spanwise axis vertical) 0.3 m to the side of the axis.
+    let fin = s.lifting_flow(hub + DVec3::new(-1.5, 0.3, -0.2), DVec3::Z, chord, slope);
+    let half_width = (radius * radius - 0.09).sqrt();
+    assert_eq!(
+        fin.swirl_tilt,
+        swirl_tilt(8.0 * half_width / (slope * chord))
+    );
 }

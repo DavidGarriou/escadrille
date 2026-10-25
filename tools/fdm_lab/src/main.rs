@@ -59,7 +59,8 @@ enum Command {
         #[arg(long, default_value_t = 2_000.0)]
         altitude_m: f64,
     },
-    /// Drag polar of the airframe from glides at idle (propeller forces taken out) and its
+    /// Drag polar of the airframe from glides at idle (airframe without its propeller's
+    /// forces and slipstream, the zero-thrust glides of NACA Report 304) and its
     /// Oswald factor.
     Polaire {
         aircraft: String,
@@ -658,6 +659,32 @@ fn swirl_report(aircraft: &Aircraft) -> Result<bool, String> {
                 "    {surface:<12} roulis {:+.2} Q, puissance {:+.2} kW",
                 roll / b.torque,
                 power / 1e3
+            );
+        }
+        // Angular momentum: what the wings take back is no longer in the slipstream behind
+        // them (aerodynamicist review of 2026-10-25).
+        if let Some(d) = aircraft.downwash() {
+            let names: Vec<&str> = d
+                .wings
+                .iter()
+                .map(|&i| aircraft.lifting().surfaces()[i].name())
+                .collect();
+            let wings: f64 = b
+                .surfaces
+                .iter()
+                .filter(|s| names.contains(&s.0.as_str()))
+                .map(|s| s.1)
+                .sum();
+            println!(
+                "    rotation laissée derrière les ailes : {:.2} par la donnée, {:.2} par le moment cinétique (1 − {:.2} Q repris par les ailes){}",
+                d.swirl_left,
+                (1.0 - wings / b.torque).clamp(0.0, 1.0),
+                wings / b.torque,
+                if total > b.torque {
+                    " ; **la cellule reprend plus que le couple**"
+                } else {
+                    ""
+                }
             );
         }
     }

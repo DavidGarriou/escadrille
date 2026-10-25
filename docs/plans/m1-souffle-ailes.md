@@ -196,6 +196,45 @@ Chaque étape : `just check`, `just test`, carnet de bord, commit et push.
 
   - Toutes les cibles passent. **Biais déclaré** : c'est le sens annoncé, pas une validation (enveloppe des conditions de S46, § 8).
 
+### Revue de l'aérodynamicien (2026-10-25) et corrections
+
+Verdict : à corriger, rien de bloquant. Interrompue une fois par la limite de session de l'API, puis reprise.
+
+- **Important 1 : la première version de l'addendum inclinait toute la force de la bande.** Le τ de la partie II ne vaut que pour la portance due à la rotation.
+  - Pour une charge antisymétrique localisée, l'inclinaison de la portance de base garde l'effet de la théorie des bandes, y compris en lacet.
+  - **Corrigé** : la bande garde l'inclinaison des bandes pour toute sa portance, et reprend la poussée en trop de la seule portance de rotation comme une traînée, (1 − τ − κ) ΔC_L δ_s q S, effacée après le décrochage comme l'induction (`swirled_strip_loads`).
+  - Cela supprime aussi le risque de discontinuité de l'ancienne direction recalculée.
+- **Important 2 : `swirl_left` = 0,5 contredit le bilan de moment cinétique du modèle.**
+  - Les ailes du SPAD reprennent 0,93 Q à Vmax, 0,73 Q en montée et 0,41 Q au décrochage plein gaz. La rotation laissée derrière elles devrait donc valoir 0,07, 0,27 et 0,59, pas 0,5 ; à Vmax, la cellule reprend même plus que le couple.
+  - Ce 0,9 Q en charge légère est le résultat « surprenant » de R&M 2368 partie II, peu fiable au-delà d'une corde de D/3 (SPAD : c/D = 0,5).
+  - **Diagnostic ajouté** à `fdm_lab souffle <avion>`. Version calculée à chaque pas : en tête des suites.
+  - **Aucune conclusion sur l'équilibre en roulis et en lacet en croisière** tant que ce n'est pas réglé. Près du décrochage, la donnée est cohérente.
+- **Important 3 : la tolérance du test TN 1146 n'était pas honnête.**
+  - La sensibilité à la hauteur d'aile, remesurée après η, vaut ±1 à 2 points, pas ±4.
+  - **Corrigé** : test de non-régression assumé (valeurs du modèle à ±2 points, jamais au-dessus de la mesure), avec l'écart écrit dans le test.
+  - En outre, un point du profil avait été manqué (−3,94°, c_l −0,223), ce qui raidit la pente à portance nulle. Le modèle donne maintenant 39 / 38 / 38 %, contre 47,5-50 / 39-45 / 43,5-46 % mesurés.
+- **Important 4 : η sur l'empennage double l'effet d'allongement à basse vitesse** (bouts du plan fixe en air mort). Reporté au M2 (point fixe, lever de queue, embardée), noté dans les suites.
+- **Important 5 : énergie.** Ablation de la revue : sans le terme de toile, la cellule reprend 29 / 11 / 5 % au lieu de 21 / 6 / 5 %.
+  - Appliquer `fabric_drag_rise` bande par bande à la charge de rotation suppose une propriété de section : question ouverte.
+  - Écart rapporté, non réglé. Cas de comparaison possible sur la conclusion 2 du Report 747 (gain d'efficacité mesuré).
+- **Points mineurs corrigés** :
+  - τ au-delà de a = 2 : 0,108 a jusqu'à 1 (la poussée de la ligne portante reste à 0,367) ;
+  - η = 1 pour un jet plus lent que l'avion (le rapport inverse avait sans doute le mauvais signe) ;
+  - Froude : le carré de la vitesse du sillage lointain s'infléchit en C¹ vers (0,2 V)², soit v_i → −0,4 V, cohérent avec le plafond d'expansion du tube ;
+  - aile décalée de l'axe : demi-largeur √(R² − h²) dans η et τ ;
+  - sillage des ailes : seules les bandes dans l'ombre du disque comptent, et aucun sillage pour une hélice propulsive ;
+  - commentaire de `swirl_left` reformulé : c'est une attente du Report 747, pas une mesure ;
+  - textes de la polaire mis à jour ;
+  - test des modes propres en différence centrée, avec son plancher d'origine (1e-3) ;
+  - tests de continuité de `lifting_flow` en T = 0, de l'aile décalée et de l'hélice propulsive.
+- **Campagne du SPAD après corrections** :
+  - vitesses −0,2 / +4,1 / +2,8 % ;
+  - montées −1,7 / 0,0 / −3,3 % ;
+  - plafond +5,0 % ;
+  - départ au décrochage moteur réduit à gauche, 54°.
+
+  Les changements du vol sur le dos, de la glissade sur la queue et du piqué viennent du sillage des ailes, d'après la campagne de la revue avec `swirl_left` = 1. Froude n'y est pour rien.
+
 ## Effets attendus sur le SPAD (ordres de grandeur, à vérifier)
 
 - **Montée plus lente, d'environ 5 %**, parce que la cellule reprend moins d'énergie au tourbillon.
@@ -209,6 +248,9 @@ Chaque étape : `just check`, `just test`, carnet de bord, commit et push.
 
 ## Hors de ce plan
 
+- **Prioritaire : rotation derrière les ailes par le bilan de moment cinétique**, clamp(1 − M_ailes/Q, 0, 1), à la place de la donnée `swirl_left`, éventuellement en état retardé comme la déflexion (revue du 2026-10-25). Préalable à toute conclusion sur l'équilibre en roulis et en lacet en croisière.
+- **η sur l'empennage à basse vitesse** : au point fixe, ses bouts sont en air mort, et son allongement s'ajoute à tort au facteur de largeur. À traiter au M2.
+- **Énergie reprise au tourbillon** : comparaison avec la conclusion 2 du Report 747 (gain d'efficacité mesuré d'une aile dans le souffle) ; terme de toile appliqué bande par bande à la charge de rotation ; décrochage des bandes près du moyeu, alors que Stüper voit l'écoulement rester attaché dans le jet.
 - **Direction du souffle** : le modèle le fait partir tout droit le long de l'axe de traction (E:). En réalité, l'incidence et la déflexion des ailes le dévient (Katzoff, NACA Report 690 ; Stüper, TM 874). C'est le prochain candidat, car cela décide si l'empennage est dans le souffle au décrochage.
 - **Ligne portante à matrice d'influence** (charges antisymétriques, amortissement en roulis) : limite connue, cible déjà notée dans `aero/surface.rs`.
 - **Répartition du tourbillon** : tourbillon libre avec un cœur de 0,25 R (E:), à comparer au calcul par éléments de pale du TN 1146 (figure 11).

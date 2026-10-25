@@ -354,24 +354,24 @@ mod tests {
         // The trim is an equilibrium.
         let f0 = at(&lin.x0);
         assert!(f0.iter().take(6).all(|v| v.abs() < 1e-7), "{f0:?}");
-        // A small mixed perturbation: the linear model is right to second order.
+        // A small mixed perturbation, on both sides: the linear model is right to second
+        // order. The centred difference ½ (f(x₀ + dx) − f(x₀ − dx)) cancels the curvature,
+        // and the first-order error of a slope break of the piecewise-linear tables at the
+        // trim point itself, as the Jacobian (aerodynamicist review of 2026-10-25).
         let dx = [
             0.05, 0.03, -0.04, 0.002, -0.001, 0.0015, 0.001, -0.0008, 0.5, 0.0002,
         ];
-        let mut x = lin.x0;
+        let (mut plus, mut minus) = (lin.x0, lin.x0);
         for i in 0..STATES {
-            x[i] += dx[i];
+            plus[i] += dx[i];
+            minus[i] -= dx[i];
         }
-        let f1 = at(&x);
-        // Floor of 5e-3 for small responses: the tables are piecewise linear (polars,
-        // jet-width factor), and their slope breaks along this perturbation amount to about
-        // 7e-5 on the yaw acceleration, whose response here is only 3e-3 rad/s² (measured
-        // on 2026-10-24; the breaks were already there, one at the trim point itself).
+        let (f_plus, f_minus) = (at(&plus), at(&minus));
         for i in 0..STATES {
             let predicted: f64 = (0..STATES).map(|j| lin.a[(i, j)] * dx[j]).sum();
-            let actual = f1[i] - f0[i];
+            let actual = 0.5 * (f_plus[i] - f_minus[i]);
             assert!(
-                (predicted - actual).abs() < 0.02 * actual.abs().max(5e-3),
+                (predicted - actual).abs() < 0.02 * actual.abs().max(1e-3),
                 "{}: {predicted} vs {actual}",
                 NAMES[i]
             );

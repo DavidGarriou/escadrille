@@ -162,7 +162,7 @@ impl Aircraft {
             return Err(AircraftError::BadTravel);
         }
         let wing_wake = match (&propulsion, &downwash) {
-            (Some(p), Some(d)) => Some(wing_wake(&lifting, d, p.propeller.geometry())),
+            (Some(p), Some(d)) => wing_wake(&lifting, d, p.propeller.geometry()),
             _ => None,
         };
         Ok(Self {
@@ -367,7 +367,12 @@ impl Aircraft {
         self.lifting
             .loads(air_velocity, omega, density, deflections, |i, strip| {
                 let mut flow = slipstream.map_or(StripFlow::default(), |s| {
-                    s.lifting_flow(strip.position, strip.chord, surfaces[i].section_slope())
+                    s.lifting_flow(
+                        strip.position,
+                        strip.chord_axis.cross(strip.normal),
+                        strip.chord,
+                        surfaces[i].section_slope(),
+                    )
                 });
                 if is_tail(i) {
                     flow.velocity += downwash_velocity;
@@ -398,26 +403,33 @@ impl Aircraft {
     }
 }
 
-/// The wings' wake in the slipstream: from their rearmost trailing edge, over their mean
-/// chord, down to the swirl the wings leave.
+/// The wings' wake in the slipstream: from the rearmost trailing edge of the wing strips
+/// within the propeller's radius of its axis, over their mean chord, down to the swirl the
+/// wings leave. None when no wing strip lies in the disc's shadow, or when the wings are
+/// ahead of the disc (pusher).
 fn wing_wake(
     lifting: &LiftingSystem,
     downwash: &Downwash,
     propeller: &PropellerGeometry,
-) -> WingWake {
+) -> Option<WingWake> {
     let surfaces = lifting.surfaces();
+    let axis = propeller.thrust_axis;
     let (mut start, mut area, mut chord_area) = (f64::NEG_INFINITY, 0.0, 0.0);
     for strip in downwash.wings.iter().flat_map(|&i| surfaces[i].strips()) {
+        let d = strip.position - propeller.hub;
+        if (d - axis * d.dot(axis)).length() > 0.5 * propeller.diameter {
+            continue;
+        }
         let trailing_edge = strip.position - strip.chord_axis * (0.75 * strip.chord);
-        start = start.max(-(trailing_edge - propeller.hub).dot(propeller.thrust_axis));
+        start = start.max(-(trailing_edge - propeller.hub).dot(axis));
         area += strip.area;
         chord_area += strip.area * strip.chord;
     }
-    WingWake {
+    (area > 0.0 && start > 0.0).then(|| WingWake {
         start,
         length: chord_area / area,
         swirl_left: downwash.swirl_left,
-    }
+    })
 }
 
 /// Downwash velocity at the tail for a downwash angle ε: ε V opposite to the lift

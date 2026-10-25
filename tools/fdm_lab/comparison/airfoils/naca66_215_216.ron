@@ -6,7 +6,8 @@
 // p. 236, at the lowest Reynolds number of the page, 2.9 × 10⁶ (circles). The TN 1146 model
 // ran at 0.5 × 10⁶ (0.8 × 10⁶ effective): its slope and maximum lift were probably a little
 // lower, a reserve kept in the comparison. Grid of the page located on the image, scan
-// rotated by 0.7° and corrected; points read to about ±0.15° and ±0.01.
+// rotated by 0.7° and corrected; points read to about ±0.15° and ±0.01. The circle at −3.9°,
+// under a diamond, was first missed (aerodynamicist review of 2026-10-25).
 Airfoil(
     name: "NACA 66(215)-216 (Re 2,9 × 10⁶)",
     source: "NACA Report 824, p. 236 (figure de la section NACA 66(215)-216, cercles) ; plan docs/plans/m1-souffle-ailes.md",
@@ -24,6 +25,7 @@ Airfoil(
         (alpha: Deg(-10.12), cl: -0.782, cd: 0.0165, cm: -0.040),
         (alpha: Deg(-8.18), cl: -0.618, cd: 0.0123, cm: -0.040),
         (alpha: Deg(-6.08), cl: -0.400, cd: 0.0102, cm: -0.040),
+        (alpha: Deg(-3.94), cl: -0.223, cd: 0.0083, cm: -0.042),
         (alpha: Deg(-0.15), cl: 0.190, cd: 0.0048, cm: -0.048),
         (alpha: Deg(1.94), cl: 0.414, cd: 0.0045, cm: -0.052),
         (alpha: Deg(3.89), cl: 0.534, cd: 0.0062, cm: -0.046),
