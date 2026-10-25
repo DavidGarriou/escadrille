@@ -4,6 +4,7 @@
 //! development tools (gamepad lab, capture mode) and a reference scene.
 
 mod dev;
+mod flight;
 mod states;
 mod world;
 

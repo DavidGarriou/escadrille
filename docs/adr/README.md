@@ -9,3 +9,4 @@ Une décision structurante = un fichier `NNNN-titre-court.md`, créé avec `/adr
 | 0003 | [Réalisme par couches sur un modèle physique unique](0003-realisme-par-couches.md) | Accepté |
 | 0004 | [Version de Bevy : 0.20.0, sans bevy_hanabi pour l'instant](0004-version-bevy.md) | Accepté |
 | 0005 | [Intégration numérique du modèle de vol : RK4 à pas fixe, en f64](0005-integration-numerique.md) | Accepté |
+| 0006 | [Repères et conversions : Blender → glTF → Bevy → modèle de vol](0006-reperes-et-conversions.md) | Proposé |

@@ -1480,3 +1480,29 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   6. rien n'affiche encore un avion dans le jeu : le pont FDM ↔ ECS et les caméras sont au M2.
 - **D** Proposition : faire le modèle provisoire au début du M2, avec un plan à valider. Décision laissée au joueur.
 - **Q** Le joueur : « qu'est-ce qu'un ADR ? » **R** Une fiche de décision d'architecture (*Architecture Decision Record*) dans `docs/adr/` : le contexte, les options, le choix et ses conséquences. Un ADR accepté ne se modifie pas : on le remplace par un nouveau. Exemples du dépôt : 0001 à 0005, dont 0004 (version de Bevy). Celui des axes fixerait les repères et l'origine du modèle 3D.
+
+### ADR 0006 : repères et conversions
+
+- **Q** Le joueur : « Écris le modèle de conversion et l'ADR pour ce sujet » (les repères de Blender, glTF, Bevy et du modèle de vol).
+- **A** Vérifié dans les sources épinglées :
+  - Bevy 0.20 et le modèle de vol partagent glam 0.33 ;
+  - le chargeur glTF de Bevy 0.20 ne convertit rien par défaut ; sa conversion (`GltfConvertCoordinates`) est marquée expérimentale ;
+  - `Transform::forward`, `right` et `up` donnent −Z, +X et +Y.
+- **A** `docs/adr/0006-reperes-et-conversions.md` (statut **Proposé**), avec cinq choix et leurs options :
+  - nord = −Z et est = +X dans Bevy, d'où **une seule rotation propre** pour le corps et le monde, (x, y, z) ↦ (y, −z, −x) ;
+  - demi-tour fixe autour de Y pour les modèles glTF, appliqué par notre pont et non par l'option expérimentale ;
+  - dans Blender : nez vers −Y, dessus vers +Z, aile droite vers −X, export par défaut ;
+  - origine du modèle 3D au `datum` d'`aircraft.ron`, l'entité étant au centre de gravité ;
+  - attitudes par conjugaison du quaternion, sans angles d'Euler.
+- **A** Code : `crates/game/src/flight/bridge.rs` (`to_bevy`, `from_bevy`, `attitude_to_bevy`, `attitude_from_bevy`, `GLTF_TO_BEVY`, `model_transform`, `render_transform`). Huit tests :
+  - axes et aller-retour ;
+  - rotation propre (pas de miroir) ;
+  - attitude cohérente avec les vecteurs ;
+  - vols simples (cap à l'est, cabré de 10°, inclinaison à droite) ;
+  - hélice à droite horaire à l'écran vue du poste ;
+  - demi-tour glTF et lignes de l'ADR pour `asset_check` et Blender ;
+  - origine du modèle au `datum` ;
+  - origine de rendu (seul l'écart passe en f32).
+- **A** Index des ADR et règle d'orientation de `pipeline-assets` mis à jour. `just check` passe, ainsi que `just test` (250 tests).
+- **⚠** Un de mes tests attendait −3,0012 au lieu de −2,9988 (signe d'un décalage vers l'est) : erreur du test, corrigée ; le code était juste.
+- **D** En attente : validation de l'ADR par le joueur. Aucune règle de `CLAUDE.md` ne change.

@@ -22,7 +22,7 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 ## Avions : contrat entre le modèle et le code
 
 - Unités : mètres, échelle 1, transformations appliquées.
-- **Orientation** : la convention d'axes Blender → glTF → Bevy → repère corps du FDM est fixée une fois par un ADR, avec une scène de test qui vérifie que le nez du modèle pointe dans l'axe avant du FDM. `asset_check` contrôle chaque export.
+- **Orientation** (ADR 0006, `docs/adr/0006-reperes-et-conversions.md`) : dans Blender, **nez vers −Y, dessus vers +Z, aile droite vers −X** ; export glTF avec « +Y Up » (option par défaut), transformations appliquées. Le glTF a alors le nez vers +Z, comme le veut la spécification. Le jeu le tourne d'un demi-tour autour de Y (`GLTF_TO_BEVY`, `crates/game/src/flight/bridge.rs`) ; ne pas activer l'option expérimentale `GltfConvertCoordinates` de Bevy, qui compterait ce demi-tour deux fois. **Origine du modèle** : le `datum` d'`aircraft.ron`. Avec le premier modèle, une scène de test vérifie que le nez, l'aile droite et le sens de l'hélice sont ceux du modèle de vol. `asset_check` contrôle chaque export.
 - **Nœuds obligatoires** (pivot sur l'axe de rotation réel, axe local = axe de charnière) :
 
 | Nœud | Rôle |

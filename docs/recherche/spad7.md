@@ -1,8 +1,8 @@
 # SPAD S.VII C.1 — fiche de recherche
 
 - Identifiant : `spad7` (même nom que `assets/aircraft/spad7/`)
-- Dernière mise à jour : 2026-10-24
-- État : **en cours** (dixième passe). Sont désormais sourcés par des documents d'époque lus :
+- Dernière mise à jour : 2026-10-25
+- État : **en cours** (onzième passe). Sont désormais sourcés par des documents d'époque lus :
   - le profil « Spad » (B) ;
   - les polaires du RAF 15 (A pour ce profil) ;
   - la courbe de puissance et la loi d'altitude du Hispano de 180 hp (B pour un 8Ab) ;
@@ -23,6 +23,12 @@
     - pas d'atmosphère type officielle en France avant le 15 avril 1920 (S79, en résumé) ;
     - terrain d'essai probable : Villacoublay, environ 178 m (C) ; date et saison de l'essai de S46 : non trouvées ;
     - ordres de grandeur calculés pour l'enveloppe (§ 5.7.5) et documents à télécharger (§ 5.7.7).
+  - **onzième passe (2026-10-25), couple de l'hélice** (§ 6.5) :
+    - réglage dissymétrique de la cellule du S.VII (calages, haubans, dérive, ailerons) : **non trouvé** ; aucun indice positif dans la famille SPAD ;
+    - pratique d'époque documentée sur d'autres chasseurs (Albatros D.I, Fokker D VII) et dans un manuel de monteur britannique de 1919 : contexte, rien à transposer ;
+    - aucun témoignage d'époque sur le pied à tenir sur un S.VII ; T8 précisé sans être recompté ;
+    - convention « right hand tractor » éclaircie par des textes britanniques de 1917-1918 : sens **horaire vu du pilote** proposé en **B** (§ 6.5.3) ;
+    - notice britannique du S.VII (1918) repérée à l'Australian War Memorial, non numérisée (§ 6.5.6).
 - Fiches liées : [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (moteur et hélice), [`profil-spad7.md`](profil-spad7.md) (profil d'aile)
 - Contexte de jeu visé : escadrille SPA 3 (« Cigognes », Groupe de Combat 12), Flandres, été 1917
 
@@ -101,6 +107,15 @@ Méthode et accès :
   - le dossier Hartmann sur les héliciers [LU].
 - **Web** : environ 30 requêtes en français, anglais et italien, toutes vues en **résumé**. L'outil de lecture échoue toujours (DNS) sur www.hydroretro.net, archive.org, ntrs.nasa.gov, www.academie-technologies.fr et resair420.free.fr (testés le 2026-10-24).
 - **Rien n'a été téléchargé.** Les documents qui répondraient sont listés au § 5.7.7.
+
+**Onzième passe (2026-10-25) : couple de l'hélice.** Objet : réglage dissymétrique de la cellule, témoignages sur le pied à tenir, sens de rotation de l'hélice (§ 6.5). Question venue du modèle de vol (`docs/plans/m1-rotation-derriere-ailes.md`) ; le résultat du modèle, de confiance D, n'a servi ni de cible ni de repoussoir.
+- **Relus localement, comme des données** [LU-OCR] :
+  - les 208 numéros de *Flight* (1916-1919), sur les termes du couple et du réglage : « torque », « wash in », « wash out », « offset », « counteract », « right-hand », « left hand tractor », « direction of rotation », « rigging », croisés avec « Spad » ;
+  - S48 et S49, relus pour les calages, la dérive et le plan fixe ;
+  - le volume II du rapport ACA 1917-18 (« slipstream », « torque ») ; la bibliographie de Brockett (S56) ; *Aerial Age* 1919.
+- **Textes intégraux** de S1, S3 et S4, récupérés le 2026-10-25 par raw.githubusercontent.com et recherchés mot à mot [LU].
+- **Web** : une trentaine de requêtes en français, anglais, allemand, italien et russe, toutes vues en **résumé**. Échec DNS de l'outil de lecture sur onze sites (§ 9.5).
+- **Rien n'a été téléchargé.** Documents à demander au § 6.5.6.
 
 ## 1. Identification et contexte
 
@@ -454,7 +469,7 @@ Documents qui lèveraient ces manques : § 9.6 (lignes de la septième passe).
 - **Régime en palier à pleins gaz** (S46, p. 205) [LU-IMG] : 8Aa, **1 720, 1 680 et 1 640 tr/min** à 2 000, 3 000 et 4 000 m ; 8Ab, **1 870, 1 830, 1 780 et 1 710 tr/min** à 2 000, 3 000, 4 000 et 5 000 m. A. **Correction** : en quatrième passe, j'avais attribué au 180 ch les régimes du 150 ch. Ces régimes sont précieux pour caler le pas de l'hélice (`hispano-suiza-8a.md` § 7.4).
 - **Loi d'altitude du 150 ch** (quatrième passe) : un essai britannique **en vol** (R&M 462, mars 1918) sur un Hispano de 150 hp sans réducteur, monté sur S.E.5, donne une puissance proportionnelle à la pression à la puissance 1,04 environ, indépendante de la température (exposant lu dans l'OCR, à confirmer). Le tableau américain de 1919 **estime** au contraire une perte voisine de la densité (`hispano-suiza-8a.md` § 4.3 et 4.4).
 - Hélice bipale en bois à pas fixe. Selon des forums [RÉSUMÉ], diamètre de 2,35 à 2,45 m et pas de 1,75 à 2,10 m pour le 150 ch. Rien de fiable pour le 180 ch. **Table C_T/C_P mesurée** sur une hélice en bois comparable (Navy D' du VE-7 à moteur Wright de 180 hp, 2,39 m, P/D 0,8) : A pour la mesure, **C pour le SPAD** (`hispano-suiza-8a.md` § 7.4).
-- **Sens de rotation** : **horaire vu du siège du pilote** (confiance C), déduit de sources concordantes qui ne sont pas primaires. Troisième passe : les hélices du VE-7 portent « Rotation: Right hand » (NACA Report 301, p. 5). L'indice concorde, mais il ne relève pas la confiance, faute de définition de la convention et d'identification certaine du moteur. Conséquence attendue (C) : à pleine puissance et à basse vitesse, l'avion tend à partir à gauche, ce qui demande du pied à droite. C'est l'inverse du SPAD XIII à réducteur, pour lequel McCook note qu'il faut beaucoup de pied à gauche (S15).
+- **Sens de rotation** : **horaire vu du siège du pilote** (confiance C), déduit de sources concordantes qui ne sont pas primaires. Troisième passe : les hélices du VE-7 portent « Rotation: Right hand » (NACA Report 301, p. 5). L'indice concorde, mais il ne relève pas la confiance, faute de définition de la convention et d'identification certaine du moteur. Conséquence attendue (C) : à pleine puissance et à basse vitesse, l'avion tend à partir à gauche, ce qui demande du pied à droite. C'est l'inverse du SPAD XIII à réducteur, pour lequel McCook note qu'il faut beaucoup de pied à gauche (S15). **Onzième passe** : la convention « right hand » est éclaircie par deux textes britanniques de 1917-1918 (S91, S93) ; **B proposé** (§ 6.5.3), à reporter dans `hispano-suiza-8a.md` § 7.3.
 - **Neuvième passe (2026-10-23), hélice** (détail : `hispano-suiza-8a.md` § 7.5) :
   - **Liste française** : sept hélices autorisées pour le « Type VII · Hispano 150 ch », vues en résumé dans le dossier de Hartmann : Levasseur 485 et 561, Gallia 3, Éclair 100 et 6, Chauvière 2066, Régy 353 (autorisation annulée). Elles vont de 2,35 à 2,50 m de diamètre et de 1,75 à 2,05 m de pas (P/D de 0,74 à 0,82).
   - **Référence retenue** : Levasseur 485, 2,45 × 1,95 m, C. La table de D' en soufflerie reste la base aérodynamique ; deux tables mesurées en vol sur VE-7 sont ajoutées comme variantes.
@@ -920,6 +935,7 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 
 - **T8 — Louis G. Meister, pilote d'essai en chef de McCook Field, rapport du 27 avril 1921** · États-Unis, pilote d'essai (regard technique, sans attachement) · 1921 · **SPAD XIII** (moteur à réducteur, rotation inverse du VII) · anglais · S15 [RÉSUMÉ].
   En vol : très stable, mais il faut beaucoup de pied à gauche, car le couple moteur est « très prononcé ». Avion lourd de la queue (la phrase est coupée dans le résumé). Le moteur est très sensible à la température en plané et refroidit vite : le pilote doit manœuvrer sans cesse les volets du radiateur. Au sol, deux versions coexistent dans le résumé : il roule facilement même par vent fort, sans tendance à tourner, **ou** il tend à embarder au décollage. Il se pose facilement, s'arrête court grâce à sa queue lourde et ne capote pas, même posé queue haute ou sur terrain bosselé.
+  **Onzième passe** (S15, complément [RÉSUMÉ]) : les deux versions décrivent deux moments différents. Au roulage, aucune tendance à tourner, même par vent fort. Au décollage, l'avion part à droite dès l'ouverture des gaz ; un pied à gauche trop rapide le fait partir à gauche ; le remède est de pousser un peu le manche pour lever la queue tôt (§ 6.5.4). Précision du même document, **pas une source nouvelle**.
   Biais : avion d'après-guerre, autre sous-type.
 
 - **T9 — Frank Tallman, *Flying the Old Planes*, Doubleday, 1973** · États-Unis, pilote de cinéma et collectionneur · années 1950-1970 · **S.VII original à moteur Wright-Hispano E de 180 ch** (immatriculé N4727V, S31) · anglais · S31 [RÉSUMÉ].
@@ -994,7 +1010,7 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 | Moins maniable que le Nieuport ; commandes lourdes | Secondaires : S5, S32/T10, S33, S34 [RÉSUMÉ] ; **contre** : T9 Tallman (commandes légères) [RÉSUMÉ] et T4 (b), Bordeaux (« facilité de conduite » supérieure à celle de l'Albatros) [LU] | **Contesté** ; le comparant change (Nieuport ou Albatros) | Aucune. Ne pas régler le modèle pour l'obtenir : le rayon de virage doit émerger de la charge alaire et de la puissance | — |
 | Décrochage brutal à basse vitesse, mauvais plané, atterrissage au moteur | T9 Tallman [RÉSUMÉ] ; secondaires (`profil-spad7.md` A12 : forum, page Memorial Flight ou NASM) ; fait T16 (Olivari : chute à environ 80 m juste après le décollage, confirmée par la presse de 1917, cause non précisée par elle) ; S21 (XIII) | **À confirmer** : aucun témoignage direct lu | Provisoire, non bloquant : décrochage moteur réduit avec abattée nette et départ en roulis, plané plus pentu que celui d'un Nieuport. **Aucun seuil chiffré** tant qu'il n'est pas sourcé. Mécanismes physiques maintenant documentés, sans valeur SPAD : chute de portance nette après le maximum du RAF 15 à Reynolds élevé (`profil-spad7.md` § 3.1) ; décrochage du plan supérieur avant le plan inférieur (§ 2.4, S44). Ils doivent **produire** le trait, pas le remplacer | C |
 | Très stable en vol, bonne plate-forme de tir | T8 Meister (XIII) [RÉSUMÉ] ; S5 [RÉSUMÉ] | **À confirmer** pour le VII | Provisoire : modes propres. Oscillation d'incidence bien amortie, spirale peu divergente | C |
-| Couple marqué, embardée au décollage | T8 (XIII, rotation inverse) | **À confirmer** ; sens déduit pour le VII | M2 (sol) : à pleine puissance, l'avion part à gauche, contré au pied droit (déduit du sens de rotation, C) | C |
+| Couple marqué, embardée au décollage | T8 (XIII, rotation inverse ; onzième passe : roulage neutre, départ à droite à l'ouverture des gaz) [RÉSUMÉ] ; complément de T9 (S.VII de 180 ch, aucune difficulté de direction selon un forum) [RÉSUMÉ] | **À confirmer** : aucun témoignage d'époque sur un S.VII (§ 6.5.4). Sens de rotation appuyé par une convention d'époque (§ 6.5.3) | M2 (sol) : à pleine puissance, l'avion part à gauche, contré au pied droit (déduit du sens de rotation, C). **Aucune attente en palier ni en montée** : rien n'est sourcé (§ 6.5.5) | C |
 | Visibilité latérale et vers l'arrière limitée, angle mort sous le moteur | T4 (a) Bordeaux [LU] ; S9 [RÉSUMÉ] (avant et vers le bas médiocres) | **À confirmer** | Pour la caméra cockpit (M2+), pas pour le modèle de vol | C |
 | Poste étroit, instruments mal disposés | T19 (rapport allemand, S.XI, 1918) [LU-OCR] : siège très étroit « comme sur tous les SPAD », compte-tours posé à plat et lu à l'envers | **À confirmer** pour le S.VII : un seul regard, sur un autre type | Pour le cockpit (M2+) : ne pas reproduire sans photographie d'un poste de S.VII | C |
 | Au sol : roule bien, capote peu, s'arrête court | T8 (XIII) [RÉSUMÉ] | **À confirmer** | M2 (sol) | C |
@@ -1025,6 +1041,130 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **Anglais** : Charles J. Biddle, *The Way of the Eagle* (Scribner, 1919 ; P7). Lettres de la SPA 73 (GC 12), en Flandre fin 1917 : la source la plus proche du contexte de jeu. Hall et Nordhoff, *The Lafayette Flying Corps* (1920 ; P15). E. Rickenbacker, *Fighting the Flying Circus* (1919 ; P7 bis), à lire en entier plutôt que dans le résumé de *Flight*. *Scientific American*, « Spad pursuit biplane », vol. 118, 2 février 1918, p. 107 (relevé dans S56).
 - **Allemand** : rapports de Jasta et notes de l'Idflieg sur les appareils capturés ; texte complet d'Udet (projekt-gutenberg.org, inaccessible). *Flugsport* 1917-1918 : la revue publiait des examens d'appareils capturés (T19) ; chercher un S.VII. *Deutsche Luftfahrer-Zeitschrift*, 22 mai 1918, p. 20-21 : « Der Spad-Doppeldecker mit geteiltem Rumpf » (relevé dans S56 ; type à identifier).
 - **Italien** : lettres de Baracca (P13) ; G. Alegi et P. Varriale, *Italian SPADs at War* (Windsock Datafile 155 ; P5).
+
+### 6.5 Onzième passe (2026-10-25) : couple de l'hélice, réglage de la cellule, pied à tenir
+
+**Question du modèle de vol** (`docs/plans/m1-rotation-derriere-ailes.md`). Dans le modèle, en palier et en montée, le tourbillon du souffle sur les ailes compense presque tout le couple de l'hélice. Le couple ne se sentirait qu'au décrochage plein gaz et au décollage. Ce résultat est de confiance D.
+
+On cherche :
+1. un réglage dissymétrique de la cellule du S.VII, qui mesurerait indirectement le couple en croisière ;
+2. des témoignages sur le pied à tenir ;
+3. le sens de rotation de l'hélice.
+
+**Les sources sont jugées sur leurs seuls mérites ; le résultat du modèle n'a servi ni de cible ni de repoussoir.** Méthode et accès : § 0.
+
+Fausse piste écartée : l'article « Flying the Spad » du musée de l'aéronavale américaine (history.navy.mil) porte sur le Douglas A-1 Skyraider, surnommé « Spad », et non sur le chasseur de 1917 (résumé du 2026-10-25).
+
+#### 6.5.1 Réglage dissymétrique de la cellule : non trouvé pour le S.VII
+
+| Ce qui a été cherché | S.VII | Famille SPAD | Statut |
+|---|---|---|---|
+| Calage différent à gauche et à droite, vrillage dissymétrique | rien | **S.XI** (examen allemand, 1918) : plan supérieur 2,8° au centre et 2,5° au saumon, plan inférieur 1,5° partout ; une valeur par station, sans distinction entre gauche et droite. **XIII** (McCook, 1921) : 1½° et 1° pour les deux plans, sans distinction dans le résumé | S49 [LU-OCR] ; S15 [RÉSUMÉ] |
+| Tension différente des haubans, ailerons réglés hors du neutre | rien | rien | — |
+| Dérive décalée ou calée, plan fixe vrillé | S48 (1917) décrit la dérive, avancée de 12 in devant le plan fixe, sans mentionner de décalage | S49 : plan fixe calé à 0° sur le longeron supérieur ; aucun décalage de dérive signalé | S48, S49 [LU-OCR] |
+| Compensateur, sandow sur le palonnier | rien | rien | — |
+| Notice de réglage française du S.VII, ou sa traduction américaine | non trouvée | notice française du XIII repérée (S38, non lue) ; traduction américaine de la notice du **S.XI** repérée (Air Service Bulletin n° 192, 1918 ; S97) | [RÉSUMÉ] ; à demander (§ 6.5.6) |
+| Notice britannique du S.VII | **repérée, non lue** : *Technical Notes: Spad biplane Type S.VII (150 h.p. Hispano-Suiza)*, Londres, 1918, 21 p. (S95) ; section « Spad Biplane (Type S. VII) », 10 p. de texte et 12 p. de figures, dans les *Technical Notes* de l'Air Board (S96) | — | [RÉSUMÉ] ; à demander (§ 6.5.6) |
+
+**Ce que vaut l'absence de mention (C, faible).** Trois documents qui décrivent une cellule de SPAD ne signalent aucune dissymétrie. Or ce genre d'examen la relevait quand elle existait (§ 6.5.2). L'indice reste faible :
+- S49 ne dit pas s'il a mesuré les deux côtés ;
+- S15 n'est connu qu'en résumé ;
+- S48 est une description de presse, sans aucune cote de calage.
+
+**Conclusion : présence ou absence d'un réglage dissymétrique sur le S.VII non tranchée.** Aucun indice positif n'a été trouvé.
+
+#### 6.5.2 Pratique d'époque sur d'autres avions (contexte ; rien à transposer)
+
+- **Albatros D.I** (S90, *Flight*, 28 juin 1917 ; examen par la revue de D.391/16, abattu sur le front britannique). Le calage varie d'environ 5° au centre (« 5° 3' » dans l'OCR, à vérifier) à **4° au saumon gauche et 2° au saumon droit**. Mesure des examinateurs : A pour cet avion.
+- **Explication donnée par la revue** (S91, 19 juillet 1917, réponse à un lecteur sur ce même Albatros) :
+  - le couple tend à faire tourner l'avion autour de son axe longitudinal, dans le sens inverse du moteur ;
+  - le moteur étant « right-hand », l'avion tend à s'incliner à gauche ; l'aile gauche, plus calée, porte davantage et rétablit l'équilibre ;
+  - selon la revue, beaucoup de constructeurs procèdent ainsi ; d'autres gardent des calages égaux et règlent les ailerons pour qu'ils compensent, manche au neutre.
+- **Fokker D VII** (S92, *Flight*, 25 juillet 1918, appareil exposé aux Enemy Aircraft View Rooms) : l'attache avant de la dérive est légèrement décalée à gauche, « probablement » pour contrer la tendance à tourner à gauche due au couple. C'est l'interprétation de la revue.
+- **Manuel de monteur britannique** (S89, F. W. Halliwell, *Flight*, 6 février 1919) :
+  - sur « certains types plus anciens », on corrigeait l'effet du couple en diminuant le calage vers le saumon de l'aile qui tend à monter, par les haubans d'atterrissage du longeron arrière ; il fallait vérifier, avant tout réglage, si l'un des plans devait l'être ainsi ;
+  - **sur les avions du moment, ce n'est en général plus nécessaire** ;
+  - un avion qui vole une aile basse se corrige en vérifiant le calage des deux plans.
+
+**Lecture (C).** La compensation du couple par la cellule ou par la dérive existait en 1917-1918, et un examinateur la relevait quand elle était présente. Deux indices tirent en sens contraires :
+- des constructeurs allemands jugeaient le couple d'un moteur en ligne de 160 à 180 ch assez sensible en vol pour le compenser à demeure (Albatros D.I, Fokker D VII) ;
+- un monteur britannique écrit début 1919 que ce n'est en général plus nécessaire.
+
+**Aucun des deux ne porte sur un SPAD, ni ne mesure le couple qui reste après le redressement du souffle par les ailes.** Ils ne confirment ni n'infirment le résultat du modèle.
+
+**Pistes pour l'aérodynamicien (C, comparables seulement)** :
+- l'écart de calage de 2° aux saumons de l'Albatros D.I donne l'ordre de grandeur d'un moment de roulis que son constructeur jugeait utile de compenser ; le calcul n'est pas fait ici ;
+- sur le F.E.9, **avion propulsif** sans aile devant l'empennage, la rotation du souffle mesurée en vol devant la dérive atteint 18° vers 10 in sous le plan fixe, et varie à peu près comme l'inverse de la vitesse et de la distance à l'axe (mesure à 125 in derrière une hélice de 87 in ; régime illisible dans l'OCR). L'établissement en conclut qu'un avion dont la dérive est dans le souffle ne peut voler droit à toutes les vitesses sans gouvernail (S94, R&M 408, novembre 1917). Le souffle d'une hélice propulsive ne passe pas sur les ailes : **rien à transposer** au SPAD, sinon comme borne « sans redressement ».
+
+#### 6.5.3 Sens de rotation de l'hélice du S.VII : convention éclaircie
+
+**État avant cette passe** : horaire vu du pilote, **C** (§ 4 ; `hispano-suiza-8a.md` § 7.3). Le maillon manquant était la définition de « right hand » : hélices du VE-7 marquées « Rotation: Right hand » ; hélice britannique AB 723 marquée « R H Tractor S7 » (H26, en résumé).
+
+**Textes britanniques d'époque** [LU-OCR] :
+1. **Règle énoncée par *Flight*** (S91, 19 juillet 1917) : un moteur « right-hand » fait pencher l'avion à gauche par réaction. La réaction étant de sens inverse de la rotation, un moteur « right-hand » tourne dans le **sens horaire vu du pilote** (déduction immédiate, C).
+2. **Rapports britanniques sur des moteurs ennemis capturés** (S93) :
+   - le Benz de 230 ch, à prise directe, est noté « r.h.t. » pour le vilebrequin et pour l'hélice ;
+   - le Mercedes de 240 ch à 8 cylindres, démultiplié par **engrenages droits** (qui inversent le sens), a un vilebrequin « anti-clockwise, facing propeller » et une hélice « left hand tractor » ;
+   - le Maybach, à prise directe, tourne « anti-clockwise (facing propeller) », vilebrequin et hélice.
+
+   Dans cette série, « left hand tractor » correspond donc au sens horaire « facing propeller », et « right hand tractor » au sens antihoraire « facing propeller ». Si « facing propeller » se lit « vu de face », « right hand tractor » veut dire **horaire vu du pilote**, ce qui concorde avec le point 1.
+3. **Réserve** (S91, 29 mars 1917) : la revue écrit qu'aucune définition n'est encore arrêtée pour un moteur « horaire » ou « antihoraire ». L'usage est de le nommer d'après la rotation vue du siège du pilote d'un avion tracteur ; le Gnome est ainsi un moteur « horaire ». L'usage n'était donc pas normalisé début 1917.
+
+**Application.** AB 723 est un plan britannique de l'Air Board, pour le SPAD 7 à Hispano de 140 hp. Dans l'usage britannique de 1917-1918, « R H Tractor » désigne une hélice qui tourne dans le sens horaire vu du pilote. Les autres indices concordent : H1, H12, H13 et les hélices du VE-7 (`hispano-suiza-8a.md` § 7.3) ; McCook, beaucoup de pied à gauche sur le XIII, à rotation inverse (T8). Indice de plus, en résumé et sur un wiki : le SPAD XII à réducteur aurait une hélice horaire vue de face (S100).
+
+**Proposition : horaire vu du siège du pilote, confiance B** (au lieu de C).
+- Pour passer en A : une photographie lisible d'une hélice de S.VII montée, ou une notice du S.VII. Le marquage d'AB 723 n'est connu qu'en résumé (H26).
+- **À reporter dans `hispano-suiza-8a.md` § 7.3** par la session principale : cette passe ne modifie que la présente fiche.
+
+Conséquences attendues, inchangées (C, physique élémentaire) : à pleine puissance et à basse vitesse, tendance à partir à gauche, contrée au pied droit ; réaction de couple en roulis vers la gauche.
+
+#### 6.5.4 Témoignages sur le couple et le pied à tenir
+
+**S.VII : aucun témoignage d'époque trouvé, dans aucune langue.**
+- Relus mot à mot sur le texte intégral [LU] : Bordeaux et les lettres de Guynemer (S1), Hall (S3), Nordhoff (S4). Aucun ne parle du couple, du pied à tenir, ni d'un SPAD qui tire d'un côté. Leurs mentions du gouvernail concernent l'école (le « Pingouin ») ou un piqué (Hall, debout sur le palonnier).
+- Requêtes sans résultat, en résumé :
+  - français : « couple », « pied à droite », « embarque », « sandow » ;
+  - anglais : « torque », « right rudder », « swing », « pulls to the left » ;
+  - allemand : « Drehmoment », « Beute-Spad », rapports de l'Idflieg ;
+  - italien : « coppia », « imbardata », lettres de Baracca ;
+  - russe : « реактивный момент ».
+
+**Éléments trouvés, tous indirects ou modernes** :
+- **Complément de T9** (S31, [RÉSUMÉ]). Selon le premier message du fil de forum qui semble reprendre le chapitre de Tallman :
+  - les S.VII de 180 et 200 ch auraient reçu un gouvernail au bord de fuite bombé, pour contrer le couple ;
+  - Tallman aurait volé avec le petit gouvernail à bord droit, au moteur Wright-Hispano de 180 ch, **sans difficulté de direction, ni en vol ni au sol**.
+
+  Biais : pilote moderne, avion restauré, moteur américain, hélice inconnue, attribution incertaine. Le motif du gouvernail agrandi n'est confirmé par aucune autre source : **non retenu comme fait**.
+- **Précision de T8** (S15, complément [RÉSUMÉ]) ; **pas une source indépendante** :
+  - au roulage, le XIII roule facilement, même par vent fort, sans tendance à tourner ;
+  - au décollage, il part à droite dès l'ouverture des gaz ; un pied à gauche trop rapide le fait partir à gauche ; le remède est de pousser un peu le manche pour lever la queue tôt ;
+  - en vol, beaucoup de pied à gauche ; lourd de la queue en palier et en montée plein gaz, moins au-dessus de 15 000 ft.
+
+  Le XIII a un réducteur : rotation inverse et couple plus fort que sur le S.VII.
+- WarHistory.org (S99, vulgarisation) : pied à gauche abondant au décollage et à l'atterrissage du XIII. Sans doute tiré du rapport de McCook : **non compté**.
+
+**Bilan.** Le trait « couple marqué » reste **à confirmer** pour le S.VII (§ 6.2). Aucune source ne dit combien de pied ou de gauchissement un pilote de S.VII tenait en palier ou en montée.
+
+#### 6.5.5 Ce que cela change pour `essais.ron`
+
+- Aucun nouveau trait confirmé, donc **aucune nouvelle attente**.
+- La cellule du S.VII reste **symétrique par défaut**. C'est une hypothèse non sourcée, à marquer `E:` dans les données. Aucun calage dissymétrique ne doit être ajouté sans source.
+- L'attente M2 du § 6.2 (au décollage plein gaz, départ à gauche contré au pied droit) garde sa confiance C ; son sens s'appuie désormais sur une convention d'époque (§ 6.5.3).
+- Le résultat de confiance D (2 % de course au plus en palier et en montée) **n'a aucune cible historique** : ni témoignage, ni réglage connu. Il ne doit pas être présenté comme validé, ni comme contredit.
+
+#### 6.5.6 Documents à télécharger ou à demander (onzième passe)
+
+| Priorité | Document | Où | Ce qu'on y cherche |
+|---|---|---|---|
+| 1 | *Technical Notes: Spad biplane Type S.VII (150 h.p. Hispano-Suiza)*, Londres, 1918, 21 p., ill. | Australian War Memorial, Research Centre : cote **629.133343 T255**, code-barres **AWM041199** ; notice https://www.awm.gov.au/collection/LIB42774 (S95). Non numérisé : demander une reproduction | calages, wash-out, réglage des ailerons et de la dérive, épure de réglage du S.VII |
+| 1 | Air Board, *Technical Notes*, « Rigging notes » (1917, amendements de début 1918), section « Spad Biplane (Type S. VII) » | Imperial War Museum, objet **1500085766** (https://www.iwm.org.uk/collections/item/object/1500085766) ; fac-similé : A. Harris (éd.), *Air Board Technical Notes*, vol. 2, *Aircraft Rigging*, 1999, ISBN 978-0-9519367-8-8 (présence du S.VII à vérifier) ; exemplaires de libraires (S96) | même chose. Sans doute le même texte que la ligne précédente : à vérifier |
+| 1 | Notice SPAD du XIII (S38) | Bibliothèques numériques de la Défense, `fc97b662-8b01-43a8-9698-6e0be5953006` | consignes de réglage de la cellule, gauche et droite |
+| 1 | Air Service Bulletins de 1918, fonds CIS *US Executive Branch Documents 1910-1932* (microfiches W95.21-3.xxx) : n° 192 (notice du S.XI traduite) ; chercher l'équivalent pour le S.VII et le XIII | East Carolina University, Joyner Library, Microforms (S97) ; autres dépôts du fonds CIS | consignes de réglage françaises traduites |
+| 2 | Fonds de plans Blériot-Spad du Musée de l'Air et de l'Espace, non numérisé | Département Recherche et Documentation, Le Bourget. Seuls les fonds Levasseur, Caudron et Morane-Saulnier sont en ligne sur Mémoire des hommes (S98) | épure de réglage du S.VII, calages de chaque côté |
+| 2 | Articles d'époque sur la compensation du couple et le réglage : J. Morris, « Propeller torque. How it arises and its action in the case of both ungeared and geared engines », *Aeronautics* (Londres), vol. 16, n° 273, 8 janvier 1919, p. 52 ; « Torque. The correction of propeller torque », *Aerial Age*, vol. 13, n° 4, 4 avril 1921, p. 80 ; R. J. Goodman Crouch, « The rigging of aeroplanes », *Aeronautical Journal*, vol. 23, n° 100, avril 1919, p. 143-178 ; « Alpha », « Notes on the truing of aeroplanes », *Aerial Age Weekly*, vol. 5, n° 19, 23 juillet 1917, p. 634-635 ; *Manual of rigging notes*, Technical Data Branch, Division of Military Aeronautics, Dayton, [1918] | références relevées dans S56 [LU-OCR] ; archive.org ou HathiTrust, identifiants à chercher | pratique de compensation ; exemples de SPAD éventuels |
+| 2 | TNA AIR 1/1196/204/5/2600 (Martlesham Heath, rapports hebdomadaires ; déjà au § 9.6) | The National Archives, Kew | remarques de trim latéral ou directionnel sur un S.VII (avion qui vole une aile basse, pied tenu) |
+| 2 | C. J. Biddle, *The Way of the Eagle* (1919) ; E. V. Rickenbacker, *Fighting the Flying Circus* (1919) ; J. N. Hall et C. B. Nordhoff, *The Lafayette Flying Corps* (1920) | Google Books `I70MAAAAYAAJ` (Biddle, plein texte selon un résumé) ; HathiTrust, notice 008643621 (Rickenbacker, plein texte selon un résumé) | recherche plein texte de « torque », « rudder », « foot » |
+| 3 | *Agenda de l'aviateur 1917-1918* (dir. M. Percheron), 228 p., éditeur à vérifier | Bibliothèques numériques de la Défense (notice vue en résumé, identifiant non relevé) ; extraits sur chezpeps.free.fr (P28) | préceptes de pilotage : couple, pied au décollage |
 
 ## 7. Armement
 - **Une** mitrailleuse Vickers de calibre .303 (7,7 mm), au-dessus du moteur, synchronisée pour tirer à travers le champ de l'hélice (S5, S6 [RÉSUMÉ]). Synchronisation **Birkigt** d'après une source spécialisée non identifiée dans le résumé : à vérifier.
@@ -1087,6 +1227,15 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **S76** — Royal Aero Club, « Certified Trials » : règlements des essais de vitesse ascensionnelle et de hauteur, *Flight*, 3 juillet 1919, p. 872-873 environ (avis officiels du club). `Flight_International_Magazine_1919-07-03-pdf`. **[LU-OCR]**. Primaire (règlement civil).
 - **S77** — W. H. Dines, « Meteorology in Relation to Aeronautics », *Flight*, 20 décembre 1917, p. 1344-1346 environ. `Flight_International_Magazine_1917-12-20-pdf`. **[LU-OCR]**. Primaire, écrite par un météorologue ; ne pas confondre avec J. S. Dines, dont Tizard cite les observations. Utilisée pour les variations de température et de densité au sol, formule du nivellement barométrique.
 - **S78** — G. Hartmann, « Les héliciers français », PDF de 23 pages, hydroretro.net, 2008, p. 12 : centre d'essais du Service technique de l'aéronautique à Villacoublay ; réception des Farman à Buc. Même document que H9 de `hispano-suiza-8a.md`, téléchargé par le coordinateur (`sources/hartmann/heliciersfrancais.txt`). **[LU]**. Secondaire.
+
+**Lues en onzième passe (2026-10-25)**. Texte OCR d'archive.org déjà téléchargé par le coordinateur en quatrième passe, relu comme des données ; items *Flight* au modèle `Flight_International_Magazine_AAAA-MM-JJ-pdf` (https://archive.org/details/<identifiant>). Pagination lue dans l'OCR, à une page près.
+- **S89** — F. W. Halliwell, « Rigging: the erection and trueing-up of aeroplanes », *Flight*, vol. 11, n° 4 à 6, 23 janvier-6 février 1919, p. 107, 132-134 et 176-179 (références de S56). Passage « Aerodrome adjustments » lu dans le numéro du 6 février 1919, p. 178-179, `Flight_International_Magazine_1919-02-06-pdf`. Repris en volume : *The erection and trueing up of aeroplanes*, St. Martin's Publishing Co., Londres, 1920 (S56). **[LU-OCR]**. Secondaire d'époque (manuel de monteur britannique).
+- **S90** — « The Albatros D.1 », *Flight*, 28 juin 1917, p. 638-639 : examen par la revue de l'Albatros D.I D.391/16, abattu sur le front britannique. `Flight_International_Magazine_1917-06-28-pdf`. **[LU-OCR]**. Primaire (examen d'un appareil capturé).
+- **S91** — *Flight*, rubrique « Answers to correspondents » : réponse à « M. P. L. (Clapham Common) », 19 juillet 1917, p. 727-728 environ, `Flight_International_Magazine_1917-07-19-pdf` ; réponse à « L. J. P. (R.N.A.S.) », 29 mars 1917, p. 292-293 environ, `Flight_International_Magazine_1917-03-29-pdf`. **[LU-OCR]**. Secondaire d'époque (rédaction de la revue).
+- **S92** — Fokker D VII exposé aux Enemy Aircraft View Rooms, *Flight*, 25 juillet 1918, entre les p. 820 et 831 (page exacte non lue). `Flight_International_Magazine_1918-07-25-pdf`. **[LU-OCR]**. Primaire (examen d'un appareil capturé).
+- **S93** — Rapports britanniques sur des moteurs ennemis capturés, reproduits par *Flight* : « The 230 h.p. Benz aero engine », 13 décembre 1917, vers p. 1309-1310 (`Flight_International_Magazine_1917-12-13-pdf`), qui cite un rapport d'essai de la Royal Aircraft Factory ; « The 240 h.p. (8-cylinder) Mercedes », 23 mai 1918, p. 560-561 (`Flight_International_Magazine_1918-05-23-pdf`), moteur n° 23,003 d'un Albatros biplace abattu le 12 mai 1917, essayé à la Royal Aircraft Factory ; rapport sur le Maybach, 26 septembre 1918, vers p. 1083-1086 (`Flight_International_Magazine_1918-09-26-pdf`). **[LU-OCR]**. Primaire.
+- **S94** — Royal Aircraft Factory, « Experiments on the rotation of a propeller slipstream in a pusher aeroplane », R&M n° 408, novembre 1917, dans *Technical Report of the Advisory Committee for Aeronautics for the Year 1917-18*, vol. II, HMSO, 1921, p. 334-336 ; suite : D. H. Pinsent, « Exploration of the slipstream velocity in a pusher machine », R&M n° 444, avril 1918, p. 336 et suivantes. archive.org `technicalreport1917aero_2`. **[LU-OCR]**. Primaire (essais en vol sur le F.E.9 n° 4818).
+- **S1, S3, S4 (complément)** — textes intégraux récupérés le 2026-10-25 aux adresses du § 9.1 et recherchés mot à mot (« torque », « rudder », « swerv », « rigg », « incidence », « Spad ») **[LU]**.
 
 ### 9.2 Vues seulement en résumé de recherche [RÉSUMÉ] (pages non ouvertes ; consultées le 2026-10-20)
 - **S5** — Wikipedia (en), « SPAD S.VII », https://en.wikipedia.org/wiki/SPAD_S.VII (wiki : piste).
@@ -1163,6 +1312,16 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **S31 (complément)** — même fil CombatACE que S31, résumé du 2026-10-24 : avion en l'air après environ 150 ft, meilleure montée vers 60 à 65 mph.
 - **S12 (complément)** — flyingmachines.ru, résumé du 2026-10-24 : seconde valeur de 6 min 55 s à 2 000 m pour le 150 ch.
 
+**Onzième passe (consultées en résumé le 2026-10-25 ; échec DNS de l'outil de lecture sur toutes ces pages)**
+- **S95** — Australian War Memorial, catalogue de la bibliothèque : *Technical notes: SPAD biplane Type S.VII (150 h.p. Hispano-Suiza)*, Londres, 1918, 21 p., ill., 19 cm ; cote 629.133343 T255, code-barres AWM041199, en rayon ; https://www.awm.gov.au/collection/LIB42774. Le catalogue donne pour auteur le « Ministry of Aircraft Production » (nom de la Seconde Guerre mondiale), alors que la page de titre porterait « Department of Aircraft Production » : incohérence du catalogue. Primaire probable (notice technique britannique), non lue.
+- **S96** — Air Board, *Technical Notes* (« Rigging notes »), Controller of the Technical Department, première édition 1917, amendements de début 1918, pour les avions du RFC et du RNAS ; une fiche de libraire décrit une section « Spad Biplane (Type S. VII) » de 10 pages de texte et 12 pages de figures. Fiches : https://www.compasslibrary.com/en-us/products/air-board-technical-notes-1918-copy ; https://www.stmarysbooks.com/products/123020/air-board-technical-notes-rigging-notes ; https://www.iberlibro.com/Air-Board-Technical-Notes-Rigging/30231513942/bd. Notice IWM « Technical notes rigging notes », https://www.iwm.org.uk/collections/item/object/1500085766 (contenu non vu). Fac-similé : A. Harris (éd.), *Air Board Technical Notes*, vol. 2, *Aircraft Rigging*, Camden Miniature Steam Services, 1999, 99 p., ISBN 978-0-9519367-8-8 (https://www.amazon.co.uk/dp/0951936786 ; sommaire non vu). Primaire probable, non lue.
+- **S97** — East Carolina University, Joyner Library, notices du fonds CIS *US Executive Branch Documents 1910-1932* (microfiches) : Air Service Bulletin n° 192 (1918), « Spad XI, directions for regulation and upkeep of 2-seater biplanes S. XI, Hispano-Suiza 200 hp motor », 5 p., W95.21-3.192 ; n° 203, « Instructions for installing Vickers machine guns on Spad airplanes », W95.21-3.203 ; n° 231 (rigging notes du S.E.5 et du S.E.5A) ; n° 167 (rigging notes des Nieuport 80 à 83). Notices du catalogue https://lib.ecu.edu/catalog-preview/catalog/ (identifiants 1316805, 1316826, 1316861 et voisins ; la correspondance exacte entre identifiant et bulletin n'a pas été vérifiée). Primaires, non lues.
+- **S98** — Mémoire des hommes, « Plans de constructeurs aéronautiques sur des appareils civils et militaires (XXe siècle) », https://www.memoiredeshommes.sga.defense.gouv.fr/fr/article.php?larub=407, et pages des fonds Levasseur, Caudron et Morane-Saulnier : le Musée de l'Air et de l'Espace conserve plus de 50 000 plans de constructeurs, dont ceux de Blériot-Spad ; seuls les trois fonds cités sont en ligne. Institutionnelle.
+- **S99** — WarHistory.org, « SPAD XIII », https://warhistory.org/@msw/article/spad-xiii (vulgarisation ; non indépendante de McCook).
+- **S100** — Wikipedia (en), « SPAD S.XII », https://en.wikipedia.org/wiki/SPAD_S.XII : le 8Cb à réducteur donnerait au XII une hélice horaire vue de face (wiki : piste).
+- **S15 (complément)** — This Day in Aviation, « 27 April 1921: Performance test of Spad 13 equipped with 220 h.p. Wright engine », https://www.thisdayinaviation.com/27-april-1921-performance-test-spad-13-equipped-220-h-p-wright-engine/ : roulage et décollage du XIII (§ 6.1, T8).
+- **S31 (complément)** — même fil CombatACE que S31, premier message (juillet 2009) : gouvernail des S.VII de 180 et 200 ch, vol de Tallman avec le petit gouvernail (§ 6.5.4).
+
 ### 9.3 Pistes bibliographiques [PISTE] (non consultées ; éditions à vérifier)
 - **P1** — J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8, Albatros Productions, 1988 (fiche de catalogue de libraire).
 - **P2** — T. Gronczewski et S. M. Fleischer, *Spad VII C.1*, Aviatik Vintage Aircraft n° 1, 2004 (14 pages de plans selon une revue).
@@ -1195,6 +1354,10 @@ Ajoutées en septième passe (géométrie de détail) :
 - **P26** — J. Fromentin, « Les avions Spad », *La Vie aérienne*, 1920, p. 1054-1055, 1080-1081 et 1097-1098 (pagination lue dans l'OCR de S56, à vérifier).
 - **P27** — Descriptions du biplace SPAD avec schémas : *Automotive Industries*, vol. 38, n° 25, 20 juin 1918, p. 1212-1214 ; *Aviation*, vol. 4, n° 10, 15 juin 1918, p. 674-675 (S56). Comparables de famille seulement.
 
+Ajoutées en onzième passe (couple de l'hélice) :
+- **P28** — *Agenda de l'aviateur 1917-1918*, sous la direction de M. Percheron, 228 p., éditeur à vérifier (notice des Bibliothèques numériques de la Défense vue en résumé ; extraits reproduits sur http://chezpeps.free.fr/henri/html/agenda_aviateur_1917_1918.htm, inaccessible). Préceptes de pilotage remis aux pilotes.
+- **P29** — Articles d'époque sur le couple et le réglage, relevés dans S56 : J. Morris (*Aeronautics*, 8 janvier 1919) ; « Torque. The correction of propeller torque » (*Aerial Age*, 4 avril 1921) ; R. J. Goodman Crouch (*Aeronautical Journal*, avril 1919) ; « Alpha » (*Aerial Age Weekly*, 23 juillet 1917) ; *Manual of rigging notes* (Dayton, [1918]). Références complètes au § 6.5.6.
+
 ### 9.4 Historique des escadrilles
 - Albin Denis, historiques des escadrilles (`http://albindenis.free.fr/Site_escadrille/escadrille003.htm`) : **inaccessible**, à consulter en priorité pour la SPA 3 (terrains, appareils, dates).
 
@@ -1202,6 +1365,8 @@ Ajoutées en septième passe (géométrie de détail) :
 albindenis.free.fr ; en.wikipedia.org ; fr.wikipedia.org ; it.wikisource.org ; catalog.hathitrust.org ; gallica.bnf.fr (403 selon le coordinateur) ; www.gutenberg.org (direct) ; projekt-gutenberg.org ; www.theaerodrome.com ; flyingmachines.ru ; www.avionslegendaires.net ; historynet.com ; www.flightglobal.com (archives de *Flight*) ; www.thisdayinaviation.com ; www.hydroretro.net ; digital.library.unt.edu ; bibliotheques-numeriques.defense.gouv.fr ; m-selig.ae.illinois.edu ; aergistal.github.io ; web.archive.org ; www.google.com. Seuls github.com, raw.githubusercontent.com et, par intermittence, api.github.com répondent.
 
 **Cas particulier** : archive.org et ntrs.nasa.gov répondent au `curl` du conteneur (coordinateur, 2026-10-20), mais **pas** à l'outil de lecture de l'historien (DNS en échec). Ils ne sont exploitables que par téléchargement préalable (§ 9.6).
+
+**Onzième passe (2026-10-25)** : échec DNS de l'outil de lecture pour www.awm.gov.au, www.compasslibrary.com, www.stmarysbooks.com, lib.ecu.edu, francearchives.gouv.fr, mediatheque.museeairespace.fr, books.google.com, combatace.com, discovery.nationalarchives.gov.uk, www.history.navy.mil et chezpeps.free.fr. api.github.com et raw.githubusercontent.com répondent.
 
 **Dixième passe (2026-10-24)** : échec DNS de l'outil de lecture pour www.hydroretro.net, archive.org, ntrs.nasa.gov, www.academie-technologies.fr et resair420.free.fr.
 
@@ -1248,6 +1413,7 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 | 2 (9e passe) | Plans d'usine du S.VII (nervures, bord d'attaque), et P1 | calques attribués à Roger Freeman, copies chez Leo Opdycke (S74 [RÉSUMÉ]) ; Windsock Datafile n° 8 | bord d'attaque coffré ou entoilé (§ 2.6), nervures, fausses nervures |
 | 2 (9e passe) | Fil S11, page entière | `https://theaerodrome.com/forum/threads/climbing-performance-of-the-spad-vii.30985/` | texte exact de l'« Air Board summary » et du rapport M.96, avec leurs références (§ 5.6) |
 | 1 et 2 (10e passe) | Dix documents sur les conditions des essais de montée : NACA TM 15 (Grimault), rapport du NACA sur les instruments d'altitude, images de Tizard dans *Flight* (mars 1917), NACA TN 20, dossiers Hartmann (Reims 1911, Nieuport), histoire des essais de Villacoublay, Toussaint 1919 | adresses exactes au § 5.7.7 | départ du chronomètre, zéro et graduation des altimètres français, atmosphère de réduction avant 1920 |
+| 1 et 2 (11e passe) | Notices de réglage du S.VII et de la famille (britannique de 1918 à l'AWM, *Rigging notes* de l'Air Board à l'IWM, notice française du XIII, bulletins américains), plans Blériot-Spad du Musée de l'Air, articles d'époque sur le couple | cotes et adresses au § 6.5.6 | réglage dissymétrique éventuel de la cellule, de la dérive ou des ailerons |
 
 ## 10. Journal des décisions
 - **2026-10-20 — Sous-version pour la SPA 3, été 1917.** S5, S8 et S16 font du 8Ab de 180 ch le moteur des S.VII neufs à partir du printemps 1917 (« avril 1917 » pour S16). Guynemer juge le 150 ch insuffisant dès décembre 1916 (S1). Aucun état des appareils de la SPA 3 n'a été trouvé. **Retenu : S.VII 180 ch (8Ab), confiance C**, en sachant que la SPA 3 alignait sans doute encore des 150 ch et quelques SPAD XIII à partir de fin juillet 1917 (S18, S1). Ce choix sera à revoir dès que l'historique d'Albin Denis ou les journaux de marche seront accessibles.
@@ -1369,3 +1535,24 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 - **2026-10-24 — Décollage : non trouvé.** Le chiffre de Tallman (environ 46 m) est classé en D et n'est pas une cible.
 - **2026-10-24 — Cibles inchangées.** Le § 5.5.6 n'est pas modifié. Proposition à l'aérodynamicien : comparer chaque cible à l'enveloppe des variantes du § 5.7.6.
 - **2026-10-24 — Écart avec le rapport n° 96.** Le modèle serait aussi plus rapide que ce rapport, de 4 à 9 % (calcul C sur des chiffres [RÉSUMÉ]). Les conditions d'essai françaises n'expliqueraient alors pas tout l'écart. Conclusion signalée comme **fragile** tant que le rapport n'est pas lu.
+
+**Onzième passe (2026-10-25 ; couple de l'hélice, réglage de la cellule, sens de rotation)**
+- **2026-10-25 — Réglage dissymétrique de la cellule du S.VII : non trouvé.**
+  - Aucun calage différent à gauche et à droite, aucun hauban réglé différemment, aucune dérive décalée n'est décrit, ni pour le S.VII, ni pour la famille.
+  - Trois descriptions de cellules SPAD (S48, S49, S15) n'en mentionnent aucun : indice faible (C). **Non tranché.**
+  - Retenu pour les données : cellule **symétrique par défaut, en `E:`**. Aucun calage dissymétrique sans source.
+- **2026-10-25 — Pratique d'époque sur d'autres avions : contexte, non transposé.**
+  - Albatros D.I : 4° au saumon gauche, 2° au saumon droit (S90 ; A pour cet avion), expliqués par le couple d'un moteur « right-hand » (S91) ; Fokker D VII : dérive décalée (S92).
+  - Halliwell, début 1919 : la correction par la cellule n'est « en général plus nécessaire » sur les avions du moment (S89).
+  - Ces indices tirent en sens contraires et ne mesurent pas le couple qui reste après le redressement par les ailes. Ils ne confirment ni n'infirment le résultat de confiance D du modèle.
+- **2026-10-25 — Sens de rotation : horaire vu du pilote, B proposé (au lieu de C).**
+  - La convention « right hand tractor » est éclaircie par deux textes britanniques indépendants de 1917-1918 (S91, S93) : « right-hand » veut dire horaire vu du pilote.
+  - Appliquée au marquage « R H Tractor S7 » d'AB 723 (H26, en résumé), elle concorde avec tous les indices antérieurs.
+  - Réserves : usage non normalisé début 1917 (S91) ; marquage vu en résumé seulement.
+  - **À reporter dans `hispano-suiza-8a.md` § 7.3** par la session principale ; cette passe ne modifie que la présente fiche.
+- **2026-10-25 — Témoignages : aucun sur le S.VII.**
+  - T8 précisé (XIII : roulage neutre, départ à droite à l'ouverture des gaz), **sans être recompté**.
+  - Complément de T9 (Tallman, en résumé) : aucune difficulté de direction avec le petit gouvernail et 180 ch. Le gouvernail agrandi « contre le couple » des S.VII tardifs n'est **pas retenu comme fait**.
+  - Le trait « couple marqué » reste à confirmer.
+- **2026-10-25 — Pas de cible pour la croisière.** Aucune source ne chiffre ni ne décrit le pied ou le gauchissement tenus en palier ou en montée sur un S.VII. Le résultat du modèle (2 % de course au plus) n'a pas de cible historique : il ne doit être présenté ni comme validé, ni comme contredit.
+- **2026-10-25 — Documents demandés** (§ 6.5.6) : en priorité, la notice britannique du S.VII de 1918 (AWM, cote 629.133343 T255) et la section S.VII des *Rigging notes* de l'Air Board (IWM, objet 1500085766).
