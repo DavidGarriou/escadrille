@@ -140,3 +140,9 @@ Chaque étape : `just check`, `just test`, carnet, commit et push. C'est un chan
 2. L'outil : (1) Blender piloté par script, avec une exception Python limitée à `art/` ; ou (2) tout en Rust.
 3. La livrée : quel avion, à quelle date. L'historien proposera les mieux documentés.
 4. Le périmètre du poste de pilotage.
+
+## Décisions du joueur (2026-10-26, suite)
+
+- **Livrée (B2)** : S.254 « Vieux Charles » dans son état du 20 octobre 1917, en deux couches de décalques (finition d'usine, puis marques de Guynemer). Moteur de 180 ch accepté.
+- **Usage réservé** : studio, as de l'IA, livrée historique au choix ; l'avion du joueur prend la finition d'usine avec un numéro fictif.
+- **Partie A** : faite, revue de l'aérodynamicien conforme.

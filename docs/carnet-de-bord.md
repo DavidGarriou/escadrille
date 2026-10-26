@@ -1751,3 +1751,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - départ au décrochage toujours à gauche ; performances inchangées.
 - **R** Le bas de la dérive est à cheval sur l'axe du souffle, où sa rotation change de sens : les équilibres de direction y gagnent environ 0,01 de course par centimètre de hauteur du moyeu.
 - **A** Modèle provisoire régénéré ; `spad7-calculs.md` § 3.1 et § 5 mis à jour. Revue finale de la partie A demandée à l'aérodynamicien.
+- **Q** Le joueur : « J'ai atteint ma limite d'utilisation pendant que vous travailliez, mais elle a été réinitialisée. Veuillez continuer là où vous vous êtes arrêté. »
+- **⚠** La revue finale de la partie A par l'aérodynamicien avait été coupée par la limite d'usage ; le processus de la session a aussi redémarré. État vérifié : tout était commité et poussé jusqu'au moyeu (`0cdc99e`).
+- **A** Revue reprise. **R** Conforme, rien de bloquant :
+  - données et origines vérifiées, chiffres de convergence mesurés par l'aérodynamicien sur ces données ;
+  - campagnes `essais-a0` à `a3` identiques aux siennes (à izz près, 1359 contre 1360, sans effet sur les équilibres) ;
+  - tests modifiés corrects.
+- **A** Corrigé dans la foulée :
+  - trois passages périmés de `spad7-calculs.md` § 3.1 : charnière des cinq panneaux, tableau du garde-fou recalculé pour les cinq panneaux, ancienne correction et ancienne liste d'écarts marquées comme remplacées ;
+  - commentaire du sillage dans `aircraft.ron` : deux panneaux sous le plan fixe, et chiffre mesuré avec l'ancien moyeu.
+- **Q** Livrée (B2), demandée au joueur : **S.254 « Vieux Charles »** dans son état du 20 octobre 1917, et **usage réservé** (studio, as de l'IA, livrée historique au choix).
+- **D** Livrée retenue en deux couches de décalques : finition d'usine, puis marques de Guynemer. Moteur de 180 ch accepté, invisible de l'extérieur. L'avion du joueur prend la finition d'usine avec un numéro fictif. Décision consignée dans la fiche d'aspect (§ 17) et dans le plan.
+- **A** Corrections de l'historien reportées (fiche d'aspect § 14) :
+  - dans `spad7.md` : moteur de 180 ch de S.254, S.254 à Saint-Pol-sur-Mer jusqu'en octobre 1917, contradiction sur S.113, dates de l'appellation « SPA 3 » ;
+  - dans `hispano-suiza-8a.md` : préférence de Guynemer pour les hélices Chauvière (Hartmann).

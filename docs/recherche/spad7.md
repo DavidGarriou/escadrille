@@ -134,7 +134,7 @@ Méthode et accès :
 | (S.XII à canon) | Hispano-Suiza 8C à réducteur (`hispano-suiza-8a.md`, H1 [RÉSUMÉ]) | été 1917 (avion de Guynemer) | S1 [LU] (« avion magique », type non nommé) ; identification comme SPAD XII à vérifier |
 | (S.XIII) | Hispano-Suiza 8B à réducteur, deux Vickers | prototype le 4 avril 1917 ; premières livraisons début mai 1917 ; **131** livrés en décembre 1917 seulement | S21, S16 [RÉSUMÉ] |
 
-Le n° **S.254** (« Vieux Charles » de Guynemer, conservé au Musée de l'Air) est présenté par une revue de maquette comme « le premier appareil produit avec ce moteur [180 ch] » (S17 [RÉSUMÉ]). Une autre source le dit remis à Guynemer en décembre 1916. **Non vérifié** : aucune source fiable ne précise la motorisation de S.254.
+Le n° **S.254** (« Vieux Charles » de Guynemer, conservé au Musée de l'Air) est présenté par une revue de maquette comme « le premier appareil produit avec ce moteur [180 ch] » (S17 [RÉSUMÉ]). Une autre source le dit remis à Guynemer en décembre 1916. **Non vérifié** : aucune source fiable ne précise la motorisation de S.254. **Mise à jour du 2026-10-26** (`spad7-aspect.md` § 12.2 et § 14) : le Musée de l'Air (V2) et Albin Denis (V10) le donnent comme le premier exemplaire à moteur surcomprimé de **180 ch**, reçu fin décembre 1916 (B, vu en résumé).
 
 ### 1.3 Service (repères)
 - **France** : la N 3 reçoit les deux premiers SPAD au front ; Guynemer et le caporal Sauvage les pilotent sur la Somme au début de septembre 1916 (S1 [LU]). Une source en résumé donne le **2 septembre 1916** (S5 [RÉSUMÉ]). En août 1917, près de **500** S.VII servent dans plus de **50** escadrilles françaises, dont la SPA 3 (S5 [RÉSUMÉ]).
@@ -169,6 +169,8 @@ Le n° **S.254** (« Vieux Charles » de Guynemer, conservé au Musée de l'Air)
 
 **Contradictions de personnel** (à vérifier avant tout texte de jeu sur ces hommes) :
 - S20 [RÉSUMÉ] donne le capitaine Auger tué le **28 juin 1917**. Or S1 [LU] le cite parmi les Cigognes présentes en Flandre fin juillet 1917, en précisant « bientôt tué », et le dit mort au 17 août 1917 au plus tard. Sa mort se situerait donc fin juillet ou début août 1917.
+- **Heurtaux et S.113** (2026-10-26, `spad7-aspect.md` § 12.3) : un SPAD VII S.113 codé « 11 » lui est attribué (V10) ; une autre page attribue S.113 à Guynemer (V28). Contradiction non tranchée.
+- **Date de l'appellation « SPA 3 »** (2026-10-26) : un résumé de recherche sur S.254 la place en octobre 1917, troisième date après janvier 1917 (S18) et « après mars 1917 » (S20). La cigogne de l'escadrille est datée de juillet 1916 dans ce résumé, et « vers le milieu de 1916 » par Albin Denis (V10). À vérifier avant tout texte de jeu.
 - S20 donne Guynemer commandant de l'escadrille du **29 juin au 5 août 1917**. S1 écrit que Heurtaux, remis de sa blessure d'avril, « commandait » en juillet 1917.
 - S1 cite Fonck parmi les « nouveaux venus » aux côtés des Cigognes en Flandre. S40 [RÉSUMÉ] le dit affecté à la SPA 103, du même GC 12, en avril 1917. Pour le jeu, Fonck appartient à la SPA 103, pas à la SPA 3, sauf preuve contraire.
 
@@ -184,7 +186,7 @@ Le n° **S.254** (« Vieux Charles » de Guynemer, conservé au Musée de l'Air)
 - Terrain de l'été 1917 : près de Dunkerque, Saint-Pol-sur-Mer nommément en septembre 1917 (S1). Les autres terrains de la Flandre (Bierne, Coudekerque…) ne sont **pas confirmés**.
 - Insigne : cigogne de la SPA 3 (voir § 8). La désignation « SPA 3 » est en usage en 1917 (date exacte de l'adoption contestée, § 1.4).
 - Le Rumpler ou le DFW de Poelkapelle et les circonstances de la mort de Guynemer : s'en tenir aux faits documentés (S1, S19), ton sobre.
-- « Vieux Charles » est un **nom porté par plusieurs avions** de Guynemer (§ 8), pas un numéro. Pour août-septembre 1917, ne pas l'assimiler au S.VII S.254 conservé au Musée de l'Air : S18 et S19 [RÉSUMÉ] placent Guynemer sur le SPAD XIII S.504 le 20 août et le 11 septembre, et S1 ne donne pas de numéro (huitième passe).
+- « Vieux Charles » est un **nom porté par plusieurs avions** de Guynemer (§ 8), pas un numéro. Pour août-septembre 1917, ne pas l'assimiler au S.VII S.254 conservé au Musée de l'Air : S18 et S19 [RÉSUMÉ] placent Guynemer sur le SPAD XIII S.504 le 20 août et le 11 septembre, et S1 ne donne pas de numéro (huitième passe). **Mise à jour du 2026-10-26** : une notice ECPAD (V7 de `spad7-aspect.md`, vue en résumé) place S.254 à Saint-Pol-sur-Mer jusqu'au 19 octobre 1917, puis aux Invalides le 20. La mise en garde vaut toujours pour le 20 août et le 11 septembre, mais S.254 semble avoir suivi la SPA 3 en Flandre (C).
 - **Fin de carrière du S.VII** (huitième passe) : dans la compilation américaine de 1918 (S46, note de la p. 205), les deux lignes du S.VII n'ont pas l'astérisque des types encore livrés aux escadrilles ; elles font partie des types qui « figurent encore dans certaines escadrilles » mais ne sont plus fournis. Pour une mission de 1918 : S.VII possible, mais pas comme avion neuf (C ; date exacte de la compilation inconnue).
 
 ## 2. Géométrie

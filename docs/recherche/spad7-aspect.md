@@ -323,7 +323,7 @@ Les photos ECPAD sont en noir et blanc : elles donnent formes, positions et cont
 
 Recherches menées sans résultat utile sur l'aspect : en allemand (examen d'un S.VII capturé : rien), en italien (livrée de S.2489 : rien de détaillé), en tchèque (instruments de la planche de Prague : rien de détaillé), en russe (volets et échappements : V12 seulement).
 
-## 14. Écarts avec `spad7.md` (à reporter par la session principale)
+## 14. Écarts avec `spad7.md` (reportés le 2026-10-26)
 
 1. **§ 1.2, moteur de S.254** : la fiche le dit « non vérifié ». Le Musée de l'Air (V2) et Albin Denis (V10) le donnent comme le premier exemplaire à moteur surcomprimé de **180 ch**, reçu fin décembre 1916 : **B**.
 2. **§ 1.5, S.254 en Flandre** : une notice ECPAD (V7) place S.254 à Saint-Pol-sur-Mer jusqu'au 19 octobre 1917. La mise en garde reste juste pour le 20 août et le 11 septembre, mais S.254 semble bien avoir suivi la SPA 3 en Flandre (C).
@@ -395,3 +395,4 @@ Sources de `spad7.md` citées ici : S1, S3 (lues), S13, S15, S27, S36, S20 (rés
 - **2026-10-26 — Poste.** Aucune planche de S.VII de 1917 décrite. **ESTIMÉ** : disposition du S.XI (S49), complétée par l'altimètre et le compas (Hall, Bordeaux).
 - **2026-10-26 — Livrée.** Recommandé : **S.254 tel que photographié le 20 octobre 1917**. Seul S.VII réunissant avion conservé, photos datées et notices de deux musées, et présent en Flandre avec la SPA 3. Réserves : moteur de 180 ch, personnage réel, couleurs à confirmer. S.113 (Heurtaux, 150 ch probable) et S.2489 (Baracca, conservé) restent des variantes, moins documentées. **Décision au joueur.**
 - **2026-10-26 — Cocardes.** Emplacements et diamètres non trouvés. **ESTIMÉ** de gabarit seulement (environ 1,0 m sur les ailes), à remplacer par une mesure sur photo.
+- **2026-10-26 — Décision du joueur sur la livrée.** **S.254 « Vieux Charles »** dans son état du 20 octobre 1917, en deux couches de décalques : finition d'usine, puis marques de Guynemer. Le moteur de 180 ch est accepté, la différence étant invisible de l'extérieur. **Usage réservé** : scène de studio, as piloté par l'IA ou livrée historique au choix. L'avion du joueur garde la finition d'usine avec un numéro fictif.

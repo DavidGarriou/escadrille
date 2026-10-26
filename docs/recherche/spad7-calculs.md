@@ -79,7 +79,7 @@ Même document et même rendu, pour le champ `hinge_m` des gouvernes (charnière
 
 | Grandeur | Dessin | Retenu | Remarque |
 |---|---|---|---|
-| Charnière du gouvernail | trait vertical à 0,2° près, droit à 3 mm près ; du bas du fuselage (z −0,32) jusqu'au point où le bord d'attaque de la dérive la rejoint (z −1,29) ; le haut arrondi du gouvernail, jusqu'à −1,41, est tout entier derrière elle | **x −4,70 ± 0,03 m**, `hinge_m` des deux panneaux de la dérive (C) | Pas de compensation en avant de l'axe |
+| Charnière du gouvernail | trait vertical à 0,2° près, droit à 3 mm près ; du bas du fuselage (z −0,32) jusqu'au point où le bord d'attaque de la dérive la rejoint (z −1,29) ; le haut arrondi du gouvernail, jusqu'à −1,41, est tout entier derrière elle | **x −4,70 ± 0,03 m**, `hinge_m` des cinq panneaux de la dérive (C ; deux panneaux jusqu'à la partie A du plan `m3-modele-spad7.md`) | Pas de compensation en avant de l'axe |
 | Étambot (fin du fuselage) | vertical, de z −0,70 à −0,32 | **x −4,47** (C), dernière section de `maquette.ron` | Charnière 0,23 m (8,9 in) derrière lui, pour « about 10 ins. » dans le texte de S48 (0,254 m) : l'écart, 1,6 pixel source, est concordant |
 | Charnière de la profondeur | droite d'un saumon à l'autre (écart-type de 5 mm), perpendiculaire à l'axe à 0,2° près, à travers l'axe (gouverne d'une pièce) ; échancrure en V à l'emplanture, dégagement du gouvernail | **x −4,51 ± 0,03 m**, z −0,70, `hinge_m` (C) | Elle coïncide à 4 mm près avec celle des bandes du panneau équivalent |
 | Charnière des ailerons | droite, parallèle au bord d'attaque, à 1,00 m de lui ; aileron de 0,41 m sur une corde dessinée de 1,41 m, soit 29 % (27 à 31 % selon le bord de trait) ; 1,95 et 1,98 m depuis le saumon | pas de `hinge_m` : la charnière des bandes (32 %) est entre les deux reports possibles sur la corde de 1,21 m | Le « 0,44 m » de la première lecture est une largeur prise bord extérieur à bord extérieur |
@@ -90,13 +90,18 @@ Même document et même rendu, pour le champ `hinge_m` des gouvernes (charnière
 
 | Gouverne | Écart lu | Limite |
 |---|---|---|
-| Gouvernail, sous le plan fixe | 0,050 m | 0,133 m |
-| Gouvernail, au-dessus | 0,057 m | 0,115 m |
+| Gouvernail, panneau z −0,31 à −0,50 | 0,014 m | 0,090 m |
+| Gouvernail, panneau z −0,50 à −0,70 | 0,006 m | 0,138 m |
+| Gouvernail, panneau z −0,70 à −0,92 | 0,002 m | 0,136 m |
+| Gouvernail, panneau z −0,92 à −1,14 | 0,017 m | 0,137 m |
+| Gouvernail, panneau z −1,14 à −1,40 | 0,019 m | 0,112 m |
 | Profondeur | 0,004 m | 0,090 m |
+
+Valeurs pour les cinq panneaux de la partie A (2026-10-26). Avec les deux panneaux d'avant : 0,050 sur 0,133 m et 0,057 sur 0,115 m.
 
 Les angles sont nuls.
 
-**Écarts avec le modèle de vol** (signalés, rien n'est changé) :
+**Écarts avec le modèle de vol**, signalés le 2026-10-26 au matin. **Tous résolus depuis** : partie fixe par le plan `m1-derive-spad7.md`, puis ailerons, répartition du gouvernail et moyeu par la partie A du plan `m3-modele-spad7.md`, ci-dessous. Liste gardée pour l'historique :
 - **Partie fixe de dérive absente** : sous le plan fixe, entre l'étambot (−4,47) et l'axe du gouvernail (−4,70), un panneau fixe fermé d'environ 0,08 m².
   - L'empennage vertical dessiné fait 0,98 m², contre 0,907 m² dans le modèle, soit −7 %, au-delà des ±2 % du contrôle de surface.
   - Un panneau inférieur de −4,47 à −5,25, gouvernail à 70 %, mettrait sa charnière à −4,704, exactement sur l'axe dessiné.
@@ -137,7 +142,7 @@ Les angles sont nuls.
      - glissade sur la queue 68,6 km/h ; performances inchangées.
    - **Cause**, isolée par l'aérodynamicien : la hauteur de l'axe du souffle. Le bas de la dérive est à cheval sur cet axe, où la rotation du souffle change de sens : environ 0,01 de course de direction par centimètre de hauteur du moyeu.
 
-**Correction faite (plan `m1-derive-spad7.md`, 2026-10-26)** : la partie fixe de dérive est ajoutée au panneau inférieur.
+**Correction faite (plan `m1-derive-spad7.md`, 2026-10-26)** : la partie fixe de dérive est ajoutée au panneau inférieur. **Remplacée le même jour par la partie A, point 2, ci-dessus** (cinq panneaux) : le panneau rectangulaire de 0,775 m, la raison du « pas effilé » et les 52,6 N·m/(m/s) décrits ici ne sont plus ceux des données.
 - **Panneau rectangulaire**, de l'étambot (x −4,47) au bord de fuite dessiné (x −5,245) : corde 0,775 m, gouvernail à 70 %. La charnière des bandes tombe à x −4,703, sur l'axe dessiné.
 - **Pourquoi pas effilé, comme le dessin** : les bandes ne feraient que 0,966 m² pour 1,00 m² dessiné, car le panneau supérieur avait été construit comme la surface dessinée moins un rectangle de 0,53 × 0,39 m. L'arrondi inférieur du gouvernail (0,035 m²) est donc compté en bas ; les totaux sont ceux du dessin.
 - **Surfaces** :

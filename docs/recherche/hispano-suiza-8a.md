@@ -454,7 +454,7 @@ Les tableaux III de B' (p. 18) et de I (p. 19) sont lus et vérifiés sur l'imag
 
 **Non établi.** Aucun document lu ou résumé ne relie une hélice à une escadrille, à un appareil ou à l'essai de S46. Indices :
 - **Un parc mêlé** : sept modèles français étaient autorisés pour le même avion et le même moteur (§ 7.5.2). Il n'y avait donc pas une « hélice du S.VII ».
-- **Éclair** : l'hélice Éclair (types 6 et 100) est citée comme équipant le SPAD VII, « dont celui de Guynemer » (H9 ; Wikipédia « Hélice Éclair », H35 [RÉSUMÉ]).
+- **Éclair** : l'hélice Éclair (types 6 et 100) est citée comme équipant le SPAD VII, « dont celui de Guynemer » (H9 ; Wikipédia « Hélice Éclair », H35 [RÉSUMÉ]). **Nuance (2026-10-26)** : Hartmann range Guynemer parmi les pilotes qui préféraient les hélices **Chauvière** (`spad7-aspect.md`, V1 p. 8 [LU]).
 - **Document du GQG du 27 décembre 1917** : destiné à réduire le nombre de modèles d'hélices en service, il désignerait les trois meilleures hélices du SPAD VII **180 ch**.
   - Le forum t8351 les marque en gras, mais le résumé a perdu la mise en forme. La Levasseur 485 n'en ferait pas partie (H10 [RÉSUMÉ]).
   - Ni la cote du document ni les trois noms ne sont connus.
