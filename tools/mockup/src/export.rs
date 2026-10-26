@@ -209,7 +209,23 @@ pub fn model_json(data: &AircraftData, mockup: Option<&MockupFile>) -> Result<St
                     format!("{}: [{}]", string(&o.surface), rows.join(", "))
                 })
                 .collect();
-            let _ = writeln!(j, "    \"outlines\": {{{}}}", outlines.join(", "));
+            let _ = writeln!(j, "    \"outlines\": {{{}}},", outlines.join(", "));
+            let features: Vec<String> = m
+                .features
+                .iter()
+                .map(|f| {
+                    let rows: Vec<String> = f
+                        .rows
+                        .iter()
+                        .map(|r| {
+                            let values: Vec<String> = r.iter().map(|v| number(*v)).collect();
+                            format!("[{}]", values.join(", "))
+                        })
+                        .collect();
+                    format!("{}: [{}]", string(&f.name), rows.join(", "))
+                })
+                .collect();
+            let _ = writeln!(j, "    \"features\": {{{}}}", features.join(", "));
             let _ = writeln!(j, "  }}");
         }
     }

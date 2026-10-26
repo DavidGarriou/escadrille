@@ -168,6 +168,24 @@ Mockup(
 - Au moins deux rangées, monotones en `s`, bord d'attaque devant le bord de fuite.
 - Le script Blender coupe les gouvernes sur leur charnière (`hinge_m`), comme pour les surfaces construites depuis les panneaux.
 
+`features` (facultatif) : tables de nombres nommées, en mètres ou en fractions selon ce que le script en dit, pour les détails du modèle réaliste que `aircraft.ron` ne porte pas. Chacune a son commentaire d'origine.
+
+```ron
+    features: [
+        (name: "radiator", rows: [[0.660, -0.430, 0.670]]),  // C: x de la face, z du centre, diamètre (dessin, table T3a)
+    ],
+```
+
+- Les noms sont uniques ; chaque table a au moins une rangée, et tous ses nombres sont finis.
+- Le script Blender (`art/<id>/build.py`) lit les noms dont il a besoin et s'arrête si l'un manque.
+- **SPAD** :
+  - nez et capot : `radiator`, `cowl_ring`, `camshaft_bulges` ;
+  - échappements : `exhaust_stubs`, `exhaust_collector`, `exhaust_pipe` ;
+  - plan supérieur : `upper_wing_cutout`, `wing_tip_radius` ;
+  - mâts : `strut_spars`, `cabane`, `steel_tube` ;
+  - train : `gear_front_leg`, `gear_rear_leg`, `skid_foot` ;
+  - poste : `cockpit_opening`, `cockpit_edge`.
+
 `accepted_deviations` : cotes que `tools/asset_check` accepte pour ce modèle provisoire, tant qu'il mesure la valeur inscrite (à 5 mm). Si une donnée la fait bouger, le contrôle échoue de nouveau ; s'il revient dans la tolérance, il demande de retirer l'écart (skill `pipeline-assets`).
 
 ## `assets/airfoils/<id>.ron`

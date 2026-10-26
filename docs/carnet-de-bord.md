@@ -1779,3 +1779,32 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** La capture montrait des stries sur la dérive : chaque tranche de gouverne était fermée par ses propres faces de bout, ce qui laissait des faces internes. Les tranches consécutives d'une même gouverne sont maintenant lissées d'un seul tenant (ailes comprises). Nouvelle capture **regardée** : dérive lisse, léger moiré dû au bruit de numérisation (de l'ordre du centimètre), à lisser plus tard.
 - **R** Le fuselage paraît presque noir : la couleur des matériaux est l'objet de B5.
 - **A** Documentation : `outlines` dans `format-avion.md`, modèle réaliste dans `pipeline-assets`.
+- **R** Lecture de l'aérodynamicien pour B4 (tables T1 à T7, au centre des traits, ±0,015 m, superpositions de contrôle regardées) :
+  - **fuselage** : profil de côté et largeur en vue de dessus. La largeur dessinée est de 0,85 à 0,97 m, contre 0,80 m estimé (E:) ;
+  - **nez** : radiateur de 0,67 m (0,71 à la première lecture était le bord extérieur), anneau avant, bossages des arbres à cames, échappements ;
+  - **plan supérieur** : découpe au-dessus du poste, congés de 0,19 m aux saumons ;
+  - **mâts** aux longerons (12 et 46 % de la corde dessinée), cabane verticale, tube d'acier ;
+  - **train** : roue de 0,61 m (et non 700 mm), jambes, béquille au patin à z −0,09 ;
+  - **poste** : ouverture et bourrelet. Le pare-brise et la Vickers ne sont pas dessinés.
+- **A** B4, passe 3 : les mesures passent dans le modèle réaliste.
+  - **`maquette.ron`** :
+    - 52 sections de fuselage mesurées au lieu de 6 estimées ;
+    - roues de 0,61 m et patin de béquille du dessin ;
+    - mâts aux y lus ;
+    - nouveau champ générique `features` : tables nommées, chacune avec son origine, lues par le script Blender. Noms uniques, nombres finis (test) ;
+    - Vickers remontée sur le capot : sa bouche estimée (z −0,95) était sous le dessus du capot mesuré (−0,97).
+  - **`build.py`** :
+    - fuselage plus finement maillé, avec l'ouverture du poste découpée, son bourrelet et un baquet sombre ;
+    - radiateur, lèvre de l'anneau avant, bossages aux bouts arrondis ;
+    - échappements : quatre tubulures, collecteur, coude avant et tuyau le long du flanc ;
+    - découpe du plan supérieur et congés des saumons ;
+    - mâts aux longerons, cabane verticale, tube d'acier ;
+    - jambes de train, béquille en lame.
+- **R** Le contrôle passe. La hauteur au sol tombe à **2,271 m** avec le train dessiné (2,343 m avant), soit +3,2 % sur les 2,20 m publiés. L'écart accepté par le joueur est mis à jour avec cette valeur, pour la même raison (pneus et sandows non écrasés).
+- **A** Capture du jeu et rendus Cycles en trois quarts avant et de face, **regardés**. La silhouette est celle d'un SPAD VII : capot rond et radiateur, bossages, échappements, train en V caréné, cabane, bourrelet du poste.
+  - Corrigé : bossages à bouts plats, devenus arrondis.
+  - Reste à revoir sur photo : le coude avant du collecteur, un peu raide.
+- **R** Écarts du dessin avec le **modèle de vol**, signalés au joueur, rien n'est changé :
+  - largeur du fuselage de 0,96 m au lieu de 0,80 m (bloc fuselage : surfaces, volume) ;
+  - roue de 0,61 m au lieu de 700 mm (traînée des roues) ;
+  - roue et béquille dessinées : utiles pour le train au sol du M2.

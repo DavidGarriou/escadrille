@@ -49,6 +49,16 @@ pub struct OutlineSpec {
     pub rows: Vec<[f64; 3]>,
 }
 
+/// A named table of numbers (metres, or fractions where the script says so) for the
+/// realistic model's details that `aircraft.ron` does not hold: nose, exhausts, cut-out,
+/// struts, gear, cockpit. The Blender script (`art/<id>/build.py`) names and reads them;
+/// each carries its origin in a comment, as any data.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct FeatureSpec {
+    pub name: String,
+    pub rows: Vec<Vec<f64>>,
+}
+
 /// A check of `tools/asset_check` that the provisional model fails for a known reason,
 /// accepted with the player's agreement: it passes while the model measures `measured`
 /// (a change of the data that moves it must be looked at again).
@@ -76,6 +86,8 @@ pub struct MockupFile {
     pub accepted_deviations: Vec<AcceptedDeviation>,
     #[serde(default)]
     pub outlines: Vec<OutlineSpec>,
+    #[serde(default)]
+    pub features: Vec<FeatureSpec>,
 }
 
 /// The provisional model file of an aircraft, if it has one.
@@ -120,6 +132,18 @@ pub fn load_mockup(assets: &Path, id: &str) -> Result<Option<MockupFile>, DataEr
             "an accepted deviation needs a measured value and a reason",
         ));
     }
+    let mut names: Vec<&str> = file.features.iter().map(|f| f.name.as_str()).collect();
+    names.sort_unstable();
+    if names.windows(2).any(|w| w[0] == w[1])
+        || file
+            .features
+            .iter()
+            .any(|f| f.rows.is_empty() || f.rows.iter().flatten().any(|v| !v.is_finite()))
+    {
+        return Err(invalid(
+            "features need a unique name and at least one row of finite numbers",
+        ));
+    }
     for outline in &file.outlines {
         let monotonic = outline.rows.windows(2).all(|w| w[1][0] != w[0][0])
             && (outline.rows.windows(2).all(|w| w[1][0] > w[0][0])
@@ -147,8 +171,8 @@ mod tests {
     #[test]
     fn the_spad_has_a_provisional_model_file() {
         let m = load_mockup(&assets(), "spad7").unwrap().unwrap();
-        assert_eq!(m.fuselage.len(), 6);
-        assert!((m.wheels.diameter.si() - 0.70).abs() < 1e-12);
+        assert_eq!(m.fuselage.len(), 52);
+        assert!((m.wheels.diameter.si() - 0.61).abs() < 1e-12);
         assert_eq!(m.gun_muzzles_m.len(), 1);
         let deviations: Vec<&str> = m
             .accepted_deviations
@@ -158,6 +182,8 @@ mod tests {
         assert_eq!(deviations, ["height"]);
         let outlines: Vec<&str> = m.outlines.iter().map(|o| o.surface.as_str()).collect();
         assert_eq!(outlines, ["tailplane", "fin"]);
+        let radiator = m.features.iter().find(|f| f.name == "radiator").unwrap();
+        assert_eq!(radiator.rows, [[0.66, -0.43, 0.67]]);
         assert!(
             load_mockup(&assets(), "no_such_aircraft")
                 .unwrap()
@@ -182,10 +208,24 @@ mod tests {
         std::fs::create_dir_all(&aircraft).unwrap();
         let text = std::fs::read_to_string(assets().join("aircraft/spad7/maquette.ron"))
             .unwrap()
-            .replace("(x_m: 0.70,", "(x_m: -0.70,");
+            .replace("(x_m: 0.65,", "(x_m: -0.65,");
         std::fs::write(aircraft.join("maquette.ron"), text).unwrap();
         let error = load_mockup(&dir, "backwards").unwrap_err();
         assert!(error.to_string().contains("nose to the tail"), "{error}");
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn features_need_unique_names() {
+        let dir = std::env::temp_dir().join(format!("escadrille-features-{}", std::process::id()));
+        let aircraft = dir.join("aircraft").join("twice");
+        std::fs::create_dir_all(&aircraft).unwrap();
+        let text = std::fs::read_to_string(assets().join("aircraft/spad7/maquette.ron"))
+            .unwrap()
+            .replace("(name: \"cowl_ring\",", "(name: \"radiator\",");
+        std::fs::write(aircraft.join("maquette.ron"), text).unwrap();
+        let error = load_mockup(&dir, "twice").unwrap_err();
+        assert!(error.to_string().contains("unique name"), "{error}");
         std::fs::remove_dir_all(&dir).unwrap();
     }
 }

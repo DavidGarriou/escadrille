@@ -199,7 +199,8 @@ fn the_model_data_is_valid_json_with_the_contract() {
     assert!((rudder["pivot"][0].as_f64().unwrap() + 4.70).abs() < 1e-9);
     assert_eq!(json["surfaces"].as_array().unwrap().len(), 4);
     assert_eq!(json["propeller"]["axis"][0], 1.0);
-    assert_eq!(json["mockup"]["fuselage"].as_array().unwrap().len(), 6);
+    assert_eq!(json["mockup"]["fuselage"].as_array().unwrap().len(), 52);
+    assert_eq!(json["mockup"]["features"]["radiator"][0][2], 0.67);
     // The drawn outlines of the tail, as (span, leading edge, trailing edge) rows.
     let outlines = &json["mockup"]["outlines"];
     assert_eq!(outlines["tailplane"].as_array().unwrap().len(), 51);

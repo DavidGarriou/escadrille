@@ -1,40 +1,86 @@
 // Provisional 3D model of the SPAD S.VII C.1: what a box-and-plate model needs beyond
 // aircraft.ron (plan docs/plans/modele-3d-provisoire.md). Body axes from the datum of
 // aircraft.ron (x forward, y right, z down), metres. Built by `just mockup spad7`.
-// The fuselage is an estimate, ending at the sternpost read on the 1917 drawing (Flight,
-// 16 August 1917, S48; spad7-calculs.md § 3.1), to be replaced if request D4
+// The shapes are read on the 1917 drawing (Flight, 16 August 1917, S48; spad7-calculs.md
+// § 3.1, aerodynamicist's tables T1 to T7 of 2026-10-26), to be replaced if request D4
 // (docs/recherche/demandes.md) brings the factory drawings.
 Mockup(
     fuselage: [
-        //! E: rectangular sections, width 0.80 m as the flight model (lower wing roots), « exceptionally deep » (S48); side area 4.14 m² and plan area 3.09 m² against 4.50 and 3.30 m² of the fuselage block of aircraft.ron (C: drawing, tail left out); C: last section at the sternpost of the 1917 drawing (x −4.47, from z −0.70 to −0.32; spad7-calculs.md § 3.1), ahead of the rudder post (x −4.70)
-        (x_m: 0.70, width: M(0.72), top_m: -0.74, bottom_m: -0.02),
-        (x_m: 0.30, width: M(0.80), top_m: -0.80, bottom_m: 0.05),
-        (x_m: -1.20, width: M(0.80), top_m: -0.85, bottom_m: 0.15),
-        (x_m: -2.60, width: M(0.55), top_m: -0.78, bottom_m: -0.02),
-        (x_m: -4.30, width: M(0.15), top_m: -0.72, bottom_m: -0.30),
-        (x_m: -4.47, width: M(0.04), top_m: -0.70, bottom_m: -0.32),
+        //! C: sections every 0.10 m from the nose to the sternpost, on the 1917 drawing at line centres (Flight, 16 Aug 1917, p. 841; S48; 240 px/m on the 6.10 m length, ±0.015 m; aerodynamicist 2026-10-26, tables T1 and T2): top and bottom from the side view (top interpolated across the cockpit opening, belly behind the gear legs as noted in T1), width from the top view; under the upper plane (x −1.10 to 0.05) the width is not drawn and 0.96 m, its value at both ends, is kept; E: aft of x −3.80 the width narrows linearly to 0.04 m at the sternpost
+        (x_m: 0.65, width: M(0.672), top_m: -0.679, bottom_m: -0.131),
+        (x_m: 0.55, width: M(0.754), top_m: -0.793, bottom_m: -0.036),
+        (x_m: 0.45, width: M(0.862), top_m: -0.857, bottom_m: 0.009),
+        (x_m: 0.35, width: M(0.864), top_m: -0.950, bottom_m: 0.058),
+        (x_m: 0.25, width: M(0.904), top_m: -0.981, bottom_m: 0.098),
+        (x_m: 0.15, width: M(0.944), top_m: -0.977, bottom_m: 0.131),
+        (x_m: 0.05, width: M(0.968), top_m: -0.971, bottom_m: 0.162),
+        (x_m: -0.05, width: M(0.960), top_m: -0.970, bottom_m: 0.184),
+        (x_m: -0.15, width: M(0.960), top_m: -0.963, bottom_m: 0.200),
+        (x_m: -0.25, width: M(0.960), top_m: -0.951, bottom_m: 0.215),
+        (x_m: -0.35, width: M(0.960), top_m: -0.951, bottom_m: 0.223),
+        (x_m: -0.45, width: M(0.960), top_m: -0.953, bottom_m: 0.238),
+        (x_m: -0.55, width: M(0.960), top_m: -0.953, bottom_m: 0.234),
+        (x_m: -0.65, width: M(0.960), top_m: -0.949, bottom_m: 0.234),
+        (x_m: -0.75, width: M(0.960), top_m: -0.962, bottom_m: 0.244),
+        (x_m: -0.85, width: M(0.960), top_m: -0.970, bottom_m: 0.232),
+        (x_m: -0.95, width: M(0.960), top_m: -0.978, bottom_m: 0.228),
+        (x_m: -1.05, width: M(0.960), top_m: -0.986, bottom_m: 0.212),
+        (x_m: -1.15, width: M(0.902), top_m: -0.995, bottom_m: 0.197),
+        (x_m: -1.25, width: M(0.888), top_m: -1.003, bottom_m: 0.180),
+        (x_m: -1.35, width: M(0.866), top_m: -1.011, bottom_m: 0.167),
+        (x_m: -1.45, width: M(0.850), top_m: -1.019, bottom_m: 0.149),
+        (x_m: -1.55, width: M(0.826), top_m: -0.987, bottom_m: 0.146),
+        (x_m: -1.65, width: M(0.812), top_m: -0.969, bottom_m: 0.129),
+        (x_m: -1.75, width: M(0.788), top_m: -0.950, bottom_m: 0.113),
+        (x_m: -1.85, width: M(0.776), top_m: -0.933, bottom_m: 0.097),
+        (x_m: -1.95, width: M(0.756), top_m: -0.910, bottom_m: 0.080),
+        (x_m: -2.05, width: M(0.734), top_m: -0.871, bottom_m: 0.064),
+        (x_m: -2.15, width: M(0.716), top_m: -0.860, bottom_m: 0.045),
+        (x_m: -2.25, width: M(0.694), top_m: -0.844, bottom_m: 0.033),
+        (x_m: -2.35, width: M(0.670), top_m: -0.822, bottom_m: 0.027),
+        (x_m: -2.45, width: M(0.656), top_m: -0.818, bottom_m: 0.013),
+        (x_m: -2.55, width: M(0.634), top_m: -0.811, bottom_m: -0.005),
+        (x_m: -2.65, width: M(0.614), top_m: -0.804, bottom_m: -0.019),
+        (x_m: -2.75, width: M(0.598), top_m: -0.801, bottom_m: -0.065),
+        (x_m: -2.85, width: M(0.576), top_m: -0.793, bottom_m: -0.077),
+        (x_m: -2.95, width: M(0.552), top_m: -0.786, bottom_m: -0.091),
+        (x_m: -3.05, width: M(0.534), top_m: -0.776, bottom_m: -0.096),
+        (x_m: -3.15, width: M(0.530), top_m: -0.769, bottom_m: -0.110),
+        (x_m: -3.25, width: M(0.506), top_m: -0.766, bottom_m: -0.121),
+        (x_m: -3.35, width: M(0.480), top_m: -0.755, bottom_m: -0.137),
+        (x_m: -3.45, width: M(0.460), top_m: -0.753, bottom_m: -0.154),
+        (x_m: -3.55, width: M(0.442), top_m: -0.760, bottom_m: -0.172),
+        (x_m: -3.65, width: M(0.414), top_m: -0.722, bottom_m: -0.184),
+        (x_m: -3.75, width: M(0.400), top_m: -0.721, bottom_m: -0.196),
+        (x_m: -3.85, width: M(0.359), top_m: -0.701, bottom_m: -0.207),
+        (x_m: -3.95, width: M(0.306), top_m: -0.701, bottom_m: -0.223),
+        (x_m: -4.05, width: M(0.253), top_m: -0.701, bottom_m: -0.236),
+        (x_m: -4.15, width: M(0.200), top_m: -0.701, bottom_m: -0.251),
+        (x_m: -4.25, width: M(0.146), top_m: -0.701, bottom_m: -0.246),
+        (x_m: -4.35, width: M(0.093), top_m: -0.701, bottom_m: -0.276),
+        (x_m: -4.45, width: M(0.040), top_m: -0.696, bottom_m: -0.292),
     ],
     wheels: (
-        centre_m: (0.12, 0.76, 0.78),                                // E: as the wheel drag items of aircraft.ron; S: track 5 ft (S48)
-        diameter: Mm(700.0),                                         // E: 700 × 75, as aircraft.ron (« 700 × 7… » on the S.XI drawing, S49)
-        width: Mm(75.0),                                             // E: as the diameter
+        centre_m: (0.136, 0.77, 0.764),                              // C: 1917 drawing, side and front views at line centres (aerodynamicist 2026-10-26, table T6): track 1.54 m, the 5 ft of S48
+        diameter: Mm(610.0),                                         // C: tyre 0.608 m at line centre, rim 0.484 m (T6); the 700 mm of the S.XI drawing (S49) is not the S.VII's
+        width: Mm(75.0),                                             // E: as the « 700 × 7… » of the S.XI (S49)
     ),
-    skid_m: (-4.30, 0.0, 0.05),                                      // E: tail skid of aircraft.ron (x −4.30), tip 0.15 m below its drag centre
+    skid_m: (-4.38, 0.0, -0.09),                                     // C: shoe of the tail skid on the 1917 drawing (T6): about 14° tail down on the ground
     struts: [
-        (x_m: -0.40, y_m: 3.00),                                     // C: outer struts of aircraft.ron, y read on the front view
-        (x_m: -0.40, y_m: 1.70),                                     // C: intermediate struts of aircraft.ron (S16)
+        (x_m: -0.41, y_m: 3.03),                                     // C: outer interplane struts on the 1917 drawing (T5): front and rear at x −0.172 and −0.651, y from the front view recentred
+        (x_m: -0.41, y_m: 1.71),                                     // C: intermediate struts (T5), same x
     ],
     pilot_eye_m: (-1.05, 0.0, -1.10),                                // E: 0.10 m ahead of the head's centre (drag item of aircraft.ron)
     gun_muzzles_m: [
-        (0.45, 0.0, -0.95),                                          // E: Vickers on the cowling (drag item of aircraft.ron at x −0.05), barrel about 1.1 m
+        (0.35, 0.0, -1.03),                                          // E: Vickers on top of the cowl (top at z −0.97 on the 1917 drawing, table T1), jacket of 0.11 m; C: x of the small boss at x 0.33 to 0.37 that may be its muzzle (T3b, T7: possibly the radiator cap, D); y not readable (T7)
     ],
     accepted_deviations: [
         //! Checks of `just test` (tools/asset_check) that this model fails, accepted by the player on 2026-10-26 (carnet); the length one was dropped the same day, the vertical tail of aircraft.ron now following the drawing (6.099 m); the model in the assets is the Blender one since that day
         (
             check: "height",
-            measured: M(2.343),                                      // C: the Blender model (art/spad7/build.py) at rest on the wheels and the skid (tail down 13.7°), 2.525 m in the flying attitude; the box model of tools/mockup measured 2.355 m (square wing tips)
-            reason: "2.20 m cannot be the flying attitude, and at rest the drawing's undercarriage stands 2.30 to 2.36 m before its tyres and rubber cords settle under the weight (not modelled): drawing and tables disagree",
-        ),                                                           // C: in flight, the fin top (z −1.40) and the propeller tip (z 0.82) alone span 2.22 m; at rest 2.304 m with the drawing's 0.58 m wheels, 2.355 m with 700 mm, the upper leading edge highest; 3 to 6 cm of static compression would give 2.26 to 2.33 m (aerodynamicist's review, 2026-10-25); spad7.md § 2.1 (2.12 to 2.35 m in the sources, attitude not given)
+            measured: M(2.271),                                      // C: the Blender model at rest on its wheels and skid shoe as drawn (art/spad7/build.py); 2.464 m in the flying attitude. Before the drawing's undercarriage was read (wheels 0.61 m, skid shoe at z −0.09): 2.343 m for this model, 2.355 m for the box model
+            reason: "2.20 m cannot be the flying attitude, and at rest the drawing's undercarriage stands 2.27 m before its tyres and rubber cords settle under the weight (not modelled): drawing and tables disagree by 3 %",
+        ),                                                           // C: in flight, the fin top (z −1.40) and the propeller tip (z 0.80) alone span 2.20 m; at rest 2.271 m with the drawing's 0.61 m wheels and skid, the upper leading edge highest; 3 to 6 cm of static compression would give 2.21 to 2.24 m (aerodynamicist's review, 2026-10-25); spad7.md § 2.1 (2.12 to 2.35 m in the sources, attitude not given)
     ],
     outlines: [
         (
@@ -76,5 +122,32 @@ Mockup(
             (-1.355, -4.925, -5.190), (-1.375, -4.997, -5.169), (-1.395, -5.070, -5.152),
             ],
         ),
+    ],
+    features: [
+        (name: "radiator", rows: [[0.660, -0.430, 0.670]]),                                    // C: x of its face, z of its centre, diameter of the circular opening at line centre (1917 drawing (Flight, 16 Aug 1917, p. 841; S48), at line centres, 240 px/m, ±0.015 m (aerodynamicist 2026-10-26, T3a): 0.71 m at the first reading was the outer edge
+        (name: "cowl_ring", rows: [[0.490, 0.660]]),                                           // C: x of the front ring of the cowl, from its joint to the radiator face, rounded lip (T3a, T3b)
+        (name: "camshaft_bulges", rows: [[0.300, -0.870, 0.180, -0.100, 0.450]]),                    // C: y, z and diameter of the camshaft covers on the cowl shoulders, front view (T3a); E: their x span, that of the top panel's joint (T3a), their length not being drawn
+        (name: "exhaust_stubs", rows: [[-0.170, -0.640], [-0.040, -0.610], [0.120, -0.610], [0.250, -0.605]]), // C: x and z of the top of each stub, a bank of four cylinders (T3d)
+        (name: "exhaust_collector", rows: [[0.560, -0.200, 0.380, 0.480, -0.690]]),                  // C: y of the collector (top view, 3 cm off the cowl), its x from (E: behind the first stub) and the x and z of its front crook (T3d)
+        (name: "exhaust_pipe", rows: [[-0.490, 0.050, 0.480, -1.670]]),                            // C: z and diameter of the pipe along the flank, x of its front (the collector's outlet) and of its end, 0.22 m behind the cockpit's rear rim (T3d)
+        (name: "upper_wing_cutout", rows: [
+        //! C: half-width of the cut-out in the upper plane over the cockpit and the chord fraction its edge reaches, from the leading edge, on the drawn chord of 1.41 m (T4); the fractions are kept on the 1.21 m chord of the data
+            [0.800, 0.993], [0.620, 0.957], [0.585, 0.922], [0.567, 0.887], [0.548, 0.851], [0.519, 0.816], [0.478, 0.780], [0.460, 0.745], [0.400, 0.709], [0.355, 0.674], [0.260, 0.638], [0.000, 0.603],
+        ]),
+        (name: "wing_tip_radius", rows: [[0.163]]),                                         // C: fillet of 0.19 m at the four corners of the drawn planform (T4, standard deviation 3 mm), on the drawn chord of 1.41 m, scaled to 1.21 m
+        (name: "strut_spars", rows: [[0.120, 0.460]]),                                           // C: front and rear interplane and cabane struts at 12 and 46 % of the drawn chord from the leading edge (T5; 17 and 49 % at the first reading, line edges)
+        (name: "cabane", rows: [[0.410, -0.770]]),                                               // C: y and z of the feet of the vertical cabane struts on the cowl, front view (T5); x at the strut spars, hidden in the side view
+        (name: "steel_tube", rows: [[-0.620, -0.220, -0.650]]),                                    // C: x from, x to and z of the steel tube between the intermediate struts, at mid-gap (T5, S48)
+        (name: "gear_front_leg", rows: [[0.128, 0.415, 0.000, 0.136, 0.550, 0.764, 0.135]]),          // C: front leg from the lower longeron (x, y, z) to the axle (x, y, z), drawn as a streamlined strut of 0.135 m chord (T6); y at the axle extrapolated from the front view
+        (name: "gear_rear_leg", rows: [[-0.430, 0.430, 0.230, 0.131, 0.550, 0.764]]),                 // C: rear leg from its exit of the belly (x, y, z) to the axle (T6); the parallel member 0.17 m aft (axle guide or strut) is left out until a photograph settles it
+        (name: "skid_foot", rows: [[-4.200, -0.240]]),                                           // C: x and z of the foot of the tail skid on the fuselage (T6)
+        (name: "cockpit_opening", rows: [
+        //! C: half-width of the cockpit opening in the top view, seen through the cut-out (T7): an oval from x −1.35 to −0.85
+            [-1.350, 0.000], [-1.300, 0.220], [-1.250, 0.330], [-1.200, 0.355], [-1.150, 0.360], [-1.100, 0.370], [-1.050, 0.377], [-0.950, 0.355], [-0.900, 0.260], [-0.850, 0.000],
+        ]),
+        (name: "cockpit_edge", rows: [
+        //! C: z of the edge of the cockpit opening in the side view (T7): the rear rim (z −1.02), the elbow cut-out down to the upper longeron (−0.74) and the front edge rising to the top of the cowl
+            [-1.500, -1.000], [-1.450, -1.019], [-1.400, -1.019], [-1.375, -1.006], [-1.350, -0.927], [-1.325, -0.850], [-1.300, -0.795], [-1.275, -0.784], [-1.250, -0.750], [-1.200, -0.742], [-1.150, -0.736], [-1.100, -0.736], [-1.050, -0.744], [-1.000, -0.784], [-0.950, -0.803], [-0.900, -0.836], [-0.850, -0.878], [-0.800, -0.918], [-0.750, -0.962], [-0.725, -0.975],
+        ]),
     ],
 )

@@ -37,13 +37,15 @@ SPAD_LOWER = [0.26, 0.07, 0.03, 0.08, 0.16, 0.26, 0.55, 0.85, 1.25, 1.31, 1.10, 
               0.51, 0.29, 0.15, 0.07, 0.0]
 
 TAIL_THICKNESS = 0.05      # E: thin symmetric tail sections (spad_empennage.ron: RAF 15 uncambered)
-TIP_RADIUS = 0.10          # E: « corners slightly rounded off » (S48)
+TIP_RADIUS = 0.10          # replaced by the feature "wing_tip_radius" of maquette.ron (main)
 CHORD_POINTS = 28          # points per surface of a section
 STRUT_CHORD, STRUT_THICK = 0.10, 0.035     # E: streamlined interplane struts
-STRUT_SPARS = (0.17, 0.49)                 # C: front and rear struts at 17 and 49 % of the chord (drawing, spad7-calculs.md § 3)
-CABANE_X = (-0.10, -0.70)                  # E: cabane struts, front and rear
-CABANE_Y = 0.30                            # E:
-LEG_SPREAD, LEG_ROOT_Y, LEG_DIAMETER = 0.35, 0.30, 0.05   # E: undercarriage V legs
+CABANE_CHORD, CABANE_THICK = 0.06, 0.025  # E: steel cabane struts in a fairing
+REAR_LEG_CHORD, LEG_THICK = 0.07, 0.035    # E: rear undercarriage leg (a single line on the drawing), thickness of both legs
+SKID_SECTION = (0.05, 0.025)               # E: tail skid, an ash leaf
+EXHAUST_STUB = 0.05                        # E: diameter of the exhaust stubs and collector
+RIM_DIAMETER = 0.05                        # E: padded rim of the cockpit
+COCKPIT_FLOOR = -0.30                      # E: z of the floor of the cockpit tub
 PITCH_RATIO = 0.81                         # C: Éclair type 6, 2.40 × 1.95 m (aircraft.ron)
 GUN_JACKET = (0.11, 1.05)                  # E: Vickers cooling jacket diameter and length, m
 
@@ -53,6 +55,14 @@ GUN_JACKET = (0.11, 1.05)                  # E: Vickers cooling jacket diameter 
 def blender_point(p):
     """Body axes to Blender's: (x, y, z) -> (-y, -x, -z)."""
     return Vector((-p[1], -p[0], -p[2]))
+
+
+def feature(data, name):
+    """Rows of a named table of maquette.ron (`features`)."""
+    try:
+        return data["mockup"]["features"][name]
+    except KeyError:
+        raise SystemExit(f"maquette.ron has no feature {name!r}")
 
 
 def node_matrix(origin, gltf_x, gltf_y):
@@ -127,6 +137,15 @@ class Builder:
             if cap:
                 f = self.bm.faces.new(row)
                 f.material_index = index
+
+    def delete_faces(self, inside):
+        """Removes the faces whose centre (body axes) `inside` accepts: openings."""
+        doomed = []
+        for f in self.bm.faces:
+            c = f.calc_center_median()
+            if inside(Vector((-c.y, -c.x, -c.z))):
+                doomed.append(f)
+        bmesh.ops.delete(self.bm, geom=doomed, context="FACES")
 
     def write(self, obj, materials):
         bmesh.ops.remove_doubles(self.bm, verts=self.bm.verts, dist=1e-6)
@@ -235,6 +254,21 @@ def tip_insets(distance_to_tip):
     return (inset, inset)
 
 
+CUTOUT = None   # (half-width, chord fraction reached from the leading edge), sorted (main)
+
+
+def cutout_inset(cutout, y):
+    """Chord fraction cut from the trailing edge at a distance y from the axis, by the
+    cut-out of the upper plane over the cockpit."""
+    if y >= cutout[-1][0]:
+        return 0.0
+    for (h0, f0), (h1, f1) in zip(cutout, cutout[1:]):
+        if h0 <= y <= h1:
+            f = f0 + (f1 - f0) * (y - h0) / (h1 - h0)
+            return max(1.0 - f, 0.0)
+    return max(1.0 - cutout[0][1], 0.0)
+
+
 def hinge_fraction(station, hinge):
     """Chord fraction of a station where the node's hinge line crosses its chord (the
     point of the chord nearest the line, as tools/mockup cuts its plates)."""
@@ -302,11 +336,18 @@ def build_surface(surface, data, body_parts, controls):
                 for k in range(1, 7):
                     d = TIP_RADIUS * (1 - k / 7)
                     etas.add(1.0 - d / length)
+            cutout = CUTOUT if surface["name"] == "upper_wing" and p_index == 0 else None
+            if cutout:
+                etas.update(min(h / length, 1.0) for h, _ in cutout)
+                etas.update(i * cutout[-1][0] / (12 * length) for i in range(13))
             etas = sorted(e for e in etas if 0.0 <= e <= 1.0)
             stations = []
             for e in etas:
-                inset = tip_insets((1.0 - e) * length) if free_tip else (0.0, 0.0)
-                stations.append((e, Station(panel, e, side if side != 0.0 else 1.0, kind, inset)))
+                le_in, te_in = tip_insets((1.0 - e) * length) if free_tip else (0.0, 0.0)
+                if cutout:
+                    chord = panel["chord_root"] + e * (panel["chord_tip"] - panel["chord_root"])
+                    te_in += cutout_inset(cutout, e * length) * chord
+                stations.append((e, Station(panel, e, side if side != 0.0 else 1.0, kind, (le_in, te_in))))
             # Loft along the span: whole sections, or fixed part and control part.
             def hinge_of(k, stations=stations, regions=regions):
                 mid = 0.5 * (stations[k][0] + stations[k + 1][0])
@@ -409,10 +450,23 @@ def superellipse(cx_z, half_w, half_h, exponent, n=32):
     return pts
 
 
+def opening_half_width(opening, x):
+    """Half-width of the cockpit opening at x (0 outside), from its drawn outline."""
+    pts = sorted(opening)
+    if not pts[0][0] < x < pts[-1][0]:
+        return 0.0
+    for (x0, h0), (x1, h1) in zip(pts, pts[1:]):
+        if x0 <= x <= x1:
+            return h0 + (h1 - h0) * (x - x0) / (x1 - x0)
+    return 0.0
+
+
 def build_fuselage(data, parts):
+    """Lofts the fuselage through the drawn sections (maquette.ron), round at the cowl and
+    a rounded box aft (« curved on the four faces », S48), and cuts the cockpit opening."""
     sections = data["mockup"]["fuselage"]
     keys = [(s["x"], s["width"] / 2, s["top"], s["bottom"]) for s in sections]
-    n = 48
+    n = 4 * (len(keys) - 1)
     rings = []
     for i in range(n + 1):
         t = (len(keys) - 1) * i / n
@@ -421,10 +475,27 @@ def build_fuselage(data, parts):
         top = catmull_rom([k[2] for k in keys], t)
         bottom = catmull_rom([k[3] for k in keys], t)
         centre, half_h = 0.5 * (top + bottom), max(0.5 * (bottom - top), 0.01)
-        exponent = 2.0 + 1.6 * min(i / (0.25 * n), 1.0)   # E: round cowling, rounded box aft
-        rings.append([Vector((x, y, z)) for y, z in superellipse(centre, hw, half_h, exponent)])
+        # E: round cowling (x > 0), a rounded box aft of the cockpit
+        exponent = 2.0 if x > 0.0 else 2.0 + 1.6 * min(-x / 1.2, 1.0)
+        rings.append([Vector((x, y, z)) for y, z in superellipse(centre, hw, half_h, exponent, n=48)])
     parts.loft(rings, "fuselage", cap_start=True, cap_end=True)
+    opening = feature(data, "cockpit_opening")
+    parts.delete_faces(lambda c: c.z < -0.80 and abs(c.y) < opening_half_width(opening, c.x))
     return keys
+
+
+def build_cockpit(data, parts, keys):
+    """The padded rim around the cockpit opening, and a dark tub below it."""
+    opening = sorted(feature(data, "cockpit_opening"))
+    xs = [opening[0][0] + (opening[-1][0] - opening[0][0]) * i / 40 for i in range(41)]
+    def top(x):
+        t, _, _ = fuselage_at(keys, x)
+        return t
+    loop = [Vector((x, opening_half_width(opening, x), top(x))) for x in xs]
+    loop += [Vector((x, -opening_half_width(opening, x), top(x))) for x in reversed(xs[1:-1])]
+    tube(parts, loop + [loop[0]], RIM_DIAMETER, "leather")
+    floor = [Vector((p.x, 0.85 * p.y, COCKPIT_FLOOR)) for p in loop]
+    parts.loft([loop, floor], "cockpit", cap_end=True)
 
 
 # --- Struts, gear, propeller, gun --------------------------------------------------------
@@ -472,12 +543,17 @@ def build_struts(data, parts):
     le_x = upper["panels"][0]["root"][0] + 0.25 * chord
     for _, y in mock["struts"]:
         for side in (1, -1):
-            for f in STRUT_SPARS:
+            for f in feature(data, "strut_spars")[0]:
                 x = le_x - f * chord
                 bottom = wing_surface_z(data, "lower_wing", x, y, upper=True)
                 top = wing_surface_z(data, "upper_wing", x, y, upper=False)
                 streamlined_strut(parts, (x, side * y, bottom), (x, side * y, top),
                                   STRUT_CHORD, STRUT_THICK, "wood")
+    # Steel tube between the intermediate struts, at mid-gap (S48).
+    x0, x1, z = feature(data, "steel_tube")[0]
+    y = min(y for _, y in mock["struts"])
+    for side in (1, -1):
+        round_bar(parts, (x0, side * y, z), (x1, side * y, z), 0.03, "metal")
 
 
 def fuselage_at(keys, x):
@@ -494,12 +570,17 @@ def fuselage_at(keys, x):
 
 
 def build_cabane(data, parts, keys):
-    for x in CABANE_X:
-        top, _, _ = fuselage_at(keys, x)
-        z_wing = wing_surface_z(data, "upper_wing", x, CABANE_Y, upper=False)
+    """Vertical cabane struts from the cowl shoulders to the upper plane, at the spars."""
+    upper = next(s for s in data["surfaces"] if s["name"] == "upper_wing")
+    chord = upper["panels"][0]["chord_root"]
+    le_x = upper["panels"][0]["root"][0] + 0.25 * chord
+    y, z_foot = feature(data, "cabane")[0]
+    for f in feature(data, "strut_spars")[0]:
+        x = le_x - f * chord
+        z_wing = wing_surface_z(data, "upper_wing", x, y, upper=False)
         for side in (1, -1):
-            streamlined_strut(parts, (x, side * 0.8 * CABANE_Y, top + 0.02),
-                              (x, side * CABANE_Y, z_wing), 0.06, 0.025, "metal")
+            streamlined_strut(parts, (x, side * y, z_foot + 0.05), (x, side * y, z_wing),
+                              CABANE_CHORD, CABANE_THICK, "metal")
 
 
 def build_gear(data, parts, keys):
@@ -524,18 +605,81 @@ def build_gear(data, parts, keys):
                                     math.sin(2 * math.pi * i / n) * (radius - 1.6 * tube))) for i in range(n)]
             for i in range(n):
                 parts.face([hub, rim[i], rim[(i + 1) % n]], "fabric_doped")
-        # V legs from the axle to the fuselage bottom, ahead and behind.
-        axle = Vector((cx, side * (cy - width), cz))
-        for dx in (LEG_SPREAD, -LEG_SPREAD):
-            x = cx + dx
-            _, bottom, _ = fuselage_at(keys, x)
-            round_bar(parts, axle, (x, side * LEG_ROOT_Y, bottom - 0.02), LEG_DIAMETER, "wood")
+        # Legs (drawing): a streamlined front leg from the lower longeron, a rear leg from
+        # the belly, both to the axle.
+        fx, fy, fz, ax, ay, az, chord = feature(data, "gear_front_leg")[0]
+        streamlined_strut(parts, (fx, side * fy, fz), (ax, side * ay, az), chord, LEG_THICK, "wood")
+        rx, ry, rz, bx, by, bz = feature(data, "gear_rear_leg")[0]
+        streamlined_strut(parts, (rx, side * ry, rz), (bx, side * by, bz), REAR_LEG_CHORD, LEG_THICK, "wood")
     # Axle and its fairing between the wheels.
     streamlined_strut(parts, (cx, cy - width, cz), (cx, -(cy - width), cz), 0.12, 0.05, "fabric_doped")
-    # Tail skid, from the fuselage bottom down and back to its tip.
+    # Tail skid, an ash leaf from its foot on the fuselage to its shoe.
     sx, sy, sz = mock["skid"]
-    _, bottom, _ = fuselage_at(keys, sx + 0.35)
-    round_bar(parts, (sx + 0.35, 0, bottom), (sx, sy, sz), 0.04, "metal")
+    fx, fz = feature(data, "skid_foot")[0]
+    streamlined_strut(parts, (fx, 0.0, fz), (sx, sy, sz), *SKID_SECTION, "wood")
+
+
+def tube(parts, points, diameter, material, n=12, scales=None):
+    """A round tube along a polyline (body axes), its rings square to the path; `scales`
+    shapes its radius point by point (rounded ends)."""
+    pts = [Vector(p) for p in points]
+    rings = []
+    for i, p in enumerate(pts):
+        r = 0.5 * diameter * (scales[i] if scales else 1.0)
+        a, b = pts[max(i - 1, 0)], pts[min(i + 1, len(pts) - 1)]
+        t = (b - a).normalized()
+        ref = Vector((0, 0, 1)) if abs(t.z) < 0.9 else Vector((1, 0, 0))
+        u = t.cross(ref).normalized()
+        v = t.cross(u)
+        rings.append([p + (u * math.cos(2 * math.pi * k / n) + v * math.sin(2 * math.pi * k / n)) * r
+                      for k in range(n)])
+    parts.loft(rings, material, cap_start=True, cap_end=True)
+
+
+def build_nose(data, parts, keys):
+    """Radiator in its front ring, and the camshaft covers on the cowl shoulders."""
+    x_face, zc, diameter = feature(data, "radiator")[0]
+    r = 0.5 * diameter
+    n = 48
+    centre = Vector((x_face + 0.004, 0.0, zc))
+    rim = [centre + Vector((0, r * math.cos(2 * math.pi * i / n), r * math.sin(2 * math.pi * i / n)))
+           for i in range(n)]
+    for i in range(n):
+        parts.face([centre, rim[(i + 1) % n], rim[i]], "radiator")
+    # Rounded lip of the front ring around the radiator.
+    lip = [[centre + Vector((-0.025 * (1 - math.cos(math.pi * k / 6)), 0, 0))
+            + Vector((0, (r + 0.025 * math.sin(math.pi * k / 6)) * math.cos(2 * math.pi * i / n),
+                      (r + 0.025 * math.sin(math.pi * k / 6)) * math.sin(2 * math.pi * i / n)))
+            for i in range(n)] for k in range(7)]
+    parts.loft(lip, "cowl")
+    y, z, d, x0, x1 = feature(data, "camshaft_bulges")[0]
+    k_max = 16
+    # Rounded ends that close on the cowl: radius (1 - (2t - 1)^8)^(1/2) along the cover.
+    scales = [max(1 - (2 * k / k_max - 1) ** 8, 0.0) ** 0.5 for k in range(k_max + 1)]
+    for side in (1, -1):
+        cover = [(x0 + (x1 - x0) * k / k_max, side * y, z) for k in range(k_max + 1)]
+        tube(parts, cover, d, "cowl", n=16, scales=scales)
+
+
+def build_exhausts(data, parts, keys):
+    """Four stubs to a collector each side, its front crook, and the pipe along the flank."""
+    y_c, x_from, x_crook, x_front, z_crook = feature(data, "exhaust_collector")[0]
+    z_pipe, d_pipe, x_pipe_front, x_end = feature(data, "exhaust_pipe")[0]
+    stubs = feature(data, "exhaust_stubs")
+    z_c = sum(z for _, z in stubs) / len(stubs)
+    for side in (1, -1):
+        for x, z in stubs:
+            tube(parts, [(x, side * (y_c - 0.06), z + 0.06), (x, side * y_c, z)], EXHAUST_STUB, "exhaust")
+        collector = [(x_from, side * y_c, z_c), (x_crook, side * y_c, z_c),
+                     (0.5 * (x_crook + x_front), side * y_c, 0.5 * (z_c + z_crook) + 0.02),
+                     (x_front, side * y_c, 0.5 * (z_crook + z_pipe)), (x_pipe_front - 0.04, side * y_c, z_pipe)]
+        pipe = []
+        steps = 24
+        for k in range(steps + 1):
+            x = x_pipe_front - 0.04 + (x_end - x_pipe_front + 0.04) * k / steps
+            _, _, hw = fuselage_at(keys, x)
+            pipe.append((x, side * max(hw + 0.035, 0.0), z_pipe))
+        tube(parts, collector + pipe[1:], d_pipe, "exhaust")
 
 
 def build_propeller(data, root):
@@ -606,6 +750,11 @@ def make_materials():
         "steel": principled("acier bruni", (0.10, 0.10, 0.11), 0.4, metallic=1.0),
         "rubber": principled("caoutchouc", (0.05, 0.05, 0.05), 0.85),
         "disc": principled("disque d'hélice", (0.6, 0.6, 0.6), 0.5),
+        "cowl": principled("capot", (0.40, 0.35, 0.23), 0.5),
+        "radiator": principled("radiateur", (0.08, 0.08, 0.07), 0.8),
+        "exhaust": principled("échappement", (0.20, 0.13, 0.09), 0.7, metallic=1.0),
+        "leather": principled("cuir", (0.18, 0.10, 0.05), 0.6),
+        "cockpit": principled("intérieur du poste", (0.07, 0.06, 0.05), 0.9),
     }
 
 
@@ -637,8 +786,15 @@ def main(argv):
         control_objects[hinge["node"]] = obj
         controls[hinge["node"]] = Builder()
 
+    global TIP_RADIUS, CUTOUT
+    TIP_RADIUS = feature(data, "wing_tip_radius")[0][0]
+    CUTOUT = sorted((h, f) for h, f in feature(data, "upper_wing_cutout"))
+
     parts = Builder()
     keys = build_fuselage(data, parts)
+    build_cockpit(data, parts, keys)
+    build_nose(data, parts, keys)
+    build_exhausts(data, parts, keys)
     outlines = data["mockup"].get("outlines", {})
     for surface in data["surfaces"]:
         if surface["name"] in outlines:
