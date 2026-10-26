@@ -1808,3 +1808,16 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - largeur du fuselage de 0,96 m au lieu de 0,80 m (bloc fuselage : surfaces, volume) ;
   - roue de 0,61 m au lieu de 700 mm (traînée des roues) ;
   - roue et béquille dessinées : utiles pour le train au sol du M2.
+- **Q** Le joueur : « Peux tu faire un modèle 3D encore plus réaliste ? »
+- **R** Oui, dans le cadre du plan validé (passes de B4, puis B5). Ce qui manquait le plus au réalisme : les couleurs, le câblage, la toile et les détails mécaniques. Les marques (cocardes, gouvernail tricolore, insignes) demandent de vraies textures : passe suivante.
+- **A** B4, passe 4 :
+  - **câblage** : câbles de vol doublés en tandem, câbles d'atterrissage croisés aux mâts intermédiaires (S48), câbles d'incidence, croisillons de cabane, haubans d'empennage. Ce sont des nœuds `wire_*`, aux diamètres d'`aircraft.ron` (4,5, 3,5 et 3 mm) ;
+  - **toile** : bord de fuite festonné entre les nervures (pas de 0,19 m du S.XI, `ESTIMÉ` ; creux de 1,5 cm, E:) ;
+  - **mécanique** : renvois d'ailerons extérieurs (tige de 15 mm, guignol, renvoi), pare-brise en verre sur cadre, Vickers avec manchon, cône de bouche et boîte de culasse ;
+  - **matériaux** : le capot en aluminium peint jusqu'au poste (S48), la toile en arrière ;
+  - **finition d'usine de 1917** (fiche d'aspect § 12.1, C) : toile vernie jaune pâle, métal peint d'un jaune plus foncé, mâts en bois verni, hélice en noyer verni. Les teintes sont `ESTIMÉ`, faute de nuancier d'époque, en attendant la demande D8.
+  - Les dimensions sont des tables nommées de `maquette.ron`, chacune avec son origine.
+- **A** Rendus Cycles en trois quarts avant et arrière, **regardés**.
+- **⚠** Le fuselage était bosselé : le bruit de lecture des 52 sections mesurées (1 à 2 cm) faisait onduler le loft. **A** Le script lisse maintenant sections et contours (filtre binomial sur ±0,2 m) ; les données gardent les mesures brutes. Nouveau rendu **regardé** : fuselage lisse, dérive sans moiré.
+- **A** Modèle installé dans `assets/` (2,7 Mo) ; `asset_check` passe (longueur 6,031 m, hauteur à l'écart accepté). Capture du jeu **regardée** : finition jaune et câblage visibles, vérifications de repères inchangées.
+- **R** Les câbles, plus fins qu'un pixel, scintilleront en mouvement sans l'anticrénelage prévu au plan (B6).

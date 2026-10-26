@@ -46,6 +46,7 @@ SKID_SECTION = (0.05, 0.025)               # E: tail skid, an ash leaf
 EXHAUST_STUB = 0.05                        # E: diameter of the exhaust stubs and collector
 RIM_DIAMETER = 0.05                        # E: padded rim of the cockpit
 COCKPIT_FLOOR = -0.30                      # E: z of the floor of the cockpit tub
+COWL_END_X = -0.74                         # C: the cowl's top ends at the front edge of the cockpit opening (x −0.74, table T7)
 PITCH_RATIO = 0.81                         # C: Éclair type 6, 2.40 × 1.95 m (aircraft.ron)
 GUN_JACKET = (0.11, 1.05)                  # E: Vickers cooling jacket diameter and length, m
 
@@ -255,6 +256,7 @@ def tip_insets(distance_to_tip):
 
 
 CUTOUT = None   # (half-width, chord fraction reached from the leading edge), sorted (main)
+RIBS = (0.19, 0.0)   # rib pitch and scallop depth, m (feature "ribs", main)
 
 
 def cutout_inset(cutout, y):
@@ -336,6 +338,10 @@ def build_surface(surface, data, body_parts, controls):
                 for k in range(1, 7):
                     d = TIP_RADIUS * (1 - k / 7)
                     etas.add(1.0 - d / length)
+            wing = kind == "horizontal" and surface["name"].endswith("wing")
+            if wing:
+                pitch, _ = RIBS
+                etas.update(min(k * pitch / 4 / length, 1.0) for k in range(int(4 * length / pitch) + 1))
             cutout = CUTOUT if surface["name"] == "upper_wing" and p_index == 0 else None
             if cutout:
                 etas.update(min(h / length, 1.0) for h, _ in cutout)
@@ -347,6 +353,10 @@ def build_surface(surface, data, body_parts, controls):
                 if cutout:
                     chord = panel["chord_root"] + e * (panel["chord_tip"] - panel["chord_root"])
                     te_in += cutout_inset(cutout, e * length) * chord
+                if wing:
+                    # The fabric scallops between the ribs at the trailing edge wire.
+                    pitch, depth = RIBS
+                    te_in += depth * math.sin(math.pi * (e * length) / pitch) ** 2
                 stations.append((e, Station(panel, e, side if side != 0.0 else 1.0, kind, (le_in, te_in))))
             # Loft along the span: whole sections, or fixed part and control part.
             def hinge_of(k, stations=stations, regions=regions):
@@ -409,6 +419,7 @@ def build_outline_surface(surface, rows, data, body_parts, controls):
     plane_z = first["root"][2]
     sides = (1.0, -1.0) if surface["mirrored"] else (0.0,)
     rows = sorted(rows, key=lambda r: abs(r[0]))
+    rows = list(zip([r[0] for r in rows], smoothed([r[1] for r in rows]), smoothed([r[2] for r in rows])))
     for side in sides:
         sign = side if side != 0.0 else 1.0
         stations = [(r[0] * (sign if kind == "horizontal" else 1.0),
@@ -461,11 +472,23 @@ def opening_half_width(opening, x):
     return 0.0
 
 
+def smoothed(values, passes=2):
+    """Binomial smoothing [1, 2, 1] / 4, `passes` times, ends kept: the drawing's line
+    readings carry 1 to 2 cm of noise that would ripple a loft through them."""
+    v = list(values)
+    for _ in range(passes):
+        v = [v[0]] + [0.25 * (v[i - 1] + 2 * v[i] + v[i + 1]) for i in range(1, len(v) - 1)] + [v[-1]]
+    return v
+
+
 def build_fuselage(data, parts):
     """Lofts the fuselage through the drawn sections (maquette.ron), round at the cowl and
     a rounded box aft (« curved on the four faces », S48), and cuts the cockpit opening."""
     sections = data["mockup"]["fuselage"]
-    keys = [(s["x"], s["width"] / 2, s["top"], s["bottom"]) for s in sections]
+    keys = list(zip([s["x"] for s in sections],
+                    smoothed([s["width"] / 2 for s in sections]),
+                    smoothed([s["top"] for s in sections]),
+                    smoothed([s["bottom"] for s in sections])))
     n = 4 * (len(keys) - 1)
     rings = []
     for i in range(n + 1):
@@ -478,7 +501,11 @@ def build_fuselage(data, parts):
         # E: round cowling (x > 0), a rounded box aft of the cockpit
         exponent = 2.0 if x > 0.0 else 2.0 + 1.6 * min(-x / 1.2, 1.0)
         rings.append([Vector((x, y, z)) for y, z in superellipse(centre, hw, half_h, exponent, n=48)])
-    parts.loft(rings, "fuselage", cap_start=True, cap_end=True)
+    # Aluminium panels of the cowl from the nose back to the cockpit (S48: « the fore end
+    # of the machine, which houses the motor, is covered with aluminium »), fabric aft.
+    split = next(k for k, r in enumerate(rings) if r[0].x <= COWL_END_X)
+    parts.loft(rings[:split + 1], "cowl", cap_start=True)
+    parts.loft(rings[split:], "fuselage", cap_end=True)
     opening = feature(data, "cockpit_opening")
     parts.delete_faces(lambda c: c.z < -0.80 and abs(c.y) < opening_half_width(opening, c.x))
     return keys
@@ -716,10 +743,93 @@ def build_propeller(data, root):
     return node, parts
 
 
+def box(parts, centre, size, material):
+    """An axis-aligned box (body axes)."""
+    c, (sx, sy, sz) = Vector(centre), size
+    ring = lambda x: [c + Vector((x, 0.5 * sy * a, 0.5 * sz * b)) for a, b in ((1, 1), (-1, 1), (-1, -1), (1, -1))]
+    parts.loft([ring(0.5 * sx), ring(-0.5 * sx)], material, cap_start=True, cap_end=True)
+
+
 def build_gun(data, parts):
+    """The Vickers on the cowl: cooling jacket, muzzle cone and receiver."""
     muzzle = Vector(data["mockup"]["gun_muzzles"][0])
-    d, length = GUN_JACKET
-    round_bar(parts, muzzle - Vector((length, 0, 0)), muzzle, d, "steel")
+    d, jacket, receiver, width, height = feature(data, "vickers")[0]
+    round_bar(parts, muzzle - Vector((jacket, 0, 0)), muzzle - Vector((0.06, 0, 0)), d, "steel", n=16)
+    tube(parts, [muzzle - Vector((0.06, 0, 0)), muzzle], d, "steel", n=16, scales=[1.0, 0.45])
+    box(parts, muzzle - Vector((jacket + 0.5 * receiver, 0, -0.01)), (receiver, width, height), "steel")
+
+
+def wire_builder(wires, name):
+    if name not in wires:
+        wires[name] = Builder()
+    return wires[name]
+
+
+def build_wires(data, wires):
+    """Rigging (S48): flying wires from the fuselage at the lower roots to the tops of the
+    outer struts, landing wires from the cabane to their feet, both crossing at the
+    intermediate struts; incidence wires across each pair of struts; cabane cross-bracing;
+    the tailplane braced to the fin and the sternpost. Nodes `wire_*` (pipeline-assets)."""
+    flying, landing, incidence, tandem = feature(data, "wires")[0]
+    upper = next(s for s in data["surfaces"] if s["name"] == "upper_wing")
+    lower = next(s for s in data["surfaces"] if s["name"] == "lower_wing")
+    chord = upper["panels"][0]["chord_root"]
+    le_x = upper["panels"][0]["root"][0] + 0.25 * chord
+    spars = [le_x - f * chord for f in feature(data, "strut_spars")[0]]
+    outer = max(y for _, y in data["mockup"]["struts"])
+    inner = min(y for _, y in data["mockup"]["struts"])
+    root_y = lower["panels"][0]["root"][1]
+    cab_y, _ = feature(data, "cabane")[0]
+    up = lambda x, y: wing_surface_z(data, "upper_wing", x, y, upper=False)
+    low = lambda x, y: wing_surface_z(data, "lower_wing", x, y, upper=True)
+    w = 6
+    for side in (1, -1):
+        for x in spars:
+            for dx in (-0.5 * tandem, 0.5 * tandem):
+                tube(wire_builder(wires, "wire_flying"),
+                     [(x + dx, side * root_y, low(x, root_y)), (x + dx, side * outer, up(x, outer))], flying, "wire", n=w)
+            tube(wire_builder(wires, "wire_landing"),
+                 [(x, side * cab_y, up(x, cab_y)), (x, side * outer, low(x, outer))], landing, "wire", n=w)
+        for y in (inner, outer):
+            (xf, xr) = spars
+            for a, b in (((xf, up(xf, y)), (xr, low(xr, y))), ((xf, low(xf, y)), (xr, up(xr, y)))):
+                tube(wire_builder(wires, "wire_incidence"),
+                     [(a[0], side * y, a[1]), (b[0], side * y, b[1])], incidence, "wire", n=w)
+    # Cabane: a cross in the plane of each pair of cabane struts, and between them.
+    z_foot = feature(data, "cabane")[0][1] + 0.05
+    xf, xr = spars
+    for side in (1, -1):
+        for a, b in (((xf, up(xf, cab_y)), (xr, z_foot)), ((xf, z_foot), (xr, up(xr, cab_y)))):
+            tube(wire_builder(wires, "wire_cabane"),
+                 [(a[0], side * cab_y, a[1]), (b[0], side * cab_y, b[1])], incidence, "wire", n=w)
+    # Tailplane bracing to the fin above and the sternpost below.
+    x, y, z_top, z_bottom = feature(data, "tail_bracing")[0]
+    for side in (1, -1):
+        for z in (z_top, z_bottom):
+            tube(wire_builder(wires, "wire_tail"), [(x, side * y, -0.70), (x, 0.0, z)], landing, "wire", n=w)
+
+
+def build_linkage(data, parts):
+    """Outside aileron linkage (S48): a rod from a bellcrank on the lower plane, beside
+    the outer struts, up to the aileron's horn."""
+    x_crank, y, x_horn, rod = feature(data, "aileron_linkage")[0]
+    for side in (1, -1):
+        z_low = wing_surface_z(data, "lower_wing", x_crank, y, upper=True)
+        z_up = wing_surface_z(data, "upper_wing", x_horn, y, upper=False)
+        round_bar(parts, (x_crank, side * y, z_low - 0.06), (x_horn, side * y, z_up + 0.07), rod, "metal")
+        box(parts, (x_crank, side * y, z_low - 0.03), (0.10, 0.008, 0.07), "metal")
+        box(parts, (x_horn, side * y, z_up + 0.035), (0.06, 0.006, 0.08), "metal")
+
+
+def build_windscreen(data, parts, keys):
+    """A small glass screen ahead of the cockpit, raked back, on a metal frame."""
+    x, half, height, rake = feature(data, "windscreen")[0]
+    top, _, _ = fuselage_at(keys, x)
+    lean = height * math.tan(math.radians(rake))
+    a, b = (x, half, top), (x, -half, top)
+    c, d = (x - lean, -half * 0.9, top - height), (x - lean, half * 0.9, top - height)
+    parts.face([a, b, c, d], "glass")
+    tube(parts, [a, d, c, b], 0.012, "metal", n=6)
 
 
 # --- Materials ---------------------------------------------------------------------------
@@ -738,24 +848,36 @@ def make_materials():
         bsdf.inputs["Roughness"].default_value = roughness
         bsdf.inputs["Metallic"].default_value = metallic
         return m
-    # E: pass-1 colours, until the livery of the appearance sheet.
-    return {
-        "surface": principled("toile peinte", (0.38, 0.33, 0.22), 0.7),
-        "control": principled("gouvernes", (0.38, 0.33, 0.22), 0.7),
-        "fuselage": principled("fuselage", (0.36, 0.32, 0.22), 0.6),
-        "fabric_doped": principled("toile enduite", (0.78, 0.72, 0.58), 0.7),
-        "wood": principled("bois peint", (0.30, 0.25, 0.18), 0.6),
-        "propeller_wood": principled("hélice", (0.30, 0.16, 0.07), 0.35),
-        "metal": principled("acier", (0.25, 0.25, 0.26), 0.45, metallic=1.0),
-        "steel": principled("acier bruni", (0.10, 0.10, 0.11), 0.4, metallic=1.0),
-        "rubber": principled("caoutchouc", (0.05, 0.05, 0.05), 0.85),
+    # Factory finish of 1916-early 1917 (spad7-aspect.md § 12.1, C): varnished pale yellow
+    # linen, metal painted a darker yellow. ESTIMÉ: no colour reference of the period was
+    # found (§ 12.1); these sRGB values are judged on photographs' tones, until request D8.
+    m = {
+        "surface": principled("toile vernie", (0.84, 0.76, 0.52), 0.65),
+        "control": principled("gouvernes, toile vernie", (0.84, 0.76, 0.52), 0.65),
+        "fuselage": principled("fuselage, toile vernie", (0.84, 0.76, 0.52), 0.65),
+        "fabric_doped": principled("toile vernie des roues", (0.84, 0.76, 0.52), 0.65),
+        "cowl": principled("capot, aluminium peint", (0.74, 0.60, 0.33), 0.45),
+        "wood": principled("bois verni des mâts", (0.56, 0.40, 0.22), 0.4),
+        "propeller_wood": principled("hélice, noyer verni", (0.36, 0.20, 0.10), 0.3),
+        "metal": principled("acier", (0.35, 0.36, 0.37), 0.45, metallic=1.0),
+        "steel": principled("acier bruni", (0.12, 0.12, 0.13), 0.4, metallic=1.0),
+        "wire": principled("câbles d'acier", (0.50, 0.51, 0.53), 0.3, metallic=1.0),
+        "rubber": principled("caoutchouc", (0.06, 0.06, 0.06), 0.85),
         "disc": principled("disque d'hélice", (0.6, 0.6, 0.6), 0.5),
-        "cowl": principled("capot", (0.40, 0.35, 0.23), 0.5),
-        "radiator": principled("radiateur", (0.08, 0.08, 0.07), 0.8),
-        "exhaust": principled("échappement", (0.20, 0.13, 0.09), 0.7, metallic=1.0),
-        "leather": principled("cuir", (0.18, 0.10, 0.05), 0.6),
-        "cockpit": principled("intérieur du poste", (0.07, 0.06, 0.05), 0.9),
+        "radiator": principled("radiateur", (0.10, 0.09, 0.08), 0.8),
+        "exhaust": principled("échappement", (0.27, 0.16, 0.10), 0.7, metallic=1.0),
+        "leather": principled("cuir", (0.24, 0.13, 0.06), 0.55),
+        "cockpit": principled("intérieur du poste", (0.10, 0.08, 0.06), 0.9),
+        "glass": principled("verre", (0.95, 0.97, 0.97), 0.05),
     }
+    # The propeller's varnish, and the windscreen's glass.
+    coat = m["propeller_wood"].node_tree.nodes["Principled BSDF"].inputs
+    if "Coat Weight" in coat:
+        coat["Coat Weight"].default_value = 1.0
+    glass = m["glass"].node_tree.nodes["Principled BSDF"].inputs
+    if "Transmission Weight" in glass:
+        glass["Transmission Weight"].default_value = 1.0
+    return m
 
 
 # --- Main --------------------------------------------------------------------------------
@@ -789,6 +911,8 @@ def main(argv):
     global TIP_RADIUS, CUTOUT
     TIP_RADIUS = feature(data, "wing_tip_radius")[0][0]
     CUTOUT = sorted((h, f) for h, f in feature(data, "upper_wing_cutout"))
+    global RIBS
+    RIBS = tuple(feature(data, "ribs")[0])
 
     parts = Builder()
     keys = build_fuselage(data, parts)
@@ -805,8 +929,14 @@ def main(argv):
     build_cabane(data, parts, keys)
     build_gear(data, parts, keys)
     build_gun(data, parts)
+    build_linkage(data, parts)
+    build_windscreen(data, parts, keys)
     airframe = new_object("airframe", body)
     parts.write(airframe, materials)
+    wires = {}
+    build_wires(data, wires)
+    for name, builder in sorted(wires.items()):
+        builder.write(new_object(name, body), materials)
     for name, builder in controls.items():
         builder.write(control_objects[name], materials)
 

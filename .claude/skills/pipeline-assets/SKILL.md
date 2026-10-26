@@ -57,6 +57,9 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
   - L'empennage suit les contours dessinés (`outlines`), et la longueur passe sans écart accepté (6,037 m pour 6,08).
   - La hauteur reste un écart accepté, à la valeur du modèle Blender (2,343 m au sol).
 - `mockup` refuse d'écraser un `model.glb` qu'il n'a pas écrit (`--force` pour passer outre).
+- **Câbles** : nœuds `wire_flying`, `wire_landing`, `wire_incidence`, `wire_cabane` et `wire_tail`, aux vrais diamètres. Ils sont plus fins qu'un pixel : l'anticrénelage des câbles (B6, skill `rendu-visuel`) les attend.
+- **Mesures du dessin** : le script lisse les sections et les contours (filtre binomial, ±0,2 m) avant de les lofter. Les données gardent les mesures brutes ; leur bruit, de 1 à 2 cm, faisait onduler les surfaces.
+- **Rendu de contrôle hors jeu** : un rendu Cycles du `.blend` sert à juger la forme. Le disque flou de l'hélice y est masqué, et le débruitage est absent du paquet Ubuntu.
 
 ## Modèle provisoire (`tools/mockup`)
 
