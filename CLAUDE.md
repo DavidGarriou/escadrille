@@ -23,7 +23,7 @@ Vision complète : `docs/vision.md` · Jalons : `docs/roadmap.md` · Décisions 
 
 ## Contraintes non négociables
 
-- **Rust uniquement** (édition 2024, toolchain stable). Shaders en WGSL. Pas de code C/C++ maison ; les bibliothèques système (Vulkan, ALSA, udev, Wayland) sont acceptées.
+- **Rust uniquement** (édition 2024, toolchain stable). Shaders en WGSL. Pas de code C/C++ maison ; les bibliothèques système (Vulkan, ALSA, udev, Wayland) sont acceptées. **Seule exception** : les scripts Python exécutés par Blender pour construire les assets, rangés dans `art/` et jamais appelés par le jeu ni par les outils (ADR 0007).
 - **100 % open source** : moteur, crates, outils, données et assets.
   - Licences de code acceptées : MIT, MIT-0, Apache-2.0, BSD-2/3-Clause, Zlib, ISC, MPL-2.0, BSL-1.0, CC0-1.0, Unicode-3.0. Contrôle automatique : `cargo deny check licenses`. Exceptions et alertes de sécurité ignorées : uniquement dans `deny.toml`, avec leur justification et l'accord du joueur.
   - Assets et données : CC0, CC-BY, CC-BY-SA, domaine public, ou création maison. Chaque fichier tiers est inscrit dans `assets/LICENCES.md`.
@@ -88,7 +88,7 @@ tools/
   terrain_bake/         MNT (GDAL) -> tuiles de hauteur et masques
   asset_check/          vérifie les .glb (nœuds requis, pivots et axes des gouvernes, dimensions comparées à la fiche avion), lancé par just test
 assets/                 aircraft/<id>/ (glb, aircraft.ron, essais.ron), scenes/, shaders/, terrain/, audio/, i18n/
-art/                    fichiers sources (.blend, .kra…)
+art/                    fichiers sources (.blend, .kra…) et scripts Blender qui construisent les modèles (ADR 0007)
 docs/                   vision, roadmap, adr/, gdd/, recherche/, essais/
 ```
 

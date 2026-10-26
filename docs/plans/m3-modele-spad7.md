@@ -1,6 +1,10 @@
 # Plan — Modèle 3D réaliste du SPAD VII
 
-- Statut : **proposé**, à valider par le joueur.
+- Statut : **validé** par le joueur le 2026-10-26 :
+  - plan complet, partie A comprise ;
+  - Blender piloté par script (ADR 0007) ;
+  - livrée : l'avion réel le mieux documenté, à choisir sur la fiche de l'historien ;
+  - premier poste de pilotage.
 - Demande du joueur (2026-10-26) : « Je suis d'accord avec les suggestions. Réalise un modèle 3D le plus réaliste possible, avec une excellente qualité de rendu. »
 - **Jalons** : c'est l'élément « Modèle PBR du premier avion » du **M3**, avancé alors que le M1 n'est pas clos et le M2 pas commencé. Le modèle se verra d'abord dans les scènes de capture, puis dans les caméras du M2.
 - Lecture de « les suggestions » (à confirmer) : les trois points encore ouverts du dessin de 1917 (`spad7-calculs.md` § 3.1) :

@@ -1690,3 +1690,18 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - l'outil : Blender piloté par script, avec une exception au « Rust uniquement » pour les scripts de contenu dans `art/`, ou tout en Rust ;
   - la livrée ;
   - le périmètre du poste de pilotage.
+- **Q** Réponses du joueur :
+  - plan complet, partie A comprise (« les suggestions » = les trois points du dessin) ;
+  - outil : Blender par script ;
+  - livrée : la mieux documentée ;
+  - poste : premier poste.
+- **D** Plan `m3-modele-spad7.md` validé.
+- **A** Lancés en parallèle :
+  - l'historien : fiche d'aspect `spad7-aspect.md`, candidats de livrée, demandes d'archives ;
+  - l'aérodynamicien : valeurs de la partie A (ailerons, empennage vertical tel que dessiné, mesure du moyeu).
+- **A** Outil :
+  - 1,6 Go libérés (cache incrémental de `target/`) ;
+  - Blender 4.0.2 installé depuis le paquet Ubuntu (après `apt-get update` : un paquet de dépendance renvoyait 404), avec `python3-numpy` dont l'exporteur glTF a besoin ;
+  - essai sans écran réussi : export glTF et Cycles.
+- **D** ADR 0007 « Scripts Blender (Python) pour les sources de contenu dans `art/` », accepté par le choix du joueur. Le Python n'est admis que dans les scripts exécutés par Blender, rangés dans `art/` ; le jeu et les outils restent en Rust.
+- **A** `CLAUDE.md` : la contrainte « Rust uniquement » cite l'exception, et l'arborescence mentionne les scripts de `art/`. Modification annoncée dans l'option que le joueur a choisie.
