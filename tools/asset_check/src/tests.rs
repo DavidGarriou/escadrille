@@ -80,14 +80,14 @@ fn an_accepted_deviation_holds_only_at_its_measured_value() {
         reason: "test".to_owned(),
     };
     // A height that has moved by 2 cm since it was accepted.
-    let moved = [deviation("height", 2.335)];
+    let moved = [deviation("height", 2.323)];
     let report = check_model(&data, &glb, "", "", &moved).unwrap();
     assert_eq!(failed(&report), ["height"], "{report:#?}");
     // A span and a length within tolerance must not keep a deviation.
     let stale = [
         deviation("span", 7.82),
-        deviation("length", 6.099),
-        deviation("height", 2.355),
+        deviation("length", 6.037),
+        deviation("height", 2.343),
     ];
     let report = check_model(&data, &glb, "", "", &stale).unwrap();
     assert_eq!(failed(&report), ["span", "length"], "{report:#?}");

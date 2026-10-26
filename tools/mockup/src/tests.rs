@@ -200,6 +200,16 @@ fn the_model_data_is_valid_json_with_the_contract() {
     assert_eq!(json["surfaces"].as_array().unwrap().len(), 4);
     assert_eq!(json["propeller"]["axis"][0], 1.0);
     assert_eq!(json["mockup"]["fuselage"].as_array().unwrap().len(), 6);
+    // The drawn outlines of the tail, as (span, leading edge, trailing edge) rows.
+    let outlines = &json["mockup"]["outlines"];
+    assert_eq!(outlines["tailplane"].as_array().unwrap().len(), 51);
+    assert_eq!(outlines["fin"].as_array().unwrap().len(), 55);
+    assert!(outlines["fin"][0][1].as_f64().unwrap() > outlines["fin"][0][2].as_f64().unwrap());
+    // An outline must name a surface of aircraft.ron.
+    let mut stray = mockup.clone();
+    stray.outlines[0].surface = "canard".to_owned();
+    let error = export::model_json(&data, Some(&stray)).unwrap_err();
+    assert!(error.contains("canard"), "{error}");
 }
 
 #[test]

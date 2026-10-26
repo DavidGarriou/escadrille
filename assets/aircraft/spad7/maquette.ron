@@ -29,11 +29,52 @@ Mockup(
         (0.45, 0.0, -0.95),                                          // E: Vickers on the cowling (drag item of aircraft.ron at x −0.05), barrel about 1.1 m
     ],
     accepted_deviations: [
-        //! Checks of `just test` (tools/asset_check) that this model fails, accepted by the player on 2026-10-26 (carnet); the length one was dropped the same day, the vertical tail of aircraft.ron now following the drawing (6.099 m)
+        //! Checks of `just test` (tools/asset_check) that this model fails, accepted by the player on 2026-10-26 (carnet); the length one was dropped the same day, the vertical tail of aircraft.ron now following the drawing (6.099 m); the model in the assets is the Blender one since that day
         (
             check: "height",
-            measured: M(2.355),                                      // C: at rest on the wheels and the skid (tail down 13.7°); 2.530 m in the flying attitude
+            measured: M(2.343),                                      // C: the Blender model (art/spad7/build.py) at rest on the wheels and the skid (tail down 13.7°), 2.525 m in the flying attitude; the box model of tools/mockup measured 2.355 m (square wing tips)
             reason: "2.20 m cannot be the flying attitude, and at rest the drawing's undercarriage stands 2.30 to 2.36 m before its tyres and rubber cords settle under the weight (not modelled): drawing and tables disagree",
         ),                                                           // C: in flight, the fin top (z −1.40) and the propeller tip (z 0.82) alone span 2.22 m; at rest 2.304 m with the drawing's 0.58 m wheels, 2.355 m with 700 mm, the upper leading edge highest; 3 to 6 cm of static compression would give 2.26 to 2.33 m (aerodynamicist's review, 2026-10-25); spad7.md § 2.1 (2.12 to 2.35 m in the sources, attitude not given)
+    ],
+    outlines: [
+        (
+            surface: "tailplane",
+            rows: [
+            //! C: tailplane and elevator outline on the top view of the 1917 drawing at line centres (S48, 240.7 px/m, aerodynamicist's digitisation of 2026-10-26, spad7-calculs.md § 3.1): (y, x of the leading edge, x of the trailing edge); the drawing's axis is 0.058 m off and its halves differ, so both halves are averaged and scaled to the half-span of aircraft.ron (1.379 → 1.405 m); the V notch at the root clears the rudder: its apex is on the hinge at the axis (x −4.51), its side straight to the first trailing edge read (y 0.112), the drawing's lines merging there
+            (0.000, -3.848, -4.510), (0.028, -3.852, -4.563), (0.056, -3.851, -4.617), (0.084, -3.850, -4.670),
+            (0.112, -3.842, -4.723), (0.141, -3.822, -4.820), (0.169, -3.849, -4.846), (0.197, -3.850, -4.886),
+            (0.225, -3.857, -4.914), (0.253, -3.843, -4.935), (0.281, -3.875, -4.956), (0.309, -3.888, -4.978),
+            (0.337, -3.896, -4.979), (0.365, -3.906, -4.992), (0.393, -3.918, -4.989), (0.421, -3.927, -4.982),
+            (0.450, -3.938, -4.980), (0.478, -3.949, -4.973), (0.506, -3.964, -4.969), (0.534, -3.972, -4.967),
+            (0.562, -3.983, -4.960), (0.590, -3.992, -4.955), (0.618, -4.008, -4.952), (0.646, -4.015, -4.947),
+            (0.674, -4.029, -4.939), (0.703, -4.037, -4.936), (0.731, -4.051, -4.933), (0.759, -4.066, -4.930),
+            (0.787, -4.073, -4.924), (0.815, -4.087, -4.918), (0.843, -4.096, -4.911), (0.871, -4.105, -4.902),
+            (0.899, -4.115, -4.925), (0.927, -4.127, -4.894), (0.955, -4.135, -4.890), (0.984, -4.146, -4.884),
+            (1.012, -4.157, -4.882), (1.040, -4.165, -4.876), (1.068, -4.180, -4.870), (1.096, -4.192, -4.866),
+            (1.124, -4.210, -4.861), (1.152, -4.229, -4.857), (1.180, -4.247, -4.849), (1.208, -4.272, -4.841),
+            (1.236, -4.293, -4.843), (1.264, -4.322, -4.836), (1.293, -4.367, -4.815), (1.321, -4.411, -4.798),
+            (1.349, -4.448, -4.770), (1.377, -4.525, -4.733), (1.405, -4.608, -4.677),
+            ],
+        ),
+        (
+            surface: "fin",
+            rows: [
+            //! C: vertical tail outline (fin, fixed part below the tailplane and rudder) on the side view of the 1917 drawing at line centres (S48, 240 px/m, aerodynamicist's digitisation of 2026-10-26, spad7-calculs.md § 3.1): (z, x of the leading edge, x of the trailing edge), every 0.02 m from the bottom of the fuselage to the top of the rudder
+            (-0.315, -4.456, -4.730), (-0.335, -4.467, -4.816), (-0.355, -4.475, -4.957), (-0.375, -4.475, -5.060),
+            (-0.395, -4.475, -5.125), (-0.415, -4.474, -5.141), (-0.435, -4.474, -5.159), (-0.455, -4.474, -5.183),
+            (-0.475, -4.474, -5.207), (-0.495, -4.474, -5.221), (-0.515, -4.474, -5.234), (-0.535, -4.474, -5.246),
+            (-0.555, -4.474, -5.246), (-0.575, -4.474, -5.247), (-0.595, -4.474, -5.247), (-0.615, -4.473, -5.246),
+            (-0.635, -4.474, -5.247), (-0.655, -4.472, -5.247), (-0.675, -4.456, -5.247), (-0.695, -4.448, -5.250),
+            (-0.715, -3.644, -5.257), (-0.735, -3.717, -5.246), (-0.755, -3.531, -5.246), (-0.775, -3.564, -5.246),
+            (-0.795, -3.607, -5.246), (-0.815, -3.684, -5.247), (-0.835, -3.736, -5.247), (-0.855, -3.748, -5.246),
+            (-0.875, -3.790, -5.245), (-0.895, -3.834, -5.246), (-0.915, -3.874, -5.246), (-0.935, -3.928, -5.245),
+            (-0.955, -3.966, -5.246), (-0.975, -4.005, -5.245), (-0.995, -4.042, -5.245), (-1.015, -4.097, -5.239),
+            (-1.035, -4.130, -5.240), (-1.055, -4.169, -5.240), (-1.075, -4.205, -5.245), (-1.095, -4.254, -5.246),
+            (-1.115, -4.315, -5.249), (-1.135, -4.347, -5.250), (-1.155, -4.404, -5.249), (-1.175, -4.444, -5.248),
+            (-1.195, -4.493, -5.248), (-1.215, -4.530, -5.249), (-1.235, -4.572, -5.248), (-1.255, -4.630, -5.248),
+            (-1.275, -4.661, -5.247), (-1.295, -4.720, -5.245), (-1.315, -4.775, -5.237), (-1.335, -4.839, -5.221),
+            (-1.355, -4.925, -5.190), (-1.375, -4.997, -5.169), (-1.395, -5.070, -5.152),
+            ],
+        ),
     ],
 )

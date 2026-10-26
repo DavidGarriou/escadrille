@@ -1765,3 +1765,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Corrections de l'historien reportées (fiche d'aspect § 14) :
   - dans `spad7.md` : moteur de 180 ch de S.254, S.254 à Saint-Pol-sur-Mer jusqu'en octobre 1917, contradiction sur S.113, dates de l'appellation « SPA 3 » ;
   - dans `hispano-suiza-8a.md` : préférence de Guynemer pour les hélices Chauvière (Hartmann).
+- **A** B4, passe 2 : l'empennage du modèle réaliste suit les contours du dessin.
+  - **Données** : contours numérisés par l'aérodynamicien, ré-échantillonnés tous les 2 cm et inscrits dans un nouveau champ `outlines` de `maquette.ron`, avec leur origine `C:`.
+    - Plan fixe : demi-envergure, moyenne des deux moitiés du dessin, qui est décentré de 6 cm, ramenée aux 1,405 m des données.
+    - Dérive et gouvernail : de z −0,315 à −1,395.
+    - Échancrure en V de la profondeur : sa pointe sur la charnière à l'axe, où le dessin ne donne pas de bord de fuite.
+  - **Export** : le JSON des scripts Blender transmet les contours ; un contour qui nomme une surface inconnue est refusé (test).
+  - **Script** : `build.py` construit une surface d'après son contour quand il en a un, et coupe les gouvernes sur leurs charnières déclarées.
+- **⚠** Premier essai arrêté : en haut du gouvernail, toute la corde est derrière l'axe et la partie mobile commençait au bord d'attaque même, ce qui changeait le nombre de points d'un anneau. La fraction de charnière est maintenant gardée strictement dans la corde.
+- **R** Le modèle Blender passe tous les contrôles, **longueur comprise** : 6,037 m pour 6,08, sans écart accepté. La hauteur au sol vaut 2,343 m, au lieu de 2,355 pour les boîtes, à cause des saumons arrondis.
+- **D** Le modèle Blender remplace les boîtes dans `assets/` (2,4 Mo) : meilleur à tous égards, et tous ses contrôles de repères passent. L'écart de hauteur accepté passe à sa valeur (2,343 m), pour la même raison. `mockup` refuse désormais de l'écraser.
+- **A** Capture `maquette-spad7` **regardée**. Vérifications de repères inchangées. Fuselage arrondi, ailes aux saumons arrondis, mâts profilés, Vickers, vrai contour de la dérive.
+- **⚠** La capture montrait des stries sur la dérive : chaque tranche de gouverne était fermée par ses propres faces de bout, ce qui laissait des faces internes. Les tranches consécutives d'une même gouverne sont maintenant lissées d'un seul tenant (ailes comprises). Nouvelle capture **regardée** : dérive lisse, léger moiré dû au bruit de numérisation (de l'ordre du centimètre), à lisser plus tard.
+- **R** Le fuselage paraît presque noir : la couleur des matériaux est l'objet de B5.
+- **A** Documentation : `outlines` dans `format-avion.md`, modèle réaliste dans `pipeline-assets`.

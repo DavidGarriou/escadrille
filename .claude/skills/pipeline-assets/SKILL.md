@@ -50,6 +50,14 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
   - Sur un panneau effilé, ses points de charnière ne sont pas sur une droite parallèle à l'envergure. La charnière déduite a le bon axe, mais pas la position de la vraie : un modèle fidèle au dessin peut échouer sur le **pivot**. Pour le SPAD, l'axe réel du gouvernail est à x −4,70, à 2 cm de la droite des bandes ; la profondeur est à 4 mm. Ses charnières sont déclarées (`spad7-calculs.md` § 3.1).
   - **Avant un modèle définitif**, déclarer la vraie charnière de chaque gouverne d'un tel panneau (`hinge_m`, lue sur le dessin). Le garde-fou du contrat la refuse si elle s'écarte trop de celle des bandes.
 
+## Modèle réaliste (Blender, ADR 0007)
+
+- `just modele <avion>` : `mockup <avion> --json` écrit les données du modèle (contrat, surfaces, formes et contours de `maquette.ron`), puis `blender -b … art/<avion>/build.py` construit le `.blend` et le `.glb` dans `target/modele/`, que `asset_check --model` contrôle. Avec `just modele <avion> assets`, le `.glb` remplace `assets/aircraft/<avion>/model.glb` si le contrôle passe.
+- **SPAD** : le modèle des assets est celui de Blender depuis le 2026-10-26.
+  - L'empennage suit les contours dessinés (`outlines`), et la longueur passe sans écart accepté (6,037 m pour 6,08).
+  - La hauteur reste un écart accepté, à la valeur du modèle Blender (2,343 m au sol).
+- `mockup` refuse d'écraser un `model.glb` qu'il n'a pas écrit (`--force` pour passer outre).
+
 ## Modèle provisoire (`tools/mockup`)
 
 - `just mockup <avion>` écrit `assets/aircraft/<id>/model.glb` à partir d'`aircraft.ron` et de `maquette.ron` (format : skill `simulation-vol`, `format-avion.md`). Boîtes et plaques, sans Blender ; sortie identique à l'octet d'une génération à l'autre.

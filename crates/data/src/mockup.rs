@@ -39,6 +39,16 @@ pub struct StrutSpec {
     pub y_m: f64,
 }
 
+/// The drawn outline of a lifting surface, for the realistic model (Blender, ADR 0007):
+/// leading and trailing edge x along the span, where `aircraft.ron` may describe an
+/// aerodynamic equivalent. Rows `(s, x_le, x_te)`, `s` being y on the right half for a
+/// horizontal surface (mirrored for the left), z for a vertical one, metres.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct OutlineSpec {
+    pub surface: String,
+    pub rows: Vec<[f64; 3]>,
+}
+
 /// A check of `tools/asset_check` that the provisional model fails for a known reason,
 /// accepted with the player's agreement: it passes while the model measures `measured`
 /// (a change of the data that moves it must be looked at again).
@@ -64,6 +74,8 @@ pub struct MockupFile {
     pub gun_muzzles_m: Vec<[f64; 3]>,
     #[serde(default)]
     pub accepted_deviations: Vec<AcceptedDeviation>,
+    #[serde(default)]
+    pub outlines: Vec<OutlineSpec>,
 }
 
 /// The provisional model file of an aircraft, if it has one.
@@ -108,6 +120,17 @@ pub fn load_mockup(assets: &Path, id: &str) -> Result<Option<MockupFile>, DataEr
             "an accepted deviation needs a measured value and a reason",
         ));
     }
+    for outline in &file.outlines {
+        let monotonic = outline.rows.windows(2).all(|w| w[1][0] != w[0][0])
+            && (outline.rows.windows(2).all(|w| w[1][0] > w[0][0])
+                || outline.rows.windows(2).all(|w| w[1][0] < w[0][0]));
+        if outline.rows.len() < 2 || !monotonic || outline.rows.iter().any(|r| r[1] < r[2]) {
+            return Err(invalid(&format!(
+                "outline of {}: at least two rows, monotonic along the span, leading edge ahead of the trailing edge",
+                outline.surface
+            )));
+        }
+    }
     Ok(Some(file))
 }
 
@@ -133,6 +156,8 @@ mod tests {
             .map(|d| d.check.as_str())
             .collect();
         assert_eq!(deviations, ["height"]);
+        let outlines: Vec<&str> = m.outlines.iter().map(|o| o.surface.as_str()).collect();
+        assert_eq!(outlines, ["tailplane", "fin"]);
         assert!(
             load_mockup(&assets(), "no_such_aircraft")
                 .unwrap()

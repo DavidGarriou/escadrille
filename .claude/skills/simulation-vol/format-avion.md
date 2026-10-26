@@ -150,6 +150,24 @@ Mockup(
 )
 ```
 
+`outlines` (facultatif) : contour dessiné d'une surface portante, pour le modèle réaliste construit par Blender (ADR 0007). C'est utile là où `aircraft.ron` décrit un équivalent aérodynamique, comme les empennages du SPAD.
+
+```ron
+    outlines: [
+        (
+            surface: "tailplane",                         // nom d'une surface d'aircraft.ron (refusé sinon, à l'export)
+            rows: [
+            //! C: contour du dessin, au centre des traits (source, échelle)
+            (0.000, -3.848, -4.510), (0.028, -3.852, -4.563), …, // (s, x du bord d'attaque, x du bord de fuite)
+            ],
+        ),
+    ],
+```
+
+- `s` est y sur la moitié droite d'une surface horizontale (symétrisée pour la gauche), z sur une surface verticale.
+- Au moins deux rangées, monotones en `s`, bord d'attaque devant le bord de fuite.
+- Le script Blender coupe les gouvernes sur leur charnière (`hinge_m`), comme pour les surfaces construites depuis les panneaux.
+
 `accepted_deviations` : cotes que `tools/asset_check` accepte pour ce modèle provisoire, tant qu'il mesure la valeur inscrite (à 5 mm). Si une donnée la fait bouger, le contrôle échoue de nouveau ; s'il revient dans la tolérance, il demande de retirer l'écart (skill `pipeline-assets`).
 
 ## `assets/airfoils/<id>.ron`

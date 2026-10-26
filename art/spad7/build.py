@@ -12,7 +12,8 @@ into Blender's axes by `blender_point` (ADR 0006: nose to -Y, top to +Z, right w
 -X). The glTF export with +Y up then gives nose to +Z, as the game expects.
 
 Pass 1 (shape): numbers marked E: are display estimates, to be replaced by the drawing's
-digitised outlines and the appearance sheet (docs/recherche/spad7-aspect.md).
+digitised outlines and the appearance sheet (docs/recherche/spad7-aspect.md). The tail
+already follows the drawn outlines of maquette.ron (pass 2).
 """
 
 import json
@@ -244,7 +245,33 @@ def hinge_fraction(station, hinge):
     b = aft.dot(axis)
     den = 1.0 - b * b
     t = (b * axis.dot(w) - aft.dot(w)) / den if den > 1e-9 else 0.75 * station.chord
-    return min(max(t / station.chord, 0.0), 1.0)
+    # Strictly inside the chord, so that both parts keep the same number of points from
+    # one station to the next (a part that vanishes becomes a sliver): at the top of the
+    # rudder the whole chord is aft of the post, at the apex of the elevator's notch none.
+    return min(max(t / station.chord, 1e-4), 1.0 - 1e-3)
+
+
+def loft_runs(stations, hinge_of, section, body_parts, controls):
+    """Lofts the segments between successive stations, each run of segments under the
+    same control (or none) in one piece: a fixed part and a moving part closed only at
+    the run's ends, so that no face is left inside the surface."""
+    i, n = 0, len(stations) - 1
+    while i < n:
+        hinge = hinge_of(i)
+        j = i
+        while j + 1 < n and hinge_of(j + 1) is hinge:
+            j += 1
+        run = stations[i:j + 2]
+        if hinge is None:
+            body_parts.loft([ring(section, s.qc, s.chord_dir, s.normal, s.chord, 0.0, 1.0) for s in run],
+                            "surface")
+        else:
+            us = [hinge_fraction(s, hinge) for s in run]
+            body_parts.loft([ring(section, s.qc, s.chord_dir, s.normal, s.chord, 0.0, u)
+                             for s, u in zip(run, us)], "surface", cap_start=True, cap_end=True)
+            controls[hinge["node"]].loft([ring(section, s.qc, s.chord_dir, s.normal, s.chord, u, 1.0)
+                                          for s, u in zip(run, us)], "control", cap_start=True, cap_end=True)
+        i = j + 1
 
 
 def build_surface(surface, data, body_parts, controls):
@@ -280,26 +307,80 @@ def build_surface(surface, data, body_parts, controls):
             for e in etas:
                 inset = tip_insets((1.0 - e) * length) if free_tip else (0.0, 0.0)
                 stations.append((e, Station(panel, e, side if side != 0.0 else 1.0, kind, inset)))
-            # Loft span segment by segment: whole section, or fixed part and control part.
-            for (e0, s0), (e1, s1) in zip(stations, stations[1:]):
-                mid = 0.5 * (e0 + e1)
+            # Loft along the span: whole sections, or fixed part and control part.
+            def hinge_of(k, stations=stations, regions=regions):
+                mid = 0.5 * (stations[k][0] + stations[k + 1][0])
                 region = next((r for r in regions if r[0] <= mid <= r[1]), None)
-                if region is None:
-                    rings = [ring(section, s.qc, s.chord_dir, s.normal, s.chord, 0.0, 1.0) for s in (s0, s1)]
-                    body_parts.loft(rings, "surface")
-                else:
-                    hinge = region[2]
-                    u0, u1 = hinge_fraction(s0, hinge), hinge_fraction(s1, hinge)
-                    fixed = [ring(section, s.qc, s.chord_dir, s.normal, s.chord, 0.0, u)
-                             for s, u in ((s0, u0), (s1, u1))]
-                    body_parts.loft(fixed, "surface", cap_start=True, cap_end=True)
-                    moving = [ring(section, s.qc, s.chord_dir, s.normal, s.chord, u, 1.0)
-                              for s, u in ((s0, u0), (s1, u1))]
-                    controls[hinge["node"]].loft(moving, "control", cap_start=True, cap_end=True)
+                return region[2] if region else None
+            loft_runs([st for _, st in stations], hinge_of, section, body_parts, controls)
             # Close the panel's ends, unless a control already closes them.
             for e, s in (stations[0], stations[-1]):
                 if not any(a <= e <= b for a, b, _ in regions):
                     body_parts.face(ring(section, s.qc, s.chord_dir, s.normal, s.chord, 0.0, 1.0), "surface")
+
+
+class OutlineStation:
+    """A station of a surface built from its drawn outline (maquette.ron `outlines`):
+    leading and trailing edge at a spanwise coordinate `s` (y on a horizontal surface, z on
+    a vertical one); same interface as Station."""
+
+    def __init__(self, kind, s, x_le, x_te, side, plane_z, incidence):
+        self.chord = max(x_le - x_te, 1e-3)
+        if kind == "horizontal":
+            self.chord_dir = Vector((math.cos(incidence), 0.0, -math.sin(incidence)))
+            self.normal = Vector((-math.sin(incidence), 0.0, -math.cos(incidence)))
+            le = Vector((x_le, side * s, plane_z))
+        else:
+            self.chord_dir = Vector((1.0, 0.0, 0.0))
+            self.normal = Vector((0.0, 1.0, 0.0))
+            le = Vector((x_le, 0.0, s))
+        self.qc = le - self.chord_dir * (0.25 * self.chord)
+
+    def point(self, u):
+        return self.qc + self.chord_dir * ((0.25 - u) * self.chord)
+
+
+def region_at(surface, data, side, coord):
+    """The hinge whose regions cover a spanwise coordinate of a surface, the regions being
+    named by the panels of aircraft.ron (contract)."""
+    axis = 1 if surface["kind"] == "horizontal" else 2
+    for p_index, panel in enumerate(surface["panels"]):
+        a, b = panel["root"][axis], panel["tip"][axis]
+        if side < 0:
+            a, b = -a, -b
+        if abs(b - a) < 1e-9 or not min(a, b) - 1e-6 <= coord <= max(a, b) + 1e-6:
+            continue
+        eta = (coord - a) / (b - a)
+        for hinge in data["hinges"]:
+            for r in hinge["regions"]:
+                if (r["surface"] == surface["name"] and r["panel"] == p_index and r["side"] == side
+                        and r["span"][0] - 1e-6 <= eta <= r["span"][1] + 1e-6):
+                    return hinge
+    return None
+
+
+def build_outline_surface(surface, rows, data, body_parts, controls):
+    """Lofts a surface along its drawn outline instead of the flight model's equivalent
+    panels; the parts aft of a control's hinge go to that control's node, as in
+    build_surface. A mirrored surface's halves meet at the root without a cap."""
+    kind = surface["kind"]
+    first = surface["panels"][0]
+    plane_z = first["root"][2]
+    sides = (1.0, -1.0) if surface["mirrored"] else (0.0,)
+    rows = sorted(rows, key=lambda r: abs(r[0]))
+    for side in sides:
+        sign = side if side != 0.0 else 1.0
+        stations = [(r[0] * (sign if kind == "horizontal" else 1.0),
+                     OutlineStation(kind, r[0], r[1], r[2], sign, plane_z, first["incidence"]))
+                    for r in rows]
+        hinges = [region_at(surface, data, side, 0.5 * (c0 + c1))
+                  for (c0, _), (c1, _) in zip(stations, stations[1:])]
+        loft_runs([st for _, st in stations], lambda k: hinges[k], symmetric_section,
+                  body_parts, controls)
+        ends = [stations[-1]] if surface["mirrored"] else [stations[0], stations[-1]]
+        for c, s in ends:
+            if region_at(surface, data, side, c) is None:
+                body_parts.face(ring(symmetric_section, s.qc, s.chord_dir, s.normal, s.chord, 0.0, 1.0), "surface")
 
 
 # --- Fuselage ----------------------------------------------------------------------------
@@ -558,8 +639,12 @@ def main(argv):
 
     parts = Builder()
     keys = build_fuselage(data, parts)
+    outlines = data["mockup"].get("outlines", {})
     for surface in data["surfaces"]:
-        build_surface(surface, data, parts, controls)
+        if surface["name"] in outlines:
+            build_outline_surface(surface, outlines[surface["name"]], data, parts, controls)
+        else:
+            build_surface(surface, data, parts, controls)
     build_struts(data, parts)
     build_cabane(data, parts, keys)
     build_gear(data, parts, keys)

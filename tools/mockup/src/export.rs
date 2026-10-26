@@ -159,6 +159,16 @@ pub fn model_json(data: &AircraftData, mockup: Option<&MockupFile>) -> Result<St
             let _ = writeln!(j, "  \"mockup\": null");
         }
         Some(m) => {
+            if let Some(o) = m
+                .outlines
+                .iter()
+                .find(|o| !data.file.surfaces.iter().any(|s| s.name == o.surface))
+            {
+                return Err(format!(
+                    "maquette.ron: outline of {}, a surface aircraft.ron does not have",
+                    o.surface
+                ));
+            }
             let sections: Vec<String> = m
                 .fuselage
                 .iter()
@@ -190,7 +200,16 @@ pub fn model_json(data: &AircraftData, mockup: Option<&MockupFile>) -> Result<St
             let _ = writeln!(j, "    \"skid\": {},", array(m.skid_m));
             let _ = writeln!(j, "    \"struts\": [{}],", struts.join(", "));
             let _ = writeln!(j, "    \"pilot_eye\": {},", array(m.pilot_eye_m));
-            let _ = writeln!(j, "    \"gun_muzzles\": [{}]", guns.join(", "));
+            let _ = writeln!(j, "    \"gun_muzzles\": [{}],", guns.join(", "));
+            let outlines: Vec<String> = m
+                .outlines
+                .iter()
+                .map(|o| {
+                    let rows: Vec<String> = o.rows.iter().map(|r| array(*r)).collect();
+                    format!("{}: [{}]", string(&o.surface), rows.join(", "))
+                })
+                .collect();
+            let _ = writeln!(j, "    \"outlines\": {{{}}}", outlines.join(", "));
             let _ = writeln!(j, "  }}");
         }
     }
