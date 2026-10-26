@@ -514,11 +514,11 @@ mod tests {
         let aileron = regions("ctrl_aileron_r_upper");
         assert_eq!(aileron.len(), 1);
         assert_eq!((aileron[0].side, aileron[0].span), (1.0, (0.5, 1.0)));
-        // The elevator: both halves of the tailplane; the rudder: both fin panels.
+        // The elevator: both halves of the tailplane; the rudder: the five fin panels.
         let sides: Vec<f64> = regions("ctrl_elevator").iter().map(|r| r.side).collect();
         assert_eq!(sides, [1.0, -1.0]);
         let panels: Vec<usize> = regions("ctrl_rudder").iter().map(|r| r.panel).collect();
-        assert_eq!(panels, [0, 1]);
+        assert_eq!(panels, [0, 1, 2, 3, 4]);
     }
 
     #[test]

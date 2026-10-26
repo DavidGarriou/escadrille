@@ -1731,3 +1731,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **Établi** (confiance C, sauf mention) : capot aluminium peint jaune ; radiateur sans volets sur un 150 ch du début de 1917 ; échappements en collecteur ; découpe du plan supérieur en demi-cercle ; renvois d'ailerons (B) ; poste d'après le S.XI ; hélice Éclair 6 en noyer verni.
   - **Candidats de livrée** : S.254 « Vieux Charles » de Guynemer (SPA 3, photographié le 20 octobre 1917, conservé ; mais **180 ch**), S.113 de Heurtaux, S.2489 de Baracca. Sa recommandation : S.254 en deux couches de décalques, la finition d'usine puis les marques de Guynemer.
 - **D** Décisions à soumettre au joueur, après la partie A : la livrée, le moteur du S.254 (180 ch) et l'usage d'un personnage réel.
+- **A** Partie A, point 2 : empennage vertical en cinq panneaux.
+  - **Découpage** : une bande par cassure du contour dessiné. Chacune garde la surface, la hauteur de son centre et son quart de corde moyen ; chacune a sa part de gouvernail et sa charnière déclarée sur l'axe dessiné.
+  - **Gouvernail** : 0,536 m², centre à z −0,859 contre −0,863 dessiné ; l'ancien découpage le mettait à −0,792.
+- **A** Campagne, conforme aux prévisions de l'aérodynamicien :
+  - N_v de +116,2 à +113,9 (−2,0 %), le quart de corde moyen de la dérive avançant de 4 cm ; L_v de −17,2 à −17,6 ;
+  - roulis hollandais de 3,39 à 3,42 s ; spirale de ×2 en 17,40 s à 17,42 s ;
+  - glissade sur la queue de 109,5 à 100,9 km/h ; performances inchangées.
+- **R** Modèle provisoire régénéré : il mesure 6,099 m pour 6,08 (+0,3 %), dans la tolérance. `asset_check` exige alors de retirer l'écart de longueur accepté : c'est le mécanisme prévu. Écart retiré de `maquette.ron` ; seule la hauteur reste acceptée.
+- **A** Tests adaptés à la nouvelle dérive : zones du gouvernail, longueur de charnière, écarts acceptés.

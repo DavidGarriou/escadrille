@@ -29,12 +29,7 @@ Mockup(
         (0.45, 0.0, -0.95),                                          // E: Vickers on the cowling (drag item of aircraft.ron at x −0.05), barrel about 1.1 m
     ],
     accepted_deviations: [
-        //! Checks of `just test` (tools/asset_check) that this model fails, accepted by the player on 2026-10-26 (carnet)
-        (
-            check: "length",
-            measured: M(6.264),                                      // C: hub (x 0.78) to the trailing edge of the rudder's root strip (x −5.48), against x −5.32 on the drawing
-            reason: "the tail is the flight model's equivalent one, unswept with the area kept: its rudder ends 0.16 m behind the drawing's",
-        ),                                                           // C: spad7-calculs.md § 3 (the drawing, scaled on an overall length of 6.10 m) and § 5 (unswept tail): above the tailplane, the equivalent fin has a root chord of 1.61 m on a straight quarter-chord line
+        //! Checks of `just test` (tools/asset_check) that this model fails, accepted by the player on 2026-10-26 (carnet); the length one was dropped the same day, the vertical tail of aircraft.ron now following the drawing (6.099 m)
         (
             check: "height",
             measured: M(2.355),                                      // C: at rest on the wheels and the skid (tail down 13.7°); 2.530 m in the flying attitude

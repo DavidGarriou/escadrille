@@ -132,7 +132,7 @@ mod tests {
             .iter()
             .map(|d| d.check.as_str())
             .collect();
-        assert_eq!(deviations, ["length", "height"]);
+        assert_eq!(deviations, ["height"]);
         assert!(
             load_mockup(&assets(), "no_such_aircraft")
                 .unwrap()

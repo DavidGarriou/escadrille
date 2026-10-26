@@ -55,7 +55,7 @@ fn root_node(root: &mut gltf::json::Root) -> &mut gltf::json::Node {
 }
 
 #[test]
-fn the_spad_model_passes_with_its_two_accepted_deviations() {
+fn the_spad_model_passes_with_its_accepted_height() {
     let report = check_aircraft(&assets(), "spad7").unwrap().unwrap();
     assert!(report.passed(), "{report:#?}");
     let accepted: Vec<&str> = report
@@ -64,11 +64,11 @@ fn the_spad_model_passes_with_its_two_accepted_deviations() {
         .filter(|c| c.accepted)
         .map(|c| c.name.as_str())
         .collect();
-    assert_eq!(accepted, ["length", "height"], "{report:#?}");
-    // Without them, only these two fail.
+    assert_eq!(accepted, ["height"], "{report:#?}");
+    // Without it, only the height fails.
     let (data, glb) = spad();
     let report = check_model(&data, &glb, "", "", &[]).unwrap();
-    assert_eq!(failed(&report), ["length", "height"], "{report:#?}");
+    assert_eq!(failed(&report), ["height"], "{report:#?}");
 }
 
 #[test]
@@ -79,14 +79,18 @@ fn an_accepted_deviation_holds_only_at_its_measured_value() {
         measured: Length::M(measured),
         reason: "test".to_owned(),
     };
-    // A length that has moved by 2 cm since it was accepted.
-    let moved = [deviation("length", 6.244), deviation("height", 2.355)];
+    // A height that has moved by 2 cm since it was accepted.
+    let moved = [deviation("height", 2.335)];
     let report = check_model(&data, &glb, "", "", &moved).unwrap();
-    assert_eq!(failed(&report), ["length"], "{report:#?}");
-    // A span within tolerance must not keep a deviation.
-    let stale = [deviation("span", 7.82), deviation("length", 6.264)];
+    assert_eq!(failed(&report), ["height"], "{report:#?}");
+    // A span and a length within tolerance must not keep a deviation.
+    let stale = [
+        deviation("span", 7.82),
+        deviation("length", 6.099),
+        deviation("height", 2.355),
+    ];
     let report = check_model(&data, &glb, "", "", &stale).unwrap();
-    assert_eq!(failed(&report), ["span", "height"], "{report:#?}");
+    assert_eq!(failed(&report), ["span", "length"], "{report:#?}");
     // Only the dimensions can be accepted.
     let pivot = [deviation("ctrl_rudder", 0.1)];
     let report = check_model(&data, &glb, "", "", &pivot).unwrap();

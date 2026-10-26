@@ -195,7 +195,7 @@ fn the_model_data_is_valid_json_with_the_contract() {
     assert_eq!(json["id"], "spad7");
     let hinges = json["hinges"].as_array().unwrap();
     let rudder = hinges.iter().find(|h| h["node"] == "ctrl_rudder").unwrap();
-    assert_eq!(rudder["regions"].as_array().unwrap().len(), 2);
+    assert_eq!(rudder["regions"].as_array().unwrap().len(), 5);
     assert!((rudder["pivot"][0].as_f64().unwrap() + 4.70).abs() < 1e-9);
     assert_eq!(json["surfaces"].as_array().unwrap().len(), 4);
     assert_eq!(json["propeller"]["axis"][0], 1.0);
