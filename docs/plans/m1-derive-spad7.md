@@ -1,6 +1,6 @@
 # Plan — Partie fixe de la dérive du SPAD VII, sous le plan fixe
 
-- Statut : **proposé**, à valider par le joueur.
+- Statut : **validé** par le joueur le 2026-10-26, avec l'option (a) pour le sillage du fuselage (aucun facteur, écart documenté).
 - Contexte : relecture du dessin de 1917 du 2026-10-26 (`docs/recherche/spad7-calculs.md` § 3.1).
   - **Ce que montre le dessin** : sous le plan fixe, un petit panneau fixe fermé d'environ 0,08 m² entre l'étambot (x −4,47) et l'axe du gouvernail (x −4,70).
   - **Ce que fait le modèle de vol** : son panneau inférieur de dérive est tout entier gouvernail (corde 0,53 m, de x −4,75 à −5,28), et rien ne remplit l'espace entre l'étambot et ce panneau.

@@ -1655,3 +1655,6 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Deux décisions demandées au joueur :
   - le plan ;
   - le sillage du fuselage sur le panneau ajouté : (a) aucun facteur, écart documenté (recommandé), ou (b) nouvelle fonction du modèle de vol.
+- **Q** Le joueur : « 1. Oui 2. (a) ». **D** Plan `m1-derive-spad7.md` validé ; aucun facteur pour le sillage du fuselage, l'écart sera documenté.
+- **A** Campagne d'essais de référence relancée sur l'état actuel et copiée dans le dossier de travail de la session. Elle redonne le dernier rapport : N_v +111,5 N·m/(m/s), L_v −18,0, spirale ×2 en 17,5 s, roulis hollandais de 3,46 s amorti à 0,193.
+- **A** Géométrie du nouveau panneau demandée à l'aérodynamicien, sur son contour numérisé.
