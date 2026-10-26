@@ -19,6 +19,11 @@ Règles :
 | D5 | 1 | Service historique de la Défense, département Air (Vincennes) | fonds Émile Dorand (DE 2012 ZL 245) : procès-verbaux d'essais du STAé | inventaire, puis consultation ou reproduction | à envoyer |
 | D6 | 1 | The National Archives (Kew) | AIR 1/1196/204/5/2600, rapports de Martlesham Heath | copie (service de reproduction) | à envoyer |
 | D7 | 2 | Cranfield University, archives ARC (AERADE) | ARC R&M 586 (1921), figure 10 | copie, si le document n'est pas en ligne | à envoyer |
+| D8 | 1 | Musée de l'Air et de l'Espace (Le Bourget), conservation et Département Recherche et Documentation | SPAD VII S.254 « Vieux Charles » (réserves) et aile de SPAD VII inv. 2016.16.1 : photos de détail, relevés, dossier de restauration | visite d'étude ou envoi de photos de référence | à envoyer |
+| D9 | 1 | ECPAD (ImagesDéfense) | plaques d'Albert Moreau du 20 octobre 1917 (S.254 aux Invalides) et cliché SPA 236 M 4636 | fichiers en haute définition et conditions de réutilisation | à envoyer |
+| D10 | 2 | Vojenský historický ústav (Prague) | planche de bord d'origine d'un SPAD VII (n° 11 583) | photos et liste des instruments | à envoyer |
+| D11 | 2 | Libraires d'ouvrages anciens ; League of WWI Aviation Historians | J. M. Bruce, *Spad 7.C1* (Windsock Datafile n° 8) ; Velek et al., *SPAD S.VII C1* (4+ Publications n° 19) ; « Project Butterfly » (*Cross & Cockade* US, vol. 9 n° 1 ; vol. 13 n° 2 et 4) | achat | à envoyer |
+| D12 | 3 | Museo Francesco Baracca (Lugo) | SPAD VII S.2489 : dossier de restauration (1990-1993) et photos de détail | seulement si le joueur retient ce candidat de livrée | en attente |
 
 ## D1 — Australian War Memorial : notice technique britannique du S.VII
 
@@ -130,8 +135,88 @@ Règles :
 - **Ce qu'on cherche** : la courbe puissance-régime du Hispano de **150 ch**. Aucune mesure n'a été lue pour le 8Aa : le modèle utilise celle du 180 ch.
 - **Démarche** : vérifier d'abord si le document est en ligne sur AERADE ; sinon, écrire aux archives de Cranfield.
 
+## D4 — Complément du 2026-10-26 : le modèle 3D
+
+Le modèle 3D réaliste (`docs/plans/m3-modele-spad7.md`) ajoute à D4 des besoins d'aspect. Détail dans `spad7-aspect.md`. Si le fonds Blériot-Spad contient des plans du S.VII, demander en plus :
+1. le capot et le radiateur : contour de l'ouverture, persiennes, perforations, panneaux d'accès ;
+2. les échappements : collecteurs, tracé et longueur des tuyaux ;
+3. la cabane, les mâts et leurs ferrures : sections, cordes, entretoise des mâts intermédiaires ;
+4. la découpe du plan supérieur : largeur et profondeur ;
+5. les nervures : nombre, espacement, fausses nervures ;
+6. le train : jambes, essieu, glissières, roues et pneus ;
+7. le poste : siège, pare-brise, planche de bord et emplacement des instruments.
+
+Phrase à ajouter au message de D4 :
+
+> Je m'intéresse aussi, pour une restitution en trois dimensions, aux plans du capot, du radiateur, des échappements, de la cabane, du train d'atterrissage et du poste de pilotage du S.VII.
+
+## D8 — Musée de l'Air et de l'Espace : S.254 et aile de SPAD VII
+
+- **Objets** :
+  - SPAD VII **S.254** « Vieux Charles » de Guynemer, en réserve au Bourget. Notice : https://www.museeairespace.fr/aller-plus-haut/collections/spad-vii/ ;
+  - **aile de SPAD VII**, plan inférieur droit, inv. **2016.16.1**. Notice : https://www.museeairespace.fr/aller-plus-haut/collections/aile-de-spad-vii/.
+- **Ce qu'on cherche**, par ordre d'importance :
+  1. S.254 : position, taille et couleur de la cigogne, du « 2 », du nom « Vieux Charles », des cocardes et du numéro sur le gouvernail ; teinte de la toile d'origine là où elle est visible, distincte de l'enduit pigmenté de la restauration ;
+  2. S.254 : capot (persiennes, perforations), radiateur, échappements, pare-brise, emplacement des tôles d'aluminium des ailes, ferrures de la cabane et des mâts, train ;
+  3. aile 2016.16.1 : teintes du camouflage et de l'intrados, espacement des nervures, rubans, œillets ;
+  4. le dossier des restaurations de S.254 (Philippe Osché, 1981-1982 ; fin des années 1990), s'il est consultable.
+- **Pourquoi** : S.254 est la livrée recommandée pour le premier modèle (`spad7-aspect.md` § 12.5). Les photos de 1917 sont en noir et blanc, et l'avion a été en partie repeint : seul un examen de l'appareil départage. L'aile est le seul témoin connu des teintes réelles d'un S.VII camouflé.
+- **Démarche** : écrire au musée pour demander une visite d'étude en réserve ou l'envoi de photos de référence. Préciser que les images serviront de référence privée et ne seront pas publiées.
+- **Message proposé** :
+
+> Madame, Monsieur,
+>
+> Je prépare une restitution en trois dimensions du SPAD VII pour une simulation de vol historique. Le SPAD VII S 254 de Georges Guynemer et l'aile de SPAD VII (inv. 2016.16.1) de vos collections sont pour moi les meilleurs témoins de l'aspect réel de cet avion.
+>
+> Serait-il possible d'obtenir des photographies de référence de ces deux objets, ou d'organiser une courte visite d'étude ? Je cherche en particulier les marques peintes du S 254 (cigogne, numéro, nom, cocardes, gouvernail), la teinte de sa toile d'origine, et les teintes et la structure de l'aile. Ces images serviraient uniquement de référence et ne seraient pas publiées.
+>
+> Je vous remercie de votre aide.
+>
+> [nom], [adresse]
+
+## D9 — ECPAD : photos de S.254 aux Invalides
+
+- **Documents** :
+  - « L'avion de Guynemer dans la cour des Invalides », Albert Moreau, deux négatifs sur verre, **20 octobre 1917** : https://imagesdefense.gouv.fr/fr/l-avion-de-guynemer-dans-la-cour-des-invalides.html ;
+  - « Paris, aux Invalides, avions du capitaine Guynemer fleuri », cote **SPA 236 M 4636**, même photographe, notice datée du 20 novembre 1917 : https://imagesdefense.gouv.fr/fr/paris-aux-invalides-avions-du-capitaine-guynemer-fleuri-legende-d-origine.html.
+- **D'abord** : la session principale tente de télécharger les notices et les vignettes (`spad7-aspect.md` § 15). La demande ne sert que pour la haute définition.
+- **Ce qu'on cherche** : les marques de S.254 dans son état de fin de service (positions, tailles, contrastes) ; la date exacte du second cliché ; les conditions de réutilisation.
+- **Démarche** : demande de fichiers en haute définition par le site ImagesDéfense, pour un usage de référence.
+
+## D10 — Vojenský historický ústav (Prague) : planche de bord d'un SPAD VII
+
+- **Objet** : planche de bord d'origine en contreplaqué du SPAD VII C.1 n° **11 583**, conservée en réserve. Notices : https://www.vhu.cz/exhibit/palubni-deska-letounu-spad-vii-c-i-vyr-c-11-583/ et https://vhu.cz/en/exhibit/06-francouzska-palubni-deska-z-letounu-spad-s-vii-c-1-1916.
+- **Ce qu'on cherche** : photos de face, dimensions, liste et emplacement des instruments et des commandes, traces des instruments disparus.
+- **Pourquoi** : c'est la seule planche de S.VII d'origine repérée ; aucune source ne décrit la disposition des instruments du S.VII (`spad7-aspect.md` § 9).
+- **Message proposé** (en anglais) :
+
+> Dear Sir or Madam,
+>
+> I am researching the SPAD VII fighter for a historical flight simulation. Your collection holds the original instrument panel of SPAD VII C.1 no. 11 583.
+>
+> Could you supply reference photographs of this panel, with its dimensions and, if known, the list of instruments and controls it carried? The images would be used for private reference only and not published.
+>
+> Thank you very much.
+>
+> [nom], [adresse]
+
+## D11 — Ouvrages de référence sur l'aspect du S.VII
+
+- **Ouvrages** :
+  - J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8, Albatros Productions, 1988 (`spad7.md` P1) : plans d'Ian Stair, photos d'époque ;
+  - M. Velek, M. Ovčáčík et K. Susa, *SPAD S.VII C1*, 4+ Publications n° 19, 2004 (P3) : plans au 1/48, photos de détail ;
+  - Hardesty, Hastings et Toelle, « Project Butterfly », *Cross & Cockade* (US), vol. 9 n° 1 (1968), vol. 13 n° 2 et n° 4 (1972) (P14) : teintes et schémas du camouflage français. Numéros anciens vendus en téléchargement par la League of WWI Aviation Historians (overthefront.com).
+- **Ce qu'on cherche** : tout ce que `spad7-aspect.md` marque « non trouvé » ou `ESTIMÉ` : découpe du plan supérieur, nervures, cabane, échappements, roues, poste, cocardes ; références des teintes.
+- **Avant d'acheter** : vérifier l'édition et le sommaire auprès du libraire.
+
+## D12 — Museo Francesco Baracca (Lugo) : S.2489
+
+- **Seulement si le joueur retient ce candidat de livrée** (`spad7-aspect.md` § 12.4).
+- **Ce qu'on cherche** : dossier de la restauration de 1990-1993 par le GAVS de Turin ; finition, marques, moteur d'origine ; photos de détail.
+
 ## Journal
 
 | Date | Demande | Événement |
 |---|---|---|
 | 2026-10-25 | D1 à D7 | Fichier créé, sur demande du joueur ; rien n'est encore envoyé |
+| 2026-10-26 | D4 (complément), D8 à D12 | Ajoutés par l'historien pour le modèle 3D (plan `m3-modele-spad7.md`, parties B1 et B2) ; rien n'est envoyé |

@@ -1719,3 +1719,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - fuselage arrondi, profil cambré, mâts profilés, roues à voiles, pales vrillées : le saut par rapport aux boîtes est net ;
   - corrigé après la capture : couleurs trop claires (Blender attend des valeurs linéaires, je donnais du sRGB) et arrondi des saumons trop fort (rayon de 0,18 à 0,10 m, « corners slightly rounded off »).
 - **⚠** J'ai reposé par erreur au joueur les quatre questions déjà tranchées (plan, outil, livrée, poste). Ses réponses sont identiques ; rien ne change.
+- **R** Valeurs de l'aérodynamicien pour la partie A, chacune vérifiée sur une copie des données :
+  - **ailerons** à 29 % ;
+  - **empennage vertical** en cinq panneaux, qui reproduisent la surface, le centre et la répartition du gouvernail dessinés ;
+  - **moyeu** : x reste à 0,78 (mon « 0,83 » était la face avant des pales), mais z se lit à −0,40 au lieu de −0,38, au-delà de l'incertitude. C'est un point à part : le bas de la dérive est à cheval sur l'axe du souffle, et les équilibres de direction y sont sensibles.
+- **A** Partie A, point 1 : `chord_ratio` des ailerons de 0,32 à 0,29, avec son origine `C:`.
+  - Campagne : rapport identique au caractère près, la campagne ne mesurant pas le roulis. Efficacité des ailerons prévue à −4,2 %.
+  - Modèle provisoire régénéré : sa charnière d'aileron recule de 3,6 cm.
+- **R** Rapport de l'historien. Fiche `docs/recherche/spad7-aspect.md` et demandes D4 (complément) et D8 à D12.
+  - **Limite** : les sites des musées et des archives n'ont pu être lus qu'en résumé du moteur de recherche.
+  - **Établi** (confiance C, sauf mention) : capot aluminium peint jaune ; radiateur sans volets sur un 150 ch du début de 1917 ; échappements en collecteur ; découpe du plan supérieur en demi-cercle ; renvois d'ailerons (B) ; poste d'après le S.XI ; hélice Éclair 6 en noyer verni.
+  - **Candidats de livrée** : S.254 « Vieux Charles » de Guynemer (SPA 3, photographié le 20 octobre 1917, conservé ; mais **180 ch**), S.113 de Heurtaux, S.2489 de Baracca. Sa recommandation : S.254 en deux couches de décalques, la finition d'usine puis les marques de Guynemer.
+- **D** Décisions à soumettre au joueur, après la partie A : la livrée, le moteur du S.254 (180 ch) et l'usage d'un personnage réel.

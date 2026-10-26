@@ -42,7 +42,7 @@ Aircraft(
             airfoil: "airfoils/spad.ron",
             span_efficiency: 0.92,                                             // C: 1/(1 + δ) = 0.952 (TR 416) × 0.979 fuselage gap × 0.985 cut-out and rounded tips
             controls: [
-                (control: Aileron, span_from: 0.5, span_to: 1.0, chord_ratio: 0.32), // C: upper plane only, 1.95 × 0.44 m on the drawing (S48: upper plane)
+                (control: Aileron, span_from: 0.5, span_to: 1.0, chord_ratio: 0.29), // C: upper plane only, 1.95 m from the tip and 29 % of the chord on the 1917 drawing at line centres (0.41 m of a drawn 1.41 m chord; 27 to 31 % with the line edges; aerodynamicist 2026-10-26, spad7-calculs.md § 3.1); the ratio is kept on the 1.21 m chord of the data, the drawing's chord being that of S48 (S48: upper plane)
             ],
         ),
         (
