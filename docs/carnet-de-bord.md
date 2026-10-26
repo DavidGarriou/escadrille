@@ -1674,3 +1674,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Modèle 3D régénéré ; `asset_check` passe. Captures avant et après **regardées**, avec un agrandissement de la queue : l'espace vide entre l'étambot et le gouvernail du bas est comblé.
 - **A** Revue de l'aérodynamicien : conforme, rien de bloquant. Elle relève que mon test du générateur, à 5 cm près, était trop lâche. Il recalcule maintenant le pivot attendu depuis les panneaux, à 1 mm près. Renvoi ajouté dans le commentaire du gouvernail du haut.
 - **A** `spad7-calculs.md` § 3 et § 5 mis à jour ; bilan d'exécution dans le plan.
+
+### Modèle 3D réaliste : plan
+
+- **Q** Le joueur : « Je suis d'accord avec les suggestions. Réalise un modèle 3D le plus réaliste possible, avec une excellente qualité de rendu. »
+- **A** Vérifications préalables :
+  - Blender n'est pas installé, mais le paquet Ubuntu 4.0.2 est disponible, ainsi que le module Python `bpy` 5.2 ; blender.org est bloqué par le proxy ;
+  - environ 3,7 Go de disque libre ;
+  - Bevy 0.20 sait rendre la transmission diffuse avec texture, le vernis, l'anisotropie et les décalques en grappes, mais plusieurs de ces fonctions demandent des features hors défaut.
+- **A** Plan `docs/plans/m3-modele-spad7.md` (proposé). C'est l'élément « Modèle PBR du premier avion » du M3, avancé :
+  - partie A : les trois points du dessin dans le modèle de vol (ailerons à 29 %, empennage vertical tel que dessiné, moyeu à confirmer), avec essais et revue ;
+  - partie B : fiche d'aspect et livrée (historien), outil, géométrie, matériaux, rendu, poste de pilotage, validation par captures et par le directeur artistique.
+- **D** Décisions demandées au joueur :
+  - le plan, et la lecture de « les suggestions » ;
+  - l'outil : Blender piloté par script, avec une exception au « Rust uniquement » pour les scripts de contenu dans `art/`, ou tout en Rust ;
+  - la livrée ;
+  - le périmètre du poste de pilotage.
