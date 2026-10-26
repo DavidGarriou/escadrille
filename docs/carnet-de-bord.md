@@ -1718,3 +1718,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Capture dans le jeu (modèle copié temporairement, puis remis) **regardée** :
   - fuselage arrondi, profil cambré, mâts profilés, roues à voiles, pales vrillées : le saut par rapport aux boîtes est net ;
   - corrigé après la capture : couleurs trop claires (Blender attend des valeurs linéaires, je donnais du sRGB) et arrondi des saumons trop fort (rayon de 0,18 à 0,10 m, « corners slightly rounded off »).
+- **⚠** J'ai reposé par erreur au joueur les quatre questions déjà tranchées (plan, outil, livrée, poste). Ses réponses sont identiques ; rien ne change.
