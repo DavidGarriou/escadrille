@@ -1,3 +1,6 @@
 /target/
 .claude/.state/
 .claude/settings.local.json
+
+# Python bytecode of the Blender scripts (ADR 0007)
+__pycache__/

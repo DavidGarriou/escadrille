@@ -185,3 +185,26 @@ fn each_plate_is_cut_on_the_hinge_line_of_its_node() {
         .unwrap();
     assert!((rudder.pivot.x + 4.75).abs() < 1e-12, "{rudder:?}");
 }
+
+#[test]
+fn the_model_data_is_valid_json_with_the_contract() {
+    let (data, mockup) = spad();
+    let text = export::model_json(&data, Some(&mockup)).unwrap();
+    let json: gltf::json::Value = gltf::json::deserialize::from_str(&text).unwrap();
+    assert_eq!(json["version"], export::VERSION);
+    assert_eq!(json["id"], "spad7");
+    let hinges = json["hinges"].as_array().unwrap();
+    let rudder = hinges.iter().find(|h| h["node"] == "ctrl_rudder").unwrap();
+    assert_eq!(rudder["regions"].as_array().unwrap().len(), 2);
+    assert!((rudder["pivot"][0].as_f64().unwrap() + 4.70).abs() < 1e-9);
+    assert_eq!(json["surfaces"].as_array().unwrap().len(), 4);
+    assert_eq!(json["propeller"]["axis"][0], 1.0);
+    assert_eq!(json["mockup"]["fuselage"].as_array().unwrap().len(), 6);
+}
+
+#[test]
+fn only_a_model_written_here_may_be_overwritten() {
+    let (data, mockup) = spad();
+    assert!(written_here(&build_model(&data, &mockup).unwrap()));
+    assert!(!written_here(b"not a glTF"));
+}

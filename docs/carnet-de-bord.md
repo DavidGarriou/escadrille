@@ -1705,3 +1705,16 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - essai sans écran réussi : export glTF et Cycles.
 - **D** ADR 0007 « Scripts Blender (Python) pour les sources de contenu dans `art/` », accepté par le choix du joueur. Le Python n'est admis que dans les scripts exécutés par Blender, rangés dans `art/` ; le jeu et les outils restent en Rust.
 - **A** `CLAUDE.md` : la contrainte « Rust uniquement » cite l'exception, et l'arborescence mentionne les scripts de `art/`. Modification annoncée dans l'option que le joueur a choisie.
+- **A** Chaîne de construction du modèle réaliste, partie B4 :
+  - **contrat** : chaque charnière porte maintenant les zones qu'elle entraîne (surface, panneau, côté, envergure, part de corde). Le script Blender coupe les gouvernes comme le contrat les nomme, sans refaire la règle des noms (test) ;
+  - **`mockup <avion> --json <fichier>`** écrit les données du modèle pour les scripts Blender : contrat, surfaces, formes de `maquette.ron`. JSON écrit à la main, sans dépendance nouvelle ; un test le relit ;
+  - **protection** : `mockup` refuse d'écraser un `model.glb` qu'il n'a pas écrit, sauf `--force`, pour que le modèle réaliste ne soit jamais effacé par erreur (test) ;
+  - **`asset_check <avion> --model <fichier>`** contrôle un modèle en cours de construction ;
+  - **`art/spad7/build.py`**, première passe de forme : ailes au profil « Spad » du NACA Report 93, saumons arrondis, fuselage lofté en sections arrondies, empennages à section mince symétrique, mâts profilés, cabane, train et roues, béquille, hélice vrillée au pas de l'Éclair, Vickers, nœuds du contrat ;
+  - **`just modele <avion>`** : construction dans `target/modele/`, puis contrôle ; `just modele <avion> assets` remplace `model.glb` si le contrôle passe.
+- **R** Premier essai : tous les contrôles de repères passent du premier coup (4 gouvernes à 0,0 mm et 0,00°, hélice, œil, arme, envergure). La chaîne Blender → glTF → Bevy de l'ADR 0006 tient.
+  - La longueur (6,34 m) et la hauteur échouent, comme prévu : l'empennage est encore l'équivalent du modèle de vol, en attendant les contours réels du dessin.
+  - Le modèle provisoire reste donc dans `assets/`.
+- **A** Capture dans le jeu (modèle copié temporairement, puis remis) **regardée** :
+  - fuselage arrondi, profil cambré, mâts profilés, roues à voiles, pales vrillées : le saut par rapport aux boîtes est net ;
+  - corrigé après la capture : couleurs trop claires (Blender attend des valeurs linéaires, je donnais du sRGB) et arrondi des saumons trop fort (rayon de 0,18 à 0,10 m, « corners slightly rounded off »).

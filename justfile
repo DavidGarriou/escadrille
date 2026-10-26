@@ -32,6 +32,16 @@ essai avion:
 mockup avion:
     cargo run -p mockup -- {{avion}}
 
+# Modelled 3D model of an aircraft, built by Blender from its script in art/ (ADR 0007).
+# Writes target/modele/<avion>.glb and .blend and checks it; `just modele <avion> assets`
+# then replaces assets/aircraft/<avion>/model.glb.
+modele avion dest="target":
+    mkdir -p target/modele
+    cargo run -q -p mockup -- {{avion}} --json target/modele/{{avion}}.json
+    blender -b --factory-startup --python art/{{avion}}/build.py -- target/modele/{{avion}}.json target/modele/{{avion}}.glb target/modele/{{avion}}.blend
+    cargo run -q -p asset_check -- {{avion}} --model target/modele/{{avion}}.glb
+    if [ "{{dest}}" = "assets" ]; then cp target/modele/{{avion}}.glb assets/aircraft/{{avion}}/model.glb; fi
+
 # Run the game in development mode (dynamic linking for faster rebuilds).
 run:
     cargo run -p escadrille --features dev

@@ -466,7 +466,7 @@ pub fn build_model(data: &AircraftData, mockup: &MockupFile) -> Result<Vec<u8>, 
 fn write_glb(id: &str, nodes: &[Node]) -> Result<Vec<u8>, String> {
     let mut root = json::Root {
         asset: json::Asset {
-            generator: Some("Panache blanc, tools/mockup".to_owned()),
+            generator: Some(GENERATOR.to_owned()),
             copyright: Some("Panache blanc, CC-BY-SA 4.0 (LICENSE-ASSETS)".to_owned()),
             ..Default::default()
         },
@@ -653,6 +653,17 @@ fn write_glb(id: &str, nodes: &[Node]) -> Result<Vec<u8>, String> {
     }
     .to_vec()
     .map_err(|e| e.to_string())
+}
+
+pub mod export;
+
+/// Generator string of the models written here (`asset.generator` of the glTF).
+pub const GENERATOR: &str = "Panache blanc, tools/mockup";
+
+/// Whether a binary glTF was written by this tool, and may be overwritten by it.
+pub fn written_here(glb: &[u8]) -> bool {
+    gltf::Gltf::from_slice(glb)
+        .is_ok_and(|g| g.document.as_json().asset.generator.as_deref() == Some(GENERATOR))
 }
 
 #[cfg(test)]

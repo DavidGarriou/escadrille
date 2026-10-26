@@ -203,17 +203,21 @@ pub fn check_aircraft(assets: &Path, id: &str) -> Result<Option<Report>, String>
     if !path.exists() {
         return Ok(None);
     }
+    check_aircraft_model(assets, id, &path).map(Some)
+}
+
+/// Checks a model file of an aircraft, wherever it is (a model being built, for
+/// instance), as if it were its `model.glb`.
+pub fn check_aircraft_model(assets: &Path, id: &str, path: &Path) -> Result<Report, String> {
     let data = load_aircraft(assets, id).map_err(|e| e.to_string())?;
-    let bytes = std::fs::read(&path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
     let licences = std::fs::read_to_string(assets.join("LICENCES.md")).unwrap_or_default();
     let relative = format!("assets/aircraft/{id}/model.glb");
     let accepted = load_mockup(assets, id)
         .map_err(|e| e.to_string())?
         .map(|m| m.accepted_deviations)
         .unwrap_or_default();
-    Ok(Some(check_model(
-        &data, &bytes, &licences, &relative, &accepted,
-    )?))
+    check_model(&data, &bytes, &licences, &relative, &accepted)
 }
 
 /// Checks a model (binary glTF) against its aircraft's data; `licences` is the text of

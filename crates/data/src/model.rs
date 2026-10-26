@@ -60,6 +60,24 @@ pub struct Hinge {
     pub pivot: DVec3,
     /// Unit; a positive rotation about it is the positive deflection.
     pub axis: DVec3,
+    /// The parts of the lifting surfaces that turn with it.
+    pub regions: Vec<ControlRegion>,
+}
+
+/// A part of a lifting surface that a control node carries: one side of one panel,
+/// between two fractions of its length, aft of the hinge.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ControlRegion {
+    /// Index of the surface in `aircraft.ron`.
+    pub surface: usize,
+    pub panel: usize,
+    /// 1 on the right, −1 on the left (mirror image of the panel), 0 on the plane of
+    /// symmetry.
+    pub side: f64,
+    /// Fractions of the panel length, root to tip.
+    pub span: (f64, f64),
+    /// Control chord over local chord, as the flight model has it.
+    pub chord_ratio: f64,
 }
 
 /// Where the propeller turns.
@@ -169,6 +187,13 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
                     ratio: control.chord_ratio,
                     span: (control.span_from, control.span_to),
                     declared: control.hinge_m.map(|[a, b]| (mirror(a), mirror(b))),
+                    region: ControlRegion {
+                        surface: index,
+                        panel: control.panel,
+                        side,
+                        span: (control.span_from, control.span_to),
+                        chord_ratio: control.chord_ratio,
+                    },
                 };
                 match nodes.iter_mut().find(|(name, _)| *name == node) {
                     Some((_, groups)) => groups.push(group),
@@ -251,6 +276,7 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
                 line,
                 pivot: 0.5 * (line.0 + line.1),
                 axis,
+                regions: groups.iter().map(|g| g.region).collect(),
             });
         }
     }
@@ -293,6 +319,7 @@ struct Group {
     span: (f64, f64),
     /// Ends of the declared hinge on this side (`hinge_m`).
     declared: Option<(DVec3, DVec3)>,
+    region: ControlRegion,
 }
 
 /// The hinge of one control on one panel, between the ends of its span. The hinge point
@@ -470,6 +497,28 @@ mod tests {
             }
         }
         data
+    }
+
+    #[test]
+    fn each_hinge_names_the_parts_it_carries() {
+        let c = spad();
+        let regions = |name: &str| {
+            c.hinges
+                .iter()
+                .find(|h| h.node == name)
+                .unwrap()
+                .regions
+                .clone()
+        };
+        // The right aileron: the outer half of the right upper plane.
+        let aileron = regions("ctrl_aileron_r_upper");
+        assert_eq!(aileron.len(), 1);
+        assert_eq!((aileron[0].side, aileron[0].span), (1.0, (0.5, 1.0)));
+        // The elevator: both halves of the tailplane; the rudder: both fin panels.
+        let sides: Vec<f64> = regions("ctrl_elevator").iter().map(|r| r.side).collect();
+        assert_eq!(sides, [1.0, -1.0]);
+        let panels: Vec<usize> = regions("ctrl_rudder").iter().map(|r| r.panel).collect();
+        assert_eq!(panels, [0, 1]);
     }
 
     #[test]
