@@ -139,13 +139,33 @@ fn each_plate_is_cut_on_the_hinge_line_of_its_node() {
     }
     let from_strips = contract(&data).unwrap();
     assert!(cuts_on_the_hinges(&from_strips) > 20);
-    // The rudder's hinge is vertical, through the middle of its segments (x −4.68 m).
+    // The strips' rudder hinge is vertical, through the length-weighted middle of its
+    // segments, worked out here from the panels themselves: on an unswept panel the hinge
+    // runs at x = quarter chord − (0.75 − chord ratio) × chord, linear from root to tip.
     let rudder = from_strips
         .hinges
         .iter()
         .find(|h| h.node == "ctrl_rudder")
         .unwrap();
-    assert!((rudder.pivot.x + 4.6785).abs() < 1e-3, "{rudder:?}");
+    assert!(rudder.axis.z.abs() > 0.999, "{rudder:?}");
+    let fin = data.file.surfaces.iter().find(|s| s.name == "fin").unwrap();
+    let (mut moment, mut length) = (0.0, 0.0);
+    for control in &fin.controls {
+        let panel = &fin.panels[control.panel];
+        let hinge_x = |end: [f64; 3], chord: f64| end[0] - (0.75 - control.chord_ratio) * chord;
+        let (root, tip) = (
+            hinge_x(panel.root_m, panel.chord_root.si()),
+            hinge_x(panel.tip_m, panel.chord_tip.si()),
+        );
+        let l = (tip - root).hypot(panel.tip_m[2] - panel.root_m[2]);
+        moment += l * 0.5 * (root + tip);
+        length += l;
+    }
+    assert!(
+        (rudder.pivot.x - moment / length).abs() < 1e-3,
+        "{rudder:?}, expected x {}",
+        moment / length
+    );
     // A declared hinge moves the cut: the rudder on a post at x −4.75.
     for surface in &mut data.file.surfaces {
         for control in surface

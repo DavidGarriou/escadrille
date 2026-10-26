@@ -58,7 +58,7 @@ Résultat : +5 à +6,4 % de traction selon J ; le rendement maximal passe de 0,7
 | Mâts interplans | avant à 17 %, arrière à 49 % de la corde | positions des traînées | |
 | Ailerons (plan supérieur seul) | 1,95 m d'envergure depuis le saumon, 0,44 m de corde (32 %) | de 50 % à 100 % de la demi-envergure, 32 % de la corde (C) | XIII : 0,495 m sur 1,40 m (35 %, S15 vu en résumé) |
 | Plan fixe et profondeur | envergure 2,81 m ; surface 2,30 m² dont profondeur 1,00 m² (44 %) ; corde à l'emplanture 1,14 m ; bord d'attaque à 3,78 m derrière celui des ailes | panneau trapézoïdal de même surface : cordes 1,14 et 0,50 m, quart de corde de x = −4,07 à −4,51 m | Contours numérisés point par point, surface par la formule du polygone |
-| Dérive et gouvernail | dérive 0,37 m², gouvernail 0,53 m² (59 %) ; hauteur totale 1,09 m ; le gouvernail descend jusqu'au bas du fuselage ; la dérive avance de 0,2 à 0,27 m devant le plan fixe | deux panneaux : sous le plan fixe (gouvernail seul, 0,39 m de haut, corde 0,53 m), au-dessus (0,70 m de haut, cordes 1,61 et 0,39 m) | S48 : la dérive avance d'environ 12 in |
+| Dérive et gouvernail | dérive 0,37 m², gouvernail 0,53 m² (59 %) ; hauteur totale 1,09 m ; le gouvernail descend jusqu'au bas du fuselage ; la dérive avance de 0,2 à 0,27 m devant le plan fixe | deux panneaux : sous le plan fixe (gouvernail seul, 0,39 m de haut, corde 0,53 m), au-dessus (0,70 m de haut, cordes 1,61 et 0,39 m). **Depuis le 2026-10-26** : sous le plan fixe, partie fixe et gouvernail de l'étambot au bord de fuite (corde 0,775 m, gouvernail à 70 %, § 3.1) | S48 : la dérive avance d'environ 12 in |
 | Plan fixe : hauteur | sur les longerons supérieurs, 0,70 m au-dessus de la corde du plan inférieur | z = −0,70 m | |
 | Fuselage | hauteur maximale ≈ 1,1 à 1,17 m ; ouverture circulaire du radiateur 0,71 m ; largeur peu lisible (renflements des carters d'arbres à cames) | 0,80 m de large, 1,10 m de haut (E:) | |
 | Hélice | moyeu 0,78 m devant le bord d'attaque, 0,30 m au-dessus de la corde du plan inférieur ; diamètre dessiné 2,29 m | moyeu (0,78 ; 0 ; −0,30) ; diamètre 2,45 m (§ 2) | |
@@ -105,6 +105,23 @@ Les angles sont nuls.
 - **Ailerons** : 29 % de la corde sur le dessin, contre 32 % dans les données ; environ 4 % d'efficacité en roulis.
 - **Moyeu**, lecture rapide hors sujet : plan des pales à x +0,83, contre 0,78 dans les données.
 
+**Correction faite (plan `m1-derive-spad7.md`, 2026-10-26)** : la partie fixe de dérive est ajoutée au panneau inférieur.
+- **Panneau rectangulaire**, de l'étambot (x −4,47) au bord de fuite dessiné (x −5,245) : corde 0,775 m, gouvernail à 70 %. La charnière des bandes tombe à x −4,703, sur l'axe dessiné.
+- **Pourquoi pas effilé, comme le dessin** : les bandes ne feraient que 0,966 m² pour 1,00 m² dessiné, car le panneau supérieur avait été construit comme la surface dessinée moins un rectangle de 0,53 × 0,39 m. L'arrondi inférieur du gouvernail (0,035 m²) est donc compté en bas ; les totaux sont ceux du dessin.
+- **Surfaces** :
+  - empennage vertical 1,00 m² (bandes 1,0023 m²) ;
+  - gouvernail 0,212 + 0,322 = 0,534 m² ;
+  - partie fixe ajoutée 0,091 m².
+- **Allongement effectif** : 1,36 (géométrique 1,19 × 1,145 de Hemke). La pente cible est de 1,77/rad, avec une flèche à mi-corde de 39° pondérée par les surfaces ; e reste 0,61.
+- **Effet mesuré** (campagne `just essai spad7`, avant et après) :
+  - N_v de +111,5 à +116,2 N·m/(m/s), soit +4,2 % seulement : à envergure égale, la corde ajoutée fait baisser l'allongement ;
+  - L_v de −18,0 à −17,2 ;
+  - roulis hollandais de 3,46 à 3,39 s, ζ 0,193 inchangé ;
+  - spirale de ×2 en 17,50 s à ×2 en 17,40 s ;
+  - performances à 0,2 % près ;
+  - vrille et manœuvres à la marge ; départ au décrochage toujours à gauche.
+- **Sillage du fuselage** : aucun facteur (option a du plan, décision du joueur). Le panneau inférieur entier est derrière le fuselage (η_v d'environ 0,8 à 0,9) ; il porte 52,6 des 116 N·m/(m/s) de N_v, que le modèle surestime donc de 5 à 9 %. La partie fixe ajoutée n'en représente pas plus de 1 % : l'écart venait surtout du gouvernail du bas, déjà compté à pleine pression avant la correction.
+
 ## 4. Masses, centrage et chargement d'essai
 
 **Bilan à vide** (`assets/aircraft/spad7/masses.ron`, calculé par `fdm_lab inertia spad7`) : aucune masse de composant du S.VII n'est sourcée (`spad7.md` § 3). Dix composants comparables ou estimés, fermés sur la masse à vide de S46 (1 100 lb = 498,95 kg) par le reste du fuselage :
@@ -143,7 +160,7 @@ Calculées par l'aérodynamicien sur la géométrie du § 3 et contrôlées avec
 - **Allongements** :
   - ailes, e = 0,92. C'est δ du TR 416, préféré à τ parce que les cibles de montée dépendent de la traînée induite ;
   - plan fixe, e = 0,80 (pente de Helmbold) ;
-  - dérive, allongement effectif 1,5 (plaque partielle, Hemke) et e = 0,61 (pente DATCOM de 1,9/rad).
+  - dérive, allongement effectif 1,5 (plaque partielle, Hemke) et e = 0,61 (pente DATCOM de 1,9/rad). **Depuis le 2026-10-26** (plan `m1-derive-spad7.md`) : 1,36 et 0,61 (pente de 1,77/rad), pour la dérive avec sa partie fixe sous le plan fixe (1,00 m²).
 - **Empennages sans flèche** : le chargeur oriente les bandes selon la ligne du quart de corde ; une ligne en flèche aurait gonflé la dérive de 0,90 à 1,51 m² et fait décrocher la dérive trop tôt. Les cordes du dessin sont reportées sur une ligne droite, au quart de la corde moyenne.
 - **Profil d'empennage** (`assets/airfoils/spad_empennage.ron`) : RAF 15 sans cambrure, maximum plafonné à C_L 0,85 (profil symétrique mince), branche négative en miroir.
 - **Hélice** :

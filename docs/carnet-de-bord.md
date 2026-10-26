@@ -1658,3 +1658,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur : « 1. Oui 2. (a) ». **D** Plan `m1-derive-spad7.md` validé ; aucun facteur pour le sillage du fuselage, l'écart sera documenté.
 - **A** Campagne d'essais de référence relancée sur l'état actuel et copiée dans le dossier de travail de la session. Elle redonne le dernier rapport : N_v +111,5 N·m/(m/s), L_v −18,0, spirale ×2 en 17,5 s, roulis hollandais de 3,46 s amorti à 0,193.
 - **A** Géométrie du nouveau panneau demandée à l'aérodynamicien, sur son contour numérisé.
+- **R** Géométrie de l'aérodynamicien, avec deux corrections au plan :
+  - **panneau rectangulaire**, de l'étambot au bord de fuite dessiné : corde 0,775 m, gouvernail à 70 %, charnière des bandes à x −4,703, sur l'axe dessiné. La version effilée était refusée au chargement (−3,4 %), à cause de la façon dont le panneau supérieur avait été construit ;
+  - surface de référence 1,00 m², allongement 1,36, `span_efficiency` inchangé ; 2 bandes suffisent.
+- **⚠** Deux estimations de mon plan étaient fausses.
+  - N_v ne gagne que +4,2 %, et non +5 à +9 % : à envergure égale, la corde ajoutée fait baisser l'allongement.
+  - Le sillage du fuselage surestime N_v de 5 à 9 %, et non d'environ 1 % : tout le panneau inférieur est derrière le fuselage, gouvernail compris, qui était déjà compté à pleine pression avant. La partie ajoutée compte pour moins de 1 %.
+  - L'option (a) reste appliquée, avec le bon chiffre dans le commentaire de `span_efficiency`.
+- **A** Valeurs inscrites dans `aircraft.ron`, chacune avec son origine `C:`.
+- **A** Campagne après, comparée à celle de référence ; aucun écart inexpliqué :
+  - N_v de +111,5 à +116,2 (+4,2 %) ; L_v de −18,0 à −17,2 ;
+  - roulis hollandais de 3,46 à 3,39 s ; spirale de ×2 en 17,50 s à 17,40 s ;
+  - performances à 0,2 % près ;
+  - vrille et manœuvres à la marge ; départ au décrochage toujours à gauche.
+- **A** Modèle 3D régénéré ; `asset_check` passe. Captures avant et après **regardées**, avec un agrandissement de la queue : l'espace vide entre l'étambot et le gouvernail du bas est comblé.
+- **A** Revue de l'aérodynamicien : conforme, rien de bloquant. Elle relève que mon test du générateur, à 5 cm près, était trop lâche. Il recalcule maintenant le pivot attendu depuis les panneaux, à 1 mm près. Renvoi ajouté dans le commentaire du gouvernail du haut.
+- **A** `spad7-calculs.md` § 3 et § 5 mis à jour ; bilan d'exécution dans le plan.

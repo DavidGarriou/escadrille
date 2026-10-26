@@ -83,3 +83,22 @@ Le modèle de vol n'a pas de facteur de pression dynamique par panneau. Deux opt
 
 1. Le plan.
 2. Le sillage du fuselage : (a) aucun facteur, écart documenté (recommandé) ; ou (b) nouvelle fonction du modèle de vol.
+
+## Exécution (2026-10-26)
+
+- **Géométrie** (aérodynamicien, contour numérisé) : panneau inférieur **rectangulaire**, de l'étambot (x −4,47) au bord de fuite dessiné (x −5,245).
+  - Corde 0,775 m, gouvernail à 70 % : la charnière des bandes tombe à x −4,703, sur l'axe dessiné.
+  - `reference_area` 1,00 m², `aspect_ratio` 1,36, `span_efficiency` inchangé (0,61) ; 2 bandes suffisent (test de convergence relancé).
+  - Un panneau effilé, plus proche de l'arrondi du dessin, était refusé au chargement (−3,4 %) : le panneau supérieur avait été construit comme la surface dessinée moins un rectangle sous le plan fixe.
+- **Deux estimations du plan corrigées** :
+  - N_v gagne **+4,2 %**, et non +5 à +9 % : à envergure égale, la corde ajoutée fait baisser l'allongement ;
+  - le sillage du fuselage surestime N_v de **5 à 9 %**, et non d'environ 1 % : tout le panneau inférieur est derrière le fuselage, gouvernail compris. La partie ajoutée, elle, ne compte que pour moins de 1 %. L'option (a) est appliquée, avec ce chiffre dans le commentaire de `span_efficiency`.
+- **Campagne** avant et après (`spad7-calculs.md` § 3.1) :
+  - N_v de +111,5 à +116,2 ; L_v de −18,0 à −17,2 ;
+  - roulis hollandais de 3,46 à 3,39 s ; spirale de ×2 en 17,50 s à 17,40 s ;
+  - performances à 0,2 % près ; vrille et manœuvres à la marge.
+  
+  Aucun écart inexpliqué.
+- **Modèle 3D** : régénéré ; `asset_check` passe, écarts acceptés inchangés. Captures avant et après **regardées** : la partie fixe comble l'espace entre l'étambot et le gouvernail du bas.
+- **Test du générateur** : il figeait le pivot des bandes du gouvernail (x −4,6785). Il recalcule maintenant la valeur attendue (−4,6628) depuis les panneaux d'`aircraft.ron`, milieu des segments de charnière pondéré par la longueur, à 1 mm près. Il suit donc les données, et refuse une moyenne non pondérée ou une pondération par la hauteur. Ma première version, à 5 cm près, était trop lâche : relevé par l'aérodynamicien.
+- **Revue de l'aérodynamicien** : conforme, rien de bloquant ; données et origines vérifiées ; campagne conforme à ses prévisions (N_v +4,3 % prévu, +4,2 % mesuré), sans écart inexpliqué.
