@@ -1740,3 +1740,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - glissade sur la queue de 109,5 à 100,9 km/h ; performances inchangées.
 - **R** Modèle provisoire régénéré : il mesure 6,099 m pour 6,08 (+0,3 %), dans la tolérance. `asset_check` exige alors de retirer l'écart de longueur accepté : c'est le mécanisme prévu. Écart retiré de `maquette.ron` ; seule la hauteur reste acceptée.
 - **A** Tests adaptés à la nouvelle dérive : zones du gouvernail, longueur de charnière, écarts acceptés.
+- **A** Partie A, point 3 : moyeu à z −0,40 au lieu de −0,38 (x inchangé).
+  - Moteur, radiateur et hélice suivent la ligne de traction dans `masses.ron`, ainsi que la traînée du radiateur frontal.
+  - Bilan à vide recalculé par `fdm_lab inertia` : centre de gravité z −0,459, ixz 24 ; `aircraft.ron` concorde.
+  - Commentaires de convergence des bandes de la dérive mis à jour avec les chiffres de l'aérodynamicien pour l'état final.
+- **A** Campagne, conforme aux prévisions :
+  - dérapage de croisière de 0,80 à 0,65°, direction d'équilibre +0,01 ;
+  - N_v 113,0, L_v −17,3, phugoïde 29,8 s ;
+  - glissade sur la queue de 100,9 à 68,6 km/h ;
+  - départ au décrochage toujours à gauche ; performances inchangées.
+- **R** Le bas de la dérive est à cheval sur l'axe du souffle, où sa rotation change de sens : les équilibres de direction y gagnent environ 0,01 de course par centimètre de hauteur du moyeu.
+- **A** Modèle provisoire régénéré ; `spad7-calculs.md` § 3.1 et § 5 mis à jour. Revue finale de la partie A demandée à l'aérodynamicien.

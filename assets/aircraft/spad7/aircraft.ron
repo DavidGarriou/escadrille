@@ -16,8 +16,8 @@ Aircraft(
 
     mass: (
         empty: Lb(1100.0),                                            // S: S46 p. 205, both 7C1 lines, and S47 p. 237 (spad7.md § 3)
-        cg_empty_m: (-0.313, 0.0, -0.448),                            // C: fdm_lab inertia spad7 (masses.ron)
-        inertia_empty_kg_m2: (ixx: 784.0, iyy: 778.0, izz: 1360.0, ixz: 28.0), // C: fdm_lab inertia spad7 (masses.ron)
+        cg_empty_m: (-0.313, 0.0, -0.459),                            // C: fdm_lab inertia spad7 (masses.ron)
+        inertia_empty_kg_m2: (ixx: 784.0, iyy: 778.0, izz: 1359.0, ixz: 24.0), // C: fdm_lab inertia spad7 (masses.ron)
         pilot: Lb(176.0),                                             // S: S46 crew load (p. 204-205)
         pilot_m: (-1.15, 0.0, -0.37),                                 // C: seat behind the cockpit opening of the drawing, about 0.45 m above the floor
         fuel: (capacity: L(135.0), density_kg_per_l: 0.72, position_m: (-0.95, 0.0, -0.15)), // C: 135 L in all (S13, seen in summary); E: density; main tank under the seat (S13)
@@ -84,31 +84,31 @@ Aircraft(
                     root_m: (-4.631, 0.0, -0.31), tip_m: (-4.631, 0.0, -0.5), // C: band z −0.31 to −0.50 of the vertical tail on the 1917 drawing (side view at line centres, S48, 240 px/m, aerodynamicist 2026-10-26; spad7-calculs.md § 3.1): sternpost to the rounded lower corner of the rudder, 0.112 m²; unswept, at the band's area-weighted quarter chord (plan m3-modele-spad7.md, part A)
                     chord_root: M(0.346), chord_tip: M(0.838),                     // C: the band's drawn area and the height of its centroid, kept by the taper
                     incidence: Deg(0.0),                                         // E: no offset
-                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0040 of its travel at best climb and 0.0055 at the full-throttle stall (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
+                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0015 of its travel at best climb and 0.0070 at the full-throttle stall, hub at z −0.40 (0.0040 and 0.0055 with the hub at −0.38) (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
                 ),
                 (
                     root_m: (-4.663, 0.0, -0.5), tip_m: (-4.663, 0.0, -0.7), // C: band z −0.50 to −0.70 (same origin and method): sternpost to the straight trailing edge of the rudder, 0.155 m²; unswept, at the band's area-weighted quarter chord (plan m3-modele-spad7.md, part A)
                     chord_root: M(0.759), chord_tip: M(0.795),                     // C: the band's drawn area and the height of its centroid, kept by the taper
                     incidence: Deg(0.0),                                         // E: no offset
-                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0040 of its travel at best climb and 0.0055 at the full-throttle stall (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
+                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0015 of its travel at best climb and 0.0070 at the full-throttle stall, hub at z −0.40 (0.0040 and 0.0055 with the hub at −0.38) (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
                 ),
                 (
                     root_m: (-4.076, 0.0, -0.7), tip_m: (-4.076, 0.0, -0.92), // C: band z −0.70 to −0.92 (same origin and method): root of the fin on the fuselage and rudder, 0.342 m²; unswept, at the band's area-weighted quarter chord (plan m3-modele-spad7.md, part A)
                     chord_root: M(1.684), chord_tip: M(1.424),                     // C: the band's drawn area and the height of its centroid, kept by the taper
                     incidence: Deg(0.0),                                         // E: no offset
-                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0040 of its travel at best climb and 0.0055 at the full-throttle stall (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
+                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0015 of its travel at best climb and 0.0070 at the full-throttle stall, hub at z −0.40 (0.0040 and 0.0055 with the hub at −0.38) (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
                 ),
                 (
                     root_m: (-4.391, 0.0, -0.92), tip_m: (-4.391, 0.0, -1.14), // C: band z −0.92 to −1.14 (same origin and method), 0.247 m²; unswept, at the band's area-weighted quarter chord (plan m3-modele-spad7.md, part A)
                     chord_root: M(1.353), chord_tip: M(0.891),                     // C: the band's drawn area and the height of its centroid, kept by the taper
                     incidence: Deg(0.0),                                         // E: no offset
-                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0040 of its travel at best climb and 0.0055 at the full-throttle stall (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
+                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0015 of its travel at best climb and 0.0070 at the full-throttle stall, hub at z −0.40 (0.0040 and 0.0055 with the hub at −0.38) (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
                 ),
                 (
                     root_m: (-4.757, 0.0, -1.14), tip_m: (-4.757, 0.0, -1.4), // C: band z −1.14 to −1.40 (same origin and method): top of the fin and rounded top of the rudder, 0.143 m²; unswept, at the band's area-weighted quarter chord (plan m3-modele-spad7.md, part A)
                     chord_root: M(0.94), chord_tip: M(0.157),                     // C: the band's drawn area and the height of its centroid, kept by the taper
                     incidence: Deg(0.0),                                         // E: no offset
-                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0040 of its travel at best climb and 0.0055 at the full-throttle stall (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
+                    strips: 2,                                                   // C: about 0.1 m per strip; convergence in the slipstream checked on 2026-10-26 with the five panels: doubling every strip moves the trimmed rudder by 0.0015 of its travel at best climb and 0.0070 at the full-throttle stall, hub at z −0.40 (0.0040 and 0.0055 with the hub at −0.38) (limits 0.005 and 0.01, fdm_lab test the_swirl_left_converges_with_the_strips); the top panel keeps 2 strips (with 3 its first strip puts the 3D model's length out of tolerance)
                 ),
             ],
             airfoil: "airfoils/spad_empennage.ron",
@@ -138,7 +138,7 @@ Aircraft(
     // source shows streamlined wires on the S.VII. Check: equivalent f of 0.91 m² in level
     // flight at 2 000 m, profiles included, against 0.94 to 0.98 m² from S46 (not tuned).
     parasite_drag: [
-        (name: "radiateur frontal", cd: 0.45, reference_area: M2(0.396), position_m: (0.62, 0.0, -0.38)),               // E: internal flow (radiator and cowl losses, exit about half the opening) 0.30-0.35 plus nose and louvres; C: circular opening 0.71 m (drawing)
+        (name: "radiateur frontal", cd: 0.45, reference_area: M2(0.396), position_m: (0.62, 0.0, -0.40)),               // E: internal flow (radiator and cowl losses, exit about half the opening) 0.30-0.35 plus nose and louvres; C: circular opening 0.71 m (drawing)
         (name: "fuselage (frottement)", cd: 0.0047, reference_area: M2(13.5), position_m: (-1.50, 0.0, -0.47)),         // C: Schlichting turbulent Cf at Re 1.7e7 × Hoerner form factor 1.20 × 1.25 (E: fabric, stringers, louvres) plus the tail post; wetted area of the drawing stations (the fixed part of the fin behind the sternpost, added on 2026-10-26, is counted by the fin's strips: any overlap is under 0.001 m², 0.1 % of f)
         (name: "poste, tête du pilote et pare-brise", cd: 0.45, reference_area: M2(0.10), position_m: (-1.15, 0.0, -1.08)), // E: helmeted head 0.045 m², 60 % sheltered, windscreen and cavity
         (name: "Vickers", cd: 0.75, reference_area: M2(0.020), position_m: (-0.05, 0.0, -1.02)),                       // E: frontal area of box, jacket and sight
@@ -197,7 +197,7 @@ Aircraft(
     propeller: (
         table: "aircraft/spad7/propeller.ron",
         diameter: M(2.40),                                                     // C: Éclair type 6, 2.40 × 1.95 m (P/D 0.81, that of the D' table), « approuvé » for the SPAD VII with the 150 ch; Hartmann names Éclair (types 6 and 100) as the main propeller of the S.VII (hispano-suiza-8a.md § 7.5.10); player's choice of 2026-10-24, Levasseur 485 (2.45 m) and Éclair 100 kept as variants (spad7-calculs.md § 7)
-        hub_m: (0.78, 0.0, -0.38),                                             // C: 1917 drawing, hub 0.36 to 0.41 m above the lower leading edge (aerodynamicist's reading)
+        hub_m: (0.78, 0.0, -0.40),                                             // C: 1917 drawing (S48), side view at line centres (aerodynamicist 2026-10-26): blade mid-chord plane x 0.79, boss centre x 0.76, blade front face x 0.84; hub 0.405 ± 0.01 m above the lower leading edge (blade tips and boss, checked on the upper plane and the tailplane); drawn diameter 2.30 m
         rotation: Clockwise,                                                   // S: clockwise seen by the pilot, confidence B: « R H Tractor S7 » on the British S.VII propeller AB 723, « right hand » being clockwise seen by the pilot in British usage of 1917-18 (spad7.md § 6.5.3), and five concordant clues (hispano-suiza-8a.md § 7.3)
         p_factor_m: 1.08,                                                      // C: blade elements on the D' geometry (Report 301, fig. 5): 1.16 to 1.68 m with frozen inflow at the climbing J, × 0.75 for the induced-velocity feedback, scaled with the diameter from 2.45 to 2.40 m (1.1 × 0.98)
         normal_force: 0.038,                                                   // C: blade elements, c_n 0.034 to 0.038 for J 0.6 to 0.76, × 1.1 for the upwash ahead of the wings

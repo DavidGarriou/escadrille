@@ -105,6 +105,38 @@ Les angles sont nuls.
 - **Ailerons** : 29 % de la corde sur le dessin, contre 32 % dans les données ; environ 4 % d'efficacité en roulis.
 - **Moyeu**, lecture rapide hors sujet : plan des pales à x +0,83, contre 0,78 dans les données.
 
+**Partie A du plan `m3-modele-spad7.md` (2026-10-26)** : le modèle de vol suit le dessin sur trois points. Valeurs de l'aérodynamicien, une campagne d'essais après chaque point.
+
+1. **Ailerons à 29 % de la corde** (27 à 31 % selon le bord de trait) au lieu de 32 %.
+   - Efficacité : τ de 0,680 à 0,651, soit −4,2 % sur le taux de roulis.
+   - Campagne inchangée, faute d'essai de roulis.
+2. **Empennage vertical en cinq panneaux**, un par cassure du contour dessiné : z −0,31 à −0,50 (arrondi bas du gouvernail), −0,50 à −0,70, −0,70 à −0,92, −0,92 à −1,14, −1,14 à −1,40.
+   - **Construction de chaque bande** : un trapèze sans flèche, qui garde sa surface et la hauteur de son centre, posé à son quart de corde moyen dessiné ; sa part de gouvernail est celle du dessin.
+   - **Comparaison avec le dessin** :
+
+     | | Dessin | Avant | Après |
+     |---|---|---|---|
+     | Surface, m² | 0,999 | 1,002 | 0,999 |
+     | Gouvernail, m² | 0,536 | 0,534 | 0,536 |
+     | Centre du gouvernail, z | −0,863 | −0,792 | −0,859 |
+     | Quart de corde moyen, x | −4,405 | −4,447 | −4,405 |
+
+   - **Écart restant** : dans chaque bande, la corde du gouvernail va de 0,45 à 0,67 m au lieu des 0,55 m constants du dessin. C'est inévitable avec un seul `chord_ratio` sur un panneau effilé ; les sommes et les centres par bande, eux, sont justes.
+   - **Campagne** :
+     - N_v de +116,2 à +113,9 (−2,0 %), le quart de corde moyen avançant de 4 cm ;
+     - L_v de −17,2 à −17,6 ;
+     - roulis hollandais 3,42 s ; spirale ×2 en 17,42 s ;
+     - glissade sur la queue de 109,5 à 100,9 km/h.
+   - **Modèle provisoire** : il mesure maintenant 6,099 m, dans la tolérance, et l'écart de longueur accepté est retiré.
+3. **Moyeu à z −0,40** au lieu de −0,38. La mesure, au centre des traits, a été recoupée sur trois références verticales.
+   - **x** reste à 0,78 : plan des pales 0,79, centre du bossage 0,76 ; le « 0,83 » de la lecture rapide était la face avant des pales.
+   - **Masses** : le moteur, le radiateur et l'hélice suivent la ligne de traction (`masses.ron`), et le bilan à vide est recalculé (centre de gravité z −0,459, ixz 24).
+   - **Campagne** :
+     - dérapage de croisière de 0,80 à 0,65° ; direction d'équilibre +0,01 ;
+     - N_v 113,0 ; L_v −17,3 ; phugoïde 29,8 s ;
+     - glissade sur la queue 68,6 km/h ; performances inchangées.
+   - **Cause**, isolée par l'aérodynamicien : la hauteur de l'axe du souffle. Le bas de la dérive est à cheval sur cet axe, où la rotation du souffle change de sens : environ 0,01 de course de direction par centimètre de hauteur du moyeu.
+
 **Correction faite (plan `m1-derive-spad7.md`, 2026-10-26)** : la partie fixe de dérive est ajoutée au panneau inférieur.
 - **Panneau rectangulaire**, de l'étambot (x −4,47) au bord de fuite dessiné (x −5,245) : corde 0,775 m, gouvernail à 70 %. La charnière des bandes tombe à x −4,703, sur l'axe dessiné.
 - **Pourquoi pas effilé, comme le dessin** : les bandes ne feraient que 0,966 m² pour 1,00 m² dessiné, car le panneau supérieur avait été construit comme la surface dessinée moins un rectangle de 0,53 × 0,39 m. L'arrondi inférieur du gouvernail (0,035 m²) est donc compté en bas ; les totaux sont ceux du dessin.
@@ -171,7 +203,7 @@ Calculées par l'aérodynamicien sur la géométrie du § 3 et contrôlées avec
   - **loi d'altitude `Pressure(0.93)`** : R&M 462 mesure une puissance **au frein** en (p/p₀)^1,04. Le modèle applique l'exposant à la puissance indiquée, puis retranche le frottement. Converti avec le frottement du Report 46, l'exposant vaut 0,93 (à ±0,6 % de 1 000 à 5 000 m, vérifié ici). Avec 1,04, le frottement aurait été compté deux fois : la documentation est corrigée.
 - **Débattements** : ±20°, ±25° et ±30° (E:, aucune source SPAD).
 - **Calages** : 2,3° (plan supérieur) et 1,8° (plan inférieur), d'après le critère « fuselage horizontal à 170 km/h et 2 000 m ». Vérifié par le trim : incidence du fuselage 0,015°.
-- **Hauteur du moyeu** : 0,38 m au-dessus du bord d'attaque inférieur, d'après la relecture du dessin par l'aérodynamicien (0,36 à 0,41 m ; j'avais lu 0,30). Le moteur, le radiateur et l'hélice du bilan de masses ont suivi.
+- **Hauteur du moyeu** : 0,38 m au-dessus du bord d'attaque inférieur, d'après la relecture du dessin par l'aérodynamicien (0,36 à 0,41 m ; j'avais lu 0,30). Le moteur, le radiateur et l'hélice du bilan de masses ont suivi. **Mesurée à 0,405 ± 0,01 m le 2026-10-26** : 0,40 dans les données (§ 3.1, partie A, point 3).
 
 ## 6. Traînée des ailes entoilées, calée sur le Sperry Messenger (2026-10-23)
 
