@@ -415,8 +415,9 @@ mod tests {
             c.hinges.iter().filter(|h| h.node == "ctrl_rudder").count(),
             1
         );
-        // Each hinge runs the length of its control: both halves of the elevator, the
-        // rudder from the bottom of the fuselage to the top of the fin.
+        // Each hinge runs the length of its control: both halves of the elevator; the
+        // rudder's post, declared from the 1917 drawing, from the bottom of the fuselage
+        // to where the fin's leading edge meets it (z −1.29).
         let reach = |name: &str| {
             let h = hinge(name);
             (h.line.1 - h.line.0).length()
@@ -427,7 +428,7 @@ mod tests {
             reach("ctrl_elevator")
         );
         assert!(
-            (reach("ctrl_rudder") - 1.09).abs() < 0.01,
+            (reach("ctrl_rudder") - 0.98).abs() < 1e-9,
             "{}",
             reach("ctrl_rudder")
         );

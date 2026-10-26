@@ -93,7 +93,7 @@ Chaque étape : `just check`, `just test`, carnet, commit et push.
 - **Deux cotes manquées** par le modèle généré, acceptées provisoirement dans `maquette.ron` (`accepted_deviations`), **en attente de l'accord du joueur** :
   - longueur 6,264 m contre 6,08 m : l'empennage dessiné est l'empennage **équivalent** du modèle de vol (sans flèche, surface conservée) ; son gouvernail finit 0,16 m derrière celui du dessin ;
   - hauteur 2,53 m en ligne de vol, 2,355 m au sol, contre 2,20 m : 2,20 m ne peut pas être mesuré en ligne de vol (dérive et hélice couvrent déjà 2,22 m), et le train du dessin donne 2,30 à 2,36 m au sol. Conflit entre le dessin (C) et les tableaux (A).
-- **Point ouvert pour le modèle définitif** (corrigé après la revue de l'aérodynamicien) : sur l'empennage équivalent, l'axe des charnières du contrat est juste (vertical pour le gouvernail, transversal pour la profondeur), mais sa position ne l'est pas. Les points de charnière des bandes penchent (26,8° et 8,0°), et la droite du contrat passe par leur milieu. Un modèle fidèle au dessin échouerait sur le **pivot** : environ 7 cm entre l'étambot (x −4,75) et la droite du contrat (x −4,68). Recommandation de l'aérodynamicien : une charnière déclarée, facultative, par gouverne dans `aircraft.ron` (`hinge_m`, sourcée sur le dessin), avec un garde-fou au chargement. **Changement de format, à décider par le joueur.**
+- **Point ouvert pour le modèle définitif** (corrigé après la revue de l'aérodynamicien) : sur l'empennage équivalent, l'axe des charnières du contrat est juste (vertical pour le gouvernail, transversal pour la profondeur), mais sa position ne l'est pas. Les points de charnière des bandes penchent (26,8° et 8,0°), et la droite du contrat passe par leur milieu. Un modèle fidèle au dessin aurait pu échouer sur le **pivot** (écart alors estimé à 7 cm sur un étambot supposé à x −4,75 ; la relecture du dessin du 2026-10-26 met l'axe du gouvernail à x −4,70, à 2 cm de la droite des bandes, et l'étambot à x −4,47). Recommandation de l'aérodynamicien : une charnière déclarée, facultative, par gouverne dans `aircraft.ron` (`hinge_m`, sourcée sur le dessin), avec un garde-fou au chargement. **Changement de format, à décider par le joueur.**
 - Revue de l'aérodynamicien (pivots et axes) : rien de bloquant ; sens de braquage, axe de l'hélice, repères et capture conformes. Corrigé dans la foulée :
   - le générateur coupe chaque plaque sur la charnière de son nœud, pas sur celle de sa bande (sinon jusqu'à 8,7 cm de jour ou de recouvrement au gouvernail braqué à fond) ;
   - la charnière est prise aux bornes exactes de la gouverne et pondérée par la longueur : le pivot ne dépend plus du nombre de bandes ; la profondeur est groupée par côté ;
@@ -107,3 +107,16 @@ Chaque étape : `just check`, `just test`, carnet, commit et push.
 1. Les deux écarts (longueur, hauteur) sont **acceptés**, avec leur analyse.
 2. La recommandation de l'aérodynamicien est **adoptée** : une charnière déclarée, facultative, par gouverne dans `aircraft.ron` (`hinge_m`), prise telle quelle par le contrat, avec un garde-fou (quart de la corde moyenne de la gouverne, 10°). Faite le même jour ; documentée dans `format-avion.md` et `pipeline-assets`. Les charnières réelles du SPAD restent à lire sur le dessin, avant le modèle définitif.
 3. `CLAUDE.md` : `tools/mockup`, le rôle d'`asset_check` et `just mockup` ajoutés.
+
+## Charnières lues sur le dessin (2026-10-26)
+
+- Relecture par l'aérodynamicien (`spad7-calculs.md` § 3.1) :
+  - gouvernail : axe vertical à x −4,70 ± 0,03 m, de z −0,31 à −1,29 ;
+  - profondeur : charnière droite à x −4,51 ± 0,03 m ;
+  - ailerons : la charnière des bandes concorde, pas de `hinge_m`.
+- Inscrites dans `aircraft.ron` (`hinge_m`, C:), dans le garde-fou avec de la marge. Modèle régénéré ; fuselage de `maquette.ron` arrêté à l'étambot lu (x −4,47) ; capture refaite et regardée.
+- Écarts signalés au joueur, sans rien changer au modèle de vol :
+  - partie fixe de dérive absente (0,08 m², −7 % d'empennage vertical) ;
+  - ailerons à 29 % au lieu de 32 % ;
+  - répartition du gouvernail équivalent ;
+  - bord d'attaque du plan fixe à 3,86 m au lieu de 3,78.

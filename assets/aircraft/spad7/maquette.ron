@@ -1,17 +1,18 @@
 // Provisional 3D model of the SPAD S.VII C.1: what a box-and-plate model needs beyond
 // aircraft.ron (plan docs/plans/modele-3d-provisoire.md). Body axes from the datum of
 // aircraft.ron (x forward, y right, z down), metres. Built by `just mockup spad7`.
-// No drawing of the S.VII was read (spad7.md § 2.5): the fuselage is an estimate, to be
-// replaced if request D4 (docs/recherche/demandes.md) brings the factory drawings.
+// The fuselage is an estimate, ending at the sternpost read on the 1917 drawing (Flight,
+// 16 August 1917, S48; spad7-calculs.md § 3.1), to be replaced if request D4
+// (docs/recherche/demandes.md) brings the factory drawings.
 Mockup(
     fuselage: [
-        //! E: rectangular sections, width 0.80 m as the flight model (lower wing roots), « exceptionally deep » (S48); side area 4.14 m² and plan area 3.09 m² against 4.50 and 3.30 m² of the fuselage block of aircraft.ron (C: drawing, tail left out); tail post under the tailplane (z −0.70) and the bottom of the rudder (z −0.31)
+        //! E: rectangular sections, width 0.80 m as the flight model (lower wing roots), « exceptionally deep » (S48); side area 4.14 m² and plan area 3.09 m² against 4.50 and 3.30 m² of the fuselage block of aircraft.ron (C: drawing, tail left out); C: last section at the sternpost of the 1917 drawing (x −4.47, from z −0.70 to −0.32; spad7-calculs.md § 3.1), ahead of the rudder post (x −4.70)
         (x_m: 0.70, width: M(0.72), top_m: -0.74, bottom_m: -0.02),
         (x_m: 0.30, width: M(0.80), top_m: -0.80, bottom_m: 0.05),
         (x_m: -1.20, width: M(0.80), top_m: -0.85, bottom_m: 0.15),
         (x_m: -2.60, width: M(0.55), top_m: -0.78, bottom_m: -0.02),
         (x_m: -4.30, width: M(0.15), top_m: -0.72, bottom_m: -0.30),
-        (x_m: -4.80, width: M(0.04), top_m: -0.70, bottom_m: -0.31),
+        (x_m: -4.47, width: M(0.04), top_m: -0.70, bottom_m: -0.32),
     ],
     wheels: (
         centre_m: (0.12, 0.76, 0.78),                                // E: as the wheel drag items of aircraft.ron; S: track 5 ft (S48)

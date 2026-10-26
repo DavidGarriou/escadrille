@@ -47,7 +47,7 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
   - si `aircraft.ron` déclare la vraie charnière (`hinge_m`, voir `format-avion.md`), le contrat la prend telle quelle ;
   - sinon, c'est une droite d'axe parallèle à l'envergure du panneau (verticale pour le gouvernail). Elle passe par le milieu, pondéré par la longueur, des segments de charnière de la gouverne, pris aux bornes exactes `span_from` et `span_to`. Elle ne dépend pas du nombre de bandes.
 - **Empennage équivalent** : `aircraft.ron` peut décrire un empennage aérodynamiquement équivalent (sans flèche, surface conservée), dont le contour n'est pas celui de l'avion.
-  - Sur un panneau effilé, ses points de charnière ne sont pas sur une droite parallèle à l'envergure. La charnière déduite a le bon axe, mais pas la position de la vraie : un modèle fidèle au dessin échouerait sur le **pivot** (SPAD : gouvernail sur l'étambot vers x −4,75, à environ 7 cm).
+  - Sur un panneau effilé, ses points de charnière ne sont pas sur une droite parallèle à l'envergure. La charnière déduite a le bon axe, mais pas la position de la vraie : un modèle fidèle au dessin peut échouer sur le **pivot**. Pour le SPAD, l'axe réel du gouvernail est à x −4,70, à 2 cm de la droite des bandes ; la profondeur est à 4 mm. Ses charnières sont déclarées (`spad7-calculs.md` § 3.1).
   - **Avant un modèle définitif**, déclarer la vraie charnière de chaque gouverne d'un tel panneau (`hinge_m`, lue sur le dessin). Le garde-fou du contrat la refuse si elle s'écarte trop de celle des bandes.
 
 ## Modèle provisoire (`tools/mockup`)

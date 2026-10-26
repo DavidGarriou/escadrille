@@ -1622,3 +1622,23 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - charnière du gouvernail en vue de côté ; charnière de la profondeur en vue de dessus ; contrôle des ailerons ;
   - valeurs proposées pour `hinge_m`, avec incertitude et origine `C:` ;
   - confrontation au garde-fou du contrat, sans forcer une valeur pour qu'elle passe.
+- **R** Relecture de l'aérodynamicien (`spad7-calculs.md` § 3.1). Mesures au centre des traits, sur des profils d'intensité ; biais du scan retiré ; les deux vues concordent à 2 px près.
+  - **Gouvernail** : axe vertical à **x −4,70 ± 0,03 m**, de z −0,31 à −1,29, là où le bord d'attaque de la dérive le rejoint ; pas de compensation.
+  - **Étambot** : x −4,47. La charnière est 0,23 m (8,9 in) derrière, ce qui concorde avec les « about 10 ins. » de 1917.
+  - **Profondeur** : charnière droite à **x −4,51 ± 0,03 m**, perpendiculaire à l'axe ; à 4 mm de celle des bandes.
+  - **Ailerons** : la charnière des bandes concorde, pas de `hinge_m`.
+  - **Garde-fou** : tout est dedans avec de la marge (gouvernail 0,057 m pour 0,115 ; profondeur 0,004 pour 0,090 ; angles nuls).
+- **A** Images annotées de l'aérodynamicien **regardées** : l'axe du gouvernail et la charnière de la profondeur sont des traits nets, l'étambot et l'échancrure en V sont là où il les lit.
+- **⚠** L'« étambot à x −4,75 » que j'avais écrit dans le plan et dans `pipeline-assets` était le bord d'attaque du panneau inférieur équivalent. L'axe réel est à 2 cm de la droite des bandes, et non 7. Corrigé.
+- **A** Modifications :
+  - `hinge_m` de la profondeur et des deux panneaux du gouvernail dans `aircraft.ron`, origine C: (dessin, échelle, incertitude). Le modèle de vol ne lit pas ce champ (vérifié) : pas de nouvelle campagne d'essais ;
+  - `maquette.ron` : fuselage arrêté à l'étambot lu (x −4,47 au lieu de −4,80 estimé) ; l'en-tête ne dit plus qu'aucun dessin n'a été lu ;
+  - deux tests figeaient la charnière déduite des bandes sur les données réelles (prévu par l'aérodynamicien). Celui du générateur vide maintenant les `hinge_m` ; celui des longueurs vérifie la charnière déclarée du gouvernail (0,98 m) ;
+  - modèle régénéré. `asset_check` passe, et les écarts acceptés de longueur et de hauteur sont inchangés.
+- **A** Nouvelle capture `maquette-spad7` **regardée** : gouvernail à partir de l'axe lu, fuselage arrêté à l'étambot ; flèches et vérifications inchangées.
+- **R** Écarts du dessin avec le modèle de vol, signalés au joueur ; rien n'est changé :
+  - **partie fixe de dérive absente** : sous le plan fixe, entre l'étambot et l'axe du gouvernail, environ 0,08 m². L'empennage vertical fait 0,98 m² sur le dessin contre 0,907 m² dans le modèle (−7 %, hors de la tolérance de ±2 %) ;
+  - **ailerons** à 29 % de la corde sur le dessin, contre 32 % (environ 4 % d'efficacité en roulis) ;
+  - **gouvernail équivalent** : corde décroissante au lieu de presque constante, centre plus bas, bras du roulis induit environ 15 % plus court ;
+  - **bord d'attaque du plan fixe** à 3,86 m au lieu de 3,78 : retrouve les « 12 ins. » de la dérive ; sans effet sur le modèle ;
+  - **moyeu**, lecture rapide : plan des pales à x 0,83 au lieu de 0,78.

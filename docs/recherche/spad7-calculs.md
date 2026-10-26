@@ -67,6 +67,44 @@ Résultat : +5 à +6,4 % de traction selon J ; le rendement maximal passe de 0,7
 
 **Repère des données** : origine au bord d'attaque du plan inférieur, dans l'axe (point virtuel, dans le fuselage) ; x vers l'avant, y à droite, z vers le bas ; ligne de traction horizontale (le dessin est tracé en ligne de vol, queue haute).
 
+### 3.1 Relecture des charnières (aérodynamicien, 2026-10-26)
+
+Même document et même rendu, pour le champ `hinge_m` des gouvernes (charnières réelles du modèle 3D, `format-avion.md`). Rien du document n'est versé au dépôt.
+
+**Méthode** :
+- Le rendu à 600 points par pouce est un agrandissement ×4 d'une image à 150 points par pouce : un pixel source vaut 1,7 cm.
+- Les traits sont pris à leur centre, sur des profils d'intensité, plutôt que sur une grille.
+- Le biais du scan, 0,34° en vue de dessus, est retiré.
+- Les deux vues concordent à 2 px près, sur le bord de fuite du gouvernail et sur la racine du bord d'attaque de la dérive.
+
+| Grandeur | Dessin | Retenu | Remarque |
+|---|---|---|---|
+| Charnière du gouvernail | trait vertical à 0,2° près, droit à 3 mm près ; du bas du fuselage (z −0,32) jusqu'au point où le bord d'attaque de la dérive la rejoint (z −1,29) ; le haut arrondi du gouvernail, jusqu'à −1,41, est tout entier derrière elle | **x −4,70 ± 0,03 m**, `hinge_m` des deux panneaux de la dérive (C) | Pas de compensation en avant de l'axe |
+| Étambot (fin du fuselage) | vertical, de z −0,70 à −0,32 | **x −4,47** (C), dernière section de `maquette.ron` | Charnière 0,23 m (8,9 in) derrière lui, pour « about 10 ins. » dans le texte de S48 (0,254 m) : l'écart, 1,6 pixel source, est concordant |
+| Charnière de la profondeur | droite d'un saumon à l'autre (écart-type de 5 mm), perpendiculaire à l'axe à 0,2° près, à travers l'axe (gouverne d'une pièce) ; échancrure en V à l'emplanture, dégagement du gouvernail | **x −4,51 ± 0,03 m**, z −0,70, `hinge_m` (C) | Elle coïncide à 4 mm près avec celle des bandes du panneau équivalent |
+| Charnière des ailerons | droite, parallèle au bord d'attaque, à 1,00 m de lui ; aileron de 0,41 m sur une corde dessinée de 1,41 m, soit 29 % (27 à 31 % selon le bord de trait) ; 1,95 et 1,98 m depuis le saumon | pas de `hinge_m` : la charnière des bandes (32 %) est entre les deux reports possibles sur la corde de 1,21 m | Le « 0,44 m » de la première lecture est une largeur prise bord extérieur à bord extérieur |
+| Bord d'attaque du plan fixe | 3,86 m derrière celui des ailes (vue de dessus, au droit du fuselage) | non utilisé | Première lecture : 3,78 m. Avec 3,86 m, la dérive avance de 0,30 m (11,6 in), conformément aux « 12 ins. » du texte |
+| Symétrie du dessin | saumons du plan fixe à −1,32 et +1,44 m de l'axe ; ailes décalées de même | — | Mesurer les envergures de saumon à saumon |
+
+**Garde-fou du contrat** (un quart de la corde moyenne de la gouverne, 10°), vérifié avec le code du dépôt :
+
+| Gouverne | Écart lu | Limite |
+|---|---|---|
+| Gouvernail, sous le plan fixe | 0,050 m | 0,133 m |
+| Gouvernail, au-dessus | 0,057 m | 0,115 m |
+| Profondeur | 0,004 m | 0,090 m |
+
+Les angles sont nuls.
+
+**Écarts avec le modèle de vol** (signalés, rien n'est changé) :
+- **Partie fixe de dérive absente** : sous le plan fixe, entre l'étambot (−4,47) et l'axe du gouvernail (−4,70), un panneau fixe fermé d'environ 0,08 m².
+  - L'empennage vertical dessiné fait 0,98 m², contre 0,907 m² dans le modèle, soit −7 %, au-delà des ±2 % du contrôle de surface.
+  - Un panneau inférieur de −4,47 à −5,25, gouvernail à 70 %, mettrait sa charnière à −4,704, exactement sur l'axe dessiné.
+  - Effet sur la stabilité de route : jusqu'à +9 % pour l'empennage vertical, moins en réalité, ce panneau étant dans le sillage du fuselage.
+- **Répartition du gouvernail équivalent** : sur le dessin, sa corde est presque constante (0,55 m de z −0,45 à −1,25) ; dans le modèle, elle va de 0,74 à 0,18 m au-dessus du plan fixe. Surface égale, mais centre plus bas (z −0,79 contre −0,86) : le bras du roulis induit par le gouvernail est environ 15 % plus court.
+- **Ailerons** : 29 % de la corde sur le dessin, contre 32 % dans les données ; environ 4 % d'efficacité en roulis.
+- **Moyeu**, lecture rapide hors sujet : plan des pales à x +0,83, contre 0,78 dans les données.
+
 ## 4. Masses, centrage et chargement d'essai
 
 **Bilan à vide** (`assets/aircraft/spad7/masses.ron`, calculé par `fdm_lab inertia spad7`) : aucune masse de composant du S.VII n'est sourcée (`spad7.md` § 3). Dix composants comparables ou estimés, fermés sur la masse à vide de S46 (1 100 lb = 498,95 kg) par le reste du fuselage :

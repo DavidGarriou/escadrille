@@ -130,7 +130,13 @@ fn cuts_on_the_hinges(contract: &Contract) -> usize {
 #[test]
 fn each_plate_is_cut_on_the_hinge_line_of_its_node() {
     // The moving part turns about the line it is cut on: no gap, no overlap.
+    // The strips' hinges first: without the hinges aircraft.ron declares.
     let (mut data, _) = spad();
+    for surface in &mut data.file.surfaces {
+        for control in &mut surface.controls {
+            control.hinge_m = None;
+        }
+    }
     let from_strips = contract(&data).unwrap();
     assert!(cuts_on_the_hinges(&from_strips) > 20);
     // The rudder's hinge is vertical, through the middle of its segments (x −4.68 m).

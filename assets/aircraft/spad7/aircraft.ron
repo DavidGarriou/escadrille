@@ -71,7 +71,7 @@ Aircraft(
             airfoil: "airfoils/spad_empennage.ron",
             span_efficiency: 0.80,                                             // C: Helmbold lift slope at aspect ratio 3.4 reproduced by the lifting line
             controls: [
-                (control: Elevator, span_from: 0.0, span_to: 1.0, chord_ratio: 0.44), // C: elevator 1.00 of 2.30 m² on the drawing
+                (control: Elevator, span_from: 0.0, span_to: 1.0, chord_ratio: 0.44, hinge_m: Some(((-4.51, 0.0, -0.70), (-4.51, 1.405, -0.70)))), // C: elevator 1.00 of 2.30 m² on the drawing; hinge (3D model only) read on the top view of the 1917 drawing (S48, 240.7 px/m, aerodynamicist 2026-10-26): straight across both halves, square to the axis within 0.3°, x −4.51 ± 0.03 m (spad7-calculs.md § 3.1)
             ],
             reference_area: Some(M2(2.30)),                                    // C: digitised outline of the drawing
         ),
@@ -97,8 +97,8 @@ Aircraft(
             span_efficiency: 0.61,                                             // C: reproduces the DATCOM and Helmbold slope of 1.9 per radian (sweep of the real outline about 40°)
             aspect_ratio: Some(1.5),                                           // E: geometric 1.31 with a partial end plate of tailplane and fuselage (Hemke, TR 267); range 1.3 to 1.7
             controls: [
-                (control: Rudder, panel: 0, span_from: 0.0, span_to: 1.0, chord_ratio: 1.0),  // C: all rudder below the tailplane
-                (control: Rudder, panel: 1, span_from: 0.0, span_to: 1.0, chord_ratio: 0.46), // C: 0.323 m² of rudder over 0.70 m of height
+                (control: Rudder, panel: 0, span_from: 0.0, span_to: 1.0, chord_ratio: 1.0, hinge_m: Some(((-4.70, 0.0, -0.31), (-4.70, 0.0, -0.70)))),  // C: all rudder below the tailplane; hinge (3D model only): rudder post on the side view of the 1917 drawing (S48, 240 px/m, aerodynamicist 2026-10-26), vertical within 0.2°, x −4.70 ± 0.03 m, 0.23 m (8.9 in) behind the sternpost at x −4.47 (« about 10 ins. », S48) (spad7-calculs.md § 3.1)
+                (control: Rudder, panel: 1, span_from: 0.0, span_to: 1.0, chord_ratio: 0.46, hinge_m: Some(((-4.70, 0.0, -0.70), (-4.70, 0.0, -1.29)))), // C: 0.323 m² of rudder over 0.70 m of height; hinge (3D model only): the same post, up to where the fin's leading edge meets it (z −1.29), the rounded top of the rudder being all behind it (spad7-calculs.md § 3.1)
             ],
             reference_area: Some(M2(0.90)),                                    // C: fin 0.37 + rudder 0.53 m² on the drawing
         ),
