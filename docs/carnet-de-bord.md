@@ -1612,3 +1612,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - documentation dans `format-avion.md` et `pipeline-assets`.
 - **R** Le SPAD ne déclare encore aucune charnière : il faut d'abord lire les vraies sur le dessin de 1917 (gouvernail sur l'étambot, charnière droite de la profondeur). `model.glb` est inchangé.
 - **A** `CLAUDE.md` : `tools/mockup` ajouté à l'arborescence, rôle d'`asset_check` précisé (pivots et axes, lancé par `just test`), commande `just mockup <avion>`.
+
+### Relecture des charnières sur le dessin de 1917
+
+- **Q** Le joueur : « Fait les relire » (les vraies charnières du gouvernail et de la profondeur du SPAD, pour `hinge_m`).
+- **A** Dessin retrouvé : *Flight*, 16 août 1917, p. 841 (archive.org `Flight_International_Magazine_1917-08-16-pdf`), page 15 rendue à 600 points par pouce dans le dossier de travail de la session. **Rien n'en est versé au dépôt** (règle des reproductions d'archives).
+- **R** Le texte de 1917 dit : « The rudder is hinged at a point about 10 ins. beyond the fuselage termination ». À confronter au dessin.
+- **A** Lecture confiée à l'aérodynamicien :
+  - charnière du gouvernail en vue de côté ; charnière de la profondeur en vue de dessus ; contrôle des ailerons ;
+  - valeurs proposées pour `hinge_m`, avec incertitude et origine `C:` ;
+  - confrontation au garde-fou du contrat, sans forcer une valeur pour qu'elle passe.
