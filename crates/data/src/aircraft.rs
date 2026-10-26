@@ -116,6 +116,13 @@ pub struct ControlSpec {
     pub span_to: f64,
     /// Control surface chord over local chord.
     pub chord_ratio: f64,
+    /// The real hinge, for the 3D model only: ends of its line on the right-hand side
+    /// (mirrored for the left), body axes from the datum. For a panel that is an
+    /// aerodynamic equivalent (an unswept tail), whose own hinge points are not where the
+    /// real hinge is. The flight model keeps its strips and chord ratio; the model contract
+    /// (`model.rs`) takes this hinge as it is, within a guard.
+    #[serde(default)]
+    pub hinge_m: Option<[[f64; 3]; 2]>,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]

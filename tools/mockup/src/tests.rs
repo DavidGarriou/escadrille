@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use escadrille_data::aircraft::load_aircraft;
+use escadrille_data::aircraft::{Control, load_aircraft};
 use escadrille_data::frames::from_gltf;
 use escadrille_data::mockup::load_mockup;
 use glam::{DQuat, DVec3};
@@ -106,11 +106,9 @@ fn the_wings_and_the_moving_parts_are_where_the_data_puts_them() {
     assert!(from_gltf(r * DVec3::Y).dot(DVec3::NEG_Z) > 0.99999);
 }
 
-#[test]
-fn each_plate_is_cut_on_the_hinge_line_of_its_node() {
-    // The moving part turns about the line it is cut on: no gap, no overlap.
-    let (data, _) = spad();
-    let contract = contract(&data).unwrap();
+/// Asserts that every controlled plate is cut on its node's hinge line, and returns how
+/// many are cut inside their chord.
+fn cuts_on_the_hinges(contract: &Contract) -> usize {
     let mut cut_inside = 0;
     for plate in &contract.plates {
         let Some((h, ratio)) = plate.control else {
@@ -126,12 +124,38 @@ fn each_plate_is_cut_on_the_hinge_line_of_its_node() {
             assert!(off < 1e-9, "{}: {off} m off", hinge.node);
         }
     }
-    assert!(cut_inside > 20, "{cut_inside}");
+    cut_inside
+}
+
+#[test]
+fn each_plate_is_cut_on_the_hinge_line_of_its_node() {
+    // The moving part turns about the line it is cut on: no gap, no overlap.
+    let (mut data, _) = spad();
+    let from_strips = contract(&data).unwrap();
+    assert!(cuts_on_the_hinges(&from_strips) > 20);
     // The rudder's hinge is vertical, through the middle of its segments (x −4.68 m).
-    let rudder = contract
+    let rudder = from_strips
         .hinges
         .iter()
         .find(|h| h.node == "ctrl_rudder")
         .unwrap();
     assert!((rudder.pivot.x + 4.6785).abs() < 1e-3, "{rudder:?}");
+    // A declared hinge moves the cut: the rudder on a post at x −4.75.
+    for surface in &mut data.file.surfaces {
+        for control in surface
+            .controls
+            .iter_mut()
+            .filter(|c| c.control == Control::Rudder)
+        {
+            control.hinge_m = Some([[-4.75, 0.0, -0.31], [-4.75, 0.0, -1.40]]);
+        }
+    }
+    let declared = contract(&data).unwrap();
+    assert!(cuts_on_the_hinges(&declared) > 20);
+    let rudder = declared
+        .hinges
+        .iter()
+        .find(|h| h.node == "ctrl_rudder")
+        .unwrap();
+    assert!((rudder.pivot.x + 4.75).abs() < 1e-12, "{rudder:?}");
 }

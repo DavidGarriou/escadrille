@@ -101,3 +101,9 @@ Chaque étape : `just check`, `just test`, carnet, commit et push.
   - gouvernes en violet ; raison de l'écart de hauteur complétée (écrasement statique du train).
 - Étape 5 : scène `maquette-spad7` (`crates/game/src/world/maquette.rs`) rendue sous Xvfb (lavapipe) avec le binaire de développement, faute de place disque pour une compilation optimisée. Les trois vérifications passent à l'œil : nez sur la flèche rouge, aile droite verte du côté vert et plus basse, hélice tournée dans le sens horaire vu de derrière.
 - Le jeu charge désormais ses assets depuis le dossier `assets/` du dépôt (`ASSETS_DIR`, `crates/game/src/main.rs`) : sous `cargo run`, Bevy les cherchait dans `crates/game/assets`.
+
+## Décisions du joueur (2026-10-26)
+
+1. Les deux écarts (longueur, hauteur) sont **acceptés**, avec leur analyse.
+2. La recommandation de l'aérodynamicien est **adoptée** : une charnière déclarée, facultative, par gouverne dans `aircraft.ron` (`hinge_m`), prise telle quelle par le contrat, avec un garde-fou (quart de la corde moyenne de la gouverne, 10°). Faite le même jour ; documentée dans `format-avion.md` et `pipeline-assets`. Les charnières réelles du SPAD restent à lire sur le dessin, avant le modèle définitif.
+3. `CLAUDE.md` : `tools/mockup`, le rôle d'`asset_check` et `just mockup` ajoutés.

@@ -84,8 +84,9 @@ crates/
     src/dev/            mode capture, labo manette, gizmos de forces, télémétrie
 tools/
   fdm_lab/              CLI sans Bevy : trim, essais en vol, modes propres, tracés PNG
+  mockup/               modèle 3D provisoire en boîtes et plaques : aircraft.ron + maquette.ron -> model.glb
   terrain_bake/         MNT (GDAL) -> tuiles de hauteur et masques
-  asset_check/          vérifie les .glb (nœuds requis, dimensions comparées à la fiche avion)
+  asset_check/          vérifie les .glb (nœuds requis, pivots et axes des gouvernes, dimensions comparées à la fiche avion), lancé par just test
 assets/                 aircraft/<id>/ (glb, aircraft.ron, essais.ron), scenes/, shaders/, terrain/, audio/, i18n/
 art/                    fichiers sources (.blend, .kra…)
 docs/                   vision, roadmap, adr/, gdd/, recherche/, essais/
@@ -108,6 +109,7 @@ Règles :
 | `just test` | `cargo nextest run --workspace` |
 | `just run` | lance le jeu en dev (`bevy/dynamic_linking`) |
 | `just essai <avion>` | essais en vol sans rendu via `fdm_lab` ; rapport et tracés dans `target/essais/<avion>/` |
+| `just mockup <avion>` | génère le modèle 3D provisoire `assets/aircraft/<avion>/model.glb` |
 | `just capture <scène>` | rend une scène de référence dans `target/captures/<scène>.png` |
 | `just labo-manette` | écran de diagnostic de la manette |
 | `just release` | build optimisé |

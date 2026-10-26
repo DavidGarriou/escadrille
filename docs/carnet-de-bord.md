@@ -1593,3 +1593,22 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - accord sur les deux écarts acceptés (longueur, hauteur) ;
   - charnières de l'empennage pour le modèle définitif. Recommandation de l'aérodynamicien : une charnière déclarée, facultative, par gouverne dans `aircraft.ron` (`hinge_m`, sourcée sur le dessin), avec un garde-fou au chargement. C'est un changement de format ;
   - ajout de `tools/mockup` et du rôle d'`asset_check` à l'arborescence de `CLAUDE.md` (proposé, non modifié).
+
+## 2026-10-26
+
+### Décisions sur le modèle 3D provisoire
+
+- **Q** Le joueur :
+  - « 1. d'accord pour l'analyse et le choix » ;
+  - « 2. on adopte la recommandation de l'aérodynamicien » ;
+  - « 3. ok pour CLAUDE.md ».
+- **D** Les deux écarts du SPAD (longueur 6,264 m, hauteur 2,355 m) sont **acceptés**. Le commentaire de `maquette.ron` passe de « en attente » à « accepté le 2026-10-26 ».
+- **D** Charnière déclarée adoptée. **A** Réalisation :
+  - champ facultatif `hinge_m` des gouvernes dans `aircraft.ron` : extrémités de la vraie charnière, côté droit, symétrisées pour le gauche ;
+  - le contrat (`escadrille_data::model`) la prend telle quelle, l'axe étant orienté par les bandes pour garder le sens des braques ; sinon, il garde la charnière déduite des bandes ;
+  - garde-fou : refus si elle s'écarte de plus d'un quart de la corde moyenne de la gouverne ou de plus de 10° ;
+  - le modèle de vol n'en tient pas compte ;
+  - tests : charnière prise telle quelle, profondeur symétrisée, refus d'une charnière trop loin ou trop penchée, découpe du générateur sur la charnière déclarée, contrat de chaque avion vérifié par le test de cohérence des données ;
+  - documentation dans `format-avion.md` et `pipeline-assets`.
+- **R** Le SPAD ne déclare encore aucune charnière : il faut d'abord lire les vraies sur le dessin de 1917 (gouvernail sur l'étambot, charnière droite de la profondeur). `model.glb` est inchangé.
+- **A** `CLAUDE.md` : `tools/mockup` ajouté à l'arborescence, rôle d'`asset_check` précisé (pivots et axes, lancé par `just test`), commande `just mockup <avion>`.

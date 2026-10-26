@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use escadrille_data::aircraft::{Loading, load_aircraft};
 use escadrille_data::essais::load_essais;
 use escadrille_data::masses::load_masses;
+use escadrille_data::model::contract;
 
 fn assets() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets")
@@ -35,6 +36,8 @@ fn every_aircraft_of_the_assets_is_consistent() {
             data.build(&Loading { fuel_fraction })
                 .unwrap_or_else(|e| panic!("{id} at {fuel_fraction}: {e}"));
         }
+        // The contract of its 3D model holds, declared hinges within their guard.
+        contract(&data).unwrap_or_else(|e| panic!("{id}: {e}"));
         if let Some(masses) = load_masses(&assets(), &id).unwrap_or_else(|e| panic!("{id}: {e}")) {
             assert_eq!(masses.aircraft, id);
             assert_eq!(masses.datum, data.file.datum, "{id}: same datum");

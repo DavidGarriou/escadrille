@@ -28,7 +28,7 @@ Mockup(
         (0.45, 0.0, -0.95),                                          // E: Vickers on the cowling (drag item of aircraft.ron at x −0.05), barrel about 1.1 m
     ],
     accepted_deviations: [
-        //! Checks of `just test` (tools/asset_check) that this model fails, awaiting the player's agreement (carnet, 2026-10-25)
+        //! Checks of `just test` (tools/asset_check) that this model fails, accepted by the player on 2026-10-26 (carnet)
         (
             check: "length",
             measured: M(6.264),                                      // C: hub (x 0.78) to the trailing edge of the rudder's root strip (x −5.48), against x −5.32 on the drawing

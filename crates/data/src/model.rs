@@ -81,6 +81,12 @@ pub struct Contract {
     pub required: Vec<String>,
 }
 
+/// How far a declared hinge (`hinge_m`) may be from the one the strips give: a fraction of
+/// the control's mean chord, and an angle. Beyond, the declared hinge is not that of the
+/// control the flight model simulates.
+pub const HINGE_GUARD_CHORD_FRACTION: f64 = 0.25;
+pub const HINGE_GUARD_DEG: f64 = 10.0;
+
 /// Fixed nodes every aircraft model has, besides its control surfaces.
 pub const FIXED_NODES: [&str; 5] = ["body", "prop", "prop_blur", "cam_pilot_eye", "gun_1_muzzle"];
 
@@ -155,10 +161,14 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
                     )));
                 }
                 covered = true;
+                // The declared hinge is the right-hand one.
+                let mirror =
+                    |p: [f64; 3]| DVec3::new(p[0], if side < 0.0 { -p[1] } else { p[1] }, p[2]);
                 let group = Group {
                     strips,
                     ratio: control.chord_ratio,
                     span: (control.span_from, control.span_to),
+                    declared: control.hinge_m.map(|[a, b]| (mirror(a), mirror(b))),
                 };
                 match nodes.iter_mut().find(|(name, _)| *name == node) {
                     Some((_, groups)) => groups.push(group),
@@ -178,6 +188,7 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
             let mut segments = Vec::new();
             for group in &groups {
                 let mut points = Vec::new();
+                let (mut along, mut chord, mut width) = (DVec3::ZERO, 0.0, 0.0);
                 for &k in &group.strips {
                     let sign = flight[k]
                         .control
@@ -185,14 +196,41 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
                         .ok_or_else(|| invalid(format!("{node}: strip without control")))?;
                     let plate = &mut plates[first + k];
                     plate.control = Some((hinge_index, group.ratio));
-                    axis += sign * plate.width * plate.span_axis();
+                    along += sign * plate.width * plate.span_axis();
+                    chord += plate.width * group.ratio * plate.chord;
+                    width += plate.width;
                     points.push((generated.strips[k].along, plate.hinge(group.ratio), *plate));
                 }
-                segments.push(segment(&points, group.span));
+                // The strips' hinge, and its axis oriented so that a positive rotation is
+                // the positive deflection.
+                let strips = segment(&points, group.span);
+                let along = along.normalize();
+                let (ends, direction) = match group.declared {
+                    None => (strips, along),
+                    Some((a, b)) => {
+                        let direction = (b - a).normalize();
+                        let direction = direction * direction.dot(along).signum();
+                        let offset = 0.5 * (a + b) - 0.5 * (strips.0 + strips.1);
+                        let off = (offset - along * offset.dot(along)).length();
+                        let limit = HINGE_GUARD_CHORD_FRACTION * chord / width;
+                        let turn = direction.angle_between(along).to_degrees();
+                        if off > limit || turn > HINGE_GUARD_DEG {
+                            return Err(invalid(format!(
+                                "{node}: the declared hinge is {off:.3} m and {turn:.1}° from \
+                                 the strips' (at most {limit:.3} m, {HINGE_GUARD_CHORD_FRACTION} × \
+                                 the control's mean chord, and {HINGE_GUARD_DEG}°)"
+                            )));
+                        }
+                        ((a, b), direction)
+                    }
+                };
+                axis += (ends.1 - ends.0).length() * direction;
+                segments.push(ends);
             }
             // One straight hinge for the node, through the length-weighted middle of its
             // segments: on a tapered panel, a constant chord ratio puts the strips' hinge
-            // points on a line that leans from the span axis.
+            // points on a line that leans from the span axis; a declared hinge says where
+            // the real one is.
             let axis = axis.normalize();
             let length: f64 = segments.iter().map(|(a, b)| (*b - *a).length()).sum();
             let centre = segments
@@ -253,6 +291,8 @@ struct Group {
     ratio: f64,
     /// Fractions of the panel, root to tip.
     span: (f64, f64),
+    /// Ends of the declared hinge on this side (`hinge_m`).
+    declared: Option<(DVec3, DVec3)>,
 }
 
 /// The hinge of one control on one panel, between the ends of its span. The hinge point
@@ -409,6 +449,63 @@ mod tests {
             assert_eq!(a.node, b.node);
             assert!((a.pivot - b.pivot).length() < 1e-3, "{a:?}\n{b:?}");
             assert!(a.axis.angle_between(b.axis) < 1e-6, "{a:?}\n{b:?}");
+        }
+    }
+
+    /// The SPAD with declared hinges: the rudder on a vertical post at x `rudder_x`, its
+    /// top `top_dx` further aft, and a straight elevator hinge at x −4.60.
+    fn with_declared_hinges(rudder_x: f64, top_dx: f64) -> AircraftData {
+        let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let mut data = load_aircraft(&assets, "spad7").unwrap();
+        for surface in &mut data.file.surfaces {
+            for control in &mut surface.controls {
+                control.hinge_m = match control.control {
+                    Control::Rudder => {
+                        Some([[rudder_x, 0.0, -0.31], [rudder_x - top_dx, 0.0, -1.40]])
+                    }
+                    Control::Elevator => Some([[-4.60, 0.0, -0.70], [-4.60, 1.405, -0.70]]),
+                    Control::Aileron => None,
+                };
+            }
+        }
+        data
+    }
+
+    #[test]
+    fn a_declared_hinge_is_taken_as_it_is() {
+        let c = contract(&with_declared_hinges(-4.75, 0.0)).unwrap();
+        let hinge = |name: &str| c.hinges.iter().find(|h| h.node == name).unwrap();
+        let rudder = hinge("ctrl_rudder");
+        assert!((rudder.pivot.x + 4.75).abs() < 1e-12, "{rudder:?}");
+        assert!((rudder.line.0.z + 0.31).abs() < 1e-12 && (rudder.line.1.z + 1.40).abs() < 1e-12);
+        // Still oriented as the flight model deflects it: trailing edge to the right.
+        assert!(rudder.axis.cross(DVec3::NEG_X).y > 0.999, "{rudder:?}");
+        // The right-hand elevator hinge, mirrored for the left half.
+        let elevator = hinge("ctrl_elevator");
+        assert!((elevator.pivot - DVec3::new(-4.60, 0.0, -0.70)).length() < 1e-12);
+        assert!(((elevator.line.1 - elevator.line.0).length() - 2.81).abs() < 1e-12);
+        assert!(elevator.axis.cross(DVec3::NEG_X).z < -0.999, "{elevator:?}");
+        // Ailerons without one keep the strips' hinge.
+        assert_eq!(
+            hinge("ctrl_aileron_r_upper"),
+            spad()
+                .hinges
+                .iter()
+                .find(|h| h.node == "ctrl_aileron_r_upper")
+                .unwrap()
+        );
+    }
+
+    #[test]
+    fn a_declared_hinge_far_from_the_strips_is_refused() {
+        // 0.52 m behind the strips' rudder hinge (x −4.68), a quarter of its mean chord
+        // being about 0.13 m; then tilted by 20°.
+        for data in [
+            with_declared_hinges(-5.20, 0.0),
+            with_declared_hinges(-4.60, 0.40),
+        ] {
+            let error = contract(&data).unwrap_err().to_string();
+            assert!(error.contains("ctrl_rudder: the declared hinge"), "{error}");
         }
     }
 

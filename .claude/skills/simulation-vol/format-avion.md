@@ -60,6 +60,8 @@ Aircraft(
             span_efficiency: 0.0,                         // C: / E:
             aspect_ratio: None,                           // par défaut envergure² / surface ; à donner pour une dérive (effet de plaque du fuselage)
             controls: [(control: Aileron, panel: 0, span_from: 0.6, span_to: 1.0, chord_ratio: 0.25)], // S:
+            // pour une gouverne de panneau équivalent : charnière réelle, pour le modèle 3D seul
+            // controls: [(control: Rudder, …, hinge_m: Some(((0.0, 0.0, 0.0), (0.0, 0.0, 0.0))))], // C: dessin
             reference_area: Some(M2(0.0)),                // S: surface de la fiche, comparée aux bandes (±2 %)
         ),
         // lower_wing, tailplane (+ Elevator), fin (Vertical, + Rudder)
@@ -111,6 +113,18 @@ Aircraft(
 ```
 
 Prévus plus tard, hors du schéma actuel : train d'atterrissage (M2), limites structurales (M4), armes (M4).
+
+### Charnière déclarée (`hinge_m`)
+
+Facultative, pour chaque gouverne. Ce sont les extrémités de la vraie charnière, côté droit (symétrisées pour le gauche), en repère corps depuis le `datum`.
+
+- **Quand la déclarer** : quand le panneau est un **équivalent aérodynamique** (empennage sans flèche, surface conservée). Ses points de charnière ne sont alors pas là où est la vraie, par exemple un gouvernail sur l'étambot.
+- **Ce qui l'utilise** : le contrat du modèle 3D (`escadrille_data::model`). Il la prend telle quelle, pivot et axe ; l'axe est orienté par les bandes, pour qu'une rotation positive reste la braque positive. Le générateur `tools/mockup` coupe les plaques sur elle, et `tools/asset_check` contrôle le modèle par rapport à elle.
+- **Ce qu'elle ne change pas** : le modèle de vol, qui garde ses bandes et son `chord_ratio`.
+- **Garde-fou** : le contrat refuse une charnière déclarée trop loin de celle qu'il déduit des bandes. Les limites sont un quart de la corde moyenne de la gouverne et 10° (`HINGE_GUARD_CHORD_FRACTION`, `HINGE_GUARD_DEG`). Au-delà, ce ne serait plus la gouverne que le modèle de vol simule. Le test `every_aircraft_of_the_assets_is_consistent` vérifie le contrat de chaque avion.
+- **Origine** : `C:` (lecture d'un dessin) ou `S:`, comme toute cote.
+
+Décision du joueur, 2026-10-26, sur recommandation de l'aérodynamicien.
 
 ## `assets/aircraft/<id>/maquette.ron` (modèle 3D provisoire)
 

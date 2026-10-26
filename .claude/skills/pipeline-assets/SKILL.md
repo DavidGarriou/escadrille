@@ -43,8 +43,12 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 
 - **Dirigeables et ballons** (`assets/airships/<id>/`) : mêmes règles, plus `gas_cell_<n>` (volume de chaque cellule de gaz, masqué), `frame` (structure, visible quand l'enveloppe brûle), `gondola_<n>`, `engine_<n>`, `gunner_<n>` (poste de tir, axe = direction centrale du champ de tir), `ballast_<n>`. LOD poussés : l'objet est visible de très loin.
 - **Dimensions** : le modèle respecte la géométrie de la fiche de recherche. `tools/asset_check` compare les boîtes englobantes (envergure, longueur, hauteur) à `aircraft.ron`, à 1 % près. La longueur va du moyeu au point le plus en arrière ; la hauteur est prise dans la plus proche de deux attitudes, ligne de vol ou au sol (sur les roues et la béquille). La source de vérité de la géométrie aérodynamique reste `aircraft.ron`.
-- **Charnière du contrat** : pour chaque gouverne, une droite d'axe parallèle à l'envergure du panneau (verticale pour le gouvernail), qui passe par le milieu, pondéré par la longueur, des segments de charnière de la gouverne pris aux bornes exactes `span_from` et `span_to`. Elle ne dépend pas du nombre de bandes.
-- **Empennage équivalent** : `aircraft.ron` peut décrire un empennage aérodynamiquement équivalent (sans flèche, surface conservée), dont le contour n'est pas celui de l'avion. Sur un panneau effilé, ses points de charnière ne sont pas sur une droite parallèle à l'envergure : la charnière du contrat a le bon axe, mais pas la position de la vraie. Un modèle fidèle au dessin aurait donc le bon axe et échouerait sur le **pivot** (SPAD : gouvernail sur l'étambot vers x −4,75, à environ 7 cm de la droite du contrat). À trancher avant le premier modèle définitif.
+- **Charnière du contrat**, pour chaque gouverne :
+  - si `aircraft.ron` déclare la vraie charnière (`hinge_m`, voir `format-avion.md`), le contrat la prend telle quelle ;
+  - sinon, c'est une droite d'axe parallèle à l'envergure du panneau (verticale pour le gouvernail). Elle passe par le milieu, pondéré par la longueur, des segments de charnière de la gouverne, pris aux bornes exactes `span_from` et `span_to`. Elle ne dépend pas du nombre de bandes.
+- **Empennage équivalent** : `aircraft.ron` peut décrire un empennage aérodynamiquement équivalent (sans flèche, surface conservée), dont le contour n'est pas celui de l'avion.
+  - Sur un panneau effilé, ses points de charnière ne sont pas sur une droite parallèle à l'envergure. La charnière déduite a le bon axe, mais pas la position de la vraie : un modèle fidèle au dessin échouerait sur le **pivot** (SPAD : gouvernail sur l'étambot vers x −4,75, à environ 7 cm).
+  - **Avant un modèle définitif**, déclarer la vraie charnière de chaque gouverne d'un tel panneau (`hinge_m`, lue sur le dessin). Le garde-fou du contrat la refuse si elle s'écarte trop de celle des bandes.
 
 ## Modèle provisoire (`tools/mockup`)
 
@@ -52,7 +56,7 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 - Une plaque par bande du modèle de vol, coupée là où la charnière du nœud croise sa corde : la partie mobile va dans le nœud de sa gouverne, et tourne autour de la ligne où elle est coupée. Fuselage par sections, mâts, train, béquille, hélice à deux pales, disque flou.
 - Couleurs unies pour lire l'orientation sur une capture : aile droite **verte**, aile gauche **beige**, gouvernes **violettes**.
 - Création maison (CC-BY-SA 4.0) : `asset.copyright` porte « Panache blanc », pas d'entrée dans `assets/LICENCES.md`.
-- **Écarts acceptés** : une cote que le modèle provisoire manque pour une raison connue est inscrite dans `accepted_deviations` de `maquette.ron`, avec sa valeur mesurée et sa raison, **avec l'accord du joueur**. Elle ne vaut qu'à 5 mm de la valeur inscrite ; seules les cotes peuvent être acceptées, jamais une charnière, un axe ou une licence. `asset_check` affiche `ok*`.
+- **Écarts acceptés** : une cote que le modèle provisoire manque pour une raison connue est inscrite dans `accepted_deviations` de `maquette.ron`, avec sa valeur mesurée et sa raison, **avec l'accord du joueur** (SPAD : longueur et hauteur, accord du 2026-10-26). Elle ne vaut qu'à 5 mm de la valeur inscrite ; seules les cotes peuvent être acceptées, jamais une charnière, un axe ou une licence. `asset_check` affiche `ok*`.
 - Scène de capture `maquette-spad7` (`crates/game/src/world/maquette.rs`) : modèle placé comme le placera le jeu, axes du modèle de vol en gizmos, hélice tournée avec la flèche de son sens.
 - Budget indicatif : LOD0 de 50 000 à 150 000 triangles, cockpit compris ; LOD choisis selon la taille à l'écran.
 
