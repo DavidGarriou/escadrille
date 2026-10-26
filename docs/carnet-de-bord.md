@@ -1642,3 +1642,16 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **gouvernail équivalent** : corde décroissante au lieu de presque constante, centre plus bas, bras du roulis induit environ 15 % plus court ;
   - **bord d'attaque du plan fixe** à 3,86 m au lieu de 3,78 : retrouve les « 12 ins. » de la dérive ; sans effet sur le modèle ;
   - **moyeu**, lecture rapide : plan des pales à x 0,83 au lieu de 0,78.
+
+### Plan de la partie fixe de la dérive
+
+- **Q** Le joueur : « Oui » (préparer le plan de la correction de la partie fixe de dérive absente).
+- **A** Plan `docs/plans/m1-derive-spad7.md` (proposé). Seules les données changent ; aucun code du modèle de vol :
+  - panneau inférieur de la dérive de l'étambot (x −4,47) au bord de fuite dessiné, corde d'environ 0,78 m ;
+  - gouvernail à environ 70 %, sa charnière sur l'axe dessiné ;
+  - `reference_area`, `aspect_ratio` et `span_efficiency` recalculés sur le contour numérisé ;
+  - campagnes d'essais avant et après, comparées point par point : stabilité de route attendue en hausse de 5 à 9 %, spirale un peu plus divergente, performances inchangées ;
+  - modèle 3D régénéré, capture, revue de l'aérodynamicien.
+- **D** Deux décisions demandées au joueur :
+  - le plan ;
+  - le sillage du fuselage sur le panneau ajouté : (a) aucun facteur, écart documenté (recommandé), ou (b) nouvelle fonction du modèle de vol.
