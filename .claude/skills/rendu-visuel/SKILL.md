@@ -15,6 +15,8 @@ Chacune est un fichier `assets/scenes/<nom>.ron` (caméra, heure, météo, grain
 
 | Scène | Ce qu'elle vérifie |
 |---|---|
+| `maquette-spad7` | repères du modèle 3D (ADR 0006) : axes du modèle de vol en gizmos, hélice et sens de rotation ; construite en code |
+| `avion-studio` | le SPAD au repos sur l'herbe, trois quarts avant à hauteur d'homme, soleil d'après-midi, atmosphère, ombres, TAA : modèle, matériaux et textures tels que le jeu les rend ; construite en code |
 | `aube_terrain` | soleil rasant, brume basse, avions alignés sur l'herbe, ombres longues |
 | `cumulus_midi` | champ de cumulus à 2 000 m, soleil haut, ombres des nuages au sol |
 | `contre_jour_toile` | avion à contre-jour : toile translucide, nervures visibles |
@@ -28,7 +30,8 @@ Chacune est un fichier `assets/scenes/<nom>.ron` (caméra, heure, météo, grain
 
 ## Chaîne de rendu
 
-- **HDR** et soleil en unités physiques (lux) ; exposition automatique ou caméra physique ; tonemapping à choisir sur captures (AgX ou TonyMcMapface, selon la version) ; bloom discret.
+- **HDR** et soleil en unités physiques (lux) ; exposition automatique ou caméra physique ; bloom discret.
+- **Tonemapping** : TonyMcMapface, choisi le 2026-10-27 sur les captures d'`avion-studio` (soleil `RAW_SUNLIGHT`, atmosphère, `ev100` 13). ACES sature la toile vernie vers l'orange ; AgX la délave à cette exposition.
 - **Anticrénelage** : TAA. Les **câbles et haubans** sont plus fins qu'un pixel : leur appliquer la technique « phone-wire AA » (largeur minimale à l'écran d'environ un pixel, avec opacité réduite en proportion) pour éviter le scintillement.
 - **Atmosphère** : utiliser l'atmosphère procédurale de Bevy si la version épinglée la fournit (vérifier) ; sinon implémenter Hillaire 2020 (LUT de transmittance, multidiffusion, vue du ciel, perspective aérienne). La **perspective aérienne** donne l'échelle du paysage : elle n'est pas optionnelle.
 - **Ombres** : cascades réglées pour l'avion et le cockpit de près, ombres des nuages au sol (carte d'ombre vue du dessus).

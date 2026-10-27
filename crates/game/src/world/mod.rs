@@ -1,10 +1,11 @@
 //! World: terrain, sky, weather and reference scenes.
 //!
 //! Reference scenes so far: `m0-sol` checks the capture chain, `maquette-spad7` the
-//! frames of the 3D models (ADR 0006).
+//! frames of the 3D models (ADR 0006), `avion-studio` the SPAD as the game renders it.
 
 pub mod maquette;
 pub mod scenes;
+pub mod studio;
 
 use bevy::prelude::*;
 
@@ -22,6 +23,7 @@ impl Plugin for WorldPlugin {
                 (
                     scenes::spawn_m0_sol.run_if(capture_scene_is("m0-sol")),
                     maquette::spawn.run_if(capture_scene_is(maquette::SCENE)),
+                    studio::spawn.run_if(capture_scene_is(studio::SCENE)),
                 ),
             )
             .add_systems(

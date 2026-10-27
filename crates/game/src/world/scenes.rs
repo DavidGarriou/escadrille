@@ -10,7 +10,7 @@ use bevy::prelude::*;
 use crate::dev::capture::CaptureRequest;
 
 /// Names accepted by `--capture`.
-pub const KNOWN_SCENES: &[&str] = &["m0-sol", super::maquette::SCENE];
+pub const KNOWN_SCENES: &[&str] = &["m0-sol", super::maquette::SCENE, super::studio::SCENE];
 
 /// Run condition: the capture asks for scene `name`.
 pub fn capture_scene_is(name: &'static str) -> impl Fn(Option<Res<CaptureRequest>>) -> bool {

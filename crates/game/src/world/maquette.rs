@@ -143,7 +143,7 @@ pub fn spawn(
 
 /// Once the model is spawned: turns the propeller by [`PROP_TURN_DEG`] about its local +X
 /// (the axis of the model contract) and hides its disc, which would cover the blades.
-fn turn_the_propeller(
+pub(super) fn turn_the_propeller(
     ready: On<WorldInstanceReady>,
     children: Query<&Children>,
     mut nodes: Query<(&Name, &mut Transform, &mut Visibility)>,

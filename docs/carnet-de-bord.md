@@ -1877,3 +1877,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - les lignes fines qui restent sur le gouvernail sont ses nervures, qui accrochent la lumière rasante ;
   - le scintillement, lui, ne se juge qu'en mouvement : à vérifier sur ta machine.
 - **A** `just check` et `just test` passent (284 tests).
+
+### Rendu en jeu : scène de studio (B6)
+
+- **Q** Le joueur : « Continue ».
+- **A** Lancement de l'historien, en arrière-plan, sur les marques de S.254 (cigogne, « 2 », « Vieux Charles », « S 254 ») pour la seconde couche de livrée.
+- **A** Nouvelle scène de référence `avion-studio` (`crates/game/src/world/studio.rs`) :
+  - **Avion** : le SPAD au repos sur ses roues et sa béquille. L'assiette (14,4° cabré) est calculée depuis les roues et la béquille de `maquette.ron`, ce qui retrouve les « environ 14° » du dessin (test).
+  - **Prise de vue** : trois quarts avant, œil à 1,65 m.
+  - **Lumière** : soleil d'après-midi à 35° de hauteur, ombres en deux cascades, atmosphère de Bevy, éclairage ambiant tiré du ciel, bloom.
+  - **Anticrénelage** : TAA.
+- **A** Capture **regardée** :
+  - avion bien posé, ombres nettes, cocardes et gouvernail en place ;
+  - nervures visibles sous l'intrados ;
+  - câbles continus sur l'image fixe.
+
+  Les cocardes visibles sur le plan inférieur sont celles de son intrados : cabré au sol, l'avion montre le dessous de ses ailes à un observateur debout devant lui.
+- **D** Tonemapping : **TonyMcMapface**, choisi sur trois captures comparées. ACES sature la toile vers l'orange ; AgX la délave à cette exposition. Consigné dans le skill `rendu-visuel`, avec les scènes `maquette-spad7` et `avion-studio` ajoutées à sa table.
+- **R** Rendu logiciel dans le conteneur : 232 ms par image ; la vitesse se juge sur ta machine.
