@@ -1911,3 +1911,20 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Tests : lecture du diamètre dans les extras, rayon transmis au shader. `just check` et `just test` passent.
 - **Q au joueur** : Bevy 0.20 écrit ses shaders en **WESL**, du WGSL avec imports et compilation conditionnelle. Les nôtres suivent, pour importer ses modules. `CLAUDE.md` dit « Shaders en WGSL » : faut-il écrire « WGSL (dialecte WESL de Bevy) » ? Je n'ai pas modifié `CLAUDE.md`.
 - **R** Le scintillement en mouvement ne se juge pas sur une image fixe : à regarder sur ta machine.
+
+### Recherche : marques de S.254 pour la seconde couche (historien)
+
+- **A** L'historien a rédigé le § 12.6 de `docs/recherche/spad7-aspect.md` :
+  - ce que disent les notices des photos datées ;
+  - la cigogne de la SPA 3 et ce qui la distingue de celles du GC 12 ;
+  - le « 2 », « Vieux Charles », le gouvernail ;
+  - les autres marques ;
+  - l'avion conservé ;
+  - un gabarit de la cigogne pour le dessin vectoriel, construit sans copier d'image ;
+  - une proposition chiffrée de places et de tailles.
+
+  Il a ajouté neuf sources (V40 à V48) et complété les demandes D8 et D9 ; D13 (ouvrages) et D14 (Musée de l'Armée) sont nouvelles. Le redémarrage du conteneur l'a interrompu après la rédaction, avant son rapport : le texte a été relu ici.
+- **R** Établi : la présence le 20 octobre 1917 du nom, de la cigogne et du « 2 » (B) ; la posture « ailes basses » de la cigogne de la SPA 3 (B) ; la cigogne et le « 2 » rouges (C) ; une inscription peinte sur le gouvernail (C).
+- **R** Non trouvés, donc `ESTIMÉ` (D) : positions, tailles, graphies, sens de vol ; noir et place du nom (seul témoin : Udet, récit contesté).
+- **⚠** Contradiction ouverte : la version anglaise d'un billet du Musée de l'Armée parle d'une « bande tricolore des as » sur la queue de S.254, que le § 12.5 classe en anachronisme. **D** Retenu provisoirement : pas de bande supplémentaire. C'est le premier point à vérifier sur les plaques du 20 octobre 1917 (D9, D14).
+- **Pour le joueur** : D13 et D14 sont à envoyer, si tu le souhaites (achat ou consultation d'ouvrages ; photos du Musée de l'Armée).

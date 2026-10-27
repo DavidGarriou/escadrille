@@ -24,6 +24,8 @@ Règles :
 | D10 | 2 | Vojenský historický ústav (Prague) | planche de bord d'origine d'un SPAD VII (n° 11 583) | photos et liste des instruments | à envoyer |
 | D11 | 2 | Libraires d'ouvrages anciens ; League of WWI Aviation Historians | J. M. Bruce, *Spad 7.C1* (Windsock Datafile n° 8) ; Velek et al., *SPAD S.VII C1* (4+ Publications n° 19) ; « Project Butterfly » (*Cross & Cockade* US, vol. 9 n° 1 ; vol. 13 n° 2 et 4) | achat | à envoyer |
 | D12 | 3 | Museo Francesco Baracca (Lugo) | SPAD VII S.2489 : dossier de restauration (1990-1993) et photos de détail | seulement si le joueur retient ce candidat de livrée | en attente |
+| D13 | 1 | Libraires d'ouvrages anciens ; bibliothèques de la Défense | Klaeylé et Osché, *Guynemer : les avions d'un as* (1998) ; *Icare* n° 122 (1987) ; F. Blech, *Spa 3 : « Cigogne de Guynemer » (ailes basses)* (1986) | achat ; consultation pour Blech | à envoyer |
+| D14 | 1 | Musée de l'Armée (Paris), service des collections et photothèque | gros plan de S.254 aux Invalides (21e épisode du blog), autres photos de S.254 de 1917 ; dossier du dépôt au Musée de l'Air | photos de référence, légendes et dates | à envoyer |
 
 ## D1 — Australian War Memorial : notice technique britannique du S.VII
 
@@ -183,6 +185,69 @@ Phrase à ajouter au message de D4 :
 - **Ce qu'on cherche** : les marques de S.254 dans son état de fin de service (positions, tailles, contrastes) ; la date exacte du second cliché ; les conditions de réutilisation.
 - **Démarche** : demande de fichiers en haute définition par le site ImagesDéfense, pour un usage de référence.
 
+## D8 et D9 — Compléments du 2026-10-27 : marques de S.254
+
+Détail dans `spad7-aspect.md` § 12.6.
+
+**D8 (Musée de l'Air)** : ajouter à la demande :
+1. des photos des **deux flancs** et des **deux faces du gouvernail** de S.254, prises de face, avec un mètre ou une cote de référence. On veut mesurer la position et la taille de la cigogne, du « 2 » et du nom, et lire l'inscription du gouvernail ;
+2. la confirmation que ces marques sont bien la **peinture d'origine** sur la toile doublée en 1981-1982, et non des repeints ;
+3. le **fragment de toile portant une cigogne** signalé dans le rapport d'activité 2016 (photo, provenance) ;
+4. la mention d'une éventuelle **bande tricolore** sur l'arrière du fuselage ou sur l'empennage.
+
+L'avion est un dépôt du Musée de l'Armée : voir D14.
+
+Phrase à ajouter au message de D8 :
+
+> Je cherche en particulier la position et les dimensions de la cigogne, du chiffre « 2 » et du nom « Vieux Charles » sur chaque flanc, ainsi que le texte de l'inscription peinte sur le gouvernail.
+
+**D9 (ECPAD)** : sur les plaques du 20 octobre 1917, on cherche en priorité :
+- le flanc photographié ;
+- les positions relatives de la cigogne, du « 2 » et du nom ;
+- la présence d'une bande tricolore distincte du gouvernail ;
+- la graphie du nom.
+
+Deux photos de presse de 1917 sont à tenter d'abord par téléchargement (session principale) : Gallica, https://gallica.bnf.fr/ark:/12148/btv1b53003839j (Agence Rol), et Argonnaute, https://argonnaute.parisnanterre.fr/ark:/14707/sr8z7x41vfm6.
+
+## D13 — Ouvrages sur les avions de Guynemer et l'insigne de la SPA 3
+
+- **Ouvrages**, par ordre d'utilité :
+  1. B. Klaeylé et P. Osché, avec la participation de C. Cony, *Guynemer : les avions d'un as*, Lela Presse, coll. « Histoire de l'aviation », 1998, 208 p., **ISBN 2-9509485-6-1**. Notice BnF : https://catalogue.bnf.fr/ark:/12148/cb39247352j. Osché a participé à la restauration de S.254 en 1981-1982 ;
+  2. *Icare*, n° 122, « Guynemer et les Cigognes », SNPL, 1987, environ 226 p. ;
+  3. F. Blech, *Spa 3 : « Cigogne de Guynemer » (ailes basses)*, Paris, F. Blech, 1986, 50 p. multigraphiées. Notice : https://bibliotheques-numeriques.defense.gouv.fr/impression/document/85943af0-c2e1-4c74-84e5-11c6c88b9749. La session principale tente d'abord de voir s'il est numérisé ; sinon, consultation dans une bibliothèque de la Défense ;
+  4. en option : J. Guttman, *SPAD VII Aces of World War 1*, Osprey, coll. « Aircraft of the Aces » n° 39, 2001, ISBN 978-1-84176-222-7 (profils en couleur : référence seulement, à ne jamais reproduire).
+- **Ce qu'on cherche** :
+  - les photos de S.254 avec ses marques, des deux flancs ;
+  - la position, la taille et la couleur de la cigogne, du « 2 » et du nom ;
+  - le dessin de la cigogne de la SPA 3 ;
+  - l'inscription du gouvernail ;
+  - la bande tricolore ;
+  - l'état de l'avion en octobre 1917.
+- **Avant d'acheter** : vérifier auprès du libraire l'édition et la présence de photos de S.254.
+
+## D14 — Musée de l'Armée : photos de S.254 aux Invalides
+
+- **Documents** :
+  - le gros plan de S.254 publié dans le 21e épisode du blog « Les Invalides dans la Grande Guerre », https://actualites.musee-armee.fr/expositions-en/les-invalides-during-the-great-war-twenty-first-episode-the-vieux-charles/?lang=en ;
+  - les autres photos de l'avion exposé en 1917, puis dans la salle Guynemer ;
+  - le dossier du dépôt au Musée de l'Air et de l'Espace (V6 de `spad7-aspect.md`).
+- **Ce qu'on cherche** :
+  - la cote, la date et l'auteur du gros plan, et le flanc visible ;
+  - le texte original du billet sur la « bande tricolore des as » ;
+  - des fichiers de référence, si possible.
+- **Pourquoi** : c'est la seule notice qui décrit les marques de S.254 en octobre 1917 (`spad7-aspect.md` § 12.6.1). L'avion du Bourget appartient au Musée de l'Armée.
+- **Message proposé** :
+
+> Madame, Monsieur,
+>
+> Je prépare une restitution en trois dimensions du SPAD VII S 254 « Vieux Charles » de Georges Guynemer pour une simulation de vol historique. Le 21e épisode de votre série « Les Invalides dans la Grande Guerre » publie un gros plan de l'avion où l'on voit son nom, la cigogne et le chiffre « 2 ».
+>
+> Pourriez-vous m'indiquer la cote, la date et l'auteur de ce cliché ? Serait-il possible d'en obtenir une reproduction de référence, ainsi que d'autres photographies de l'avion exposé aux Invalides ? Ces images serviraient uniquement de référence et ne seraient pas publiées. Je cherche aussi à comprendre la mention de la « bande tricolore des as » portée par la queue de l'appareil.
+>
+> Je vous remercie de votre aide.
+>
+> [nom], [adresse]
+
 ## D10 — Vojenský historický ústav (Prague) : planche de bord d'un SPAD VII
 
 - **Objet** : planche de bord d'origine en contreplaqué du SPAD VII C.1 n° **11 583**, conservée en réserve. Notices : https://www.vhu.cz/exhibit/palubni-deska-letounu-spad-vii-c-i-vyr-c-11-583/ et https://vhu.cz/en/exhibit/06-francouzska-palubni-deska-z-letounu-spad-s-vii-c-1-1916.
@@ -220,3 +285,4 @@ Phrase à ajouter au message de D4 :
 |---|---|---|
 | 2026-10-25 | D1 à D7 | Fichier créé, sur demande du joueur ; rien n'est encore envoyé |
 | 2026-10-26 | D4 (complément), D8 à D12 | Ajoutés par l'historien pour le modèle 3D (plan `m3-modele-spad7.md`, parties B1 et B2) ; rien n'est envoyé |
+| 2026-10-27 | D8 et D9 (compléments), D13, D14 | Ajoutés par l'historien pour la seconde couche de livrée de S.254 (`spad7-aspect.md` § 12.6) ; rien n'est envoyé |

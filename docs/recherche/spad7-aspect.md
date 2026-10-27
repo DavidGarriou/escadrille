@@ -1,7 +1,7 @@
 # SPAD S.VII C.1 (150 ch) — fiche d'aspect : modèle 3D et livrée
 
 - Identifiant : `spad7`. Fiches liées : [`spad7.md`](spad7.md) (histoire, géométrie, performances), [`spad7-calculs.md`](spad7-calculs.md) (cotes lues sur le dessin de 1917, § 3 et § 3.1), [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (hélice, § 7.5).
-- Dernière mise à jour : 2026-10-26
+- Dernière mise à jour : 2026-10-27 (§ 12.6 : marques de S.254)
 - État : **en cours**, première passe. Elle répond au plan [`m3-modele-spad7.md`](../plans/m3-modele-spad7.md), parties B1 (aspect) et B2 (livrée).
 - Objet : tout ce qu'il faut pour modéliser et texturer un S.VII de 150 ch de 1917, extérieur et premier niveau du poste, puis choisir une livrée réelle.
 
@@ -310,6 +310,186 @@ Les photos ECPAD sont en noir et blanc : elles donnent formes, positions et cont
 - une cigogne d'une autre escadrille du GC 12 ;
 - **deux Vickers** ou le grand radiateur du SPAD XIII.
 
+### 12.6 Marques de S.254 pour la seconde couche (passe du 2026-10-27)
+
+**Objet.** La cigogne, le « 2 », « Vieux Charles », les inscriptions du gouvernail et les autres marques de S.254 dans son état du 20 octobre 1917, pour les peindre dans la texture du modèle (couche 2 du § 12.5). La couche 1 (`usine-1917` de `livrees.ron`) n'est pas reprise ici.
+
+**Accès.** Le 2026-10-27, l'outil de lecture échoue encore (DNS) sur albindenis.free.fr et daniel99725.wixsite.com ; je n'ai pas tenté d'autres sites. Tout ce qui suit vient de **résumés du moteur de recherche** ([RÉSUMÉ]) et des fiches déjà lues. **Aucune image n'a été vue** : aucune position ni aucune taille n'a pu être mesurée. Rien n'est reproduit ici, ni dessin, ni profil, ni photo.
+
+**Bilan.**
+- **Établi** : la présence des trois marques le 20 octobre 1917 (**B**) et la posture « ailes basses » de la cigogne (**B**).
+- **Probable** : le rouge de la cigogne et du « 2 » (**C**).
+- **Fragile** : le noir du nom, qui ne repose que sur Udet (**D**).
+- **Non sourcé** : positions, tailles, graphies et sens de vol. La proposition du § 12.6.9 est donc un gabarit `ESTIMÉ` (D), à remplacer par une mesure sur photo ou sur l'avion.
+
+#### 12.6.1 Ce que disent les notices des photos datées
+
+| Photo | Date | Ce que la notice dit des marques | Statut | Fiabilité, usage |
+|---|---|---|---|---|
+| Musée de l'Armée, gros plan publié dans le 21e épisode de « Les Invalides dans la Grande Guerre » (V5) | billet consacré à l'exposition du 20/10/1917 ; auteur et date du cliché non vus | on y voit le nom « Vieux Charles », la cigogne en vol (emblème de l'escadrille n° 3 depuis juillet 1916) et le chiffre « 2 », numéro personnel de Guynemer. Selon la version anglaise du billet, la queue porterait aussi la bande tricolore des as français (§ 12.6.5) | [RÉSUMÉ] | institutionnelle ; **seule notice qui décrit les marques**, mais sans position, taille ni couleur |
+| ECPAD, A. Moreau, deux plaques (V7) | 20/10/1917 | titre seulement | [RÉSUMÉ] | primaire, non vue (D9) |
+| ECPAD, SPA 236 M 4636 (V7) | 20/11/1917 selon la notice (1er novembre chez Bordeaux) | avion fleuri | [RÉSUMÉ] | primaire, non vue |
+| Roger-Viollet, cliché d'*Excelsior* (V9) | publié le 20/10/1917 | titre seulement | [RÉSUMÉ] | primaire, droits réservés |
+| AWM C63172 (V8) | 1917 | titre seulement | [RÉSUMÉ] | primaire |
+| Gallica, Agence Rol, « L'avion de Guynemer aux Invalides » (V40) | 1917 | titre seulement | [PISTE] | primaire ; **nouvelle référence**, à télécharger |
+| Argonnaute (La Contemporaine), « Paris. Invalides. L'avion le "Vieux Charles" du capitaine Guynemer » (V41) | 1917 probablement | titre seulement | [PISTE] | primaire ; **nouvelle référence** |
+| Albin Denis, SPA 3 p. 2 (V10) | fin mai 1917 | Guynemer décolle sur S.254 | [RÉSUMÉ] | état antérieur de cinq mois |
+| Albin Denis, SPA 3 p. 4 (V10) | photos de l'avion conservé ; relevé des marques publié en avril 2025 selon un résumé | S.254 codé « 2 » ; l'inscription peinte du gouvernail n'aurait pas été mise à jour au passage au 180 ch, elle donnerait donc encore le moteur d'origine | [RÉSUMÉ] | secondaire ; **à lire en priorité** (domaine bloqué) |
+| Museum of Flight 29160 (V29) | « vers 1914-1917 » | Guynemer assis dans un SPAD VII ; le nom est peint sur le fuselage | [RÉSUMÉ] | avion non identifié ; CC BY-NC-ND |
+| Biblioteca Virtual de Defensa, registro 163170 (V42) | légende au dos : la Somme, après la 16e victoire | Guynemer près de son avion « Vienx-Charles » (sic) | [RÉSUMÉ] | **pas S.254** : la 16e victoire date de 1916 (25 victoires à la fin de 1916 selon un résumé de recherche), avant la livraison de S.254 fin décembre 1916. Utile seulement pour comparer la graphie du nom sur un avion antérieur |
+
+**Ce qu'on peut affirmer** : le 20 octobre 1917, S.254 portait le nom, la cigogne en vol et le « 2 » (**B** : V5 ; le nom et la cigogne sont confirmés par la brochure du ministère, V35). **Ce qu'on ne peut pas affirmer** : leur emplacement, leur taille, leur couleur, le flanc photographié, ni ce qu'est la « bande tricolore ».
+
+#### 12.6.2 Cigogne de la SPA 3
+
+| Point | Établi | Sources | Confiance | `ESTIMÉ` ou à vérifier |
+|---|---|---|---|---|
+| Présence le 20/10/1917 | oui, sur le fuselage | V5, V35 [RÉSUMÉ] | B | — |
+| Posture | en vol, **ailes basses**, au bas du battement : c'est l'appellation même de l'insigne, « Cigogne de Guynemer (ailes basses) » | V36 (titre de la monographie de F. Blech, 1986) ; S36 (lettre de 1976) ; S20, V47 (wikis) | B | — |
+| Origine | pochoir dessiné par le capitaine Brocard et l'adjudant Charles Borzecki, applicable en plusieurs couleurs selon la teinte de la toile. Le même pochoir servait donc à tous les avions de l'escadrille | V34 (J. Guttman) [RÉSUMÉ] | C | Divergences : Wikipédia (en) place Borzecki à la C 43 puis à la N 62, pas à la N 3 ; un autre récit attribue le dessin à un peintre du camouflage (V44). Sans effet sur la forme |
+| Date | emblème de l'escadrille n° 3 depuis juillet 1916. Les autres escadrilles du GC 12 adoptent des cigognes en novembre 1916 | V5 ; V34 ; `spad7.md` § 1.4 | C | — |
+| Flancs | les deux : un article parle de « la cigogne ornant ses flancs ». Plus généralement, l'insigne était peint ou passé au pochoir sur le flanc du fuselage | V30 [RÉSUMÉ] ; V34 ; S20 | C | aucune photo des deux flancs n'est décrite |
+| Couleur sur S.254 | **rouge**. Trois pistes le disent, dont une page qui cite les ouvrages d'Osché (restaurateur de S.254) et la revue *Icare*. C'est cohérent avec la règle du pochoir : couleur sombre sur toile claire | V21, V22 [RÉSUMÉ] ; V34 | C | D'autres couleurs sont signalées, mais sur **d'autres** avions ou pour l'insigne en général : blanche à ailes noires sur le SPAD XIII S.504, camouflé (légende de photo, compilation flyingmachines.ru, piste) ; noire et blanche, bec et pattes rouges (Western Front Association, article de 2008, piste) ; « rouge et bleu » sur les Nieuport de 1916 (HistoryNet, piste). Teinte exacte inconnue. **ESTIMÉ** : le rouge des cocardes (`rouge` de `livrees.ron`) |
+| Contour, détails | **non trouvés** | — | — | **ESTIMÉ** (D) : aplat d'une seule couleur, sans œil ni plumes dessinés, comme le donne un pochoir. Seules les rémiges écartées du bout des ailes découpent la silhouette |
+| Sens de vol | **non trouvé** | — | — | **ESTIMÉ** (D) : vers le nez sur les deux flancs, le pochoir étant retourné pour le flanc droit. Justification : sens du déplacement de l'avion, pochoir réversible |
+| Position le long du fuselage | **non trouvée** | — | — | **ESTIMÉ** (D) : sur la partie entoilée, entre le poste et l'empennage, derrière la fin du tuyau d'échappement (x −1,67) |
+| Taille | **non trouvée** | — | — | **ESTIMÉ** (D) : environ 1,0 m de long et 0,48 m de haut, un peu plus de la moitié de la hauteur du flanc à cet endroit. À mesurer sur S.254 (D8) |
+
+**Distinguer la cigogne de la SPA 3 de celles du GC 12** :
+
+| Escadrille | Appellation | Posture | Sources | Confiance |
+|---|---|---|---|---|
+| **SPA 3** | « Cigogne de Guynemer » | **ailes basses** : fin du battement, ailes entièrement sous la ligne du dos, pointes vers le bas | V36, S36, S20, V47 | B |
+| SPA 103 | « Cigogne de Fonck » | ailes hautes : début du battement, ailes au-dessus du dos | S36, V47 | C |
+| SPA 26 | « Cigogne de Saint-Galmier » | **divergent** : ailes à mi-course (S36) ; ailes repliées, en piqué (V47, notice de vente) | S36, V47 | D |
+| SPA 73 | « Cigogne japonaise » | dessin de style japonais ; tête retournée vers la queue selon S36 ; « en virage » selon V47 | S36, V47 | D |
+
+Règle de contrôle pour le dessin : une cigogne dont les ailes passent au-dessus du dos, restent à l'horizontale, ou dont la tête regarde en arrière, **n'est pas** celle de la SPA 3.
+
+**Mascotte Hispano-Suiza.** Selon la lettre de 1976 (S36), la cigogne de la SPA 3 a servi de modèle à la mascotte de radiateur sculptée par François Bazin vers 1919-1920. Les notices de musée et de vente divergent sur cette origine (V48). Ne pas s'en servir comme gabarit : c'est une sculpture, pas l'insigne peint, et elle est probablement encore protégée (sculpteur mort en 1956).
+
+#### 12.6.3 Le « 2 »
+
+| Point | Établi | Sources | Confiance | `ESTIMÉ` |
+|---|---|---|---|---|
+| Présence le 20/10/1917 | oui. C'est le numéro personnel de Guynemer à l'escadrille, où chaque pilote avait le sien ; un forum le dit attribué à l'ancienneté | V5 [RÉSUMÉ] ; forum (piste) | B (présence) | — |
+| Couleur | rouge | V21, V22 [RÉSUMÉ] | C | teinte `rouge` (D) |
+| Flancs | non trouvé. Selon un résumé de Wikipédia, le numéro se peignait sur le dessus et sur les deux flancs du fuselage | V47 [RÉSUMÉ] | D | **ESTIMÉ** : les deux flancs. Pas de « 2 » sur le dessus du fuselage tant qu'aucune photo ne le montre |
+| Plan supérieur | rien trouvé | — | — | **ESTIMÉ** : pas de « 2 » sur les ailes |
+| Position | non trouvée. Le gros plan du Musée de l'Armée montre le « 2 » avec le nom et la cigogne : même flanc, sans doute pas très loin | V5 | C (même flanc) | **ESTIMÉ** (D) : en arrière de la cigogne. Autre possibilité : entre le poste et la cigogne |
+| Taille, graphie | non trouvées | — | — | **ESTIMÉ** (D) : environ 0,40 m de haut ; chiffre bâton droit, sans empattement, trait d'environ 15 % de la hauteur |
+
+#### 12.6.4 « Vieux Charles »
+
+| Point | Établi | Sources | Confiance | `ESTIMÉ` |
+|---|---|---|---|---|
+| Présence le 20/10/1917 | oui, sur le fuselage | V5, V35 [RÉSUMÉ] ; V29 (date incertaine) | B | — |
+| Origine du nom | hérité du Morane-Saulnier L de Charles Bonnard ; porté par la plupart des avions de Guynemer, dont le Nieuport 11 N836, où il était écrit « Le Vieux Charles » | `spad7.md` § 8 ; V23 [RÉSUMÉ] | B | Forme exacte sur S.254 **non vue** : « Vieux Charles », « Vieux-Charles » (Bordeaux) ou « Le Vieux Charles » (Nieuport). **ESTIMÉ** : « VIEUX CHARLES », sans article, comme dans les notices des musées |
+| Couleur | lettres **noires** | Udet, *Mein Fliegerleben* (`spad7.md` S29), passage repris par V46 [RÉSUMÉ] | D | souvenir publié en 1935, épisode contesté, témoin unique |
+| Position | « sur le fuselage, entre les ailes » | même passage d'Udet | D | **ESTIMÉ** : flanc avant, entre les plans (x 0 à −1,21) |
+| Côtés | non trouvés | — | — | **ESTIMÉ** : les deux flancs (D) |
+| Graphie | non trouvée : rien sur les capitales, la cursive ou les empattements | — | — | **ESTIMÉ** (D) : capitales bâton peintes à la main, sur une ligne. Udet ne lit que « Vieux » : nom sur deux lignes, ou partie cachée ? Non tranché |
+| Taille | non trouvée | — | — | **ESTIMÉ** : capitales d'environ 0,12 m (D) |
+
+**Réputation et faits.** Le combat qu'Udet raconte (juin 1917, près de Lierval) n'a pas de trace dans les sources françaises citées (`spad7.md` T12). Il est précieux pour le jeu, comme récit de mess, mais pas comme preuve d'aspect. Un résumé de forum lui fait aussi décrire un SPAD « brunâtre » : **non retenu**, car non vérifié et contraire à la finition d'usine supposée de S.254.
+
+#### 12.6.5 Gouvernail : « S 254 » et inscriptions
+
+| Point | Établi | Sources | Confiance | `ESTIMÉ` |
+|---|---|---|---|---|
+| Bandes | verticales bleu, blanc, rouge, le bleu à la charnière (couche 1) ; largeurs égales selon un forum | § 12.1 ; forum (piste) | C | — |
+| Inscription peinte | oui. Selon Albin Denis, elle n'a pas été mise à jour au passage au 180 ch et donnerait donc encore la version d'origine | V10 [RÉSUMÉ] | C | Texte exact inconnu. Sur le S.XI, le gouvernail porte une inscription de charges (poids utile, poids de combustible) : S49 [LU-OCR], famille, C |
+| « S 254 » | numéro sur le gouvernail | V22 (notice d'une maquette vendue aux enchères) | D | **ESTIMÉ** (D) : en noir sur la bande blanche ; écrit « S 254 » avec une espace, comme dans les notices |
+| Faces | non trouvées | — | — | **ESTIMÉ** : les deux faces (D) |
+| Taille | non trouvée | — | — | **ESTIMÉ** : chiffres de 0,045 m, pour tenir dans la bande blanche de 0,18 m (D) |
+
+**« Bande tricolore des as » : contradiction ouverte.** Selon la version anglaise du billet du Musée de l'Armée (V5), la queue de S.254 porte la bande tricolore des as français. Deux lectures sont possibles :
+- (a) le tricolore réglementaire du gouvernail, commun à tous les avions français, et donc mal qualifié par le billet ;
+- (b) une bande tricolore distincte, comme celles qu'on signale sur S.115 en 1916 (pour être reconnu de l'artillerie, selon Albin Denis cité par un miroir de Wikipédia) et sur S.113 (piste).
+
+La lecture (b) contredirait l'anachronisme listé au § 12.5. **Non tranché** : pas de bande supplémentaire par défaut. C'est le **premier point à vérifier** sur les plaques du 20 octobre (D9, V40, V41).
+
+#### 12.6.6 Autres marques d'octobre 1917
+
+| Marque | Établi | Confiance | Proposition |
+|---|---|---|---|
+| Cocardes de fuselage | aucune source ne les mentionne sur S.254 ; les notices du 20 octobre ne citent que le nom, la cigogne et le « 2 » | — | **ESTIMÉ** : aucune (D) |
+| Cocardes d'ailes | couche 1 | — | inchangées |
+| Bandes de chef de patrouille, fanions | rien sur S.254. Une revue de maquette signale, sur une planche de décalques Airfix, un fanion rouge sur un carénage d'appui-tête : piste unique, et le § 5 ne trouve pas d'appui-tête | D | rien |
+| Inscriptions du constructeur | gouvernail seulement (§ 12.6.5) ; rien d'autre trouvé | — | rien d'autre |
+| Code d'unité (« N 3 », « SPA 3 ») | rien trouvé | — | rien |
+| Réparations | dégâts le 24/01/1917 (atterrissage sur sol gelé) et à l'été 1917 (jour d'une prise d'armes, Bordeaux) ; aucune description de pièces ni de marques repeintes | C (dégâts) | **ESTIMÉ** : pas de rapiéçage particulier ; usure générale du § 10 (D) |
+| Démontage | démonté à Saint-Pol le 19/10/1917, remonté aux Invalides (V7) | C | rien de visible attendu |
+
+#### 12.6.7 L'avion conservé, témoin des marques
+
+- **Restauration de 1981-1982** (Philippe Osché y a participé, V30). Selon un dossier de presse du musée, la toile d'origine, très abîmée, a été **doublée** à la manière d'un tableau. Un résumé ajoute que les marques et la cigogne ont été laissées en l'état ; l'attribution entre les deux documents de V39 est incertaine. V4 parle d'une toile neuve posée sous la toile d'origine et d'un enduit pigmenté pour masquer les lacunes.
+- **Conséquence** : les marques visibles aujourd'hui sont **probablement** la peinture de 1917 sur la toile d'origine, retouchée aux lacunes.
+  - Leurs **positions et tailles** se mesureraient sur l'avion : **A** une fois mesurées.
+  - Leurs **couleurs** restent douteuses (vieillissement, intempéries dans un escalier des Invalides, retouches) : **C** au mieux.
+- **2016** : le rapport d'activité signale un constat d'état et une étude de conservation (cinq restaurateurs), et un **fragment de toile portant une cigogne**, venu d'un autre avion (V39 [RÉSUMÉ]). C'est un témoin possible de la couleur et du dessin du pochoir.
+- **Propriété** : l'avion est un **dépôt du Musée de l'Armée** au Musée de l'Air (V6, V39). La demande D8 doit donc associer le Musée de l'Armée (D14).
+
+#### 12.6.8 Gabarit de la cigogne pour le dessin vectoriel (`ESTIMÉ`, D)
+
+Ce gabarit ne copie aucune image. Il est construit à partir de deux éléments :
+- la posture « ailes basses » (B) ;
+- la silhouette en vol de la cigogne blanche (V45) : cou tendu vers l'avant et un peu tombant, longues pattes qui dépassent nettement une queue courte, bec long et droit ; longueur du bec à la queue de 95 à 125 cm selon les fiches, envergure de 155 à 217 cm.
+
+Il permet d'avancer et sera remplacé par un redessin d'après les photos de 1917 (D9, V40, V41) ou d'après l'avion (D8). Comme l'insigne était un pochoir commun à l'escadrille (V34, C), une photo datée d'un autre avion de la N 3 ou de la SPA 3 de 1916-1917 peut aussi servir de référence pour la forme.
+
+**Repère** : vue de profil, oiseau volant vers +u (vers le nez de l'avion) ; u horizontal, v vertical vers le haut ; unité L = longueur hors tout, de la pointe du bec au bout des doigts.
+
+| Élément | Gabarit (u ; v, en fractions de L) | Justification |
+|---|---|---|
+| Boîte englobante | u de 0 à 1 ; v de 0 à 0,48 | ailes pendantes : presque toute la hauteur vient des ailes |
+| Bec | droit, de la base (0,88 ; 0,405) à la pointe (1,00 ; 0,385) ; épaisseur 0,02 à la base ; incliné d'environ 9° vers le bas | bec ≈ 15 % de la longueur bec-queue (D) ; cou tombant (V45) |
+| Tête | ovale centré en (0,86 ; 0,405), de 0,045 × 0,030 | petite tête (D) |
+| Cou | tendu, de la tête à l'épaule (0,63 ; 0,44) ; épaisseur 0,025 à la tête, 0,045 à l'épaule ; descend d'environ 8° vers la tête | cou tendu en vol, et non replié en S comme chez le héron (V45) |
+| Corps | fuseau de u 0,25 à 0,63 (0,38 L), épaisseur maximale 0,10 vers u 0,50 ; axe horizontal à v 0,42 ; le dos (v 0,47) est le point le plus haut | corps ≈ 45 % de la longueur bec-queue (D) |
+| Queue | courte, en coin, de u 0,25 à 0,18 ; 0,035 de haut au bout | queue courte (V45) |
+| Pattes | deux traits droits et parallèles de 0,010, écartés de 0,008, du dessous du corps (0,30 ; 0,38) aux doigts (0,00 ; 0,35) ; elles dépassent la queue de 0,18 L | pattes dépassant nettement la queue (V45) ; environ 22 % de la longueur bec-queue (D) |
+| Aile proche | attache sur le haut du corps, de u 0,44 à 0,60 (corde 0,16). Bord d'attaque de (0,60 ; 0,46) à la pointe (0,46 ; 0,00) ; bord de fuite de (0,44 ; 0,44) à (0,40 ; 0,04). Axe incliné d'environ 75° sous l'horizontale, pointe un peu en arrière de l'attache ; cinq rémiges écartées sur le dernier 0,12 | bas du battement (B pour la posture, D pour les cotes). Longueur visible ≈ 0,46 L, raccourcie par la perspective : la demi-envergure réelle vaut 0,7 à 0,95 fois la longueur bec-queue (V45) |
+| Aile éloignée | même forme à 85 %, décalée de 0,06 vers l'arrière, pointe en (0,36 ; 0,06) ; seul son bord arrière dépasse de l'aile proche et du corps | vue de profil (D) |
+| Rendu | aplat d'une couleur, sans œil ni plumes ; pas de pont de pochoir à prévoir (aucune zone fermée) | pochoir (V34, C) |
+
+Contrôles avant d'adopter le dessin : les deux pointes d'ailes sont les points les plus bas ; le dos est le point le plus haut ; la tête regarde vers l'avant (règle du § 12.6.2).
+
+#### 12.6.9 Proposition chiffrée pour le modeleur
+
+**Repère** : axes corps du modèle (x vers l'avant depuis le datum, y vers la droite, z vers le bas), en mètres ; sections du fuselage de `maquette.ron`. La valeur de y est celle du flanc (demi-largeur de la section), pour une projection selon y. **Toutes les cotes sont `ESTIMÉ` (D)**, sauf mention contraire.
+
+| Marque | Côté(s) | Centre (x ; y ; z) | Dimensions | Couleur | Confiance |
+|---|---|---|---|---|---|
+| Cigogne | deux flancs (C) ; vole vers le nez, flanc gauche en miroir du droit (D) | (−2,30 ; ±0,34 ; −0,44) | gabarit du § 12.6.8 avec L = 1,00 m (x −1,80 à −2,80) ; hauteur 0,48 m (z −0,68 à −0,20) | rouge (C) ; teinte `rouge` (D) | présence B, posture B ; position, taille et sens D |
+| « 2 » | deux flancs (D) | (−3,35 ; ±0,24 ; −0,45) | hauteur 0,40 m (z −0,65 à −0,25), largeur 0,26 m, trait 0,06 m ; droit, perpendiculaire à l'axe x | rouge (C) ; `rouge` (D) | présence B ; le reste D |
+| « VIEUX CHARLES » | deux flancs (D) | (−0,72 ; ±0,48 ; −0,27) : sous le tuyau d'échappement (z −0,49), au-dessus de l'emplanture du plan inférieur | capitales de 0,12 m (z −0,33 à −0,21) ; longueur 0,95 m (x −0,25 à −1,20) ; une ligne | noir (D) ; couleur `noir` à créer, sRGB ≈ (0,09 ; 0,08 ; 0,07) (D) | présence B ; noir et « entre les ailes » D (Udet) ; le reste D |
+| Variante du nom | deux flancs (D) | (−1,05 ; ±0,48 ; −0,62) : sous le rebord du poste, au-dessus du tuyau | capitales de 0,09 m ; longueur 0,75 m | noir (D) | D ; à choisir sur photo |
+| « S 254 » | deux faces du gouvernail (D) | (−4,975 ; 0 ; −1,00) : milieu de la bande blanche (x −4,883 à −5,067) | chiffres de 0,045 m ; longueur 0,15 m ; horizontal | noir (D) | existence d'une inscription C ; texte et place D |
+| Inscription d'usine (type, moteur, charges) | deux faces du gouvernail (D) | (−4,975 ; 0 ; −0,88) | bloc de 0,15 × 0,08 m : trois lignes de 0,015 m, illisibles à distance de jeu | noir (D) | existence C ; contenu D (« 150 HP » probable, V10) |
+| Bandes du gouvernail (rappel de la couche 1) | deux faces | bleu de x −4,70 à −4,883 ; blanc de −4,883 à −5,067 ; rouge de −5,067 à −5,25 | trois tiers égaux de la corde de 0,55 m | couche 1 | C (largeurs égales) |
+| Cocardes de fuselage | — | aucune | — | — | D |
+| Bande tricolore « des as » | — | **non peinte** tant que les plaques du 20/10/1917 n'ont pas été vues | — | — | contradiction ouverte (§ 12.6.5) |
+| « 2 » sur le dessus du fuselage ou des ailes | — | non peint | — | — | D |
+
+**Contrôles de place** (C, d'après les sections de `maquette.ron`) :
+- à x −2,30, le flanc va de z −0,83 à +0,03 : la cigogne laisse au moins 0,13 m en haut (jusqu'à x −2,55, bout du dos) et 0,23 m en bas ;
+- à x −3,35, le flanc va de z −0,755 à −0,14 : le « 2 » laisse 0,10 m en haut et en bas ;
+- le bec de la cigogne (x −1,80) reste 0,13 m derrière la fin du tuyau d'échappement (x −1,67) ;
+- le nom laisse 0,13 m sous le tuyau et environ 0,1 m au-dessus de l'emplanture du plan inférieur.
+
+**Couleur à ajouter** dans `livrees.ron` par la session principale : `noir`, pour le nom et les inscriptions du gouvernail (ESTIMÉ, aucune référence de couleur).
+
+#### 12.6.10 À vérifier, par ordre d'utilité
+
+1. **Photos de 1917** : plaques du 20/10/1917 (D9) et photos de presse Gallica (V40) et Argonnaute (V41), à télécharger par la session principale. On y cherche le flanc visible, les positions et tailles (en proportion de la hauteur du fuselage), la bande tricolore et la graphie du nom.
+2. **Albin Denis**, SPA 3 p. 2 et p. 4 (V10) : relevé des marques de l'avion conservé.
+3. **Ouvrages** : Klaeylé et Osché 1998 (V37), *Icare* n° 122 (V38), Blech 1986 (V36) : demande D13.
+4. **L'avion lui-même** : mesures sur S.254 et fragment de toile à cigogne (D8, complété) ; gros plan du Musée de l'Armée (D14).
+5. **Photos de l'avion conservé** sur Wikimedia Commons (V43) : licence à vérifier sur chaque page.
+
+Domaines à autoriser pour ces lectures : `albindenis.free.fr`, `daniel99725.wixsite.com`, `gallica.bnf.fr`, `argonnaute.parisnanterre.fr`, `bibliotheques-numeriques.defense.gouv.fr`, `commons.wikimedia.org`, `imagesdefense.gouv.fr`, `actualites.musee-armee.fr`, `museeairespace.fr`.
+
 ## 13. Témoignages sur l'aspect (français, anglais, allemand, italien)
 
 | Témoin | Camp, date | Ce qu'il montre de l'aspect | Statut | Biais |
@@ -348,7 +528,7 @@ Recherches menées sans résultat utile sur l'aspect : en allemand (examen d'un 
 
 ## 16. Sources
 
-Sources de `spad7.md` citées ici : S1, S3 (lues), S13, S15, S27, S36, S20 (résumés), S48, S49 (OCR). Leur référence complète est au § 9 de `spad7.md`. Sources nouvelles, consultées le 2026-10-26 :
+Sources de `spad7.md` citées ici : S1, S3 (lues), S13, S15, S27, S29, S36, S20 (résumés), S48, S49 (OCR). Leur référence complète est au § 9 de `spad7.md`. Sources nouvelles, consultées le 2026-10-26 :
 
 - **V1** — G. Hartmann, « Les héliciers français », PDF de 23 p., hydroretro.net, 2008, https://www.hydroretro.net/etudegh/heliciersfrancais.pdf. Copie locale du dossier de travail (`sources/hartmann/`). **[LU]** p. 7 à 13 et annexe p. 19-20 ; **[LU-IMG]** p. 13 (photo et logo d'une hélice Éclair, collection René Lemaire). Secondaire. Même document que `spad7.md` S78 et `hispano-suiza-8a.md` H9.
 - **V2** — Musée de l'Air et de l'Espace, « Spad VII », https://www.museeairespace.fr/aller-plus-haut/collections/spad-vii/ [RÉSUMÉ]. Institutionnelle. (= `spad7.md` S7, relu pour S.254.)
@@ -384,6 +564,26 @@ Sources de `spad7.md` citées ici : S1, S3 (lues), S13, S15, S27, S36, S20 (rés
 - **V32** — techno-science.net, « Cocarde », https://www.techno-science.net/fr/definitions/cocarde [RÉSUMÉ] : cocarde obligatoire en 1912, bleu, blanc et rouge du centre vers l'extérieur. Vulgarisation.
 - **V33** — AirHistory.net, photos de S.254 au Bourget n° 52994 (2005), 47039 (2010) et 436341 (2015), https://airhistory.net/photo/52994/254, https://www.airhistory.net/photo/47039/S254, https://airhistory.net/photo/436341/254 [RÉSUMÉ]. Légendes de photographes (dont « 19 victoires, dont 18 homologuées ») ; photos sous droits.
 
+Sources nouvelles du § 12.6, consultées le 2026-10-27 (toutes vues en résumé de recherche ou par leur seule notice ; aucune page n'a pu être ouverte) :
+
+- **V34** — J. Guttman, « How The French Added Fashion To World War I Airplanes », HistoryNet, https://historynet.com/how-the-french-added-fashion-to-world-war-i-airplanes/ [RÉSUMÉ]. Secondaire (auteur spécialiste, article de vulgarisation) : pochoir de Brocard et Borzecki, couleur choisie selon la toile ; insigne d'escadrille sur le flanc et chiffre arabe pour chaque pilote ; cigognes des autres escadrilles du GC 12 après novembre 1916.
+- **V35** — Ministère de la Défense, SGA/DMPA, *Georges Guynemer*, brochure de la collection « Chemins de mémoire », 2007, https://www.cheminsdememoire.gouv.fr/sites/default/files/editeur/BrochureGuynemerSGADMPA2007.pdf [RÉSUMÉ]. Institutionnelle : le fuselage porte le nom et la cigogne.
+- **V36** — F. Blech, *Spa 3 : « Cigogne de Guynemer » (ailes basses)*, Paris, F. Blech, 1986, 50 p. multigraphiées ; notice des Bibliothèques numériques de la Défense, https://bibliotheques-numeriques.defense.gouv.fr/impression/document/85943af0-c2e1-4c74-84e5-11c6c88b9749 [RÉSUMÉ de la notice ; contenu : PISTE].
+- **V37** — B. Klaeylé et P. Osché, avec la participation de C. Cony, *Guynemer : les avions d'un as*, Lela Presse, coll. « Histoire de l'aviation » (n° 6 ou 7 selon les notices), 1998, 208 p., ISBN 2-9509485-6-1 ; notice BnF, https://catalogue.bnf.fr/ark:/12148/cb39247352j [PISTE]. Osché a participé à la restauration de S.254 (V30). Un second titre, P. Osché, *Les avions de Guynemer* (32 p., Ouest-France selon une fiche de libraire, https://livre.fnac.com/a276085/Philippe-Osche-Les-Avions-de-Guynemer), est à confirmer.
+- **V38** — *Icare*, n° 122, « Guynemer et les Cigognes », SNPL, 1987, environ 226 p. ; références : bibliographie de l'*International Encyclopedia of the First World War*, https://encyclopedia.1914-1918-online.net/bibliography/t5gd8qmw/, et fiche de libraire, https://www.windsockdatafilespecials.co.uk/icare-guynemer-special-2164-p.asp [PISTE].
+- **V39** — Musée de l'Air et de l'Espace, dossier de presse « Ouverture de la Grande Galerie », 25 octobre 2019, https://www.museeairespace.fr/wp-content/uploads/sites/2/2019/10/Basse-def-DPMuseeAirEspace-A4-25-octobre-web-final.pdf, et *Rapport d'activité 2016*, https://www.museeairespace.fr/wp-content/uploads/sites/2/2017/11/rapport-activite-2016-musee-air-et-espace.pdf [RÉSUMÉ ; répartition des faits entre les deux documents incertaine]. Institutionnelle : toile d'origine doublée, constat d'état de 2016, fragment de toile à cigogne, dépôt du Musée de l'Armée.
+- **V40** — Gallica (BnF), Agence Rol, « L'avion de Guynemer aux Invalides », photographie de presse, 1917, https://gallica.bnf.fr/ark:/12148/btv1b53003839j [titre seulement]. Primaire ; conditions de réutilisation de Gallica à vérifier (référence seulement).
+- **V41** — La Contemporaine (Université Paris Nanterre), Argonnaute, « Paris. Invalides. L'avion le "Vieux Charles" du capitaine Guynemer », https://argonnaute.parisnanterre.fr/ark:/14707/sr8z7x41vfm6 [titre seulement]. Primaire.
+- **V42** — Biblioteca Virtual de Defensa (Espagne), « El Teniente Guynemer junto a su avión "Vienx-Charles" », photographie de 13 × 17,5 cm, registro 163170, https://bibliotecavirtual.defensa.gob.es/BVMDefensa/gran_guerra/en/consulta/registro.do?id=163170 [RÉSUMÉ]. Primaire ; avion antérieur à S.254.
+- **V43** — Wikimedia Commons, photos de S.254 au Bourget, venues de Flickr : « Georges Guynemer's SPAD VII, Musee de l'Air et de l'Espace, Le Bourget, Paris. (8122848723).jpg », https://commons.wikimedia.org/wiki/File:Georges_Guynemer's_SPAD_VII,_Musee_de_l'Air_et_de_l'Espace,_Le_Bourget,_Paris._(8122848723).jpg ; « Cockpit detail… (8122869610).jpg » ; « Cowling and propellor detail… (8122873870).jpg » [titres seulement]. Licence à vérifier sur chaque page.
+- **V44** — « Escadrille des cigognes et le capitaine Guynemer », PDF, juin 2016, site croixdeguerre-valeurmilitaire.fr, https://croixdeguerre-valeurmilitaire.fr/wp-content/uploads/2018/10/Escadrille-des-cigognes-et-le-capitaine-Guynemer-Juin-2016.pdf [RÉSUMÉ]. Association : piste (cigogne dessinée par un peintre du camouflage).
+- **V45** — Cigogne blanche, fiches : INPN (MNHN), https://inpn.mnhn.fr/docs-web/docs/download/440861 ; Futura-Sciences, https://www.futura-sciences.com/planete/definitions/zoologie-cigogne-blanche-12422/ ; DREAL Occitanie, https://www.occitanie.developpement-durable.gouv.fr/IMG/pdf/Cigogne_blanche_cle2294ca.pdf ; GREPOM, https://www.grepom.org/wp-content/uploads/la-cigogne-blanche.pdf [RÉSUMÉ]. Longueur de 95-110, 100-125 ou 110-115 cm selon la fiche ; envergure de 155-215 ou 183-217 cm ; en vol, cou tendu et pattes qui dépassent la queue.
+- **V46** — airforces.fr, « A MUST in chivalry history – When Guynemer spared Udet after strafing through his wing », https://airforces.fr/tag/spad-vii/page/2 [RÉSUMÉ]. Reprend le passage d'Udet (lettres noires, « Vieux », sur le fuselage entre les ailes) ; complète `spad7.md` S29.
+- **V47** — Pistes sur les cigognes du GC 12 : Wikipédia (fr), « Escadrille des Cigognes », https://fr.wikipedia.org/wiki/Escadrille_des_Cigognes, et « SPA 3 Cigognes », https://fr.wikipedia.org/wiki/SPA_3_Cigognes ; escadrilles.org, https://www.escadrilles.org/armee-de-l-air/1000/ (appellations « Cigogne de Guynemer », « de Saint-Galmier », « japonaise », « de Fonck ») ; notice de vente Aguttes, « La Cigogne de Saint Galmier », https://www.naturaldiamonds.com/fr/culture-et-style/aguttes-la-cigogne-de-saint-galmier/ [RÉSUMÉ]. Wikis et notices : pistes.
+- **V48** — Mascotte Hispano-Suiza : Revs Institute, « "Cigogne" ("Stork") for Automobiles Hispano-Suiza », https://museum.revsinstitute.org/exhibit/cigogne-stork-for-automobiles-hispano-suiza/ ; Safran, « 1916 : la cigogne devient l'emblème d'Hispano-Suiza », https://www.safran-group.com/fr/groupe/histoire-patrimoine/timeline/1916-cigogne-devient-embleme-hispano-suiza [RÉSUMÉ]. Origines divergentes.
+
+Détails tirés le 2026-10-27 de sources déjà citées : S36 (*Motor Sport*, mai 1976) donne aussi les postures des SPA 26 (ailes à mi-course), 103 (début du battement) et 73 (tête retournée), et fait de la cigogne de la SPA 3 le modèle de la mascotte Hispano-Suiza ; V21 (page du CAEA) cite les ouvrages d'Osché et la revue *Icare* pour la cigogne rouge de S.254 ; V22 (notice Interenchères) décrit une maquette en bois : nom (écrit en capitales dans la notice, ce qui ne dit rien de la maquette), cigogne rouge, « 2 » rouge, gouvernail tricolore marqué « S 254 ».
+
 **Pistes non consultées, prioritaires** : J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8 (`spad7.md` P1) et *SPAD Scouts S.VII-S.XIII*, Aircam Aviation Series n° 9 ; M. Velek, M. Ovčáčík et K. Susa, *SPAD S.VII C1*, 4+ Publications n° 19 (P3) ; Hardesty, Hastings et Toelle, « Project Butterfly », *Cross & Cockade* (US) vol. 9 n° 1 (1968), vol. 13 n° 2 et 4 (1972) (P14) ; C. Ravel, « La restauration du Spad VII n° 5248 », *Cahiers du RSA* n° 255, 2007 (appareil non identifié).
 
 ## 17. Journal des décisions
@@ -396,3 +596,15 @@ Sources de `spad7.md` citées ici : S1, S3 (lues), S13, S15, S27, S36, S20 (rés
 - **2026-10-26 — Livrée.** Recommandé : **S.254 tel que photographié le 20 octobre 1917**. Seul S.VII réunissant avion conservé, photos datées et notices de deux musées, et présent en Flandre avec la SPA 3. Réserves : moteur de 180 ch, personnage réel, couleurs à confirmer. S.113 (Heurtaux, 150 ch probable) et S.2489 (Baracca, conservé) restent des variantes, moins documentées. **Décision au joueur.**
 - **2026-10-26 — Cocardes.** Emplacements et diamètres non trouvés. **ESTIMÉ** de gabarit seulement (environ 1,0 m sur les ailes), à remplacer par une mesure sur photo.
 - **2026-10-26 — Décision du joueur sur la livrée.** **S.254 « Vieux Charles »** dans son état du 20 octobre 1917, en deux couches de décalques : finition d'usine, puis marques de Guynemer. Le moteur de 180 ch est accepté, la différence étant invisible de l'extérieur. **Usage réservé** : scène de studio, as piloté par l'IA ou livrée historique au choix. L'avion du joueur garde la finition d'usine avec un numéro fictif.
+- **2026-10-27 — Marques de S.254 : présence établie, emplacements non.** Le billet du Musée de l'Armée (V5) décrit un gros plan où l'on voit le nom, la cigogne et le « 2 » ; la brochure du ministère (V35) confirme le nom et la cigogne. **Présence le 20 octobre 1917 : B.** Aucune notice ne donne de position, de taille ni de couleur, et aucune image n'a été vue. **Retenu : gabarit chiffré `ESTIMÉ` (D) au § 12.6.9**, à remplacer par une mesure sur photo (D9, V40, V41) ou sur l'avion (D8).
+- **2026-10-27 — Cigogne.**
+  - Posture « ailes basses » : appellation de l'insigne (V36), lettre de 1976 (S36), wikis. **B.**
+  - Couleur rouge : trois pistes, dont une qui cite Osché et *Icare*, et la règle du pochoir (V34). **C.** Les cigognes blanches ou noires signalées ailleurs concernent d'autres avions.
+  - Deux flancs : C (V30, V34).
+  - Sens vers le nez, position et taille : non trouvés, **ESTIMÉ** (D).
+  - La silhouette du § 12.6.8 est construite à partir de la posture et de l'ornithologie (V45), sans copier aucune image.
+- **2026-10-27 — « 2 ».** Présence B (V5) ; rouge C (V21, V22). Position en arrière de la cigogne, taille 0,40 m et graphie : **ESTIMÉ** (D). Pas de « 2 » sur les ailes ni sur le dessus du fuselage, faute de source ; la règle du dessus et des deux flancs, vue dans un résumé de Wikipédia (V47), est à vérifier.
+- **2026-10-27 — « Vieux Charles ».** Présence B. Le noir et la position « entre les ailes » ne reposent que sur Udet (S29, V46), souvenir de 1935 d'un épisode contesté : **D**. Graphie et taille non trouvées : **ESTIMÉ**, capitales bâton de 0,12 m sous le tuyau d'échappement, avec une variante au-dessus du tuyau.
+- **2026-10-27 — Gouvernail.** Albin Denis (V10, résumé) signale une inscription peinte qui n'a pas été mise à jour après le passage au 180 ch : l'existence d'une inscription est **C**. Le texte « S 254 » (D, notice d'une maquette) et sa place sur la bande blanche sont **ESTIMÉ**.
+- **2026-10-27 — « Bande tricolore des as » : contradiction non tranchée.** La version anglaise du billet du Musée de l'Armée (V5) dit que la queue de S.254 porte la bande tricolore des as. Le § 12.5 classe une telle bande en anachronisme pour S.254. Deux lectures possibles : le tricolore réglementaire du gouvernail, ou une bande distincte comme sur S.115 et S.113. **Retenu provisoirement : pas de bande supplémentaire.** Premier point à vérifier sur les plaques du 20 octobre.
+- **2026-10-27 — Photo espagnole exclue.** La photo de la Biblioteca Virtual de Defensa (V42) suit la 16e victoire (1916) : ce n'est pas S.254. Elle ne sert qu'à comparer la graphie du nom sur un avion antérieur.
