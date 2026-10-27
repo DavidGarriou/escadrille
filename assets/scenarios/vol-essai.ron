@@ -1,0 +1,23 @@
+// Test flight, first playable increment of M2 (docs/plans/m2-vol-essai.md): the SPAD in
+// steady level flight, over the origin of the map. The equilibrium is the flight
+// model's, solved by fdm_lab (`fdm_lab trim spad7 --speed-kmh 160 --altitude-m 1000`,
+// still air, full tanks); the test `the_test_flight_starts_in_equilibrium` of fdm_lab
+// fails when the flight model no longer holds it, with the values to copy here.
+Scenario(
+    aircraft: "spad7",
+    fuel_fraction: 1.0,      // C: full tanks, the loading of the flight tests
+    heading: Deg(90.0),      // C: east, the player's choice (2026-10-28)
+    altitude: M(1000.0),     // C: the player's choice (2026-10-28)
+    speed: Kmh(160.0),       // C: the player's choice (2026-10-28)
+    equilibrium: (
+        //! C: fdm_lab trim of 2026-10-28 (level flight at the scenario's speed and altitude)
+        alpha: Rad(0.002390627),
+        beta: Rad(0.010710592),
+        roll: 0.003231507,
+        pitch: -0.107616461,
+        yaw: 0.006225157,
+        throttle: 0.544079927,
+        rotor_speed: RadS(154.615477009),
+        downwash: Rad(0.043699084),
+    ),
+)

@@ -409,6 +409,59 @@ pub(crate) mod tests {
         ground_altitude: 0.0,
     };
 
+    /// The test flight's start (`assets/scenarios/vol-essai.ron`, plan
+    /// `docs/plans/m2-vol-essai.md`) is the flight model's own level flight: when the model
+    /// changes, this fails and prints the values to copy into the file.
+    #[test]
+    fn the_test_flight_starts_in_equilibrium() {
+        let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let s = escadrille_data::scenario::load_scenario(&assets, "vol-essai").unwrap();
+        let aircraft = load_aircraft(&assets, &s.aircraft)
+            .unwrap()
+            .build(&Loading {
+                fuel_fraction: s.fuel_fraction,
+            })
+            .unwrap()
+            .aircraft;
+        let e = s.equilibrium;
+        let trim = solve_robust(
+            &aircraft,
+            &STILL_AIR,
+            Flight::guess(s.altitude.si(), s.speed.si(), e.throttle),
+            LEVEL_AT_SPEED,
+        )
+        .unwrap();
+        let (f, c) = (trim.flight, trim.commands(&aircraft));
+        let held = (f.alpha - e.alpha.si()).abs() < 1e-5
+            && (f.beta - e.beta.si()).abs() < 1e-5
+            && (c.roll - e.roll).abs() < 1e-4
+            && (c.pitch - e.pitch).abs() < 1e-4
+            && (c.yaw - e.yaw).abs() < 1e-4
+            && (c.throttle - e.throttle).abs() < 1e-4
+            && (f.rotor_speed - e.rotor_speed.si()).abs() < 0.01
+            && (f.downwash - e.downwash.si()).abs() < 1e-5;
+        assert!(
+            held,
+            "the flight model's level flight moved; equilibrium for vol-essai.ron:\n\
+             alpha: Rad({:.9}), beta: Rad({:.9}), roll: {:.9}, pitch: {:.9}, yaw: {:.9}, \
+             throttle: {:.9}, rotor_speed: RadS({:.9}), downwash: Rad({:.9})",
+            f.alpha, f.beta, c.roll, c.pitch, c.yaw, c.throttle, f.rotor_speed, f.downwash
+        );
+        // And the integrator holds it from the file's own state and commands.
+        let start = s.initial_state();
+        let mut state = start;
+        for _ in 0..120 {
+            state = aircraft.step(&state, &s.commands(), &STILL_AIR, 1.0 / 120.0);
+        }
+        let climbed = start.position_ned.z - state.position_ned.z;
+        let slowed = start.velocity_body.length() - state.velocity_body.length();
+        assert!(
+            climbed.abs() < 0.05 && slowed.abs() < 0.01,
+            "{climbed} m, {slowed} m/s"
+        );
+        assert!(state.angular_velocity_body.length() < 1e-3, "{state:?}");
+    }
+
     #[test]
     fn level_flight_trim_is_an_equilibrium_of_the_integrator() {
         let a = biplane();

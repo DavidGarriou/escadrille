@@ -1999,3 +1999,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   2. le neutre de la profondeur ;
   3. le point de départ ;
   4. le vol sans aides.
+
+### Vol d'essai, étape 1 : état de départ
+
+- **Q** Le joueur valide le plan avec les options recommandées :
+  - gaz sur la croix ↑/↓, stick droit au regard libre ;
+  - neutre de la profondeur réglable ;
+  - départ à 1 000 m et 160 km/h ;
+  - sans aides.
+- **A** Nouveau fichier `assets/scenarios/vol-essai.ron` (schéma `crates/data/src/scenario.rs`) :
+  - SPAD, réservoirs pleins, cap à l'est, 1 000 m, 160 km/h ;
+  - équilibre du modèle de vol calculé par `fdm_lab trim` : incidence 0,14°, dérapage 0,61°, manche −0,108, gaz 0,544, hélice 1 476 tr/min ;
+  - le schéma construit l'état initial et les commandes.
+- **A** Test `the_test_flight_starts_in_equilibrium` (`fdm_lab`) :
+  - il refait l'équilibre et le compare au fichier ;
+  - il vérifie qu'une seconde d'intégration depuis l'état du fichier ne bouge presque pas : moins de 5 cm, de 0,01 m/s et de 0,001 rad/s ;
+  - contrôle par mutation : un manche faussé à −0,100 le fait échouer, avec les valeurs à recopier.

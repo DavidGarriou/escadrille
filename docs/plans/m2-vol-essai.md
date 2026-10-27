@@ -1,6 +1,10 @@
 # Plan — Vol d'essai : premier incrément jouable du M2
 
-- Statut : **proposé**, à valider par le joueur.
+- Statut : **validé** par le joueur le 2026-10-28, avec les options recommandées :
+  - gaz sur la croix ↑/↓, stick droit au regard libre ;
+  - neutre de la profondeur réglable ;
+  - départ à 1 000 m et 160 km/h ;
+  - sans aides.
 - Demande du joueur (2026-10-28) : « Avant la seconde livrée, je veux une première version jouable, un vol d'essai qui démarre en l'air », avec :
   - le modèle de vol du SPAD branché dans le jeu ;
   - la manette : stick gauche pour le manche, gâchettes pour le palonnier, stick droit ou boutons pour les gaz ;
