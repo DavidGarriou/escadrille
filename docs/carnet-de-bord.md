@@ -1958,3 +1958,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** **Limite** : le fuselage s'éclaire uniformément, sans la pénombre de son intérieur ni ses cadres.
 - **A** Ménage du disque : 12 Go de compilations périmées supprimées (`target/debug/deps`, anciennes versions des crates Bevy et du jeu ; brouillons de compilation du bloc-notes). Un redémarrage du conteneur a interrompu une compilation, sans perte.
 - **A** `just check` et `just test` passent (288 tests).
+
+### Question : peut-on déjà piloter à la manette ?
+
+- **Q** Le joueur : « y a t'il déjà prêt une version où je peux essayer de piloter avec la manette ? »
+- **R** Pas encore. Ce qui existe :
+  - le modèle de vol, qui vole en ligne de commande (`fdm_lab`, `just essai spad7`), sans train ni sol, reportés au M2 ;
+  - dans le jeu, la scène de référence fixe (`just run`), les scènes de capture et le **labo manette** (`just labo-manette`), qui vérifie déjà les boutons et les axes de la SN30 Pro.
+
+  Le pont entre le modèle de vol et le jeu ne contient encore que les conversions de repères (ADR 0006). Piloter à la manette est l'objet du **M2 « Premier vol »** ; le M1 attend toujours son essai joueur (lecture du rapport d'essais).
+- **R** Proposition : un premier incrément jouable du M2, un « vol d'essai » qui démarre en l'air. Il comprendrait :
+  - le modèle de vol au pas fixe dans le jeu ;
+  - la manette par une première couche d'actions (manche, palonnier, gaz) ;
+  - une caméra de poursuite ;
+  - le SPAD sur la scène de plein air.
+
+  Décollage et atterrissage viendraient ensuite, avec le train. Plan à faire valider avant le code (tâche sur plusieurs plugins). **En attente de la décision du joueur.**
