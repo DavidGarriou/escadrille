@@ -194,7 +194,7 @@ class Builder:
                 surface = PAINTED[f[self.tag] - 1]
                 yield f, (surface, face_side(surface, body_vector(f.normal)))
 
-    def write(self, obj, materials, atlas=None):
+    def write(self, obj, materials, atlas=None, smooth=math.radians(35)):
         self.prepare()
         if atlas is not None and any(f[self.tag] for f in self.bm.faces):
             uv = self.bm.loops.layers.uv.verify()
@@ -209,7 +209,7 @@ class Builder:
             obj.data.materials.append(materials[name])
         for poly in obj.data.polygons:
             poly.use_smooth = True
-        smooth_by_angle(obj.data, math.radians(35))
+        smooth_by_angle(obj.data, smooth)
 
 
 def smooth_by_angle(mesh, angle):
@@ -859,6 +859,9 @@ def build_wires(data, wires):
     for side in (1, -1):
         for z in (z_top, z_bottom):
             tube(wire_builder(wires, "wire_tail"), [(x, side * y, -0.70), (x, 0.0, z)], landing, "wire", n=w)
+    # The diameter of each node's wires, for the game's wire shader (glTF extras).
+    return {"wire_flying": flying, "wire_landing": landing, "wire_incidence": incidence,
+            "wire_cabane": incidence, "wire_tail": landing}
 
 
 def build_linkage(data, parts):
@@ -1288,9 +1291,12 @@ def main(argv):
     airframe = new_object("airframe", body)
     parts.write(airframe, materials, atlas)
     wires = {}
-    build_wires(data, wires)
+    diameters = build_wires(data, wires)
     for name, builder in sorted(wires.items()):
-        builder.write(new_object(name, body), materials)
+        obj = new_object(name, body)
+        obj["diameter_m"] = diameters[name]
+        # Smooth tubes: their normals point away from the axis, as the wire shader needs.
+        builder.write(obj, materials, smooth=math.pi)
     for name, builder in controls.items():
         builder.write(control_objects[name], materials, atlas)
 
@@ -1323,6 +1329,7 @@ def main(argv):
         export_yup=True,
         export_apply=True,
         export_copyright=COPYRIGHT,
+        export_extras=True,
         export_cameras=False,
         export_lights=False,
         export_animations=False,

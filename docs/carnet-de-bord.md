@@ -1895,3 +1895,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   Les cocardes visibles sur le plan inférieur sont celles de son intrados : cabré au sol, l'avion montre le dessous de ses ailes à un observateur debout devant lui.
 - **D** Tonemapping : **TonyMcMapface**, choisi sur trois captures comparées. ACES sature la toile vers l'orange ; AgX la délave à cette exposition. Consigné dans le skill `rendu-visuel`, avec les scènes `maquette-spad7` et `avion-studio` ajoutées à sa table.
 - **R** Rendu logiciel dans le conteneur : 232 ms par image ; la vitesse se juge sur ta machine.
+
+### Rendu en jeu : anticrénelage des câbles (B6)
+
+- **A** Technique « phone-wire AA » (skill `rendu-visuel`) :
+  - nouveau matériau du jeu pour les câbles, `crates/game/src/render/wires.rs`, sur la base du matériau standard ;
+  - shader `assets/shaders/wire_aa.wesl` :
+    - le shader de sommets élargit chaque câble à au moins 1,5 pixel à l'écran, le long des normales du tube ;
+    - le shader de fragments réduit l'opacité dans la même proportion, en mélange alpha.
+- **A** Modèle : le script Blender écrit le diamètre des câbles de chaque nœud `wire_*` dans ses extras glTF (`diameter_m` : 4,5 mm pour le vol, 3,5 mm pour l'atterrissage et l'empennage, 3 mm pour l'incidence et la cabane), et lisse ses tubes pour que leurs normales s'écartent de l'axe. Modèle régénéré et installé ; `asset_check` inchangé.
+- **A** Captures d'`avion-studio` **regardées** :
+  - sans la technique, les câbles d'incidence sont pointillés ;
+  - à 1,0 pixel, ils le restent : un tube à six pans ne mesure que 0,87 fois son diamètre entre deux faces ;
+  - à **1,5 pixel**, tous les câbles sont continus. Ils sont aussi plus clairs, comme il se doit pour un fil de 4,5 mm qui couvre moins d'un pixel à 8 m.
+- **A** Tests : lecture du diamètre dans les extras, rayon transmis au shader. `just check` et `just test` passent.
+- **Q au joueur** : Bevy 0.20 écrit ses shaders en **WESL**, du WGSL avec imports et compilation conditionnelle. Les nôtres suivent, pour importer ses modules. `CLAUDE.md` dit « Shaders en WGSL » : faut-il écrire « WGSL (dialecte WESL de Bevy) » ? Je n'ai pas modifié `CLAUDE.md`.
+- **R** Le scintillement en mouvement ne se juge pas sur une image fixe : à regarder sur ta machine.

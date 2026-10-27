@@ -32,7 +32,12 @@ Chacune est un fichier `assets/scenes/<nom>.ron` (caméra, heure, météo, grain
 
 - **HDR** et soleil en unités physiques (lux) ; exposition automatique ou caméra physique ; bloom discret.
 - **Tonemapping** : TonyMcMapface, choisi le 2026-10-27 sur les captures d'`avion-studio` (soleil `RAW_SUNLIGHT`, atmosphère, `ev100` 13). ACES sature la toile vernie vers l'orange ; AgX la délave à cette exposition.
-- **Anticrénelage** : TAA. Les **câbles et haubans** sont plus fins qu'un pixel : leur appliquer la technique « phone-wire AA » (largeur minimale à l'écran d'environ un pixel, avec opacité réduite en proportion) pour éviter le scintillement.
+- **Anticrénelage** : TAA. Les **câbles et haubans** sont plus fins qu'un pixel : technique « phone-wire AA », faite le 2026-10-27 (`crates/game/src/render/wires.rs`, `assets/shaders/wire_aa.wesl`).
+  - Le shader de sommets élargit chaque câble à au moins 1,5 pixel à l'écran, le long des normales du tube.
+  - Le shader de fragments réduit l'opacité dans la même proportion, en mélange alpha.
+  - Le diamètre vient des extras glTF du nœud `wire_*`.
+  - À 1,0 pixel, un tube à six pans, qui ne mesure que 0,87 fois son diamètre entre deux faces, se cassait en pointillés.
+- **Shaders** : Bevy 0.20 écrit les siens en WESL (WGSL avec imports et compilation conditionnelle). Les nôtres suivent, pour importer ses modules (`bevy_pbr::render::…`).
 - **Atmosphère** : utiliser l'atmosphère procédurale de Bevy si la version épinglée la fournit (vérifier) ; sinon implémenter Hillaire 2020 (LUT de transmittance, multidiffusion, vue du ciel, perspective aérienne). La **perspective aérienne** donne l'échelle du paysage : elle n'est pas optionnelle.
 - **Ombres** : cascades réglées pour l'avion et le cockpit de près, ombres des nuages au sol (carte d'ombre vue du dessus).
 
