@@ -146,3 +146,15 @@ Chaque étape : `just check`, `just test`, carnet, commit et push. C'est un chan
 - **Livrée (B2)** : S.254 « Vieux Charles » dans son état du 20 octobre 1917, en deux couches de décalques (finition d'usine, puis marques de Guynemer). Moteur de 180 ch accepté.
 - **Usage réservé** : studio, as de l'IA, livrée historique au choix ; l'avion du joueur prend la finition d'usine avec un numéro fictif.
 - **Partie A** : faite, revue de l'aérodynamicien conforme.
+
+## Avancement
+
+- **B4** (2026-10-26) : quatre passes de forme et de détails ; le modèle Blender est dans les assets.
+- **B5, première passe** (2026-10-27) : toile peinte dans deux textures 4K générées par le script, couleur et normales, sur un atlas de projections planes.
+  - Peints : la finition d'usine de 1917 (`livrees.ron`), avec les cocardes des ailes et le gouvernail tricolore ; les rubans et coutures des nervures, les fausses nervures et le creux de la toile entre les nervures.
+  - **Reste en B5** :
+    - les marques de S.254 (cigogne, « 2 », « Vieux Charles », « S 254 »), en seconde livrée ;
+    - la transmission de la toile à contre-jour (carte d'épaisseur) ;
+    - le bois et le métal ;
+    - la rugosité.
+  - **À traiter en B6** : les mipmaps des textures. Bevy ne les génère pas pour les images d'un glTF : en jeu, les rubans scintillent de loin.

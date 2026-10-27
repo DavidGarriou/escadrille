@@ -8,6 +8,7 @@ use std::process::ExitCode;
 
 use clap::Parser;
 use escadrille_data::aircraft::load_aircraft;
+use escadrille_data::livery::load_liveries;
 use escadrille_data::mockup::load_mockup;
 
 #[derive(Debug, Parser)]
@@ -35,7 +36,8 @@ fn main() -> ExitCode {
         let data = load_aircraft(&cli.assets, &cli.aircraft).map_err(|e| e.to_string())?;
         let mockup = load_mockup(&cli.assets, &cli.aircraft).map_err(|e| e.to_string())?;
         if let Some(path) = &cli.json {
-            let json = mockup::export::model_json(&data, mockup.as_ref())?;
+            let liveries = load_liveries(&cli.assets, &cli.aircraft).map_err(|e| e.to_string())?;
+            let json = mockup::export::model_json(&data, mockup.as_ref(), liveries.as_ref())?;
             if let Some(dir) = path.parent() {
                 std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
             }

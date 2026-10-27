@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use escadrille_data::aircraft::{Control, load_aircraft};
 use escadrille_data::frames::from_gltf;
+use escadrille_data::livery::{LiveryFile, MarkSpec, load_liveries};
 use escadrille_data::mockup::load_mockup;
 use glam::{DQuat, DVec3};
 
@@ -186,10 +187,15 @@ fn each_plate_is_cut_on_the_hinge_line_of_its_node() {
     assert!((rudder.pivot.x + 4.75).abs() < 1e-12, "{rudder:?}");
 }
 
+fn liveries() -> LiveryFile {
+    let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+    load_liveries(&assets, "spad7").unwrap().unwrap()
+}
+
 #[test]
 fn the_model_data_is_valid_json_with_the_contract() {
     let (data, mockup) = spad();
-    let text = export::model_json(&data, Some(&mockup)).unwrap();
+    let text = export::model_json(&data, Some(&mockup), Some(&liveries())).unwrap();
     let json: gltf::json::Value = gltf::json::deserialize::from_str(&text).unwrap();
     assert_eq!(json["version"], export::VERSION);
     assert_eq!(json["id"], "spad7");
@@ -209,8 +215,48 @@ fn the_model_data_is_valid_json_with_the_contract() {
     // An outline must name a surface of aircraft.ron.
     let mut stray = mockup.clone();
     stray.outlines[0].surface = "canard".to_owned();
-    let error = export::model_json(&data, Some(&stray)).unwrap_err();
+    let error = export::model_json(&data, Some(&stray), None).unwrap_err();
     assert!(error.contains("canard"), "{error}");
+    // Without the optional files, null.
+    let bare: gltf::json::Value =
+        gltf::json::deserialize::from_str(&export::model_json(&data, None, None).unwrap()).unwrap();
+    assert!(bare["mockup"].is_null() && bare["liveries"].is_null());
+}
+
+#[test]
+fn the_liveries_paint_faces_and_nodes_the_aircraft_has() {
+    let (data, mockup) = spad();
+    let text = export::model_json(&data, Some(&mockup), Some(&liveries())).unwrap();
+    let json: gltf::json::Value = gltf::json::deserialize::from_str(&text).unwrap();
+    let l = &json["liveries"];
+    assert_eq!(l["colours"]["toile"][0], 0.84);
+    let first = &l["liveries"][0];
+    assert_eq!(first["name"], "usine-1917");
+    assert_eq!(first["marks"][0]["kind"], "roundel");
+    assert_eq!(first["marks"][0]["face"], "upper_wing.top");
+    assert_eq!(first["marks"][0]["diameter"], 1.0);
+    assert_eq!(first["marks"][4]["kind"], "bands");
+    // A roundel under a fin, on a fuselage's side, on a surface the aircraft lacks.
+    for (face, accepted) in [
+        ("fin.bottom", false),
+        ("fuselage.left", true),
+        ("fin.left", true),
+        ("canard.top", false),
+    ] {
+        let mut file = liveries();
+        if let MarkSpec::Roundel { face: f, .. } = &mut file.liveries[0].marks[0] {
+            *f = face.to_owned();
+        }
+        let result = export::model_json(&data, Some(&mockup), Some(&file));
+        assert_eq!(result.is_ok(), accepted, "{face}: {result:?}");
+    }
+    // Bands on a node that is not a control.
+    let mut file = liveries();
+    if let MarkSpec::Bands { node, .. } = &mut file.liveries[0].marks[4] {
+        *node = "prop".to_owned();
+    }
+    let error = export::model_json(&data, Some(&mockup), Some(&file)).unwrap_err();
+    assert!(error.contains("not a control node"), "{error}");
 }
 
 #[test]

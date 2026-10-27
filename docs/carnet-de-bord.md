@@ -1821,3 +1821,41 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Le fuselage était bosselé : le bruit de lecture des 52 sections mesurées (1 à 2 cm) faisait onduler le loft. **A** Le script lisse maintenant sections et contours (filtre binomial sur ±0,2 m) ; les données gardent les mesures brutes. Nouveau rendu **regardé** : fuselage lisse, dérive sans moiré.
 - **A** Modèle installé dans `assets/` (2,7 Mo) ; `asset_check` passe (longueur 6,031 m, hauteur à l'écart accepté). Capture du jeu **regardée** : finition jaune et câblage visibles, vérifications de repères inchangées.
 - **R** Les câbles, plus fins qu'un pixel, scintilleront en mouvement sans l'anticrénelage prévu au plan (B6).
+
+## 2026-10-27
+
+### Modèle 3D réaliste : textures de la toile (B5, première passe)
+
+- **Q** Le joueur : « Continue » (suite de la passe 4, qui annonçait les textures).
+- **A** Données :
+  - nouveau fichier `assets/aircraft/spad7/livrees.ron`, schéma `crates/data/src/livery.rs` : couleurs nommées (sRGB) et livrées. Une livrée a une couleur de toile, une couleur de métal peint et des marques : cocardes (`Roundel`) sur une face, bandes (`Bands`) sur une gouverne ;
+  - première livrée : la **finition d'usine de 1917** (« usine-1917 »), couche de base de S.254 :
+    - toile vernie jaune pâle et métal d'un jaune plus foncé, les teintes de la passe 4 (`ESTIMÉ`, demande D8) ;
+    - cocardes d'environ 1,0 m sur l'extrados du plan supérieur et l'intrados du plan inférieur, à un diamètre du saumon (`ESTIMÉ`, § 12.2 de la fiche d'aspect) ;
+    - gouvernail en bandes bleu, blanc, rouge, bleu côté charnière ;
+  - contrôles au chargement (couleurs connues, composantes, faces, diamètres) et à l'export pour Blender (la face existe sur l'avion, la bande est sur une gouverne) ; tests ;
+  - quatre tables de `maquette.ron` pour la toile, toutes `ESTIMÉ` sauf une :
+    - `rib_tapes` : rubans de 40 mm, coutures tous les 60 mm, teinte un peu plus foncée sous le vernis ;
+    - `false_ribs` : fausses nervures jusqu'au longeron avant, à 12 % de la corde (C, S.XI) ;
+    - `fabric_sag` : creux de 1,5 mm entre deux nervures ;
+    - `tail_ribs` : nervures de l'empennage tous les 0,20 m ;
+  - le format des données pour Blender passe en version 2.
+- **A** Script Blender (`art/spad7/build.py`) :
+  - chaque face entoilée est étiquetée par sa surface, puis rangée par côté selon sa normale (dessus et dessous, ou flancs) ;
+  - chaque région est projetée à plat, et toutes sont rangées dans un atlas de 4096 px, à 446 px/m (2,2 mm par pixel) ;
+  - deux textures sont peintes en numpy, sans image tierce : couleur et normales ;
+  - les gouvernes partagent la région de leur surface ;
+  - les nervures peintes tombent sur les festons du bord de fuite ;
+  - modèle de 4,8 Mo, contre 2,7 Mo à la passe 4 (deux PNG de 0,7 Mo).
+- **A** Vérifications :
+  - `asset_check` passe, inchangé ;
+  - textures **regardées** (atlas entier, détail d'une cocarde et de la carte de normales) ;
+  - trois rendus Cycles **regardés** (trois quarts avant, dessus, dessous) : cocardes à leur place, bleu du gouvernail côté charnière, nervures et rubans visibles dessus comme dessous ;
+  - capture du jeu **regardée** : textures chargées, cocardes et gouvernail en place ;
+  - `just check` et `just test` passent (280 tests).
+- **⚠** En jeu, de fines lignes claires scintillent sur le gouvernail. Bevy 0.20 ne génère pas les mipmaps des images d'un glTF (vérifié dans les sources : seule une génération pour les cibles de rendu existe, `MipGenerationJobs`) ; les rubans et les coutures, plus fins qu'un pixel de loin, crénèlent. **D** À traiter en ouvrant B6 : KTX2 avec mipmaps, ou mipmaps calculées au chargement.
+- **R** Poids du dépôt : chaque régénération du modèle ajoute environ 5 Mo à l'historique. Le plan prévoit Git LFS pour les gros fichiers, pas encore mis en place.
+- **R** Reste en B5 :
+  - les marques de Guynemer (cigogne, « 2 », « Vieux Charles », « S 254 »), en seconde livrée sur le même atlas ;
+  - la transmission de la toile à contre-jour ;
+  - le bois, le métal et la rugosité.

@@ -1,6 +1,7 @@
 //! The aircraft's model data as JSON, for the Blender scripts of `art/` (ADR 0007): what
-//! `aircraft.ron`, `maquette.ron` and the model contract say about the shape, so that the
-//! scripts never read the data files themselves nor work out the contract again.
+//! `aircraft.ron`, `maquette.ron`, `livrees.ron` and the model contract say about the
+//! shape and its paint, so that the scripts never read the data files themselves nor work
+//! out the contract again.
 //!
 //! Body axes from the datum (x forward, y right, z down), metres and radians. Written by
 //! hand: a few dozen numbers do not call for a JSON dependency.
@@ -8,12 +9,13 @@
 use std::fmt::Write;
 
 use escadrille_data::aircraft::{AircraftData, Loading, SurfaceKind};
+use escadrille_data::livery::{LiveryFile, MarkSpec, split_face};
 use escadrille_data::mockup::MockupFile;
 use escadrille_data::model::contract;
 use glam::DVec3;
 
 /// Format version, checked by the scripts.
-pub const VERSION: u32 = 1;
+pub const VERSION: u32 = 2;
 
 fn number(x: f64) -> String {
     if x == 0.0 {
@@ -48,7 +50,11 @@ fn string(s: &str) -> String {
 }
 
 /// The model data of an aircraft, as a JSON document.
-pub fn model_json(data: &AircraftData, mockup: Option<&MockupFile>) -> Result<String, String> {
+pub fn model_json(
+    data: &AircraftData,
+    mockup: Option<&MockupFile>,
+    liveries: Option<&LiveryFile>,
+) -> Result<String, String> {
     let file = &data.file;
     let contract = contract(data).map_err(|e| e.to_string())?;
     let cg = data
@@ -156,7 +162,7 @@ pub fn model_json(data: &AircraftData, mockup: Option<&MockupFile>) -> Result<St
 
     match mockup {
         None => {
-            let _ = writeln!(j, "  \"mockup\": null");
+            let _ = writeln!(j, "  \"mockup\": null,");
         }
         Some(m) => {
             if let Some(o) = m
@@ -226,9 +232,101 @@ pub fn model_json(data: &AircraftData, mockup: Option<&MockupFile>) -> Result<St
                 })
                 .collect();
             let _ = writeln!(j, "    \"features\": {{{}}}", features.join(", "));
-            let _ = writeln!(j, "  }}");
+            let _ = writeln!(j, "  }},");
+        }
+    }
+    match liveries {
+        None => {
+            let _ = writeln!(j, "  \"liveries\": null");
+        }
+        Some(l) => {
+            let _ = writeln!(j, "  \"liveries\": {}", liveries_json(data, &contract, l)?);
         }
     }
     let _ = writeln!(j, "}}");
     Ok(j)
+}
+
+/// The colours and liveries, the faces and nodes they paint checked against the aircraft:
+/// a face names a surface of `aircraft.ron` (or the fuselage) and a side it has, a band a
+/// control node of the contract.
+fn liveries_json(
+    data: &AircraftData,
+    contract: &escadrille_data::model::Contract,
+    file: &LiveryFile,
+) -> Result<String, String> {
+    let names = |colours: &[String]| -> String {
+        let list: Vec<String> = colours.iter().map(|c| string(c)).collect();
+        format!("[{}]", list.join(", "))
+    };
+    let colours: Vec<String> = file
+        .colours
+        .iter()
+        .map(|c| format!("{}: {}", string(&c.name), array(c.srgb)))
+        .collect();
+    let mut liveries = Vec::new();
+    for livery in &file.liveries {
+        let mut marks = Vec::new();
+        for mark in &livery.marks {
+            match mark {
+                MarkSpec::Roundel {
+                    face,
+                    centre_m,
+                    diameter,
+                    rings,
+                } => {
+                    let fits = split_face(face).is_some_and(|(surface, side)| {
+                        let sides: &[&str] = if surface == "fuselage" {
+                            &["top", "bottom", "right", "left"]
+                        } else {
+                            match data.file.surfaces.iter().find(|s| s.name == surface) {
+                                Some(s) if s.kind == SurfaceKind::Horizontal => &["top", "bottom"],
+                                Some(_) => &["right", "left"],
+                                None => &[],
+                            }
+                        };
+                        sides.contains(&side)
+                    });
+                    if !fits {
+                        return Err(format!(
+                            "livrees.ron, {}: face {face}, which the aircraft does not have",
+                            livery.name
+                        ));
+                    }
+                    marks.push(format!(
+                        "{{\"kind\": \"roundel\", \"face\": {}, \"centre\": {}, \"diameter\": {}, \"rings\": {}}}",
+                        string(face),
+                        array(*centre_m),
+                        number(diameter.si()),
+                        names(rings)
+                    ));
+                }
+                MarkSpec::Bands { node, colours } => {
+                    if !contract.hinges.iter().any(|h| &h.node == node) {
+                        return Err(format!(
+                            "livrees.ron, {}: bands on {node}, which is not a control node",
+                            livery.name
+                        ));
+                    }
+                    marks.push(format!(
+                        "{{\"kind\": \"bands\", \"node\": {}, \"colours\": {}}}",
+                        string(node),
+                        names(colours)
+                    ));
+                }
+            }
+        }
+        liveries.push(format!(
+            "{{\"name\": {}, \"fabric\": {}, \"metal\": {}, \"marks\": [{}]}}",
+            string(&livery.name),
+            string(&livery.fabric),
+            string(&livery.metal),
+            marks.join(", ")
+        ));
+    }
+    Ok(format!(
+        "{{\"colours\": {{{}}}, \"liveries\": [{}]}}",
+        colours.join(", "),
+        liveries.join(", ")
+    ))
 }

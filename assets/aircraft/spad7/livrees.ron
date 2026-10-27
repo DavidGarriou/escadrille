@@ -1,0 +1,33 @@
+// Liveries of the SPAD S.VII C.1 (plan docs/plans/m3-modele-spad7.md, B2 and B5;
+// docs/recherche/spad7-aspect.md § 12). The first livery is the one the model is built
+// with. Body axes from the datum of aircraft.ron (x forward, y right, z down), metres.
+// Colours are sRGB: no colour reference of the period was found (§ 12.1), every one is
+// ESTIMÉ until request D8 (docs/recherche/demandes.md).
+Liveries(
+    colours: [
+        (name: "toile", srgb: (0.84, 0.76, 0.52)),       // E: varnished pale yellow linen of the factory finish (§ 12.1, C), judged on the tones of photographs
+        (name: "jaune_metal", srgb: (0.74, 0.60, 0.33)), // E: metal painted a darker yellow (§ 12.1, C)
+        (name: "bleu", srgb: (0.15, 0.25, 0.50)),        // E: roundel and rudder blue, a dark ultramarine
+        (name: "blanc", srgb: (0.90, 0.88, 0.82)),       // E: white, yellowed by the varnish over it
+        (name: "rouge", srgb: (0.72, 0.14, 0.12)),       // E: roundel and rudder red
+    ],
+    liveries: [
+        (
+            // Factory finish of 1916-early 1917, uncamouflaged, with roundels and the rudder's
+            // tricolour: the base layer of every S.VII of the batch (§ 12.5), S.254 included.
+            name: "usine-1917",
+            fabric: "toile",
+            metal: "jaune_metal",
+            marks: [
+                //! E: roundels of about 1.0 m on the wings, centred on the chord and about one diameter from the tip (§ 12.2, for the template only, to be measured on a photograph); upper face of the upper plane and lower face of the lower plane (§ 12.1); three rings of equal width, red outside, blue in the centre (§ 12.1, B)
+                Roundel(face: "upper_wing.top", centre_m: (-0.605, 2.91, -1.27), diameter: M(1.0), rings: ["rouge", "blanc", "bleu"]),
+                Roundel(face: "upper_wing.top", centre_m: (-0.605, -2.91, -1.27), diameter: M(1.0), rings: ["rouge", "blanc", "bleu"]),
+                Roundel(face: "lower_wing.bottom", centre_m: (-0.605, 2.91, 0.0), diameter: M(1.0), rings: ["rouge", "blanc", "bleu"]),
+                Roundel(face: "lower_wing.bottom", centre_m: (-0.605, -2.91, 0.0), diameter: M(1.0), rings: ["rouge", "blanc", "bleu"]),
+
+                // C: rudder in vertical bands, blue at the hinge (§ 12.1, convention not sourced there)
+                Bands(node: "ctrl_rudder", colours: ["bleu", "blanc", "rouge"]),
+            ],
+        ),
+    ],
+)

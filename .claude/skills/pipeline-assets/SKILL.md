@@ -55,11 +55,18 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 - `just modele <avion>` : `mockup <avion> --json` écrit les données du modèle (contrat, surfaces, formes et contours de `maquette.ron`), puis `blender -b … art/<avion>/build.py` construit le `.blend` et le `.glb` dans `target/modele/`, que `asset_check --model` contrôle. Avec `just modele <avion> assets`, le `.glb` remplace `assets/aircraft/<avion>/model.glb` si le contrôle passe.
 - **SPAD** : le modèle des assets est celui de Blender depuis le 2026-10-26.
   - L'empennage suit les contours dessinés (`outlines`), et la longueur passe sans écart accepté (6,037 m pour 6,08).
-  - La hauteur reste un écart accepté, à la valeur du modèle Blender (2,343 m au sol).
+  - La hauteur reste un écart accepté, à la valeur du modèle Blender (2,271 m au sol).
 - `mockup` refuse d'écraser un `model.glb` qu'il n'a pas écrit (`--force` pour passer outre).
 - **Câbles** : nœuds `wire_flying`, `wire_landing`, `wire_incidence`, `wire_cabane` et `wire_tail`, aux vrais diamètres. Ils sont plus fins qu'un pixel : l'anticrénelage des câbles (B6, skill `rendu-visuel`) les attend.
 - **Mesures du dessin** : le script lisse les sections et les contours (filtre binomial, ±0,2 m) avant de les lofter. Les données gardent les mesures brutes ; leur bruit, de 1 à 2 cm, faisait onduler les surfaces.
 - **Rendu de contrôle hors jeu** : un rendu Cycles du `.blend` sert à juger la forme. Le disque flou de l'hélice y est masqué, et le débruitage est absent du paquet Ubuntu.
+- **Toile peinte** (passe 5, 2026-10-27) : le script peint la toile dans deux textures qu'il génère (numpy), sans image tierce : couleur (sRGB) et normales.
+  - **Atlas** : chaque surface entoilée a une région par côté (dessus et dessous, ou flancs ; le fuselage en a quatre), projetée à plat le long de sa normale. Toutes les régions ont la même densité et sont rangées en étagères dans un carré de 4096 px. SPAD : 446 px/m, soit 2,2 mm par pixel.
+  - Les gouvernes partagent la région de leur surface : une cocarde passe sur un aileron sans couture.
+  - Les axes de chaque projection forment avec la normale sortante un trièdre direct : une marque se lit à l'endroit vue de l'extérieur, et la carte de normales suit la convention OpenGL du glTF.
+  - **Couleur** : celles de la première livrée de `livrees.ron` (toile, métal peint, marques).
+  - **Structure** (`features` de `maquette.ron`) : rubans et coutures des nervures, fausses nervures de l'extrados jusqu'au longeron avant, toile qui se creuse entre les nervures. Les nervures peintes tombent sur les festons du bord de fuite.
+  - **Mipmaps** : Bevy ne les génère pas pour les images d'un glTF. De loin, les rubans et les coutures scintillent, à traiter avec le rendu en jeu (B6) : KTX2 avec mipmaps, ou génération au chargement.
 
 ## Modèle provisoire (`tools/mockup`)
 
@@ -77,6 +84,8 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 - Densité de texels homogène ; 4K pour la cellule, 2K pour les détails.
 - Export KTX2 avec mipmaps (`toktx`), espaces colorimétriques corrects.
 - **Livrées** : couche de base + décalques (cocardes, croix, numéros, emblèmes). Chaque livrée historique renvoie à sa fiche de recherche.
+  - Elles sont décrites dans `assets/aircraft/<id>/livrees.ron` (format : `format-avion.md`) ; le script Blender peint la première dans la texture du modèle.
+  - Les autres seront des variantes sur le même atlas : il suffira de changer la texture de couleur.
 
 ## Terrain
 

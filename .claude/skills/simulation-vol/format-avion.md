@@ -185,9 +185,42 @@ Mockup(
   - mâts : `strut_spars`, `cabane`, `steel_tube` ;
   - train : `gear_front_leg`, `gear_rear_leg`, `skid_foot` ;
   - poste : `cockpit_opening`, `cockpit_edge`, `windscreen` ;
-  - câblage et détails : `wires`, `aileron_linkage`, `tail_bracing`, `ribs`, `vickers`.
+  - câblage et détails : `wires`, `aileron_linkage`, `tail_bracing`, `ribs`, `vickers` ;
+  - toile : `rib_tapes` (largeur, épaisseur, pas des coutures, teinte sous le vernis), `false_ribs` (fraction de corde atteinte), `fabric_sag` (creux entre deux nervures), `tail_ribs` (pas des nervures de l'empennage).
 
 `accepted_deviations` : cotes que `tools/asset_check` accepte pour ce modèle provisoire, tant qu'il mesure la valeur inscrite (à 5 mm). Si une donnée la fait bouger, le contrôle échoue de nouveau ; s'il revient dans la tolérance, il demande de retirer l'écart (skill `pipeline-assets`).
+
+## `assets/aircraft/<id>/livrees.ron` (livrées du modèle réaliste)
+
+Couleurs de la toile et du métal peint, marques peintes sur la toile. Le script Blender peint la **première** livrée dans les textures du modèle ; les suivantes seront des variantes sur le même atlas (skill `pipeline-assets`). Schéma : `crates/data/src/livery.rs`.
+
+```ron
+Liveries(
+    colours: [
+        (name: "toile", srgb: (0.84, 0.76, 0.52)),  // E: jaune pâle verni (spad7-aspect.md § 12.1)
+        (name: "bleu", srgb: (0.15, 0.25, 0.50)),   // E: ...
+    ],
+    liveries: [
+        (
+            name: "usine-1917",
+            fabric: "toile",
+            metal: "jaune_metal",
+            marks: [
+                Roundel(face: "upper_wing.top", centre_m: (-0.605, 2.91, -1.27), diameter: M(1.0), rings: ["rouge", "blanc", "bleu"]),  // E: ...
+                Bands(node: "ctrl_rudder", colours: ["bleu", "blanc", "rouge"]),  // C: ...
+            ],
+        ),
+    ],
+)
+```
+
+- **Couleurs** : sRGB de 0 à 1, noms uniques. Chaque teinte a son origine ; sans référence d'époque, elle est `ESTIMÉ`.
+- **Faces** : `<surface>.<côté>`, la surface étant un nom d'`aircraft.ron` ou `fuselage`. Côtés : `top` et `bottom` pour une surface horizontale, `right` et `left` pour une verticale, les quatre pour le fuselage.
+- **`Roundel`** : anneaux de même largeur, du plus extérieur au centre. Le centre est un point en axes corps, projeté sur la face.
+- **`Bands`** : bandes de même largeur sur une gouverne, de sa charnière au bord de fuite, des deux côtés.
+- **Contrôles** :
+  - au chargement : couleurs connues, composantes entre 0 et 1, faces bien formées, diamètres positifs ;
+  - à l'export pour Blender (`mockup --json`) : la face existe sur l'avion, et le nœud d'une bande est une gouverne du contrat.
 
 ## `assets/airfoils/<id>.ron`
 

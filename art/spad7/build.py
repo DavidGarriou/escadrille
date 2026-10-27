@@ -11,21 +11,24 @@ body axes (x forward, y right, z down, metres, from the datum of aircraft.ron) a
 into Blender's axes by `blender_point` (ADR 0006: nose to -Y, top to +Z, right wing to
 -X). The glTF export with +Y up then gives nose to +Z, as the game expects.
 
-Pass 1 (shape): numbers marked E: are display estimates, to be replaced by the drawing's
-digitised outlines and the appearance sheet (docs/recherche/spad7-aspect.md). The tail
-already follows the drawn outlines of maquette.ron (pass 2).
+Numbers marked E: are display estimates, to be replaced by the drawing's digitised
+outlines and the appearance sheet (docs/recherche/spad7-aspect.md). The fabric is painted
+from the first livery of livrees.ron into generated textures (pass 5): a colour map and a
+normal map, each surface's faces projected flat on a shared atlas.
 """
 
 import json
 import math
 import sys
+from contextlib import contextmanager
 
 import bmesh
 import bpy
+import numpy as np
 from mathutils import Matrix, Vector
 
 MIN_BLENDER = (4, 0, 0)
-DATA_VERSION = 1
+DATA_VERSION = 2
 COPYRIGHT = "Panache blanc, CC-BY-SA 4.0 (LICENSE-ASSETS)"
 
 # Wing section "Spad", NACA Report 93, ref. 49 (MIT, 1918): ordinates in % of chord above
@@ -56,6 +59,11 @@ GUN_JACKET = (0.11, 1.05)                  # E: Vickers cooling jacket diameter 
 def blender_point(p):
     """Body axes to Blender's: (x, y, z) -> (-y, -x, -z)."""
     return Vector((-p[1], -p[0], -p[2]))
+
+
+def body_vector(v):
+    """Blender's axes to body axes, the inverse of blender_point (a rotation)."""
+    return Vector((-v[1], -v[0], -v[2]))
 
 
 def feature(data, name):
@@ -105,6 +113,24 @@ def new_empty(name, parent=None, matrix=None):
     return obj
 
 
+PAINTED = []     # surfaces whose fabric is painted (aircraft.ron names, "fuselage")
+CURRENT = [0]    # index + 1 in PAINTED of the surface being built, 0 for none
+
+
+@contextmanager
+def painted(surface):
+    """Faces built inside are the fabric of `surface`, textured from its regions of the
+    atlas (one per side)."""
+    if surface not in PAINTED:
+        PAINTED.append(surface)
+    previous = CURRENT[0]
+    CURRENT[0] = PAINTED.index(surface) + 1
+    try:
+        yield
+    finally:
+        CURRENT[0] = previous
+
+
 class Builder:
     """Accumulates faces in body axes, then writes them into an object's mesh, in the
     object's local axes."""
@@ -112,11 +138,14 @@ class Builder:
     def __init__(self):
         self.bm = bmesh.new()
         self.material_index = {}
+        self.tag = self.bm.faces.layers.int.new("painted")
+        self.prepared = False
 
     def face(self, points, material):
         verts = [self.bm.verts.new(blender_point(p)) for p in points]
         f = self.bm.faces.new(verts)
         f.material_index = self.material(material)
+        f[self.tag] = CURRENT[0]
         return f
 
     def material(self, name):
@@ -134,10 +163,12 @@ class Builder:
                 j = (i + 1) % n
                 f = self.bm.faces.new((a[i], a[j], b[j], b[i]))
                 f.material_index = index
+                f[self.tag] = CURRENT[0]
         for cap, row in ((cap_start, rows[0]), (cap_end, rows[-1])):
             if cap:
                 f = self.bm.faces.new(row)
                 f.material_index = index
+                f[self.tag] = CURRENT[0]
 
     def delete_faces(self, inside):
         """Removes the faces whose centre (body axes) `inside` accepts: openings."""
@@ -148,9 +179,29 @@ class Builder:
                 doomed.append(f)
         bmesh.ops.delete(self.bm, geom=doomed, context="FACES")
 
-    def write(self, obj, materials):
-        bmesh.ops.remove_doubles(self.bm, verts=self.bm.verts, dist=1e-6)
-        bmesh.ops.recalc_face_normals(self.bm, faces=self.bm.faces)
+    def prepare(self):
+        """Welds the faces and points their normals outwards, once."""
+        if not self.prepared:
+            bmesh.ops.remove_doubles(self.bm, verts=self.bm.verts, dist=1e-6)
+            bmesh.ops.recalc_face_normals(self.bm, faces=self.bm.faces)
+            self.prepared = True
+
+    def painted_faces(self):
+        """The painted faces and their region of the atlas, (surface, side)."""
+        self.prepare()
+        for f in self.bm.faces:
+            if f[self.tag]:
+                surface = PAINTED[f[self.tag] - 1]
+                yield f, (surface, face_side(surface, body_vector(f.normal)))
+
+    def write(self, obj, materials, atlas=None):
+        self.prepare()
+        if atlas is not None and any(f[self.tag] for f in self.bm.faces):
+            uv = self.bm.loops.layers.uv.verify()
+            for f, region in self.painted_faces():
+                for loop in f.loops:
+                    loop[uv].uv = atlas.uv(region, body_vector(loop.vert.co))
+        self.bm.faces.layers.int.remove(self.tag)
         self.bm.transform(obj.matrix_world.inverted())
         self.bm.to_mesh(obj.data)
         self.bm.free()
@@ -505,7 +556,8 @@ def build_fuselage(data, parts):
     # of the machine, which houses the motor, is covered with aluminium »), fabric aft.
     split = next(k for k, r in enumerate(rings) if r[0].x <= COWL_END_X)
     parts.loft(rings[:split + 1], "cowl", cap_start=True)
-    parts.loft(rings[split:], "fuselage", cap_end=True)
+    with painted("fuselage"):
+        parts.loft(rings[split:], "fuselage", cap_end=True)
     opening = feature(data, "cockpit_opening")
     parts.delete_faces(lambda c: c.z < -0.80 and abs(c.y) < opening_half_width(opening, c.x))
     return keys
@@ -832,6 +884,297 @@ def build_windscreen(data, parts, keys):
     tube(parts, [a, d, c, b], 0.012, "metal", n=6)
 
 
+# --- Fabric textures (pass 5) ------------------------------------------------------------
+
+TEXTURE_SIZE = 4096      # plan B5: 4K for the airframe
+TEXTURE_MARGIN = 8       # px of bleed around each region of the atlas, for filtering
+MOTTLING = 0.015         # E: ± tone of the unevenly brushed dope and varnish
+MOTTLING_WAVES = 6       # in patches of 0.3 to 1.5 m (E:)
+STITCH_RADIUS = 0.004    # E: radius of a knot of the rib stitching
+STITCH_HEIGHT = 0.0004   # E: its height over the tape
+
+KINDS = {"fuselage": "fuselage"}   # kind of each painted surface (main)
+
+# Directions (body axes) of a region's u and v in its flat projection: the image of each
+# face seen from outside, its u, v and outward normal right-handed, so that a mark reads
+# the right way round and the normal map's tangent frame is the projection's.
+AXES = {
+    "top": (Vector((0, 1, 0)), Vector((1, 0, 0))),        # from above, nose up
+    "bottom": (Vector((0, -1, 0)), Vector((1, 0, 0))),    # from below, nose up
+    "right": (Vector((1, 0, 0)), Vector((0, 0, -1))),     # from the right, nose right
+    "left": (Vector((-1, 0, 0)), Vector((0, 0, -1))),     # from the left, nose left
+}
+# The fuselage's top and bottom lie along the image, as its sides do.
+FUSELAGE_AXES = dict(AXES, top=(Vector((1, 0, 0)), Vector((0, -1, 0))),
+                     bottom=(Vector((-1, 0, 0)), Vector((0, -1, 0))))
+
+
+def face_side(surface, n):
+    """Side of a painted face from its outward normal (body axes): top or bottom of a
+    horizontal surface, right or left of a vertical one, whichever faces most for the
+    fuselage."""
+    kind = KINDS[surface]
+    if kind == "fuselage" and abs(n.y) >= abs(n.z) or kind == "vertical":
+        return "right" if n.y > 0 else "left"
+    return "top" if n.z < 0 else "bottom"
+
+
+def projection(region):
+    surface, side = region
+    return (FUSELAGE_AXES if surface == "fuselage" else AXES)[side]
+
+
+class Atlas:
+    """The fabric's texture: one region per painted surface and side, its faces projected
+    flat along AXES, all at the same density (pixels per metre), packed in shelves into a
+    square of TEXTURE_SIZE. Rows count from the bottom, as Blender stores images."""
+
+    def __init__(self, builders, size=TEXTURE_SIZE, margin=TEXTURE_MARGIN):
+        self.size, self.margin = size, margin
+        extents = {}
+        for b in builders:
+            for f, region in b.painted_faces():
+                u_dir, v_dir = projection(region)
+                for vert in f.verts:
+                    p = body_vector(vert.co)
+                    u, v = p.dot(u_dir), p.dot(v_dir)
+                    e = extents.setdefault(region, [u, u, v, v])
+                    e[:] = [min(e[0], u), max(e[1], u), min(e[2], v), max(e[3], v)]
+        self.extents = extents
+        # Tallest first, then by name: the same layout every time.
+        order = sorted(extents, key=lambda r: (-(extents[r][3] - extents[r][2]), r))
+        density = size / max(max(e[1] - e[0], e[3] - e[2]) for e in extents.values())
+        while (place := self.pack(order, density)) is None:
+            density *= 0.99
+        self.density, self.place = density, place
+
+    def pack(self, order, density):
+        x = y = shelf = 0
+        place = {}
+        for r in order:
+            u0, u1, v0, v1 = self.extents[r]
+            w = math.ceil((u1 - u0) * density) + 2 * self.margin
+            h = math.ceil((v1 - v0) * density) + 2 * self.margin
+            if x + w > self.size:
+                x, y, shelf = 0, y + shelf, 0
+            if x + w > self.size or y + h > self.size:
+                return None
+            place[r] = (x, y, w, h)
+            x, shelf = x + w, max(shelf, h)
+        return place
+
+    def uv(self, region, p):
+        u_dir, v_dir = projection(region)
+        u0, _, v0, _ = self.extents[region]
+        x, y, _, _ = self.place[region]
+        return ((x + self.margin + (p.dot(u_dir) - u0) * self.density) / self.size,
+                (y + self.margin + (p.dot(v_dir) - v0) * self.density) / self.size)
+
+    def grid(self, region):
+        """u and v (m) of the centres of a region's pixels, arrays of its rows."""
+        u0, _, v0, _ = self.extents[region]
+        _, _, w, h = self.place[region]
+        u = u0 + (np.arange(w) + 0.5 - self.margin) / self.density
+        v = v0 + (np.arange(h) + 0.5 - self.margin) / self.density
+        return np.meshgrid(u, v)
+
+
+def coverage(signed, density):
+    """Share of a pixel inside an edge, `signed` metres from it (positive inside)."""
+    return np.clip(signed * density + 0.5, 0.0, 1.0)
+
+
+class Ribs:
+    """The ribs of a surface: where they stand along the span, and its leading and
+    trailing edges, for the tapes, stitching and sag painted on its fabric."""
+
+    def __init__(self, surface, data):
+        name, kind = surface["name"], surface["kind"]
+        tail = name in data["mockup"].get("outlines", {})
+        self.pitch = feature(data, "tail_ribs")[0][0] if tail else RIBS[0]
+        self.false_ribs = feature(data, "false_ribs")[0][0] if name.endswith("wing") else None
+        # Spanwise coordinate: |y| on a horizontal surface, height above the fin's foot on
+        # a vertical one; ribs from each panel's root, as the scallops of build_surface.
+        self.vertical = kind == "vertical"
+        foot = surface["panels"][0]["root"][2]
+        self.foot = foot
+        span = (lambda p: foot - p[2]) if self.vertical else (lambda p: abs(p[1]))
+        panels = surface["panels"]
+        if tail:
+            # The tail's outline is not split in panels: ribs from the axis or the foot.
+            self.segments = [(0.0, max(span(p["tip"]) for p in panels))]
+            rows = sorted(data["mockup"]["outlines"][name], key=lambda r: abs(r[0]))
+            s = [abs(r[0]) if not self.vertical else foot - r[0] for r in rows]
+            le, te = smoothed([r[1] for r in rows]), smoothed([r[2] for r in rows])
+        else:
+            self.segments = [(span(p["root"]), span(p["tip"])) for p in panels]
+            s, le, te = [], [], []
+            for p in panels:
+                for k in range(21):
+                    st = Station(p, k / 20, 1.0, kind)
+                    s.append(span(st.qc))
+                    le.append(st.point(0.0).x)
+                    te.append(st.point(1.0).x)
+        order = np.argsort(s)
+        self.s, self.le, self.te = (np.array(a)[order] for a in (s, le, te))
+
+    def span(self, X, Y, Z):
+        return self.foot - Z if self.vertical else np.abs(Y)
+
+    def phase(self, s):
+        """Fraction of the rib pitch from the last rib, and distance to the nearest, m."""
+        t = np.full(s.shape, 0.5)
+        d = np.full(s.shape, np.inf)
+        for s0, s1 in self.segments:
+            inside = (s >= s0 - self.pitch) & (s <= s1 + self.pitch)
+            k = (s - s0) / self.pitch
+            frac = k - np.floor(k)
+            t = np.where(inside, frac, t)
+            d = np.where(inside, np.minimum(frac, 1.0 - frac) * self.pitch, d)
+        return t, d
+
+    def chord_fraction(self, s, X):
+        le, te = np.interp(s, self.s, self.le), np.interp(s, self.s, self.te)
+        return (le - X) / np.maximum(le - te, 1e-3), le, le - te
+
+
+def fabric_structure(ribs, side, X, Y, Z, data, density):
+    """Tape coverage (0 to 1) and height of the fabric (m, outwards) over a region: rib
+    tapes and their stitching, false ribs on the upper surfaces, sag between ribs."""
+    width, thickness, stitch_pitch, _ = feature(data, "rib_tapes")[0]
+    sag = feature(data, "fabric_sag")[0][0]
+    s = ribs.span(X, Y, Z)
+    t, d = ribs.phase(s)
+    f, le, chord = ribs.chord_fraction(s, X)
+    envelope = np.sqrt(np.clip(np.sin(np.pi * np.clip(f, 0.0, 1.0)), 0.0, 1.0))
+    sink = np.sin(np.pi * t)
+    tape = coverage(0.5 * width - d, density)
+    along = (le - X) / stitch_pitch
+    knot_d = np.hypot(d, (along - np.round(along)) * stitch_pitch)
+    knots = np.clip(1.0 - (knot_d / STITCH_RADIUS) ** 2, 0.0, 1.0)
+    if ribs.false_ribs is not None and side == "top":
+        # Ahead of the front spar a false rib halves the bay: the fabric sinks less.
+        ahead = coverage((ribs.false_ribs - f) * chord, density)
+        d2 = np.abs(t - 0.5) * ribs.pitch
+        tape = np.maximum(tape, coverage(0.5 * width - d2, density) * ahead)
+        knot_d2 = np.hypot(d2, (along - np.round(along)) * stitch_pitch)
+        knots = np.maximum(knots, np.clip(1.0 - (knot_d2 / STITCH_RADIUS) ** 2, 0.0, 1.0) * ahead)
+        half = np.abs(np.sin(2.0 * np.pi * t))
+        sink = ahead * 0.5 * half + (1.0 - ahead) * sink
+    height = -sag * sink * envelope + thickness * tape + STITCH_HEIGHT * knots * (tape > 0.5)
+    return tape, height
+
+
+def normal_map(height, density):
+    """Tangent-space normals (OpenGL convention, as glTF's) of a height field whose
+    columns run along u and rows along v."""
+    dv, du = np.gradient(height, 1.0 / density)
+    n = np.stack([-du, -dv, np.ones_like(height)], axis=-1)
+    n /= np.linalg.norm(n, axis=-1, keepdims=True)
+    return n * 0.5 + 0.5
+
+
+def paint_fabric(atlas, data, livery, colours, controls):
+    """Colour map (sRGB) and normal map of the fabric, from the livery's marks and the
+    fabric's structure, as (size, size, 3) arrays."""
+    size = atlas.size
+    fabric = np.array(colours[livery["fabric"]], dtype=np.float64)
+    colour = np.empty((size, size, 3), np.float32)
+    colour[:] = fabric
+    normal = np.empty((size, size, 3), np.float32)
+    normal[:] = (0.5, 0.5, 1.0)
+    rng = np.random.default_rng(1917)
+    waves = [(2 * math.pi / rng.uniform(0.3, 1.5), rng.normal(size=3), rng.uniform(0, 2 * math.pi))
+             for _ in range(MOTTLING_WAVES)]
+    ribs = {s["name"]: Ribs(s, data) for s in data["surfaces"]}
+    for region in sorted(atlas.place):
+        surface, side = region
+        u_dir, v_dir = projection(region)
+        gu, gv = atlas.grid(region)
+        X, Y, Z = (gu * u_dir[i] + gv * v_dir[i] for i in range(3))
+        # Mottling in body axes, the same on both sides of an edge; along the fuselage's
+        # length only, its sides and top being projected differently.
+        mx, my, mz = (X, 0 * X, 0 * X) if surface == "fuselage" else (X, Y, Z)
+        m = sum(np.sin(k * (w[0] * mx + w[1] * my + w[2] * mz) / np.linalg.norm(w) + phi)
+                for k, w, phi in waves) / MOTTLING_WAVES
+        col = np.broadcast_to(fabric, gu.shape + (3,)) * (1.0 + MOTTLING * m)[..., None]
+        for mark in livery["marks"]:
+            col = paint_mark(mark, region, gu, gv, col, colours, data, controls, atlas.density)
+        height = np.zeros_like(gu)
+        if surface in ribs:
+            tape, height = fabric_structure(ribs[surface], side, X, Y, Z, data, atlas.density)
+            tone = feature(data, "rib_tapes")[0][3]
+            col = col * (1.0 - (1.0 - tone) * tape)[..., None]
+        x, y, w, h = atlas.place[region]
+        colour[y:y + h, x:x + w] = np.clip(col, 0.0, 1.0)
+        normal[y:y + h, x:x + w] = normal_map(height, atlas.density)
+    return colour, normal
+
+
+def paint_mark(mark, region, gu, gv, col, colours, data, controls, density):
+    """A livery's mark painted over a region's colours, if it falls on it."""
+    surface, side = region
+    u_dir, v_dir = projection(region)
+    def over(col, inside, name):
+        a = inside[..., None]
+        return col * (1.0 - a) + np.array(colours[name]) * a
+    if mark["kind"] == "roundel":
+        if mark["face"] != f"{surface}.{side}":
+            return col
+        c = Vector(mark["centre"])
+        r = np.hypot(gu - c.dot(u_dir), gv - c.dot(v_dir))
+        n = len(mark["rings"])
+        for i, name in enumerate(mark["rings"]):
+            col = over(col, coverage(0.5 * mark["diameter"] * (n - i) / n - r, density), name)
+        return col
+    if mark["kind"] == "bands":
+        hinge = next(h for h in data["hinges"] if h["node"] == mark["node"])
+        if hinge["regions"][0]["surface"] != surface:
+            return col
+        # Distance aft of the hinge line, in the region's plane.
+        pivot, axis = Vector(hinge["pivot"]), Vector(hinge["axis"])
+        a = Vector((axis.dot(u_dir), axis.dot(v_dir))).normalized()
+        aft = Vector((-u_dir.x, -v_dir.x))
+        sign = 1.0 if a.x * aft.y - a.y * aft.x > 0 else -1.0
+        def behind(u, v):
+            return sign * (a.x * (v - pivot.dot(v_dir)) - a.y * (u - pivot.dot(u_dir)))
+        reach = max(behind(p.dot(u_dir), p.dot(v_dir))
+                    for p in (body_vector(v.co) for v in controls[mark["node"]].bm.verts))
+        band = reach / len(mark["colours"])
+        d = behind(gu, gv)
+        for j, name in enumerate(mark["colours"]):
+            col = over(col, coverage(d - j * band, density), name)
+        return col
+    raise SystemExit(f"unknown mark {mark['kind']!r}")
+
+
+def blender_image(name, pixels, colour_space):
+    """A packed image of the .blend from an array of rows (bottom first) of RGB."""
+    size = pixels.shape[0]
+    image = bpy.data.images.new(name, size, size, alpha=False)
+    image.colorspace_settings.name = colour_space
+    rgba = np.ones((size, size, 4), np.float32)
+    rgba[..., :3] = pixels
+    image.pixels.foreach_set(rgba.ravel())
+    image.file_format = "PNG"
+    image.pack()
+    return image
+
+
+def texture_fabric(material, colour, normal):
+    """The fabric material takes its colour and its normals from the painted textures."""
+    nodes, links = material.node_tree.nodes, material.node_tree.links
+    bsdf = nodes["Principled BSDF"]
+    base = nodes.new("ShaderNodeTexImage")
+    base.image = colour
+    links.new(base.outputs["Color"], bsdf.inputs["Base Color"])
+    bumps = nodes.new("ShaderNodeTexImage")
+    bumps.image = normal
+    tangent = nodes.new("ShaderNodeNormalMap")
+    links.new(bumps.outputs["Color"], tangent.inputs["Color"])
+    links.new(tangent.outputs["Normal"], bsdf.inputs["Normal"])
+
+
 # --- Materials ---------------------------------------------------------------------------
 
 def linear(c):
@@ -839,7 +1182,7 @@ def linear(c):
     return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
 
 
-def make_materials():
+def make_materials(livery, colours):
     def principled(name, colour, roughness, metallic=0.0):
         m = bpy.data.materials.new(name)
         m.use_nodes = True
@@ -848,15 +1191,13 @@ def make_materials():
         bsdf.inputs["Roughness"].default_value = roughness
         bsdf.inputs["Metallic"].default_value = metallic
         return m
-    # Factory finish of 1916-early 1917 (spad7-aspect.md § 12.1, C): varnished pale yellow
-    # linen, metal painted a darker yellow. ESTIMÉ: no colour reference of the period was
-    # found (§ 12.1); these sRGB values are judged on photographs' tones, until request D8.
+    # The livery's fabric and painted metal (livrees.ron); the fabric of the wings, tail,
+    # controls and fuselage is one material, its colour and normals painted in one atlas.
+    fabric, metal = colours[livery["fabric"]], colours[livery["metal"]]
     m = {
-        "surface": principled("toile vernie", (0.84, 0.76, 0.52), 0.65),
-        "control": principled("gouvernes, toile vernie", (0.84, 0.76, 0.52), 0.65),
-        "fuselage": principled("fuselage, toile vernie", (0.84, 0.76, 0.52), 0.65),
-        "fabric_doped": principled("toile vernie des roues", (0.84, 0.76, 0.52), 0.65),
-        "cowl": principled("capot, aluminium peint", (0.74, 0.60, 0.33), 0.45),
+        "surface": principled("toile vernie", fabric, 0.65),
+        "fabric_doped": principled("toile vernie des roues", fabric, 0.65),
+        "cowl": principled("capot, aluminium peint", metal, 0.45),
         "wood": principled("bois verni des mâts", (0.56, 0.40, 0.22), 0.4),
         "propeller_wood": principled("hélice, noyer verni", (0.36, 0.20, 0.10), 0.3),
         "metal": principled("acier", (0.35, 0.36, 0.37), 0.45, metallic=1.0),
@@ -870,6 +1211,7 @@ def make_materials():
         "cockpit": principled("intérieur du poste", (0.10, 0.08, 0.06), 0.9),
         "glass": principled("verre", (0.95, 0.97, 0.97), 0.05),
     }
+    m["control"] = m["fuselage"] = m["surface"]
     # The propeller's varnish, and the windscreen's glass.
     coat = m["propeller_wood"].node_tree.nodes["Principled BSDF"].inputs
     if "Coat Weight" in coat:
@@ -892,8 +1234,12 @@ def main(argv):
     if data["version"] != DATA_VERSION:
         raise SystemExit(f"model data version {data['version']}, expected {DATA_VERSION}")
 
+    if not data.get("liveries"):
+        raise SystemExit("the model is painted from livrees.ron, which this aircraft lacks")
+    livery, colours = data["liveries"]["liveries"][0], data["liveries"]["colours"]
+
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    materials = make_materials()
+    materials = make_materials(livery, colours)
     root = new_empty(data["id"])
     body = new_empty("body", root)
 
@@ -921,24 +1267,30 @@ def main(argv):
     build_exhausts(data, parts, keys)
     outlines = data["mockup"].get("outlines", {})
     for surface in data["surfaces"]:
-        if surface["name"] in outlines:
-            build_outline_surface(surface, outlines[surface["name"]], data, parts, controls)
-        else:
-            build_surface(surface, data, parts, controls)
+        KINDS[surface["name"]] = surface["kind"]
+        with painted(surface["name"]):
+            if surface["name"] in outlines:
+                build_outline_surface(surface, outlines[surface["name"]], data, parts, controls)
+            else:
+                build_surface(surface, data, parts, controls)
     build_struts(data, parts)
     build_cabane(data, parts, keys)
     build_gear(data, parts, keys)
     build_gun(data, parts)
     build_linkage(data, parts)
     build_windscreen(data, parts, keys)
+    atlas = Atlas([parts, *controls.values()])
+    colour, normal = paint_fabric(atlas, data, livery, colours, controls)
+    texture_fabric(materials["surface"], blender_image("toile_couleur", colour, "sRGB"),
+                   blender_image("toile_normales", normal, "Non-Color"))
     airframe = new_object("airframe", body)
-    parts.write(airframe, materials)
+    parts.write(airframe, materials, atlas)
     wires = {}
     build_wires(data, wires)
     for name, builder in sorted(wires.items()):
         builder.write(new_object(name, body), materials)
     for name, builder in controls.items():
-        builder.write(control_objects[name], materials)
+        builder.write(control_objects[name], materials, atlas)
 
     prop, blades = build_propeller(data, root)
     blades.write(prop, materials)

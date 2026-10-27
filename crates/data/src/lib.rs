@@ -8,6 +8,7 @@ pub mod aircraft;
 pub mod airfoil;
 pub mod essais;
 pub mod frames;
+pub mod livery;
 pub mod masses;
 pub mod mockup;
 pub mod model;
