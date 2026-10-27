@@ -1859,3 +1859,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - les marques de Guynemer (cigogne, « 2 », « Vieux Charles », « S 254 »), en seconde livrée sur le même atlas ;
   - la transmission de la toile à contre-jour ;
   - le bois, le métal et la rugosité.
+- **⚠** Le commit des textures contenait par erreur un `.blend` de 9 Mo nommé `--atlas` : un appel de débogage du script l'avait pris pour son chemin de sortie. **A** Fichier retiré par un commit suivant (il reste dans l'historique, sans réécriture de la branche poussée). Le script refuse désormais des arguments qui ne finissent pas par `.glb` et `.blend`.

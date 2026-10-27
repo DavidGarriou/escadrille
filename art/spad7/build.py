@@ -1227,6 +1227,8 @@ def make_materials(livery, colours):
 def main(argv):
     if bpy.app.version < MIN_BLENDER:
         raise SystemExit(f"Blender {'.'.join(map(str, MIN_BLENDER))} or later is needed")
+    if not 2 <= len(argv) <= 3 or not argv[1].endswith(".glb") or argv[2:] and not argv[2].endswith(".blend"):
+        raise SystemExit("usage: build.py -- <model.json> <model.glb> [<model.blend>]")
     json_path, glb_path = argv[0], argv[1]
     blend_path = argv[2] if len(argv) > 2 else None
     with open(json_path, encoding="utf-8") as f:
