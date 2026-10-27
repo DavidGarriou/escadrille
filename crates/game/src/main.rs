@@ -5,6 +5,7 @@
 
 mod dev;
 mod flight;
+mod render;
 mod states;
 mod world;
 
@@ -98,7 +99,7 @@ fn main() -> AppExit {
     )
     .add_plugins(EguiPlugin::default())
     .insert_state(start_state)
-    .add_plugins((world::WorldPlugin, dev::DevPlugin));
+    .add_plugins((world::WorldPlugin, render::RenderingPlugin, dev::DevPlugin));
 
     if let Some(request) = capture {
         app.insert_resource(request);

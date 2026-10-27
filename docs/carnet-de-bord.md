@@ -1860,3 +1860,20 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - la transmission de la toile à contre-jour ;
   - le bois, le métal et la rugosité.
 - **⚠** Le commit des textures contenait par erreur un `.blend` de 9 Mo nommé `--atlas` : un appel de débogage du script l'avait pris pour son chemin de sortie. **A** Fichier retiré par un commit suivant (il reste dans l'historique, sans réécriture de la branche poussée). Le script refuse désormais des arguments qui ne finissent pas par `.glb` et `.blend`.
+
+### Rendu en jeu : mipmaps des textures (début de B6)
+
+- **Q** Le joueur : « Continue ».
+- **A** Nouveau plugin `render` du jeu (`crates/game/src/render/`). Quand un matériau arrive, il calcule les mipmaps de ses textures qui n'en ont qu'un niveau, jusqu'à un texel :
+  - couleur moyennée en lumière linéaire ;
+  - normales moyennées puis renormalisées ;
+  - autres données moyennées telles quelles.
+
+  Il active aussi le filtrage anisotrope ×16 quand l'échantillonneur est trilinéaire, ce que demande le glTF de Blender. Les ailes sont presque toujours vues par la tranche.
+- **A** Tests : longueur de la chaîne, moyenne en lumière linéaire (noir et blanc donnent 188, pas 128), normales renormalisées, image complétée une seule fois.
+- **A** Coût mesuré : environ 0,5 s par texture 4K en profil de développement, après passage à une table de décodage (1,5 s avant). Des KTX2 faites hors ligne restent prévues.
+- **A** Captures avant et après **regardées**, avec l'image de leur différence :
+  - les changements se concentrent là où la texture est réduite : la cocarde vue par la tranche, les bords des bandes du gouvernail ;
+  - les lignes fines qui restent sur le gouvernail sont ses nervures, qui accrochent la lumière rasante ;
+  - le scintillement, lui, ne se juge qu'en mouvement : à vérifier sur ta machine.
+- **A** `just check` et `just test` passent (284 tests).

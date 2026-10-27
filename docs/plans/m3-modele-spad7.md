@@ -157,4 +157,4 @@ Chaque étape : `just check`, `just test`, carnet, commit et push. C'est un chan
     - la transmission de la toile à contre-jour (carte d'épaisseur) ;
     - le bois et le métal ;
     - la rugosité.
-  - **À traiter en B6** : les mipmaps des textures. Bevy ne les génère pas pour les images d'un glTF : en jeu, les rubans scintillent de loin.
+  - **Mipmaps** (début de B6, 2026-10-27) : Bevy ne les génère pas pour les images d'un glTF. Le jeu les calcule au chargement, avec un filtrage anisotrope ; les KTX2 faites hors ligne restent prévues.

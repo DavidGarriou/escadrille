@@ -66,7 +66,7 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
   - Les axes de chaque projection forment avec la normale sortante un trièdre direct : une marque se lit à l'endroit vue de l'extérieur, et la carte de normales suit la convention OpenGL du glTF.
   - **Couleur** : celles de la première livrée de `livrees.ron` (toile, métal peint, marques).
   - **Structure** (`features` de `maquette.ron`) : rubans et coutures des nervures, fausses nervures de l'extrados jusqu'au longeron avant, toile qui se creuse entre les nervures. Les nervures peintes tombent sur les festons du bord de fuite.
-  - **Mipmaps** : Bevy ne les génère pas pour les images d'un glTF. De loin, les rubans et les coutures scintillent, à traiter avec le rendu en jeu (B6) : KTX2 avec mipmaps, ou génération au chargement.
+  - **Mipmaps** : Bevy 0.20 ne les génère pas pour les images d'un glTF, et sans elles les rubans et les coutures scintillent de loin. Le jeu les calcule au chargement (`crates/game/src/render/mipmaps.rs`) : couleur moyennée en lumière linéaire, normales renormalisées, filtrage anisotrope ×16. Cela coûte environ 0,5 s par texture 4K en profil de développement. Des KTX2 avec mipmaps faites hors ligne l'éviteront plus tard.
 
 ## Modèle provisoire (`tools/mockup`)
 
@@ -82,7 +82,7 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 
 - PBR métal-rugosité : couleur de base (sRGB), normales, ORM regroupés (occlusion, rugosité, métal ; linéaire), carte d'épaisseur de la toile (transmission).
 - Densité de texels homogène ; 4K pour la cellule, 2K pour les détails.
-- Export KTX2 avec mipmaps (`toktx`), espaces colorimétriques corrects.
+- Export KTX2 avec mipmaps (`toktx`), espaces colorimétriques corrects. En attendant, le jeu calcule au chargement les mipmaps des textures qui n'en ont pas (voir « Modèle réaliste »).
 - **Livrées** : couche de base + décalques (cocardes, croix, numéros, emblèmes). Chaque livrée historique renvoie à sa fiche de recherche.
   - Elles sont décrites dans `assets/aircraft/<id>/livrees.ron` (format : `format-avion.md`) ; le script Blender peint la première dans la texture du modèle.
   - Les autres seront des variantes sur le même atlas : il suffira de changer la texture de couleur.
