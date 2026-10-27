@@ -1974,3 +1974,28 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - le SPAD sur la scène de plein air.
 
   Décollage et atterrissage viendraient ensuite, avec le train. Plan à faire valider avant le code (tâche sur plusieurs plugins). **En attente de la décision du joueur.**
+
+### Plan du vol d'essai (premier incrément du M2)
+
+- **Q** Le joueur : « Avant la seconde livrée, je veux une première version jouable, un vol d'essai qui démarre en l'air. » Il demande :
+  - le modèle de vol branché dans le jeu ;
+  - stick gauche pour le manche, gâchettes pour le palonnier, stick droit ou boutons pour les gaz ;
+  - au choix, une vue de poursuite et une vue du pilote ;
+  - la plaine, le ciel et les ombres.
+- **A** Plan rédigé : `docs/plans/m2-vol-essai.md`, en sept étapes :
+  1. état de départ ;
+  2. modèle de vol au pas fixe ;
+  3. couche d'actions et manette ;
+  4. vues ;
+  5. plaine ;
+  6. télémétrie ;
+  7. vérification.
+- **R** Constats faits en préparant le plan :
+  - **Équilibre au départ** : le solveur d'équilibre de `fdm_lab` utilise `nalgebra`, réservé aux outils. L'état de départ sera donc calculé par `fdm_lab`, rangé dans un fichier de données, et contrôlé par un test.
+  - **Manche au neutre** : le SPAD du modèle s'équilibre à **88 km/h** (incidence 10,7°), près du décrochage. Pour tenir 160 km/h, il faut pousser le manche de 11 % (sonde du 2026-10-28, palier à 1 000 m). Le plan propose un neutre de profondeur réglable sur la manette. Ce constat ira à l'aérodynamicien à la prochaine revue : le calage de l'empennage est estimé, et aucun compensateur du S.VII n'est connu.
+  - **Palonnier** : les gâchettes L2/R2 sont tout-ou-rien (labo du 2026-10-20) ; il passera donc par une rampe.
+- **D** Quatre décisions demandées au joueur :
+  1. les gaz ;
+  2. le neutre de la profondeur ;
+  3. le point de départ ;
+  4. le vol sans aides.
