@@ -19,7 +19,7 @@ Chacune est un fichier `assets/scenes/<nom>.ron` (caméra, heure, météo, grain
 | `avion-studio` | le SPAD au repos sur l'herbe, trois quarts avant à hauteur d'homme, soleil d'après-midi, atmosphère, ombres, TAA : modèle, matériaux et textures tels que le jeu les rend ; construite en code |
 | `aube_terrain` | soleil rasant, brume basse, avions alignés sur l'herbe, ombres longues |
 | `cumulus_midi` | champ de cumulus à 2 000 m, soleil haut, ombres des nuages au sol |
-| `contre_jour_toile` | avion à contre-jour : toile translucide, nervures visibles |
+| `contre_jour_toile` | avion à contre-jour : toile translucide, nervures visibles ; construite en code (SPAD vu d'en dessous, soleil 9° derrière lui) |
 | `no_mans_land` | rase-mottes au-dessus des tranchées et des cratères inondés |
 | `combat_couchant` | combat au soleil couchant : traçantes, fumée, reflets |
 | `plafond_bas` | couverture basse, pluie, visibilité réduite |
@@ -37,6 +37,10 @@ Chacune est un fichier `assets/scenes/<nom>.ron` (caméra, heure, météo, grain
   - Le shader de fragments réduit l'opacité dans la même proportion, en mélange alpha.
   - Le diamètre vient des extras glTF du nœud `wire_*`.
   - À 1,0 pixel, un tube à six pans, qui ne mesure que 0,87 fois son diamètre entre deux faces, se cassait en pointillés.
+- **Toile translucide** (2026-10-27, `crates/game/src/render/fabric.rs`) : transmission diffuse de Bevy, feature `pbr_transmission_textures` (ADR 0004).
+  - La part de lumière transmise est dans l'alpha de la texture de couleur, comme le stocke `KHR_materials_diffuse_transmission` ; le matériau le demande dans ses extras glTF.
+  - **Épaisseur** : Bevy éclaire le côté transmis depuis un point placé à `thickness` derrière la surface, et l'ombre depuis là. On la règle au-delà de la peau opposée, là où l'aile est la plus épaisse (10,6 cm pour le SPAD). Une aile ne fait ainsi pas d'ombre à sa propre toile, mais l'autre plan ou le fuselage lui en font encore.
+  - **Limite** : le fuselage s'éclaire uniformément, sans la pénombre de son intérieur.
 - **Shaders** : Bevy 0.20 écrit les siens en WESL (WGSL avec imports et compilation conditionnelle). Les nôtres suivent, pour importer ses modules (`bevy_pbr::render::…`).
 - **Atmosphère** : utiliser l'atmosphère procédurale de Bevy si la version épinglée la fournit (vérifier) ; sinon implémenter Hillaire 2020 (LUT de transmittance, multidiffusion, vue du ciel, perspective aérienne). La **perspective aérienne** donne l'échelle du paysage : elle n'est pas optionnelle.
 - **Ombres** : cascades réglées pour l'avion et le cockpit de près, ombres des nuages au sol (carte d'ombre vue du dessus).

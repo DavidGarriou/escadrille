@@ -186,7 +186,7 @@ Mockup(
   - train : `gear_front_leg`, `gear_rear_leg`, `skid_foot` ;
   - poste : `cockpit_opening`, `cockpit_edge`, `windscreen` ;
   - câblage et détails : `wires`, `aileron_linkage`, `tail_bracing`, `ribs`, `vickers` ;
-  - toile : `rib_tapes` (largeur, épaisseur, pas des coutures, teinte sous le vernis), `false_ribs` (fraction de corde atteinte), `fabric_sag` (creux entre deux nervures), `tail_ribs` (pas des nervures de l'empennage).
+  - toile : `rib_tapes` (largeur, épaisseur, pas des coutures, teinte sous le vernis), `false_ribs` (fraction de corde atteinte), `fabric_sag` (creux entre deux nervures), `tail_ribs` (pas des nervures de l'empennage), `fabric_transmission` (part de lumière transmise : entre nervures, sous un ruban, sur une nervure, largeur d'une nervure, largeur d'un longeron, sous la peinture).
 
 `accepted_deviations` : cotes que `tools/asset_check` accepte pour ce modèle provisoire, tant qu'il mesure la valeur inscrite (à 5 mm). Si une donnée la fait bouger, le contrôle échoue de nouveau ; s'il revient dans la tolérance, il demande de retirer l'écart (skill `pipeline-assets`).
 

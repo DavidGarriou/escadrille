@@ -67,6 +67,7 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
   - Les gouvernes partagent la région de leur surface : une cocarde passe sur un aileron sans couture.
   - Les axes de chaque projection forment avec la normale sortante un trièdre direct : une marque se lit à l'endroit vue de l'extérieur, et la carte de normales suit la convention OpenGL du glTF.
   - **Couleur** : celles de la première livrée de `livrees.ron` (toile, métal peint, marques).
+  - **Transmission** (alpha de la couleur) : part de lumière que laisse passer la toile à contre-jour, moindre sous un ruban ou sous la peinture d'une livrée, presque nulle sur les nervures, les fausses nervures et les longerons (`fabric_transmission`). Le matériau porte dans ses extras glTF `diffuse_transmission` et `transmission_depth_m`, que le jeu applique (skill `rendu-visuel`).
   - **Structure** (`features` de `maquette.ron`) : rubans et coutures des nervures, fausses nervures de l'extrados jusqu'au longeron avant, toile qui se creuse entre les nervures. Les nervures peintes tombent sur les festons du bord de fuite.
   - **Mipmaps** : Bevy 0.20 ne les génère pas pour les images d'un glTF, et sans elles les rubans et les coutures scintillent de loin. Le jeu les calcule au chargement (`crates/game/src/render/mipmaps.rs`) : couleur moyennée en lumière linéaire, normales renormalisées, filtrage anisotrope ×16. Cela coûte environ 0,5 s par texture 4K en profil de développement. Des KTX2 avec mipmaps faites hors ligne l'éviteront plus tard.
 

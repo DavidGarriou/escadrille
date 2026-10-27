@@ -153,8 +153,14 @@ Chaque étape : `just check`, `just test`, carnet, commit et push. C'est un chan
 - **B5, première passe** (2026-10-27) : toile peinte dans deux textures 4K générées par le script, couleur et normales, sur un atlas de projections planes.
   - Peints : la finition d'usine de 1917 (`livrees.ron`), avec les cocardes des ailes et le gouvernail tricolore ; les rubans et coutures des nervures, les fausses nervures et le creux de la toile entre les nervures.
   - **Reste en B5** :
-    - les marques de S.254 (cigogne, « 2 », « Vieux Charles », « S 254 »), en seconde livrée ;
-    - la transmission de la toile à contre-jour (carte d'épaisseur) ;
+    - les marques de S.254 (cigogne, « 2 », « Vieux Charles », « S 254 »), en seconde livrée ; la recherche est faite (`spad7-aspect.md` § 12.6) ;
     - le bois et le métal ;
     - la rugosité.
   - **Mipmaps** (début de B6, 2026-10-27) : Bevy ne les génère pas pour les images d'un glTF. Le jeu les calcule au chargement, avec un filtrage anisotrope ; les KTX2 faites hors ligne restent prévues.
+- **Toile translucide** (2026-10-27) : la transmission est peinte dans l'alpha de la couleur, et le jeu l'applique (feature `pbr_transmission_textures`). Scène `contre_jour_toile`.
+- **B6** (2026-10-27) :
+  - mipmaps calculées au chargement ;
+  - scène `avion-studio` et choix du tonemapping ;
+  - anticrénelage des câbles.
+
+  Restent la compression KTX2 et les décalques en grappes, s'ils servent.

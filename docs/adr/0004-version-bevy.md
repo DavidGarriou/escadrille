@@ -43,3 +43,13 @@ Raison principale : partir de la version actuelle évite une migration certaine 
 - **Prochaine montée mineure** (Bevy 0.21, vers 2027 si le rythme d'environ quatre mois se maintient) : tâche dédiée sur une branche, avec un nouvel ADR.
 - **Licences** : toutes compatibles avec la liste de `CLAUDE.md` ; `cargo deny check licenses` le confirmera sur l'arbre complet des dépendances lors de la création du workspace.
 - **Si bevy_hanabi n'est toujours pas disponible** au moment des premiers effets : nouvel ADR pour choisir entre attendre, un système minimal maison ou une autre crate.
+
+## Features de Bevy activées
+
+Le workspace prend les features par défaut de Bevy (`2d`, `3d`, `ui`, `audio`). S'y ajoutent, pour le jeu seul (`crates/game/Cargo.toml`) :
+
+| Feature | Depuis | Pourquoi |
+|---|---|---|
+| `pbr_transmission_textures` | 2026-10-27 | Toile translucide à contre-jour (plan `m3-modele-spad7.md`, B5 et B6) : la transmission diffuse varie sur la toile, plus faible sous les rubans, presque nulle sur les nervures et les longerons. |
+
+Le plan B6 prévoit aussi `pbr_anisotropy_texture`, `pbr_clustered_decals` et `ktx2` (déjà dans les features par défaut, avec `zstd_rust`), à ajouter à ce tableau quand ils serviront.

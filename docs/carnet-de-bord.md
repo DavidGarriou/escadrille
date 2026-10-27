@@ -1928,3 +1928,33 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Non trouvés, donc `ESTIMÉ` (D) : positions, tailles, graphies, sens de vol ; noir et place du nom (seul témoin : Udet, récit contesté).
 - **⚠** Contradiction ouverte : la version anglaise d'un billet du Musée de l'Armée parle d'une « bande tricolore des as » sur la queue de S.254, que le § 12.5 classe en anachronisme. **D** Retenu provisoirement : pas de bande supplémentaire. C'est le premier point à vérifier sur les plaques du 20 octobre 1917 (D9, D14).
 - **Pour le joueur** : D13 et D14 sont à envoyer, si tu le souhaites (achat ou consultation d'ouvrages ; photos du Musée de l'Armée).
+
+### Toile translucide et scène `contre_jour_toile` (B5 et B6)
+
+- **A** Transmission de la toile :
+  - **Texture** : le script Blender peint dans l'alpha de la couleur la part de lumière que laisse passer la toile, valeurs `ESTIMÉ` de `fabric_transmission` (`maquette.ron`) :
+
+    | Endroit | Part transmise |
+    |---|---|
+    | entre les nervures | 0,35 |
+    | sous un ruban | 0,25 |
+    | sous la peinture d'une livrée (cocardes, gouvernail) | 0,10 |
+    | sur une nervure, une fausse nervure ou un longeron | 0,03 |
+
+    Les longerons sont sous les mâts, à 12 et 46 % de la corde.
+  - **Matériau** : ses extras glTF portent `diffuse_transmission` et la profondeur du second lobe, 10,6 cm.
+  - **Jeu** : `crates/game/src/render/fabric.rs` applique la transmission diffuse de Bevy, avec pour carte la texture de couleur.
+  - **Feature** : `pbr_transmission_textures` activée pour le jeu, consignée dans l'ADR 0004, comme le prévoyait le plan.
+- **D** Profondeur du second lobe : Bevy éclaire le côté transmis depuis un point placé à `thickness` derrière la surface, et l'ombre depuis là. On la règle au-delà de la peau opposée, là où les surfaces sont les plus épaisses. Une aile ne s'ombre ainsi pas elle-même, mais l'autre plan et le fuselage l'ombrent encore.
+- **A** Nouvelle scène de référence `contre_jour_toile` :
+  - **Avion** : en vol, 13 m au-dessus et 15 m au nord d'un homme debout ; cap nord-est, incliné de 10°.
+  - **Lumière** : soleil au nord à 50°, soit 9° derrière l'avion vu du sol.
+  - **Objectif** : 24°.
+  - **Code** : les deux scènes partagent désormais l'avion, le plein air et la caméra.
+- **A** Captures **regardées** :
+  - **Cadrage** : la première, avion de profil vu d'en dessous, était peu lisible ; elle a été recadrée de trois quarts et resserrée.
+  - **Contre-jour** : la toile s'illumine ; le quadrillage des nervures et des longerons se lit sur les ailes et l'empennage, et le gouvernail peint paraît plus dense.
+  - **Studio** : l'intrados du plan supérieur, éclairé par le soleil à travers la toile, montre maintenant son quadrillage.
+- **R** **Limite** : le fuselage s'éclaire uniformément, sans la pénombre de son intérieur ni ses cadres.
+- **A** Ménage du disque : 12 Go de compilations périmées supprimées (`target/debug/deps`, anciennes versions des crates Bevy et du jeu ; brouillons de compilation du bloc-notes). Un redémarrage du conteneur a interrompu une compilation, sans perte.
+- **A** `just check` et `just test` passent (288 tests).

@@ -1068,6 +1068,34 @@ def fabric_structure(ribs, side, X, Y, Z, data, density):
     return tape, height
 
 
+def transmission_map(ribs, X, Y, Z, tape, data, density):
+    """Share of the sunlight the fabric lets through, seen against the light: less under
+    a tape, almost none over a rib's cap, a false rib or a spar inside the wing."""
+    between, taped, wood, rib_width, spar_width, _ = feature(data, "fabric_transmission")[0]
+    s = ribs.span(X, Y, Z)
+    t, d = ribs.phase(s)
+    f, _, chord = ribs.chord_fraction(s, X)
+    blocked = coverage(0.5 * rib_width - d, density)
+    if ribs.false_ribs is not None:
+        # The planes: their spars under the struts, false ribs ahead of the front one.
+        for spar in feature(data, "strut_spars")[0]:
+            blocked = np.maximum(blocked, coverage(0.5 * spar_width - np.abs(f - spar) * chord, density))
+        ahead = coverage((ribs.false_ribs - f) * chord, density)
+        blocked = np.maximum(blocked, coverage(0.5 * rib_width - np.abs(t - 0.5) * ribs.pitch, density) * ahead)
+    fabric = between + (taped - between) * tape
+    return fabric * (1.0 - blocked) + wood * blocked
+
+
+def transmission_depth(data):
+    """How far behind a skin the game looks for the light it lets through (m): past the
+    opposite skin where the surfaces are thickest, so that only another part (the other
+    plane, the fuselage) can shade it (crates/game/src/render/fabric.rs)."""
+    wing = max(u - l for u, l in zip(SPAD_UPPER, SPAD_LOWER)) / 100.0 * max(
+        p["chord_root"] for s in data["surfaces"] if s["name"].endswith("wing") for p in s["panels"])
+    tail = TAIL_THICKNESS * max(r[1] - r[2] for rows in data["mockup"]["outlines"].values() for r in rows)
+    return max(wing, tail) + 0.02
+
+
 def normal_map(height, density):
     """Tangent-space normals (OpenGL convention, as glTF's) of a height field whose
     columns run along u and rows along v."""
@@ -1078,12 +1106,14 @@ def normal_map(height, density):
 
 
 def paint_fabric(atlas, data, livery, colours, controls):
-    """Colour map (sRGB) and normal map of the fabric, from the livery's marks and the
-    fabric's structure, as (size, size, 3) arrays."""
+    """Colour map (sRGB, the fabric's transmission in alpha) and normal map of the fabric,
+    from the livery's marks and the fabric's structure, as (size, size, 4) and
+    (size, size, 3) arrays."""
     size = atlas.size
     fabric = np.array(colours[livery["fabric"]], dtype=np.float64)
-    colour = np.empty((size, size, 3), np.float32)
-    colour[:] = fabric
+    colour = np.empty((size, size, 4), np.float32)
+    colour[..., :3] = fabric
+    colour[..., 3] = feature(data, "fabric_transmission")[0][0]
     normal = np.empty((size, size, 3), np.float32)
     normal[:] = (0.5, 0.5, 1.0)
     rng = np.random.default_rng(1917)
@@ -1101,21 +1131,30 @@ def paint_fabric(atlas, data, livery, colours, controls):
         m = sum(np.sin(k * (w[0] * mx + w[1] * my + w[2] * mz) / np.linalg.norm(w) + phi)
                 for k, w, phi in waves) / MOTTLING_WAVES
         col = np.broadcast_to(fabric, gu.shape + (3,)) * (1.0 + MOTTLING * m)[..., None]
+        paint = np.zeros_like(gu)
         for mark in livery["marks"]:
-            col = paint_mark(mark, region, gu, gv, col, colours, data, controls, atlas.density)
+            col, cover = paint_mark(mark, region, gu, gv, col, colours, data, controls, atlas.density)
+            paint = np.maximum(paint, cover)
         height = np.zeros_like(gu)
+        through = np.full(gu.shape, feature(data, "fabric_transmission")[0][0])
         if surface in ribs:
             tape, height = fabric_structure(ribs[surface], side, X, Y, Z, data, atlas.density)
             tone = feature(data, "rib_tapes")[0][3]
             col = col * (1.0 - (1.0 - tone) * tape)[..., None]
+            through = transmission_map(ribs[surface], X, Y, Z, tape, data, atlas.density)
+        painted = feature(data, "fabric_transmission")[0][5]
+        through = through * (1.0 - paint) + np.minimum(through, painted) * paint
         x, y, w, h = atlas.place[region]
-        colour[y:y + h, x:x + w] = np.clip(col, 0.0, 1.0)
+        colour[y:y + h, x:x + w, :3] = np.clip(col, 0.0, 1.0)
+        colour[y:y + h, x:x + w, 3] = through
         normal[y:y + h, x:x + w] = normal_map(height, atlas.density)
     return colour, normal
 
 
 def paint_mark(mark, region, gu, gv, col, colours, data, controls, density):
-    """A livery's mark painted over a region's colours, if it falls on it."""
+    """A livery's mark painted over a region's colours, if it falls on it, and the share
+    of each pixel it covers (paint lets less light through the fabric)."""
+    none = np.zeros_like(gu)
     surface, side = region
     u_dir, v_dir = projection(region)
     def over(col, inside, name):
@@ -1123,17 +1162,17 @@ def paint_mark(mark, region, gu, gv, col, colours, data, controls, density):
         return col * (1.0 - a) + np.array(colours[name]) * a
     if mark["kind"] == "roundel":
         if mark["face"] != f"{surface}.{side}":
-            return col
+            return col, none
         c = Vector(mark["centre"])
         r = np.hypot(gu - c.dot(u_dir), gv - c.dot(v_dir))
         n = len(mark["rings"])
         for i, name in enumerate(mark["rings"]):
             col = over(col, coverage(0.5 * mark["diameter"] * (n - i) / n - r, density), name)
-        return col
+        return col, coverage(0.5 * mark["diameter"] - r, density)
     if mark["kind"] == "bands":
         hinge = next(h for h in data["hinges"] if h["node"] == mark["node"])
         if hinge["regions"][0]["surface"] != surface:
-            return col
+            return col, none
         # Distance aft of the hinge line, in the region's plane.
         pivot, axis = Vector(hinge["pivot"]), Vector(hinge["axis"])
         a = Vector((axis.dot(u_dir), axis.dot(v_dir))).normalized()
@@ -1147,25 +1186,29 @@ def paint_mark(mark, region, gu, gv, col, colours, data, controls, density):
         d = behind(gu, gv)
         for j, name in enumerate(mark["colours"]):
             col = over(col, coverage(d - j * band, density), name)
-        return col
+        return col, coverage(d, density)
     raise SystemExit(f"unknown mark {mark['kind']!r}")
 
 
 def blender_image(name, pixels, colour_space):
-    """A packed image of the .blend from an array of rows (bottom first) of RGB."""
-    size = pixels.shape[0]
-    image = bpy.data.images.new(name, size, size, alpha=False)
+    """A packed image of the .blend from an array of rows (bottom first) of RGB or RGBA."""
+    size, channels = pixels.shape[0], pixels.shape[2]
+    image = bpy.data.images.new(name, size, size, alpha=channels == 4)
     image.colorspace_settings.name = colour_space
     rgba = np.ones((size, size, 4), np.float32)
-    rgba[..., :3] = pixels
+    rgba[..., :channels] = pixels
     image.pixels.foreach_set(rgba.ravel())
     image.file_format = "PNG"
     image.pack()
     return image
 
 
-def texture_fabric(material, colour, normal):
-    """The fabric material takes its colour and its normals from the painted textures."""
+def texture_fabric(material, colour, normal, depth):
+    """The fabric material takes its colour and its normals from the painted textures;
+    its extras tell the game to let light through it (transmission in the colour's alpha,
+    as KHR_materials_diffuse_transmission stores it), looked for `depth` behind it."""
+    material["diffuse_transmission"] = 1.0
+    material["transmission_depth_m"] = round(depth, 4)
     nodes, links = material.node_tree.nodes, material.node_tree.links
     bsdf = nodes["Principled BSDF"]
     base = nodes.new("ShaderNodeTexImage")
@@ -1287,7 +1330,7 @@ def main(argv):
     atlas = Atlas([parts, *controls.values()])
     colour, normal = paint_fabric(atlas, data, livery, colours, controls)
     texture_fabric(materials["surface"], blender_image("toile_couleur", colour, "sRGB"),
-                   blender_image("toile_normales", normal, "Non-Color"))
+                   blender_image("toile_normales", normal, "Non-Color"), transmission_depth(data))
     airframe = new_object("airframe", body)
     parts.write(airframe, materials, atlas)
     wires = {}

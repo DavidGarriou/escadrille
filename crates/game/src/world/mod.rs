@@ -24,6 +24,7 @@ impl Plugin for WorldPlugin {
                     scenes::spawn_m0_sol.run_if(capture_scene_is("m0-sol")),
                     maquette::spawn.run_if(capture_scene_is(maquette::SCENE)),
                     studio::spawn.run_if(capture_scene_is(studio::SCENE)),
+                    studio::spawn_contre_jour.run_if(capture_scene_is(studio::SCENE_CONTRE_JOUR)),
                 ),
             )
             .add_systems(
