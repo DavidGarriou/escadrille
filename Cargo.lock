@@ -2819,6 +2819,7 @@ dependencies = [
  "bevy_egui",
  "clap",
  "escadrille_data",
+ "escadrille_fdm",
 ]
 
 [[package]]

@@ -128,3 +128,39 @@ Petit panneau en coin, qui s'affiche ou se masque. Il donne :
 - **Comportement du modèle de vol en temps réel** : il est testé en robustesse dans `fdm_lab`, mais jamais encore piloté. Le test de boucle de vol et ton essai le diront.
 - **Coût du pas** : RK4 sur une centaine de bandes, 120 fois par seconde. À mesurer ; sous-pas ou parallélisme si besoin, sans changer la physique.
 - **Rendu logiciel** dans le conteneur : lent, mais les captures restent justes.
+
+## Avancement
+
+- **2026-10-28 : réalisé**, toutes étapes.
+  - **Départ** : `assets/scenarios/vol-essai.ron`, équilibre du modèle de vol contrôlé par `fdm_lab`.
+  - **Modèle de vol dans le jeu** (`crates/game/src/flight/`) :
+    - pas fixe à 120 Hz et rendu interpolé ;
+    - origine flottante sur une grille de 2 km ;
+    - gouvernes et hélice animées, disque flou au-dessus de 400 tr/min ;
+    - contact avec le sol puis nouveau départ après 3 s ;
+    - pause.
+  - **Manette** (`crates/game/src/input/`) : profil « Vol d'essai » du skill `manette`, clavier de secours.
+  - **Vues** (`crates/game/src/camera/`) : poursuite amortie, œil du pilote, regard libre.
+  - **Plaine** (`crates/game/src/world/plain.rs`) : îlots de 500 m bordés de haies, découpés en parcelles de 25 à 70 m, tuile de 2 km générée au lancement.
+  - **Télémétrie et aide** (`crates/game/src/ui/`).
+  - **Scènes de capture** : `vol-essai-poursuite` et `vol-essai-pilote`.
+- **Corrections vues sur les captures** :
+  - la vitre du pare-brise, exportée en transmission, s'affichait opaque : elle passe en mélange alpha ;
+  - la plaine en polygones faisait camouflage : elle devient un bocage de parcelles.
+- **Mesuré** : le modèle de vol coûte environ 1,7 ms par pas dans le conteneur, en optimisation complète (itérations des plans et des angles induits). Acceptable pour un avion ; à profiler avant d'en faire voler plusieurs, sans changer la physique.
+- **Pour la prochaine revue du modèle de vol** (aérodynamicien) : l'équilibre manche au neutre, à 88 km/h.
+
+## Essai du joueur
+
+Sur ta machine : `just run`. Le vol commence en l'air ; l'aide des commandes s'affiche 20 s, et à chaque pause (Start).
+
+1. **Tenue du palier** : sans toucher au manche, l'avion tient-il à peu près son altitude ? Combien de temps avant qu'il parte en spirale ? Le neutre (L1/R1) suffit-il à le régler ?
+2. **Roulis et virages** : incline à 30° puis à 60°. Faut-il du palonnier pour garder la bille au centre (télémétrie : dérapage) ? Le lacet inverse se sent-il ?
+3. **Gaz** : réduis à 30 %, puis remets plein gaz. L'avion se met-il en lacet et en roulis (couple de l'hélice, souffle) ?
+4. **Décrochage** : réduis les gaz et tire doucement jusqu'au décrochage. Vitesse indiquée à ce moment ? L'avion abat-il, et sur une aile ?
+5. **Les vues** (Y) : la poursuite suit-elle bien sans secousses ? Dans la vue du pilote, que voit-on devant, et le regard libre (stick droit, R3) est-il assez rapide ?
+6. **La manette** : zone morte, sensibilité du manche, rampe du palonnier sur L2/R2, gaz sur la croix : trop lent, trop rapide ?
+7. **Fluidité** : images par seconde ressenties en `just run` (profil de développement).
+
+Les retours vont dans `docs/gdd/retours.md`.
+

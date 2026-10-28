@@ -15,11 +15,20 @@ pub const KNOWN_SCENES: &[&str] = &[
     super::maquette::SCENE,
     super::studio::SCENE,
     super::studio::SCENE_CONTRE_JOUR,
+    super::vol_essai::SCENE_CHASE,
+    super::vol_essai::SCENE_PILOT,
 ];
 
 /// Run condition: the capture asks for scene `name`.
 pub fn capture_scene_is(name: &'static str) -> impl Fn(Option<Res<CaptureRequest>>) -> bool {
     move |request| request.is_some_and(|r| r.scene == name)
+}
+
+/// Run condition: the capture asks for one of `names`.
+pub fn capture_scene_among(
+    names: &'static [&'static str],
+) -> impl Fn(Option<Res<CaptureRequest>>) -> bool {
+    move |request| request.is_some_and(|r| names.contains(&r.scene.as_str()))
 }
 
 /// Plain overcast-blue sky, until the atmosphere arrives (M3).

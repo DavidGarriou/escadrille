@@ -1,12 +1,16 @@
 //! Panache blanc: the game binary.
 //!
-//! One plugin per domain (see CLAUDE.md, "Architecture"). M0 only has the
-//! development tools (gamepad lab, capture mode) and a reference scene.
+//! One plugin per domain (see CLAUDE.md, "Architecture"): the test flight of M2's first
+//! increment (flight, input, camera, ui, world), and the development tools (gamepad lab,
+//! capture mode and its reference scenes).
 
+mod camera;
 mod dev;
 mod flight;
+mod input;
 mod render;
 mod states;
+mod ui;
 mod world;
 
 use std::path::PathBuf;
@@ -99,7 +103,15 @@ fn main() -> AppExit {
     )
     .add_plugins(EguiPlugin::default())
     .insert_state(start_state)
-    .add_plugins((world::WorldPlugin, render::RenderingPlugin, dev::DevPlugin));
+    .add_plugins((
+        world::WorldPlugin,
+        flight::FlightPlugin,
+        input::InputPlugin,
+        camera::CameraPlugin,
+        ui::UiPlugin,
+        render::RenderingPlugin,
+        dev::DevPlugin,
+    ));
 
     if let Some(request) = capture {
         app.insert_resource(request);

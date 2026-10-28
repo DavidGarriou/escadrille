@@ -1262,9 +1262,12 @@ def make_materials(livery, colours):
     coat = m["propeller_wood"].node_tree.nodes["Principled BSDF"].inputs
     if "Coat Weight" in coat:
         coat["Coat Weight"].default_value = 1.0
+    # The glass: alpha blending, which the game draws as it is. Bevy shows the glTF's
+    # specular transmission dark and opaque without its screen-space transmission pass
+    # (vol-essai-pilote, 2026-10-28).
     glass = m["glass"].node_tree.nodes["Principled BSDF"].inputs
-    if "Transmission Weight" in glass:
-        glass["Transmission Weight"].default_value = 1.0
+    glass["Alpha"].default_value = 0.12
+    m["glass"].blend_method = "BLEND"
     return m
 
 

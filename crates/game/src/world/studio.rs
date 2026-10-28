@@ -6,22 +6,15 @@
 
 use std::path::Path;
 
-use bevy::anti_alias::taa::TemporalAntiAliasing;
-use bevy::camera::Exposure;
-use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::light::atmosphere::ScatteringMedium;
-use bevy::light::{
-    Atmosphere, AtmosphereEnvironmentMapLight, CascadeShadowConfigBuilder, SunDisk,
-    light_consts::lux,
-};
+use bevy::light::{Atmosphere, CascadeShadowConfigBuilder, SunDisk, light_consts::lux};
 use bevy::math::{DQuat, DVec3, EulerRot};
-use bevy::pbr::AtmosphereSettings;
-use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
 use escadrille_data::aircraft::{Loading, load_aircraft};
 use escadrille_data::mockup::load_mockup;
 
 use crate::ASSETS_DIR;
+use crate::camera::outdoor_camera;
 use crate::dev::capture::CaptureHold;
 use crate::flight::bridge::{model_transform, render_transform, to_bevy};
 
@@ -91,7 +84,7 @@ pub fn spawn(
     );
     let at = |from_cg: DVec3| (to_bevy(position + from_cg)).as_vec3();
     let eye = at(CAMERA_FROM_CG) * Vec3::new(1.0, 0.0, 1.0) + Vec3::Y * EYE_HEIGHT_M as f32;
-    commands.spawn(camera(
+    commands.spawn(outdoor_camera(
         Transform::from_translation(eye).looking_at(at(TARGET_FROM_CG), Vec3::Y),
         40.0,
         13.0,
@@ -132,7 +125,7 @@ pub fn spawn_contre_jour(
         sun_direction(0.0, 50.0),
     );
     let eye = Vec3::Y * EYE_HEIGHT_M as f32;
-    commands.spawn(camera(
+    commands.spawn(outdoor_camera(
         Transform::from_translation(eye).looking_at(to_bevy(position).as_vec3(), Vec3::Y),
         // A longer lens: the aircraft fills the frame from 20 m.
         24.0,
@@ -224,29 +217,6 @@ fn spawn_outdoors(
         .build(),
         Transform::default().looking_to(-to_bevy(towards_sun).as_vec3(), Vec3::Y),
     ));
-}
-
-/// A camera of `fov_deg` vertical field, with the atmosphere and its light, temporal
-/// anti-aliasing and the game's tone mapping.
-fn camera(transform: Transform, fov_deg: f32, ev100: f32) -> impl Bundle {
-    (
-        Name::new("Camera"),
-        Camera3d::default(),
-        Projection::Perspective(PerspectiveProjection {
-            fov: fov_deg.to_radians(),
-            ..default()
-        }),
-        transform,
-        AtmosphereSettings::default(),
-        AtmosphereEnvironmentMapLight::default(),
-        Exposure { ev100 },
-        // Chosen on the studio's captures (2026-10-27): ACES saturates the varnished
-        // linen towards orange, AgX washes it out at this exposure.
-        Tonemapping::TonyMcMapface,
-        Bloom::NATURAL,
-        Msaa::Off,
-        TemporalAntiAliasing::default(),
-    )
 }
 
 #[cfg(test)]

@@ -55,6 +55,11 @@ opt-level = 1
 [profile.dev.package."*"]
 opt-level = 3
 
+# The flight model steps 120 times a second in the game, RK4 over a hundred strips:
+# optimised even in development, or `just run` spends a quarter of a core on it.
+[profile.dev.package.escadrille_fdm]
+opt-level = 3
+
 [profile.release]
 lto = "thin"
 codegen-units = 1

@@ -25,6 +25,13 @@ pub fn attitude_to_bevy(q: DQuat) -> DQuat {
 }
 
 /// A Bevy rotation as a flight-model attitude: the inverse of [`attitude_to_bevy`].
+#[cfg_attr(
+    not(test),
+    expect(
+        dead_code,
+        reason = "the inverse conversion of ADR 0006, tested with it"
+    )
+)]
 pub fn attitude_from_bevy(q: DQuat) -> DQuat {
     let v = from_bevy(DVec3::new(q.x, q.y, q.z));
     DQuat::from_xyzw(v.x, v.y, v.z, q.w)

@@ -54,6 +54,8 @@ impl Plate {
 pub struct Hinge {
     /// Node name (`ctrl_aileron_r_upper`, `ctrl_elevator`…).
     pub node: String,
+    /// The pilot's command that moves it.
+    pub control: Control,
     /// Ends of the hinge line over the control's strips.
     pub line: (DVec3, DVec3),
     /// Middle of the line: the node's pivot.
@@ -141,7 +143,7 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
         }
         // Members of each node, one group per control and side: the strips it covers, its
         // chord ratio and its span on the panel (fractions), in the order the controls come.
-        let mut nodes: Vec<(String, Vec<Group>)> = Vec::new();
+        let mut nodes: Vec<(String, Control, Vec<Group>)> = Vec::new();
         for control in &spec.controls {
             // One node per side for ailerons; one node for an elevator or a rudder, even
             // spread over several panels (the SPAD's rudder, below and above the tailplane).
@@ -195,9 +197,9 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
                         chord_ratio: control.chord_ratio,
                     },
                 };
-                match nodes.iter_mut().find(|(name, _)| *name == node) {
-                    Some((_, groups)) => groups.push(group),
-                    None => nodes.push((node, vec![group])),
+                match nodes.iter_mut().find(|(name, _, _)| *name == node) {
+                    Some((_, _, groups)) => groups.push(group),
+                    None => nodes.push((node, control.control, vec![group])),
                 }
             }
             if !covered {
@@ -207,7 +209,7 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
                 )));
             }
         }
-        for (node, groups) in nodes {
+        for (node, control, groups) in nodes {
             let hinge_index = hinges.len();
             let mut axis = DVec3::ZERO;
             let mut segments = Vec::new();
@@ -273,6 +275,7 @@ pub fn contract(data: &AircraftData) -> Result<Contract, DataError> {
             let line = (centre + axis * low, centre + axis * high);
             hinges.push(Hinge {
                 node,
+                control,
                 line,
                 pivot: 0.5 * (line.0 + line.1),
                 axis,

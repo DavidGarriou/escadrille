@@ -2015,3 +2015,33 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - il refait l'équilibre et le compare au fichier ;
   - il vérifie qu'une seconde d'intégration depuis l'état du fichier ne bouge presque pas : moins de 5 cm, de 0,01 m/s et de 0,001 rad/s ;
   - contrôle par mutation : un manche faussé à −0,100 le fait échouer, avec les valeurs à recopier.
+
+### Vol d'essai, étapes 2 à 7 : on peut piloter le SPAD à la manette
+
+- **A** Modèle de vol dans le jeu (`crates/game/src/flight/`) :
+  - **Simulation** : pas fixe à 120 Hz (RK4, ADR 0005), états précédent et courant, rendu interpolé.
+  - **Origine flottante** : origine sur une grille de 2 km sous l'avion, qui est la période de la texture du sol.
+  - **Animation du modèle** : les gouvernes tournent de leur déflexion autour de leur charnière. Le contrat du modèle donne désormais la commande de chaque charnière : nouveau champ `control` de `Hinge`, dans `escadrille_data::model`. L'hélice tourne à son régime ; au-dessus de 400 tr/min, son disque flou translucide remplace les pales.
+  - **Sol et pause** : contact avec le sol (roues, béquille, saumons, disque de l'hélice), message, puis nouveau départ après 3 s. La pause arrête l'horloge virtuelle.
+  - **Tests sans rendu** :
+    - une minute de palier tenue à moins de 2 m, 2,67 km parcourus vers l'est, origine flottante suivie ;
+    - un piqué au sol, suivi du nouveau départ ;
+    - l'origine recalée sur sa grille.
+- **A** Couche d'actions (`crates/game/src/input/`) : profil « Vol d'essai » du plan, documenté dans le skill `manette`.
+  - **Traitement** : zone morte radiale, courbe, rampe du palonnier sur les gâchettes tout-ou-rien, gaz et neutre en leviers (appui et maintien).
+  - **Neutre** : le manche est mis à l'échelle autour du neutre ; au départ, il vaut le manche qui tient le palier (−0,108).
+  - **Clavier de secours** et tests de chaque traitement.
+- **A** Vues (`crates/game/src/camera/`) : poursuite à 10 m, amortie sur 0,3 s, horizon droit ; œil du pilote calculé depuis la pose de l'avion de la même image, sans retard ; regard libre. La caméra d'extérieur est mise en commun avec les scènes de studio.
+- **A** Plaine (`crates/game/src/world/plain.rs`) :
+  - **Texture** : tuile de 2 km générée au lancement, faite d'îlots bordés de haies et découpés en parcelles de 25 à 70 m, d'une à quatre bandes de même culture.
+  - **Raccord** : un test vérifie que la texture se répète exactement ; contrôle par mutation fait.
+  - **Lumière** : atmosphère, soleil au sud-ouest à 40°, ombres en quatre cascades.
+- **A** Télémétrie et aide (`crates/game/src/ui/`, egui) : vitesses indiquée et vraie, altitude, variomètre, régime, gaz, incidence, dérapage, facteur de charge, commandes. L'aide des commandes s'affiche 20 s au départ et à chaque pause. Ces textes d'interface de débogage passeront en Fluent avec les premiers vrais écrans.
+- **A** `just run` lance désormais le vol d'essai, à la place de la scène fixe du M0. Deux scènes de capture : `vol-essai-poursuite` et `vol-essai-pilote`.
+- **⚠** Première vue du pilote : un rectangle sombre bouchait la vue. La vitre du pare-brise, exportée par Blender en transmission spéculaire, s'affiche opaque dans Bevy sans sa passe de transmission. **A** Elle passe en mélange alpha (opacité 0,12) ; capture **regardée** : on voit le capot, la Vickers, la cabane et les câbles.
+- **⚠** Première plaine : des polygones très contrastés, à l'allure de camouflage. **A** Elle devient un bocage. Captures **regardées** à chaque étape.
+- **R** Vue de poursuite **regardée** après une demi-minute sans toucher aux commandes : l'avion s'incline lentement à droite. C'est la spirale, attendue sans pilote ; l'équilibre ne compense ni le léger aileron ni le palonnier du trim.
+- **⚠** Coût du modèle de vol : environ 1,7 ms par pas dans le conteneur, même optimisé (`opt-level = 3` pour `escadrille_fdm` en profil de développement, ajouté au `Cargo.toml` du workspace). Acceptable pour un avion ; à profiler avant d'en faire voler plusieurs.
+- **⚠** Disque plein deux fois pendant le travail (une compilation en release, des compilations périmées). **A** Ménage de `target/` : 10 Go, puis 2 Go.
+- **A** `just check` et `just test` passent (299 tests).
+- **Pour le joueur** : liste d'essai dans le plan (`docs/plans/m2-vol-essai.md`, « Essai du joueur ») ; retours dans `docs/gdd/retours.md`. Rien n'a été vérifié manette en main ici : le conteneur n'a pas de manette.

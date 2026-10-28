@@ -12,6 +12,7 @@ publish.workspace = true
 # Textures of diffuse transmission, for the translucent fabric (ADR 0004, features).
 bevy = { workspace = true, features = ["pbr_transmission_textures"] }
 escadrille_data.workspace = true
+escadrille_fdm.workspace = true
 bevy_egui.workspace = true
 clap.workspace = true
 

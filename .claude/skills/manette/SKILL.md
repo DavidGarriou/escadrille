@@ -57,6 +57,29 @@ gilrs (via Bevy)
 - Gaz incrémentaux : maintien = vitesse de variation (pourcentage par seconde), appui bref = pas de 5 %.
 - Option « commandes qui durcissent » : l'autorité maximale du manche diminue avec la pression dynamique, comme les efforts réels ; elle varie d'un avion à l'autre (fiche de recherche).
 
+## Profil « Vol d'essai » (en place depuis le 2026-10-28, `crates/game/src/input/`)
+
+Choix du joueur pour le premier incrément du M2 (plan `m2-vol-essai.md`) :
+
+| Commande | Action |
+|---|---|
+| Stick gauche | manche : roulis (X), tangage (Y) ; zone morte radiale 8 %, courbe k = 0,4 |
+| L2 / R2 | palonnier à gauche / à droite : tout-ou-rien, donc rampe (0,4 s vers ±1, 0,2 s vers le centre) |
+| Croix ↑ / ↓ | gaz : appui = 5 %, maintien = 30 %/s |
+| L1 / R1 | neutre de la profondeur, piqué / cabré, 1 % par appui ; au départ, il vaut le manche qui tient le palier |
+| Stick droit | regard libre ; R3 regarde devant |
+| Y (ouest) | vue : poursuite ou pilote |
+| X (nord) | télémétrie |
+| Select | nouveau départ |
+| Start | pause, avec l'aide des commandes |
+
+- **Neutre de la profondeur** : le stick au centre donne ce neutre, les butées donnent toujours ±1. C'est un réglage de la manette, pas de la physique.
+- **Clavier de secours** (touches physiques, étiquettes AZERTY) :
+  - flèches pour le manche, Q / D pour le palonnier ;
+  - Page préc. / suiv. pour les gaz, Origine / Fin pour le neutre ;
+  - V : vue ; C : regarder devant ; T : télémétrie ; R : nouveau départ ; P : pause.
+- Le profil est écrit en code pour l'instant ; le RON et le remappage viendront ensuite.
+
 ## Profil par défaut « Pilote » (point de départ, à ajuster en essai)
 
 | Commande | En vol | Avec L2 maintenu (couche « Maj ») |
