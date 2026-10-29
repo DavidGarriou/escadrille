@@ -2177,3 +2177,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - question posée : lancer l'enquête sur le centrage (historien pour les sources, aérodynamicien pour le bilan de masses) ?
 - **A** Tâche séparée proposée au joueur, à lancer s'il le veut : corriger les libellés trompeurs des modes dans `fdm_lab modes`. Le « retard de la déflexion » à −1,5 s⁻¹ y est en réalité la racine lente d'incidence.
 - **⚠** Le processus de la session a redémarré après le dernier commit (`eadb759`). Vérification faite : tout était déjà commité et poussé, l'arbre de travail était propre.
+
+### Visée de la Vickers
+
+- **Q** Le joueur : « c'est beaucoup mieux. les deux mires de la mitrailleuse ne sont pas alignés au regard du pilote. le réticule proche est au-dessus du réticule de bout de canon ».
+- **R** Constat par le calcul :
+  - l'œil du modèle était à z −1,10 m ;
+  - le viseur arrière, 39 cm devant, apparaissait 6,6° au-dessus de l'horizon, celui de bouche, 1,33 m devant, à 2,1° seulement ;
+  - plus profond : l'œil n'était que 2 mm au-dessus du couvercle de la culasse, si bien que le pilote regardait l'arrière de la mitrailleuse au lieu de viser par-dessus.
+- **A** `art/spad7/build.py` :
+  - les deux viseurs sont construits sur la ligne de visée qui passe par l'œil du pilote, parallèle à l'âme du canon (réglage à l'infini, en attendant le réglage de tir des armes) : ils sont alignés par construction ;
+  - le script refuse un modèle dont un viseur ne dégage pas le canon d'au moins 1 cm, ou dont la ligne de visée ne traverse pas le verre du pare-brise sous son cadre.
+- **A** `maquette.ron` (valeurs estimées) :
+  - œil levé à z −1,15 : le pilote lève la tête pour viser, par-dessus la culasse ;
+  - pare-brise porté de 0,17 à 0,22 m de haut, pour que la visée passe dans le verre ;
+  - la hauteur des viseurs disparaît de `vickers_parts` : elle découle maintenant de l'œil.
+- **R** Aperçu Blender au téléobjectif depuis l'œil, puis captures `vol-essai-pilote` et `avion-studio` **regardées** : les deux anneaux sont concentriques, le pilote voit par-dessus le couvercle, et le pare-brise reste discret de l'extérieur.
+- **⚠** La ligne de visée est 12 cm au-dessus de l'âme et lui est parallèle : le réglage de tir (convergence à une distance donnée) viendra avec les armes (skill `combat`).
+- **A** Retours consignés dans `docs/gdd/retours.md`.

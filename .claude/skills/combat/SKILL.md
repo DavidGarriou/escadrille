@@ -21,6 +21,7 @@ Données par arme dans `assets/weapons/<id>.ron`, sourcées comme les avions : c
 - Simulation dans `FixedUpdate` ; détection par **segment** entre deux pas (pas d'effet tunnel).
 - Stockage compact (structure de tableaux, pool), **pas une entité ECS par balle**. Le visuel des traçantes est séparé (skill `rendu-visuel`).
 - Déterminisme : dispersion tirée d'un générateur avec graine.
+- **Visée et réglage de tir** : les viseurs du modèle 3D sont construits sur la ligne de visée qui passe par l'œil du pilote (`pilot_eye_m` de `maquette.ron`), parallèle à l'âme ; sur le SPAD, elle passe 12 cm au-dessus. Le réglage de tir (la ligne de visée croise la trajectoire à une distance donnée, à sourcer) reste à faire avec les armes. Il incline l'arme ou les viseurs, et le script Blender doit suivre.
 
 ## Détection des impacts
 

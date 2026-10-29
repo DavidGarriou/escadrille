@@ -23,3 +23,12 @@ Version : `just run`, plan `docs/plans/m2-vol-essai.md`. Le joueur : « Ce n'est
 | Confort des vues | « bien, sauf la mitrailleuse qui est un gros bloc, il faut le rendre beaucoup plus réaliste » | Vickers remodelée le 2026-10-29 (manchon à fentes, culasse, viseurs circulaires) ; pare-brise éclairci |
 | Réglages de la manette | « un peu trop sensible » | Courbe du manche adoucie |
 | Fluidité | « bien » | — |
+
+## M2 — Aides au pilotage et Vickers (2026-10-29)
+
+Version : aides au pilotage après la revue de l'aérodynamicien (plan `docs/plans/m2-aides-pilotage.md`), Vickers remodelée.
+
+| Point essayé | Ressenti du joueur | Suite |
+|---|---|---|
+| Vol avec les aides | « c'est beaucoup mieux » | Détail par préréglage à recueillir au prochain essai (liste du plan, « Ton essai ») |
+| Visée de la Vickers | « les deux mires de la mitrailleuse ne sont pas alignés au regard du pilote. le réticule proche est au-dessus du réticule de bout de canon » | Corrigé le 2026-10-29 : les viseurs sont construits sur la ligne de visée qui passe par l'œil, parallèle à l'âme du canon ; l'œil est levé de 5 cm, au-dessus de la culasse ; le pare-brise est rehaussé pour que la visée passe dans le verre |

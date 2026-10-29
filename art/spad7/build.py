@@ -802,6 +802,7 @@ def box(parts, centre, size, material):
     parts.loft([ring(0.5 * sx), ring(-0.5 * sx)], material, cap_start=True, cap_end=True)
 
 
+SIGHT_CLEARANCE = 0.01    # m between a ring sight and the gun, or the sight line and the windscreen's frame
 GUN_SLOTS = (8, 7)        # E: rows of cooling slots round the Vickers' jacket, and slots along each row
 GUN_SLOT = (0.050, 0.016)  # E: length and width of a slot, m
 
@@ -829,7 +830,8 @@ def build_gun(data, parts, keys):
     until a drawing or a photograph of the S.VII's mounting (spad7-aspect.md § 7)."""
     muzzle = Vector(data["mockup"]["gun_muzzles"][0])
     d, jacket, receiver, width, height = feature(data, "vickers")[0]
-    feed_out, feed_len, feed_h, crank, front_ring, rear_ring, sight_h = feature(data, "vickers_parts")[0]
+    feed_out, feed_len, feed_h, crank, front_ring, rear_ring = feature(data, "vickers_parts")[0]
+    eye = Vector(data["mockup"]["pilot_eye"])
     r = 0.5 * d
     x_jacket = muzzle.x - jacket          # rear of the jacket, front of the receiver
     x_rear = x_jacket - receiver
@@ -874,13 +876,18 @@ def build_gun(data, parts, keys):
     # Rear cross-piece (the trigger motor's housing) below the back of the receiver.
     round_bar(parts, (x_rear + 0.02, -0.5 * width - 0.01, z + 0.3 * height),
               (x_rear + 0.02, 0.5 * width + 0.01, z + 0.3 * height), 0.032, "steel", n=12)
-    # Two ring sights: the rear one over the back of the receiver, the front one over the
-    # jacket's front collar, on posts.
-    for x, ring_d, base in ((x_rear + 0.04, rear_ring, z - 0.5 * height),
+    # Two ring sights, their centres on the sight line: through the pilot's eye, parallel
+    # to the bore (harmonised at infinity until the guns are), so that they line up in
+    # the cockpit view (player, 2026-10-29). The rear one over the back of the receiver,
+    # the front one over the jacket's front collar, on posts from the gun's top.
+    for x, ring_d, base in ((x_rear + 0.04, rear_ring, z - 0.5 * height - 0.013),
                             (muzzle.x - 0.07, front_ring, muzzle.z - r * 1.08)):
-        centre = Vector((x, 0.0, base - sight_h))
-        tube(parts, ring_loop(centre, 0.5 * ring_d), 0.004, "steel", n=6)
-        round_bar(parts, (x, 0.0, base), (x, 0.0, base - sight_h + 0.5 * ring_d), 0.005, "steel", n=6)
+        bottom = eye.z + 0.5 * ring_d
+        if bottom > base - SIGHT_CLEARANCE:
+            raise SystemExit(f"the ring sight at x {x:.2f} does not clear the gun: the pilot's "
+                             f"eye (pilot_eye_m) must be {bottom - base + SIGHT_CLEARANCE:.3f} m higher")
+        tube(parts, ring_loop(Vector((x, 0.0, eye.z)), 0.5 * ring_d), 0.004, "steel", n=6)
+        round_bar(parts, (x, 0.0, base), (x, 0.0, bottom), 0.005, "steel", n=6)
     # Brackets down to the cowl, under the jacket's rear collar and under the receiver.
     for x, bottom in ((x_jacket + 0.02, muzzle.z + 0.54 * d), (x_rear + 0.06, z + 0.5 * height)):
         top, _, _ = fuselage_at(keys, x)
@@ -954,9 +961,14 @@ def build_linkage(data, parts):
 
 
 def build_windscreen(data, parts, keys):
-    """A small glass screen ahead of the cockpit, raked back, on a metal frame."""
+    """A small glass screen ahead of the cockpit, raked back, on a metal frame. The sight
+    line, at the pilot's eye, goes through the glass, clear of the frame."""
     x, half, height, rake = feature(data, "windscreen")[0]
     top, _, _ = fuselage_at(keys, x)
+    eye = data["mockup"]["pilot_eye"][2]
+    if not (top - height < eye - SIGHT_CLEARANCE - 0.012 and eye < top - SIGHT_CLEARANCE):
+        raise SystemExit(f"the sight line (pilot_eye_m, z {eye:.3f}) must cross the windscreen's "
+                         f"glass, from z {top:.3f} to {top - height:.3f}, clear of its frame")
     lean = height * math.tan(math.radians(rake))
     a, b = (x, half, top), (x, -half, top)
     c, d = (x - lean, -half * 0.9, top - height), (x - lean, half * 0.9, top - height)
