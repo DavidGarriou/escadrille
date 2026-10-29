@@ -2195,3 +2195,11 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Aperçu Blender au téléobjectif depuis l'œil, puis captures `vol-essai-pilote` et `avion-studio` **regardées** : les deux anneaux sont concentriques, le pilote voit par-dessus le couvercle, et le pare-brise reste discret de l'extérieur.
 - **⚠** La ligne de visée est 12 cm au-dessus de l'âme et lui est parallèle : le réglage de tir (convergence à une distance donnée) viendra avec les armes (skill `combat`).
 - **A** Retours consignés dans `docs/gdd/retours.md`.
+- **R** Réponse au joueur :
+  - les viseurs sont alignés, d'après la capture en jeu ;
+  - la cause de l'écart ;
+  - l'œil levé de 5 cm et le pare-brise rehaussé ;
+  - les garde-fous du script ;
+  - le réglage de tir, renvoyé aux armes.
+
+  Questions toujours ouvertes : son avis préréglage par préréglage au prochain vol, et l'enquête sur le centrage.
