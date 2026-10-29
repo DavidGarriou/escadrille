@@ -6,6 +6,7 @@
 
 pub mod aircraft;
 pub mod airfoil;
+pub mod assist;
 pub mod essais;
 pub mod frames;
 pub mod livery;

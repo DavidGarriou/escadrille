@@ -43,7 +43,7 @@ pub struct Simulated {
     pub start: RigidBodyState,
     pub previous: RigidBodyState,
     pub state: RigidBodyState,
-    /// The commands of the last step.
+    /// The commands of the next step, then of the last one.
     pub controls: PilotControls,
     /// Body axes from the centre of gravity: the points that touch the ground first.
     pub extremities: Vec<DVec3>,
@@ -116,17 +116,25 @@ pub fn extremities(data: &AircraftData, contract: &Contract, cg: DVec3) -> Resul
     Ok(points.into_iter().map(|p| p - cg).collect())
 }
 
-/// One step of the flight model for each aircraft not on the ground.
-pub fn step(time: Res<Time<Fixed>>, input: Res<PilotInput>, mut aircraft: Query<&mut Simulated>) {
+/// The player's aircraft takes the pilot's commands for the next step.
+pub fn take_input(input: Res<PilotInput>, mut aircraft: Query<&mut Simulated, With<Player>>) {
+    for mut sim in &mut aircraft {
+        sim.controls = input.controls;
+    }
+}
+
+/// One step of the flight model for each aircraft not on the ground, with its commands.
+pub fn step(time: Res<Time<Fixed>>, mut aircraft: Query<&mut Simulated>) {
     let dt = time.delta_secs_f64();
     for mut sim in &mut aircraft {
         if sim.crashed.is_some() {
             continue;
         }
-        let state = sim.aircraft.step(&sim.state, &input.0, &ENVIRONMENT, dt);
+        let state = sim
+            .aircraft
+            .step(&sim.state, &sim.controls, &ENVIRONMENT, dt);
         sim.previous = sim.state;
         sim.state = state;
-        sim.controls = input.0;
         if sim.touches_ground() {
             sim.state = sim.previous;
             sim.crashed = Some(0.0);
@@ -204,7 +212,7 @@ mod tests {
             .init_resource::<StartCommands>()
             .init_resource::<RenderOrigin>()
             .add_message::<RestartFlight>()
-            .add_systems(FixedUpdate, step)
+            .add_systems(FixedUpdate, (take_input, step).chain())
             .add_systems(Update, (restart, place).chain());
         app
     }
@@ -221,7 +229,7 @@ mod tests {
         let cg = built.summary.cg_from_datum;
         let extremities = extremities(&data, &contract(&data).unwrap(), cg).unwrap();
         let start = scenario.initial_state();
-        app.insert_resource(PilotInput(scenario.commands()));
+        app.insert_resource(PilotInput::holding(scenario.commands()));
         app.world_mut()
             .spawn((
                 Player,
@@ -276,7 +284,7 @@ mod tests {
         let mut app = app();
         let spad = spad(&mut app);
         // Full nose down, full throttle: into the ground from 1 000 m.
-        app.insert_resource(PilotInput(PilotControls {
+        app.insert_resource(PilotInput::holding(PilotControls {
             pitch: -1.0,
             throttle: 1.0,
             ..default()

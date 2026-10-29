@@ -81,3 +81,64 @@ Le palonnier du joueur (L2/R2) s'ajoute toujours à celui de la coordination.
 
 - **Gains** : un régulateur mal amorti fait osciller l'avion. Les gains calculés seront vérifiés en simulation à plusieurs vitesses avant ton essai.
 - **Instructeur et décrochage** : à basse vitesse, la demande de facteur de charge est bornée par la garde ; l'avion perd de l'altitude plutôt que de décrocher.
+
+## Avancement (2026-10-29)
+
+**Étapes 1 à 3 faites ; étape 4 : vérifications passées, revue de l'aérodynamicien en cours.**
+
+### Ce qui est en place
+
+- **Gains** : `fdm_lab assist spad7` écrit `assets/aircraft/spad7/assist_gains.ron`, à 10 vitesses de 90 à 260 km/h. Un test de `fdm_lab` vérifie que le fichier suit le modèle ; le format est décrit dans le skill `simulation-vol` (`format-avion.md`).
+- **Incidence de décrochage** : 12,0°, le minimum des balayages plein gaz (12,0° à 76 km/h) et au ralenti (13,8° à 82 km/h). La garde vise donc 10°.
+- **Jeu** :
+  - `crates/game/src/realism/` : réglages, préréglages, cycle par Home (touche I au clavier) ;
+  - les aides tournent au pas fixe, entre les commandes du pilote et le pas du modèle ;
+  - le préréglage s'affiche 3 s à l'écran quand il change, et en permanence dans la télémétrie (ligne « Aides »).
+- **Tests sans rendu** : 9 tests :
+  - tests de fumée par préréglage ;
+  - absence de triche en As ;
+  - coordination ;
+  - palier mains libres en Arcade ;
+  - branchement dans Bevy ;
+  - cycle des préréglages.
+
+### Écarts au plan, et pourquoi
+
+1. **Anticipations calculées** :
+   - le palonnier accompagne la vitesse de roulis et l'aileron (lacet inverse) : sans cela, la coordination laissait 8° de dérapage dans un roulis rapide ;
+   - la profondeur tient compte de la vitesse de tangage : sans cela, la garde dépassait sa limite de 1,6°.
+
+   Les coefficients viennent de la même linéarisation, rien n'est réglé à la main.
+2. **Intégrale sur l'inclinaison** de l'instructeur : en virage serré, le SPAD s'engage (il partait à 75° pour 60° demandés). Elle tient maintenant 60,8°.
+3. **Limite de montée de l'instructeur** :
+   - jusqu'à 30° de pente tant que la garde peut donner 2 g, aucune montée quand elle ne peut plus en donner que 1,2 ;
+   - sans elle, manche tiré à fond, l'instructeur partait en looping et le SPAD, à court d'énergie, passait sur le dos au sommet. Avec elle, il monte, puis se stabilise en montée douce vers 90-105 km/h.
+4. **Limite de la garde seule (Pilote)** : elle tient l'incidence tant qu'il y a de la vitesse, mais elle ne rend pas la vitesse d'une chandelle.
+   - Manche tenu à fond, le SPAD enchaîne des chandelles et passe sur le dos au sommet, vers 30 km/h, comme le ferait l'avion réel. Il ne part pas en vrille.
+   - De même, la coupure des gaz en montée raide se termine par une abattée au sommet, en Pilote comme en As ; seul l'instructeur l'évite.
+
+5. **La dérive à gauche n'est corrigée que par l'instructeur.**
+   - La coordination annule le dérapage, mais pas la spirale, lente et instable : son temps de doublement est de 21 s à 160 km/h.
+   - Elle ne corrige pas non plus le léger aileron à droite que demande l'équilibre.
+   - Mains libres, l'inclinaison part donc à gauche en Pilote et en Vétéran comme en As. En Arcade, l'instructeur tient les ailes à plat.
+
+### Constat pour l'aérodynamicien : la profondeur est très puissante
+
+- Depuis la croisière à 160 km/h, il suffit d'environ +0,1 de commande de profondeur, soit 5 % de la course, pour atteindre 10° d'incidence.
+- Un quart de manche arrière met l'avion à 13° et le fait décrocher, avec abattée.
+- La marge statique sortie par `fdm_lab modes` vaut 1,5 % à 160 km/h, contre 10,1 % à 100 km/h.
+- C'est probablement la vraie cause du manche « trop sensible » et des décrochages faciles. Aucun coefficient n'est changé sans source.
+
+### Ton essai
+
+1. **Pilote** (au lancement) : virages à 60°, manche tiré franchement ; l'avion doit perdre de la hauteur plutôt que décrocher.
+   - La dérive lente à gauche, mains libres, **demeure**, comme en Vétéran : c'est la spirale du SPAD, que le palonnier automatique ne corrige pas.
+   - En simulation, mains libres, l'inclinaison atteint 29° en 50 s, en Pilote comme en As ; le dérapage, lui, est annulé.
+2. **Arcade** (Home) :
+   - manche lâché : ailes à plat et palier ;
+   - manche à droite : virage à 60° ;
+   - manche tiré : ressource bornée ;
+   - essaie aussi de le faire décrocher.
+3. **As** : comparer avec les deux premiers ; c'est le vol d'hier.
+4. **Vétéran** : dire si le palonnier automatique seul te suffit.
+5. **Vickers** : dans la vue pilote, la nouvelle mitrailleuse te paraît-elle juste ?

@@ -11,6 +11,7 @@ use escadrille_data::essais::{Confidence, Quantitative, load_essais};
 use escadrille_data::masses::load_masses;
 use escadrille_fdm::aircraft::Aircraft;
 use escadrille_fdm::environment::{Environment, StandardEnvironment};
+use fdm_lab::assist::{assist_gains, to_ron};
 use fdm_lab::campaign::{self, validated};
 use fdm_lab::conditions::{NonStandardDay, time_to_pressure_altitude};
 use fdm_lab::modes::{Mode, lateral, linearise, longitudinal, static_stability};
@@ -86,6 +87,9 @@ enum Command {
     /// Empty mass, centre of gravity and inertia from the mass build-up (masses.ron), as
     /// the mass block of aircraft.ron, checked against it.
     Inertia { aircraft: String },
+    /// Gains of the flight assists, from the linearised model, written to
+    /// `assets/aircraft/<id>/assist_gains.ron` (plan `m2-aides-pilotage.md`, step 1).
+    Assist { aircraft: String },
     /// Print the ISA sea-level constants used by the FDM.
     Constants,
 }
@@ -497,6 +501,34 @@ fn montee(assets: &Path, id: &str, deltas: &[f64], airfield: f64) -> Result<bool
     Ok(true)
 }
 
+fn assist(assets: &Path, id: &str) -> Result<bool, String> {
+    let built = build(assets, id, 1.0)?;
+    let gains = assist_gains(&built.aircraft, &STILL_AIR)?;
+    println!(
+        "Incidence de décrochage {:.2}° ({})",
+        gains.stall_alpha.to_degrees(),
+        gains.stall_note
+    );
+    println!("  km/h   n/α (g/°)  α0 (°)   roulis K·q        tangage K·q              lacet K·q");
+    for r in &gains.rows {
+        let q = 0.5 * escadrille_fdm::constants::RHO0 * r.speed * r.speed;
+        println!(
+            "  {:4.0}   {:6.3}   {:+6.2}   {:?}   {:?}   {:?}   {}",
+            r.speed * 3.6,
+            r.load_per_alpha * q * std::f64::consts::PI / 180.0,
+            r.zero_load_alpha.to_degrees(),
+            r.roll.map(|k| (k / q * 1000.0).round() / 1000.0),
+            r.pitch.map(|k| (k / q * 1000.0).round() / 1000.0),
+            r.yaw.map(|k| (k / q * 1000.0).round() / 1000.0),
+            r.flight
+        );
+    }
+    let path = assets.join("aircraft").join(id).join("assist_gains.ron");
+    std::fs::write(&path, to_ron(id, &gains)).map_err(|e| format!("{}: {e}", path.display()))?;
+    println!("Écrit : {}", path.display());
+    Ok(true)
+}
+
 fn inertia(assets: &Path, id: &str) -> Result<bool, String> {
     let masses = load_masses(assets, id)
         .map_err(|e| e.to_string())?
@@ -579,6 +611,7 @@ fn main() -> ExitCode {
             out,
         } => essai(&cli.assets, &aircraft, &confidence, &out),
         Command::Inertia { aircraft } => inertia(&cli.assets, &aircraft),
+        Command::Assist { aircraft } => assist(&cli.assets, &aircraft),
         Command::Montee {
             aircraft,
             delta_t_k,

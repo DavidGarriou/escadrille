@@ -2082,3 +2082,44 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Aperçus Blender (de face, de côté, depuis l'œil du pilote), puis captures `vol-essai-pilote`, `avion-studio` et `vol-essai-poursuite` **regardées**. Une première série d'aperçus était tête en bas : erreur de caméra de mon script d'aperçu (axe haut), pas du modèle.
 - **⚠** Dans la vue pilote, le pare-brise voilait tout ce qui était derrière lui, mitrailleuse et capot : son verre avait une couleur de base blanche que le soleil éclairait. **A** Base sombre et opacité de 0,10 : le verre ne fait plus que refléter et teinter un peu. La Vickers se lit en acier bruni.
 - **A** `just check` et `just test` passent (299 tests).
+
+### Aides au pilotage (plan `m2-aides-pilotage.md`)
+
+- **A** Étape 1, `fdm_lab assist spad7` → `assets/aircraft/spad7/assist_gains.ron` :
+  - à 10 vitesses, trim, linéarisation, puis trois modèles réduits (roulis, incidence, dérapage), avec placement de pôles et intégrateur ;
+  - statiques : charge par incidence, profondeur par incidence et par vitesse de tangage, palonnier contre le lacet inverse ;
+  - incidence de décrochage 12,0°, minimum plein gaz et ralenti ;
+  - test de `fdm_lab` : le fichier suit le modèle. Schéma dans `crates/data/src/assist.rs`.
+- **A** Étapes 2-3, `crates/game/src/realism/` :
+  - `RealismSettings`, préréglages Arcade, Pilote (au lancement), Vétéran et As ;
+  - bouton Home (touche I) ;
+  - aides au pas fixe, entre les commandes du pilote et le pas du modèle ;
+  - préréglage à l'écran et dans la télémétrie.
+
+  Côté vol, la couche d'actions transmet aussi la position du manche, et l'avion du joueur prend ses commandes dans un nouvel ensemble `FlightSet::Command`.
+- **R** Les premiers essais en simulation ont montré quatre défauts, corrigés par des anticipations calculées depuis la même linéarisation, sans réglage à la main :
+  - coordination trop lente contre le lacet inverse d'un roulis rapide ;
+  - garde qui dépassait sa limite de 1,6° ;
+  - instructeur qui partait à 75° d'inclinaison pour 60° demandés ;
+  - instructeur qui partait en looping, manche tiré.
+- **R** Limites constatées et documentées :
+  - **chandelle** : la garde seule (Pilote) ne rend pas la vitesse d'une chandelle ; manche tenu à fond, le SPAD passe sur le dos au sommet, comme l'avion réel, sans vrille. Seul l'instructeur limite la montée ;
+  - **dérive à gauche** : mains libres, elle demeure en Pilote et en Vétéran (spirale lente, 29° en 50 s, comme en As). Seul l'instructeur la supprime. J'avais d'abord écrit le contraire dans le plan, et je l'ai corrigé après vérification en simulation.
+- **⚠** Constat pour l'aérodynamicien : dans le modèle, la profondeur est très puissante.
+  - De la croisière à 10° d'incidence, il suffit de 5 % de la course.
+  - Un quart de manche arrière fait décrocher.
+  - La marge statique vaut 1,5 % à 160 km/h.
+  - C'est probablement la vraie cause du manche « trop sensible » et des décrochages faciles. Aucun coefficient n'a été changé.
+- **A** Tests sans rendu (9) :
+  - fumée par préréglage ;
+  - absence de triche en As ;
+  - coordination ;
+  - palier mains libres ;
+  - branchement dans Bevy ;
+  - cycle des préréglages.
+
+  Le test ignoré `print_a_flight` sert au diagnostic.
+- **A** Docs mises à jour :
+  - plan (avancement, écarts, liste d'essai) ;
+  - `retours.md` ;
+  - skills `realisme`, `manette` et `simulation-vol` (format du fichier de gains).

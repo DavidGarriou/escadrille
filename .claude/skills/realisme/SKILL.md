@@ -59,6 +59,25 @@ pub enum Preset { Arcade, Pilot, Veteran, Ace, Custom }
 - **Mêmes contrôleurs pour l'IA** (poursuite, mise en virage, ressource) : skill `combat`.
 - L'instructeur ne peut pas faire mieux que l'avion : s'il n'y a plus d'énergie, il décroche aussi (gentiment).
 
+## Implémentation en place (M2, plan `m2-aides-pilotage.md`)
+
+- **Code** :
+  - `crates/game/src/realism/mod.rs` : `RealismSettings` (un seul champ pour l'instant, `flight_assist`), `Preset`, cycle par le bouton Home ;
+  - `realism/assist.rs` : les contrôleurs, en code pur testable sans Bevy.
+- **Place** : au pas fixe, entre `FlightSet::Command` (l'avion du joueur prend les commandes du pilote) et `FlightSet::Step`.
+- **Gains** : `fdm_lab assist <id>` (`tools/fdm_lab/src/assist.rs`). Trois modèles réduits, avec placement de pôles et intégrateur :
+  - roulis (p, φ) ;
+  - incidence (α, q), avec Ω et ε résidualisés pour les statiques ;
+  - dérapage (β, r).
+
+  Le fichier écrit est décrit dans `simulation-vol/format-avion.md`.
+- **Lois** :
+  - **coordination** : PI sur β, amortissement de r au-delà de celui du virage, et anticipation du lacet inverse par la vitesse de roulis et l'aileron ;
+  - **garde** : min(profondeur du pilote, profondeur qui tient α_décrochage − 2°), avec la profondeur statique de l'incidence et de la vitesse de tangage ;
+  - **instructeur** : inclinaison jusqu'à 60°, facteur de charge de 0 à 3,5 g autour du palier, retour au palier en 4 s, montée limitée à 30° tant que la vitesse le permet.
+- **Limite connue** : la garde seule (Pilote) ne rend pas la vitesse d'une chandelle. Trop cabré, l'avion passe sur le dos au sommet comme il le ferait réellement ; seul l'instructeur limite la montée.
+- **Diagnostic** : le test ignoré `print_a_flight` (`realism/assist.rs`) imprime un vol, réglé par variables d'environnement : `ASSIST`, `STICK`, `THROTTLE`, `SECONDS`, `ROLL_FOR`, `CUT_AT`.
+
 ## Tests
 
 - **Tests de fumée par préréglage** : vols scriptés « débutant » (manche à fond en arrière, roulis à fond, gaz coupés en montée). Attendu : en Arcade, ni vrille ni écrasement ; en As, le comportement réel (vrille possible).

@@ -222,6 +222,17 @@ Liveries(
   - au chargement : couleurs connues, composantes entre 0 et 1, faces bien formées, diamètres positifs ;
   - à l'export pour Blender (`mockup --json`) : la face existe sur l'avion, et le nœud d'une bande est une gouverne du contrat.
 
+## `assets/aircraft/<id>/assist_gains.ron` (gains des aides au pilotage)
+
+Fichier **calculé**, jamais écrit à la main : `cargo run -p fdm_lab -- assist <id>` le régénère depuis le modèle de vol (plan `m2-aides-pilotage.md`, skill `realisme`). Un test de `fdm_lab` échoue s'il ne suit plus le modèle et imprime le fichier à jour. Schéma : `crates/data/src/assist.rs`.
+
+- **En-tête** : deux commentaires `//! C:` couvrent tout le fichier, sans ligne vide.
+- **`stall_alpha`** : incidence de la plus basse vitesse stabilisée ; c'est le minimum des balayages au ralenti et plein gaz.
+- **Lignes** : une par vitesse équivalente, chacune trimée au niveau de la mer, en palier ou, au-delà de la vitesse maximale, en piqué plein gaz.
+  - **Statiques** : charge par incidence (par Pa), incidence de charge nulle, profondeur de charge nulle, profondeur par incidence, profondeur par vitesse de tangage, palonnier par vitesse de roulis et par aileron.
+  - **Gains** `roll`, `pitch`, `yaw` : trois chacun (erreur, vitesse angulaire, intégrale), multipliés par la pression dynamique de la ligne.
+- **Côté jeu** : il interpole en vitesse équivalente et divise les gains par sa propre pression dynamique.
+
 ## `assets/airfoils/<id>.ron`
 
 ```ron

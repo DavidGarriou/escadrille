@@ -1,13 +1,14 @@
 //! Panache blanc: the game binary.
 //!
-//! One plugin per domain (see CLAUDE.md, "Architecture"): the test flight of M2's first
-//! increment (flight, input, camera, ui, world), and the development tools (gamepad lab,
-//! capture mode and its reference scenes).
+//! One plugin per domain (see CLAUDE.md, "Architecture"): the test flight of M2 (flight,
+//! input, realism, camera, ui, world), and the development tools (gamepad lab, capture
+//! mode and its reference scenes).
 
 mod camera;
 mod dev;
 mod flight;
 mod input;
+mod realism;
 mod render;
 mod states;
 mod ui;
@@ -107,6 +108,7 @@ fn main() -> AppExit {
         world::WorldPlugin,
         flight::FlightPlugin,
         input::InputPlugin,
+        realism::RealismPlugin,
         camera::CameraPlugin,
         ui::UiPlugin,
         render::RenderingPlugin,

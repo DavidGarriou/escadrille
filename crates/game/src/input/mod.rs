@@ -7,11 +7,12 @@
 //! - d-pad ↑ / ↓: throttle, 5 % a press, 30 % a second held;
 //! - L1 / R1: elevator neutral, nose down / up, 1 % a press;
 //! - right stick: free look; R3: look ahead again;
-//! - west (Y): change view; north (X): telemetry; Select: start again; Start: pause.
+//! - west (Y): change view; north (X): telemetry; Select: start again; Start: pause;
+//! - Home: next realism preset (`crate::realism`).
 //!
 //! Keyboard, for development (physical keys, labels of an AZERTY keyboard): arrows for
 //! the stick, Q / D for the rudder, Page up / down for the throttle, Home / End for the
-//! neutral, V view, T telemetry, R start again, P pause.
+//! neutral, V view, T telemetry, R start again, P pause, I preset.
 //!
 //! The profile is written here for now; RON profiles and remapping come later.
 
@@ -48,6 +49,7 @@ pub enum Action {
     LookAhead,
     Telemetry,
     Pause,
+    NextPreset,
 }
 
 /// The continuous state of the pilot's controls, between frames.
@@ -171,11 +173,15 @@ fn read_controls(
     let look = pad.map_or(Vec2::ZERO, |g| radial_dead_zone(g.right_stick(), DEAD_ZONE));
     c.look = Vec2::new(expo(look.x, STICK_EXPO), expo(look.y, STICK_EXPO)) * LOOK_RATE;
 
-    out.input.0 = PilotControls {
-        roll: f64::from(roll.clamp(-1.0, 1.0)),
-        pitch: f64::from(around_neutral(pitch.clamp(-1.0, 1.0), c.neutral.value)),
-        yaw: f64::from(c.rudder),
-        throttle: f64::from(c.throttle.value),
+    let stick = Vec2::new(roll, pitch).clamp(Vec2::NEG_ONE, Vec2::ONE);
+    *out.input = PilotInput {
+        controls: PilotControls {
+            roll: f64::from(stick.x),
+            pitch: f64::from(around_neutral(stick.y, c.neutral.value)),
+            yaw: f64::from(c.rudder),
+            throttle: f64::from(c.throttle.value),
+        },
+        stick: stick.as_dvec2(),
     };
 
     for (button, k, action) in [
@@ -183,6 +189,7 @@ fn read_controls(
         (GamepadButton::RightThumb, KeyCode::KeyC, Action::LookAhead),
         (GamepadButton::North, KeyCode::KeyT, Action::Telemetry),
         (GamepadButton::Start, KeyCode::KeyP, Action::Pause),
+        (GamepadButton::Mode, KeyCode::KeyI, Action::NextPreset),
     ] {
         if just(button) || key_just(k) {
             out.actions.write(action);

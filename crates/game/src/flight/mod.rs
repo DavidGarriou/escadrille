@@ -1,7 +1,9 @@
 //! Flight: the flight model (`escadrille_fdm`) in the ECS (plan `m2-vol-essai.md`, step 2).
 //!
 //! - The simulation steps in `FixedUpdate` at [`STEP_HZ`] (RK4, ADR 0005), keeping the
-//!   previous and the current state ([`simulation`]).
+//!   previous and the current state ([`simulation`]). Before each step, the player's
+//!   aircraft takes the pilot's commands, which the assists (`crate::realism`) may then
+//!   move.
 //! - In `Update`, the aircraft's transform is interpolated between them, relative to a
 //!   floating render origin, through the one frame conversion of ADR 0006 ([`bridge`]).
 //! - The 3D model's control surfaces and propeller follow the flight model
@@ -14,7 +16,7 @@ pub mod simulation;
 use std::path::Path;
 use std::sync::Arc;
 
-use bevy::math::DVec3;
+use bevy::math::{DVec2, DVec3};
 use bevy::prelude::*;
 use escadrille_data::aircraft::{Loading, load_aircraft};
 use escadrille_data::model::contract;
@@ -34,6 +36,8 @@ pub const TEST_FLIGHT: &str = "vol-essai";
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum FlightSet {
+    /// `FixedUpdate`: the player's aircraft takes the pilot's commands.
+    Command,
     /// `FixedUpdate`: the flight model's step.
     Step,
     /// `Update`: restart, interpolated placement, the model's moving parts.
@@ -42,7 +46,22 @@ pub enum FlightSet {
 
 /// What the pilot commands, out of the action layer (`crate::input`), for the next steps.
 #[derive(Resource, Debug, Clone, Copy, PartialEq, Default)]
-pub struct PilotInput(pub PilotControls);
+pub struct PilotInput {
+    pub controls: PilotControls,
+    /// The stick alone, from −1 to 1: x to the right, y back (nose up), before the
+    /// elevator's neutral. The virtual instructor reads it as a wish, not a deflection.
+    pub stick: DVec2,
+}
+
+impl PilotInput {
+    /// Commands held, the stick centred.
+    pub fn holding(controls: PilotControls) -> Self {
+        Self {
+            controls,
+            stick: DVec2::ZERO,
+        }
+    }
+}
 
 /// Back to the start of the scenario.
 #[derive(Message, Debug, Clone, Copy, PartialEq, Eq)]
@@ -53,6 +72,10 @@ pub struct RestartFlight;
 #[derive(Resource, Debug, Clone, Copy, PartialEq, Default)]
 pub struct StartCommands(pub PilotControls);
 
+/// Identifier of an aircraft's type (directory under `assets/aircraft`).
+#[derive(Component, Debug, Clone, PartialEq, Eq)]
+pub struct AircraftId(pub String);
+
 pub struct FlightPlugin;
 
 impl Plugin for FlightPlugin {
@@ -62,7 +85,14 @@ impl Plugin for FlightPlugin {
             .init_resource::<StartCommands>()
             .init_resource::<simulation::RenderOrigin>()
             .add_message::<RestartFlight>()
-            .add_systems(FixedUpdate, simulation::step.in_set(FlightSet::Step))
+            .configure_sets(FixedUpdate, (FlightSet::Command, FlightSet::Step).chain())
+            .add_systems(
+                FixedUpdate,
+                (
+                    simulation::take_input.in_set(FlightSet::Command),
+                    simulation::step.in_set(FlightSet::Step),
+                ),
+            )
             .add_systems(
                 Update,
                 (
@@ -96,7 +126,7 @@ pub fn spawn_scenario(
     let contract = contract(&data)?;
     let extremities = simulation::extremities(&data, &contract, cg)?;
     let start = scenario.initial_state();
-    commands.insert_resource(PilotInput(scenario.commands()));
+    commands.insert_resource(PilotInput::holding(scenario.commands()));
     commands.insert_resource(StartCommands(scenario.commands()));
 
     hold.0 += 1;
@@ -112,6 +142,7 @@ pub fn spawn_scenario(
         .spawn((
             Name::new(data.file.name.clone()),
             Player,
+            AircraftId(scenario.aircraft.clone()),
             Simulated {
                 aircraft: Arc::new(built.aircraft),
                 start,

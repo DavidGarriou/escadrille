@@ -1,6 +1,7 @@
 //! The test flight's overlays (plan `m2-vol-essai.md`, step 6), in the debug UI
-//! (`bevy_egui`): telemetry, the controls at start and in pause, the crash notice. The
-//! game's own texts will move to Fluent files with its first real screens.
+//! (`bevy_egui`): telemetry, the controls at start and in pause, the crash notice, the
+//! realism preset when it changes. The game's own texts will move to Fluent files with
+//! its first real screens.
 
 use bevy::prelude::*;
 use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
@@ -8,16 +9,21 @@ use escadrille_fdm::constants::{G0, RHO0};
 
 use crate::flight::simulation::{ENVIRONMENT, Player, RESTART_AFTER_S, Simulated};
 use crate::input::{Action, Controls, InputSet};
+use crate::realism::Preset;
 use crate::states::AppState;
 
 /// How long the controls stay on screen after the start, s.
 pub const HELP_S: f32 = 20.0;
+/// How long a new preset's name stays on screen, s.
+pub const PRESET_S: f32 = 3.0;
 
 #[derive(Resource, Debug, Clone, Copy, PartialEq)]
 pub struct Overlays {
     pub telemetry: bool,
     /// Real time since the flight started, s.
     pub since_start: f32,
+    /// Real time since the preset changed, s.
+    pub since_preset: f32,
 }
 
 impl Default for Overlays {
@@ -25,6 +31,7 @@ impl Default for Overlays {
         Self {
             telemetry: true,
             since_start: 0.0,
+            since_preset: PRESET_S,
         }
     }
 }
@@ -53,9 +60,11 @@ fn toggles(
     mut time: ResMut<Time<Virtual>>,
 ) {
     overlays.since_start += real.delta_secs();
+    overlays.since_preset += real.delta_secs();
     for action in actions.read() {
         match action {
             Action::Telemetry => overlays.telemetry = !overlays.telemetry,
+            Action::NextPreset => overlays.since_preset = 0.0,
             Action::Pause if time.is_paused() => time.unpause(),
             Action::Pause => time.pause(),
             _ => {}
@@ -100,6 +109,7 @@ fn overlays(
     mut contexts: EguiContexts,
     overlays: Res<Overlays>,
     controls: Res<Controls>,
+    preset: Res<Preset>,
     time: Res<Time<Virtual>>,
     player: Query<&Simulated, With<Player>>,
 ) -> Result {
@@ -121,6 +131,7 @@ fn overlays(
                         ui.monospace(value);
                         ui.end_row();
                     };
+                    row("Aides", preset.name().to_owned());
                     row("Vitesse indiquée", format!("{:5.0} km/h", t.indicated_kmh));
                     row("Vitesse vraie", format!("{:5.0} km/h", t.true_kmh));
                     row("Altitude", format!("{:5.0} m", t.altitude_m));
@@ -130,8 +141,9 @@ fn overlays(
                     row("Incidence", format!("{:+5.1}°", t.alpha_deg));
                     row("Dérapage", format!("{:+5.1}°", t.beta_deg));
                     row("Facteur de charge", format!("{:+5.2}", t.load_factor));
+                    // The commands the flight model receives, assists included.
                     row(
-                        "Manche",
+                        "Gouvernes",
                         format!("roulis {:+.2}, tangage {:+.2}", c.roll, c.pitch),
                     );
                     row("Palonnier", format!("{:+.2}", c.yaw));
@@ -153,6 +165,12 @@ fn overlays(
         );
     } else if time.is_paused() {
         centred(ctx, "pause", "Pause");
+    } else if overlays.since_preset < PRESET_S {
+        centred(
+            ctx,
+            "preset",
+            &format!("Aides : {} — {}", preset.name(), preset.summary()),
+        );
     }
     if time.is_paused() || overlays.since_start < HELP_S {
         egui::Window::new("Commandes")
@@ -190,6 +208,7 @@ const HELP: &[(&str, &str)] = &[
     ("R3", "regarder devant"),
     ("Y", "vue : poursuite ou pilote"),
     ("X", "télémétrie"),
+    ("Home", "aides : Arcade, Pilote, Vétéran, As"),
     ("Select", "nouveau départ"),
     ("Start", "pause (affiche ces commandes)"),
 ];
