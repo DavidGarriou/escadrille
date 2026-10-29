@@ -2123,3 +2123,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - plan (avancement, écarts, liste d'essai) ;
   - `retours.md` ;
   - skills `realisme`, `manette` et `simulation-vol` (format du fichier de gains).
+- **R** Réponse au joueur, en fin d'échange :
+  - la Vickers est remodelée et le pare-brise éclairci ;
+  - les quatre préréglages, au bouton Home, avec ce que fait chacun ;
+  - les deux limites vérifiées en simulation : la dérive mains libres demeure hors Arcade, et la garde de Pilote ne rend pas la vitesse d'une chandelle ;
+  - la profondeur très puissante, cause probable du manche nerveux ;
+  - la liste d'essai, dans le plan, section « Ton essai ».
+- **⚠** La revue de l'aérodynamicien (étape 4 du plan) était encore en cours à la clôture de l'échange. Elle porte sur :
+  - les gains ;
+  - l'incidence de décrochage ;
+  - la puissance de la profondeur et la marge statique de 1,5 % ;
+  - le décrochage à 85 km/h ;
+  - l'équilibre manche au neutre à 88 km/h.
+
+  Ses conclusions seront consignées à leur arrivée.
