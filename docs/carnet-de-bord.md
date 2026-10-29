@@ -2170,3 +2170,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
   À investiguer, sans rien changer sans source : bilan de masses à relire, sources de centrage à chercher (rapport britannique n° 96, rapport McCook, circulaire n° 286, notice du S.XIII). Également signalés : la spirale à basse vitesse (aucun dièdre dans les données) et des libellés trompeurs dans `fdm_lab modes`.
 - **D** À proposer au joueur : lancer l'enquête sur le centrage (historien pour les sources, aérodynamicien pour le bilan de masses).
+- **R** Réponse au joueur après la revue :
+  - les trois défauts du calcul des gains sont corrigés ;
+  - le décrochage à 85 km/h et le neutre à 88 km/h sont laissés tels quels ;
+  - le centrage presque neutre est la cause probable du manche nerveux ;
+  - question posée : lancer l'enquête sur le centrage (historien pour les sources, aérodynamicien pour le bilan de masses) ?
+- **A** Tâche séparée proposée au joueur, à lancer s'il le veut : corriger les libellés trompeurs des modes dans `fdm_lab modes`. Le « retard de la déflexion » à −1,5 s⁻¹ y est en réalité la racine lente d'incidence.
+- **⚠** Le processus de la session a redémarré après le dernier commit (`eadb759`). Vérification faite : tout était déjà commité et poussé, l'arbre de travail était propre.
