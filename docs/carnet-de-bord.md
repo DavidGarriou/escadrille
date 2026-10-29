@@ -2045,3 +2045,28 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Disque plein deux fois pendant le travail (une compilation en release, des compilations périmées). **A** Ménage de `target/` : 10 Go, puis 2 Go.
 - **A** `just check` et `just test` passent (299 tests).
 - **Pour le joueur** : liste d'essai dans le plan (`docs/plans/m2-vol-essai.md`, « Essai du joueur ») ; retours dans `docs/gdd/retours.md`. Rien n'a été vérifié manette en main ici : le conteneur n'a pas de manette.
+
+## 2026-10-29
+
+### Retours du joueur sur le vol d'essai
+
+- **Q** Le joueur : « Ce n'est pas facile de faire tous ces tests, voici mon ressenti » :
+  - palier difficile à tenir, légère dérive à gauche ;
+  - décrochage facile en virage appuyé, par perte de vitesse ; « Ajouter un mode où l'on aide le pilotage » ;
+  - décrochage gaz réduits à 85 km/h ;
+  - vues bien, « sauf la mitrailleuse qui est un gros bloc, il faut le rendre beaucoup plus réaliste » ;
+  - manette « un peu trop sensible » ;
+  - fluidité bien.
+- **A** Retours consignés dans `docs/gdd/retours.md` (section M2), avec la suite donnée à chacun.
+- **A** Manette « un peu trop sensible » : la courbe du manche passe de k = 0,4 à **k = 0,6**. À mi-course, le manche donne 27 % de la commande au lieu de 35 % ; les butées donnent toujours la pleine course. Le skill `manette` est mis à jour.
+- **R** Analyse des deux symptômes de vol :
+  - **dérive à gauche** : l'équilibre demande un peu de palonnier et d'aileron à droite, contre le couple et le souffle de l'hélice ; le neutre ne règle que la profondeur ;
+  - **décrochage en virage** : à 60° d'inclinaison, il faut 2 g, la traînée induite est quatre fois plus forte et la vitesse de décrochage monte de 41 %, vers 120 km/h. C'est le comportement réel du SPAD ; une aide doit en protéger le joueur, pas le changer.
+- **R** Décrochage à 85 km/h, contre environ 76 km/h pour le seul indice historique (47 mph, moteur coupé, S.VII d'après-guerre de 180 ch, confiance D). À soumettre à l'aérodynamicien ; aucun coefficient changé sans source.
+- **A** Plan `docs/plans/m2-aides-pilotage.md` : les préréglages de `docs/vision.md`, avec des gains calculés depuis la linéarisation de `fdm_lab` (skill `realisme`). Aides par les commandes seulement :
+  - **Arcade** : instructeur virtuel ;
+  - **Pilote** : coordination automatique et garde anti-décrochage douce ;
+  - **Vétéran** : coordination automatique ;
+  - **As** : aucune.
+- **D** Le joueur valide les options recommandées : les quatre préréglages, Pilote au lancement, le bouton Home pour changer en vol.
+- **D** La Vickers sera remodelée d'après la fiche d'aspect (§ 7).

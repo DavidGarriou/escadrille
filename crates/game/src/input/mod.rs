@@ -26,8 +26,10 @@ use processing::{Lever, around_neutral, expo, radial_dead_zone, ramp};
 
 /// Dead zone of the sticks (skill `manette`: starting values, to be tuned in flight).
 pub const DEAD_ZONE: f32 = 0.08;
-/// Response curve of the stick.
-pub const STICK_EXPO: f32 = 0.4;
+/// Response curve of the stick: 0.4 at first (skill `manette`), « un peu trop sensible »
+/// for the player in the test flight (2026-10-29), hence 0.6: half the stick gives 27 % of
+/// the travel instead of 35 %, the ends still the whole of it.
+pub const STICK_EXPO: f32 = 0.6;
 /// Rudder by buttons: full travel in 0.4 s, back to the centre in 0.2 s.
 pub const RUDDER_RISE_S: f32 = 0.4;
 pub const RUDDER_RETURN_S: f32 = 0.2;

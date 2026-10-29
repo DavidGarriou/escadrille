@@ -63,7 +63,7 @@ Choix du joueur pour le premier incrément du M2 (plan `m2-vol-essai.md`) :
 
 | Commande | Action |
 |---|---|
-| Stick gauche | manche : roulis (X), tangage (Y) ; zone morte radiale 8 %, courbe k = 0,4 |
+| Stick gauche | manche : roulis (X), tangage (Y) ; zone morte radiale 8 %, courbe k = 0,6 (0,4 au départ, « un peu trop sensible » pour le joueur le 2026-10-29) |
 | L2 / R2 | palonnier à gauche / à droite : tout-ou-rien, donc rampe (0,4 s vers ±1, 0,2 s vers le centre) |
 | Croix ↑ / ↓ | gaz : appui = 5 %, maintien = 30 %/s |
 | L1 / R1 | neutre de la profondeur, piqué / cabré, 1 % par appui ; au départ, il vaut le manche qui tient le palier |
