@@ -802,13 +802,90 @@ def box(parts, centre, size, material):
     parts.loft([ring(0.5 * sx), ring(-0.5 * sx)], material, cap_start=True, cap_end=True)
 
 
-def build_gun(data, parts):
-    """The Vickers on the cowl: cooling jacket, muzzle cone and receiver."""
+GUN_SLOTS = (8, 7)        # E: rows of cooling slots round the Vickers' jacket, and slots along each row
+GUN_SLOT = (0.050, 0.016)  # E: length and width of a slot, m
+
+
+def ring_loop(centre, radius, n=16):
+    """A circle square to the x axis (body axes), closed."""
+    pts = [centre + Vector((0.0, radius * math.cos(2 * math.pi * k / n), radius * math.sin(2 * math.pi * k / n)))
+           for k in range(n)]
+    return pts + [pts[0]]
+
+
+def rounded_bar(parts, x0, x1, y, z, width, height, material, exponent=6.0):
+    """A bar along x of rounded-rectangle section (a superellipse), closed at both ends."""
+    section = superellipse(z, 0.5 * width, 0.5 * height, exponent, n=24)
+    rings = [[Vector((x, y + sy, sz)) for sy, sz in section] for x in (x0, x1)]
+    parts.loft(rings, material, cap_start=True, cap_end=True)
+
+
+def build_gun(data, parts, keys):
+    """The Vickers on the cowl, firing through the propeller (spad7-aspect.md § 7): its
+    jacket pierced with cooling slots and capped by the muzzle cone, the receiver with its
+    top cover, the feed block and belt guide on the right, the fusee spring box on the
+    left, the crank handle, two ring sights (« deux viseurs circulaires », Hall) and the
+    brackets that hold it on the cowl. Proportions of the Vickers .303 aircraft gun, E:
+    until a drawing or a photograph of the S.VII's mounting (spad7-aspect.md § 7)."""
     muzzle = Vector(data["mockup"]["gun_muzzles"][0])
     d, jacket, receiver, width, height = feature(data, "vickers")[0]
-    round_bar(parts, muzzle - Vector((jacket, 0, 0)), muzzle - Vector((0.06, 0, 0)), d, "steel", n=16)
-    tube(parts, [muzzle - Vector((0.06, 0, 0)), muzzle], d, "steel", n=16, scales=[1.0, 0.45])
-    box(parts, muzzle - Vector((jacket + 0.5 * receiver, 0, -0.01)), (receiver, width, height), "steel")
+    feed_out, feed_len, feed_h, crank, front_ring, rear_ring, sight_h = feature(data, "vickers_parts")[0]
+    r = 0.5 * d
+    x_jacket = muzzle.x - jacket          # rear of the jacket, front of the receiver
+    x_rear = x_jacket - receiver
+    # Jacket, collars at both ends, muzzle cone.
+    round_bar(parts, (x_jacket, 0, muzzle.z), (muzzle.x - 0.06, 0, muzzle.z), d, "steel", n=24)
+    for x in (x_jacket + 0.02, muzzle.x - 0.07):
+        round_bar(parts, (x - 0.012, 0, muzzle.z), (x + 0.012, 0, muzzle.z), d * 1.08, "steel", n=24)
+    tube(parts, [Vector((muzzle.x - 0.06, 0, muzzle.z)), muzzle], d * 0.8, "steel", n=20, scales=[1.0, 0.5])
+    round_bar(parts, muzzle - Vector((0.005, 0, 0)), muzzle + Vector((0.015, 0, 0)), 0.018, "steel", n=12)
+    # Cooling slots, dark, just proud of the jacket.
+    rows, along = GUN_SLOTS
+    length, slot_w = GUN_SLOT
+    span = (jacket - 0.20) / along
+    for i in range(rows):
+        a = 2 * math.pi * (i + 0.5) / rows
+        da = 0.5 * slot_w / r
+        for j in range(along):
+            xa = x_jacket + 0.06 + j * span
+            xb = xa + length
+            quad = [Vector((x, (r + 0.0008) * math.cos(a + s), muzzle.z + (r + 0.0008) * math.sin(a + s)))
+                    for x, s in ((xa, -da), (xb, -da), (xb, da), (xa, da))]
+            parts.face(quad, "radiator")
+    # Receiver, its top cover and the hinge of the cover.
+    z = muzzle.z + 0.01
+    rounded_bar(parts, x_rear, x_jacket, 0.0, z, width, height, "steel")
+    rounded_bar(parts, x_rear + 0.03, x_jacket - 0.02, 0.0, z - 0.5 * height - 0.006, 0.8 * width, 0.014, "steel")
+    round_bar(parts, (x_rear + 0.01, 0.0, z - 0.5 * height + 0.004), (x_rear + 0.06, 0.0, z - 0.5 * height + 0.004),
+              0.016, "steel", n=10)
+    # Feed block out to the right at the front, its belt guide going down into the cowl.
+    yf = 0.5 * width + 0.5 * feed_out
+    box(parts, (x_jacket - 0.5 * feed_len - 0.02, yf, z - 0.2 * height), (feed_len, feed_out, feed_h), "steel")
+    top, _, _ = fuselage_at(keys, x_jacket - 0.06)
+    box(parts, (x_jacket - 0.5 * feed_len - 0.02, 0.5 * width + feed_out - 0.004, 0.5 * (z + top)),
+        (feed_len * 0.9, 0.006, max(top - z, 0.02)), "metal")
+    # Fusee spring box on the left.
+    box(parts, (x_jacket - 0.07, -(0.5 * width + 0.014), z + 0.01), (0.09, 0.028, 0.055), "steel")
+    # Crank handle on the right: from its pivot at the rear, forward and down, a roller at its end.
+    pivot = Vector((x_rear + 0.05, 0.5 * width + 0.012, z))
+    end = pivot + Vector((crank * math.cos(math.radians(15)), 0.0, crank * math.sin(math.radians(15))))
+    round_bar(parts, pivot, end, 0.012, "steel", n=8)
+    round_bar(parts, end - Vector((0, 0.012, 0)), end + Vector((0, 0.022, 0)), 0.022, "steel", n=12)
+    # Rear cross-piece (the trigger motor's housing) below the back of the receiver.
+    round_bar(parts, (x_rear + 0.02, -0.5 * width - 0.01, z + 0.3 * height),
+              (x_rear + 0.02, 0.5 * width + 0.01, z + 0.3 * height), 0.032, "steel", n=12)
+    # Two ring sights: the rear one over the back of the receiver, the front one over the
+    # jacket's front collar, on posts.
+    for x, ring_d, base in ((x_rear + 0.04, rear_ring, z - 0.5 * height),
+                            (muzzle.x - 0.07, front_ring, muzzle.z - r * 1.08)):
+        centre = Vector((x, 0.0, base - sight_h))
+        tube(parts, ring_loop(centre, 0.5 * ring_d), 0.004, "steel", n=6)
+        round_bar(parts, (x, 0.0, base), (x, 0.0, base - sight_h + 0.5 * ring_d), 0.005, "steel", n=6)
+    # Brackets down to the cowl, under the jacket's rear collar and under the receiver.
+    for x, bottom in ((x_jacket + 0.02, muzzle.z + 0.54 * d), (x_rear + 0.06, z + 0.5 * height)):
+        top, _, _ = fuselage_at(keys, x)
+        if top - bottom > 0.004:
+            box(parts, (x, 0.0, 0.5 * (top + bottom)), (0.025, 0.06, top - bottom), "steel")
 
 
 def wire_builder(wires, name):
@@ -1255,7 +1332,7 @@ def make_materials(livery, colours):
         "exhaust": principled("échappement", (0.27, 0.16, 0.10), 0.7, metallic=1.0),
         "leather": principled("cuir", (0.24, 0.13, 0.06), 0.55),
         "cockpit": principled("intérieur du poste", (0.10, 0.08, 0.06), 0.9),
-        "glass": principled("verre", (0.95, 0.97, 0.97), 0.05),
+        "glass": principled("verre", (0.02, 0.03, 0.03), 0.05),
     }
     m["control"] = m["fuselage"] = m["surface"]
     # The propeller's varnish, and the windscreen's glass.
@@ -1264,9 +1341,11 @@ def make_materials(livery, colours):
         coat["Coat Weight"].default_value = 1.0
     # The glass: alpha blending, which the game draws as it is. Bevy shows the glTF's
     # specular transmission dark and opaque without its screen-space transmission pass
-    # (vol-essai-pilote, 2026-10-28).
+    # (vol-essai-pilote, 2026-10-28). A dark base, so that the glass only reflects and
+    # tints a little: a white one lit by the sun veiled the cowl and the gun behind it
+    # (2026-10-29).
     glass = m["glass"].node_tree.nodes["Principled BSDF"].inputs
-    glass["Alpha"].default_value = 0.12
+    glass["Alpha"].default_value = 0.10
     m["glass"].blend_method = "BLEND"
     return m
 
@@ -1327,7 +1406,7 @@ def main(argv):
     build_struts(data, parts)
     build_cabane(data, parts, keys)
     build_gear(data, parts, keys)
-    build_gun(data, parts)
+    build_gun(data, parts, keys)
     build_linkage(data, parts)
     build_windscreen(data, parts, keys)
     atlas = Atlas([parts, *controls.values()])

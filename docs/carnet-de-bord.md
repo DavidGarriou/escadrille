@@ -2070,3 +2070,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **As** : aucune.
 - **D** Le joueur valide les options recommandées : les quatre préréglages, Pilote au lancement, le bouton Home pour changer en vol.
 - **D** La Vickers sera remodelée d'après la fiche d'aspect (§ 7).
+
+### La Vickers remodelée
+
+- **A** La mitrailleuse du capot n'est plus un bloc (`build_gun` de `art/spad7/build.py`, nouvelle table `vickers_parts` de `maquette.ron`, proportions `E:` de la Vickers .303 d'aviation, à vérifier sur un plan ou une photo du montage du S.VII) :
+  - manchon de refroidissement percé de fentes, colliers, cône de bouche ;
+  - boîte de culasse aux arêtes arrondies, couvercle et sa charnière ;
+  - bloc d'alimentation et guide de bande à droite, boîte du ressort à gauche, levier d'armement ;
+  - deux viseurs circulaires sur leurs tiges (« deux viseurs circulaires », Hall, fiche d'aspect § 7) ;
+  - pattes de fixation jusqu'au capot.
+- **R** Aperçus Blender (de face, de côté, depuis l'œil du pilote), puis captures `vol-essai-pilote`, `avion-studio` et `vol-essai-poursuite` **regardées**. Une première série d'aperçus était tête en bas : erreur de caméra de mon script d'aperçu (axe haut), pas du modèle.
+- **⚠** Dans la vue pilote, le pare-brise voilait tout ce qui était derrière lui, mitrailleuse et capot : son verre avait une couleur de base blanche que le soleil éclairait. **A** Base sombre et opacité de 0,10 : le verre ne fait plus que refléter et teinter un peu. La Vickers se lit en acier bruni.
+- **A** `just check` et `just test` passent (299 tests).
