@@ -2,28 +2,34 @@
 //! `realisme`): the game's assists move the commands as a pilot would, and their gains
 //! come from the flight model, never from hand tuning.
 //!
-//! At each speed of [`SPEEDS_KMH`], at sea level, the model is trimmed and linearised
-//! ([`crate::modes`]). Three reduced models give three loops:
-//! - bank, by the aileron: roll rate and bank (p, φ), and the bank's integral;
-//! - incidence, by the elevator: incidence and pitch rate (α, q), and the incidence's
-//!   integral;
-//! - sideslip, by the rudder: sideslip and yaw rate (β, r), and the sideslip's integral.
+//! At each speed of [`SPEEDS_KMH`], at sea level, the model is trimmed and linearised by
+//! secants ([`crate::modes::linearise_secant`]: the piecewise-linear tables read over a
+//! degree, not one segment). Three loops, each with an integrator:
+//! - **bank**, by the aileron, on (p, φ): [`ROLL_RESPONSE`], with the airframe's own roll
+//!   damping where it is more than the response asks (no rate gain; the third pole is
+//!   placed where that damping puts it);
+//! - **incidence**, by the elevator, on (α, q) with the rotor and the downwash settled:
+//!   designs at [`DAMPING`] from the lowest of [`PITCH_FREQUENCIES`], the gentlest kept
+//!   whose rate gain still damps and whose closed loop on the whole longitudinal model,
+//!   downwash lag included, is damped to [`PITCH_DAMPING_SOUGHT`] (aerodynamicist review
+//!   of 2026-10-29);
+//! - **sideslip**, by the rudder, on (β, r): the airframe's natural frequency, at least
+//!   [`MIN_YAW_FREQUENCY`], damped to [`DAMPING`].
 //!
-//! Their poles are placed at a chosen response: [`ROLL_RESPONSE`] for the bank; for the
-//! others, the airframe's own natural frequency, at least [`MIN_PITCH_FREQUENCY`] or
-//! [`MIN_YAW_FREQUENCY`], damped to [`DAMPING`] (the loops damp and hold, they do not
-//! stiffen the aeroplane), the integrator at [`INTEGRAL_FRACTION`] of that frequency.
-//! The statics give the incidence of a load factor, the elevator holding an incidence
-//! and a pitch rate, and the rudder meeting the adverse yaw of the roll rate and the
-//! aileron; the stall sweep ([`crate::performance`]) gives the incidence of maximum lift.
+//! The integrators sit at [`INTEGRAL_FRACTION`] of their loop's frequency. The statics
+//! are nonlinear: the elevator holding an incidence at the row's speed, and the load
+//! factor it gives, by secants from the level flight's incidence to the stall guard's
+//! limit and over a pitch rate; the rudder meeting the adverse yaw and the aileron
+//! holding a roll rate come from the secant model. The stall sweep ([`crate::performance`]) gives the stall incidence.
 
+use escadrille_data::assist::STALL_MARGIN;
 use escadrille_fdm::aero::surface::ControlDeflections;
 use escadrille_fdm::aircraft::Aircraft;
 use escadrille_fdm::constants::{G0, RHO0};
 use escadrille_fdm::environment::Environment;
-use nalgebra::{DMatrix, DVector};
+use nalgebra::{DMatrix, DVector, Matrix3, Vector3};
 
-use crate::modes::{Linear, STATES, derivative, linearise};
+use crate::modes::{LATERAL, LONGITUDINAL, Linear, STATES, derivative, linearise_secant};
 use crate::performance::stall_speed_at;
 use crate::trim::{Flight, LEVEL_AT_SPEED, PATH_AT_SPEED, Trim, solve_robust};
 
@@ -35,20 +41,33 @@ pub const SPEEDS_KMH: [f64; 10] = [
 /// Bank loop: natural frequency, rad/s, and damping. About a second to settle: a
 /// beginner's turn, not an aerobatic roll; the aileron saturates before on a large bank.
 pub const ROLL_RESPONSE: (f64, f64) = (3.0, 0.8);
-/// Damping of the incidence and sideslip loops.
+/// Damping of the two-state designs.
 pub const DAMPING: f64 = 0.8;
-/// Lowest natural frequencies of the incidence and sideslip loops, rad/s.
-pub const MIN_PITCH_FREQUENCY: f64 = 3.0;
-pub const MIN_YAW_FREQUENCY: f64 = 1.5;
+/// Design frequencies of the incidence loop tried, rad/s: from, to, step. From 4 rad/s:
+/// the incidence answers in about half a second, a little quicker than the airframe's
+/// own slow incidence root (1 to 2.6 s⁻¹ on the SPAD).
+pub const PITCH_FREQUENCIES: (f64, f64, f64) = (4.0, 12.0, 0.25);
+/// Damping sought for the incidence loop's closed loop on the whole longitudinal model.
+pub const PITCH_DAMPING_SOUGHT: f64 = 0.7;
+/// Lowest natural frequency of the sideslip loop, rad/s.
+pub const MIN_YAW_FREQUENCY: f64 = 3.0;
 /// Pole of the integrators, as a fraction of their loop's frequency.
 pub const INTEGRAL_FRACTION: f64 = 0.25;
+/// Closed-loop poles slower than this, rad/s, are the phugoid and the spiral, which the
+/// loops leave to the pilot (and the instructor's outer laws): not counted in the damping.
+pub const SLOW_MODES: f64 = 0.8;
+/// Half-step of the control columns' secants, unit of command.
+const CONTROL_SECANT: f64 = 0.02;
 
 /// Indices of the states of [`crate::modes`].
+const U: usize = 0;
 const V: usize = 1;
 const W: usize = 2;
 const P: usize = 3;
 const Q: usize = 4;
 const R: usize = 5;
+const PHI: usize = 6;
+const THETA: usize = 7;
 const OMEGA: usize = 8;
 const EPSILON: usize = 9;
 
@@ -57,7 +76,7 @@ const EPSILON: usize = 9;
 pub struct Row {
     /// Equivalent airspeed (true airspeed at sea level), m/s.
     pub speed: f64,
-    /// How the row was trimmed, for the file.
+    /// How the row was trimmed and its incidence loop chosen, for the file.
     pub flight: String,
     /// Load factor per radian of incidence, per pascal.
     pub load_per_alpha: f64,
@@ -67,12 +86,21 @@ pub struct Row {
     pub elevator_per_pitch_rate: f64,
     pub rudder_per_roll_rate: f64,
     pub rudder_per_aileron: f64,
+    pub aileron_per_roll_rate: f64,
     /// Gains × dynamic pressure: bank, roll rate, integral.
     pub roll: [f64; 3],
     /// Incidence, pitch rate, integral.
     pub pitch: [f64; 3],
     /// Sideslip, yaw rate, integral.
     pub yaw: [f64; 3],
+}
+
+impl Row {
+    /// The gains at a dynamic pressure, as the game divides them.
+    pub fn at(&self, dynamic_pressure: f64) -> ([f64; 3], [f64; 3], [f64; 3]) {
+        let k = |g: [f64; 3]| g.map(|v| v / dynamic_pressure);
+        (k(self.roll), k(self.pitch), k(self.yaw))
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -116,19 +144,20 @@ fn place(a: &DMatrix<f64>, b: &DVector<f64>, desired: &[f64]) -> Option<DVector<
     slopes.lu().solve(&rhs)
 }
 
-/// (s² + 2ζω s + ω²), times (s + f ω) with an integrator, from the constant term up.
-fn response(omega: f64, zeta: f64, integral: bool) -> Vec<f64> {
+/// (s² + 2ζω s + ω²)(s + c), from the constant term up.
+fn with_real_pole(omega: f64, zeta: f64, c: f64) -> Vec<f64> {
     let pair = [omega * omega, 2.0 * zeta * omega, 1.0];
-    if !integral {
-        return pair.to_vec();
-    }
-    let i = INTEGRAL_FRACTION * omega;
     vec![
-        i * pair[0],
-        pair[0] + i * pair[1],
-        pair[1] + i * pair[2],
+        c * pair[0],
+        pair[0] + c * pair[1],
+        pair[1] + c * pair[2],
         pair[2],
     ]
+}
+
+/// (s² + 2ζω s + ω²)(s + f ω): a pair and its integrator.
+fn response(omega: f64, zeta: f64) -> Vec<f64> {
+    with_real_pole(omega, zeta, INTEGRAL_FRACTION * omega)
 }
 
 /// A 2-state loop (y, rate) with the integral of y appended: ż = y.
@@ -146,7 +175,8 @@ fn natural_frequency(a: &DMatrix<f64>, min: f64) -> f64 {
     a.determinant().max(0.0).sqrt().max(min)
 }
 
-/// State derivative per unit of each command (aileron, elevator, rudder) at the trim.
+/// State derivative per unit of each command (aileron, elevator, rudder) at the trim,
+/// by secants of [`CONTROL_SECANT`].
 fn control_columns(
     aircraft: &Aircraft,
     env: &dyn Environment,
@@ -155,7 +185,7 @@ fn control_columns(
 ) -> [DVector<f64>; 3] {
     let f = trim.flight;
     let travel = aircraft.travel();
-    let h = 1e-4;
+    let h = CONTROL_SECANT;
     let column = |set: &dyn Fn(&mut ControlDeflections, f64)| {
         let (mut plus, mut minus) = (f.deflections, f.deflections);
         set(&mut plus, h);
@@ -191,23 +221,25 @@ fn residualised(
     ))
 }
 
-/// Level flight at a speed, or, beyond the maximum level speed, a dive at full throttle.
-fn trim_at(
+/// Level flight at a speed and altitude, or, beyond the maximum level speed, a dive at
+/// full throttle; and how, for the file.
+pub fn trim_at(
     aircraft: &Aircraft,
     env: &dyn Environment,
+    altitude: f64,
     speed: f64,
 ) -> Result<(Trim, String), String> {
     if let Ok(t) = solve_robust(
         aircraft,
         env,
-        Flight::guess(0.0, speed, 0.5),
+        Flight::guess(altitude, speed, 0.5),
         LEVEL_AT_SPEED,
     ) && t.feasible(aircraft)
     {
         let note = format!("level flight, throttle {:.2}", t.flight.throttle);
         return Ok((t, note));
     }
-    let mut guess = Flight::guess(0.0, speed, 1.0);
+    let mut guess = Flight::guess(altitude, speed, 1.0);
     guess.flight_path = -0.1;
     let t = solve_robust(aircraft, env, guess, PATH_AT_SPEED)
         .map_err(|e| format!("no steady flight at {:.0} km/h: {e:?}", speed * 3.6))?;
@@ -221,40 +253,215 @@ fn trim_at(
     Ok((t, note))
 }
 
-/// One row: trim, linearisation, the three loops and the statics.
-pub fn row(aircraft: &Aircraft, env: &dyn Environment, speed: f64) -> Result<Row, String> {
-    let (trim, flight) = trim_at(aircraft, env, speed)?;
-    let linear = linearise(aircraft, env, &trim);
+/// Linear incidence (w / V) of the states of [`crate::modes`], about the trim.
+fn incidence_row(linear: &Linear) -> [f64; STATES] {
+    let (u0, w0) = (linear.x0[U], linear.x0[W]);
+    let v2 = u0 * u0 + w0 * w0;
+    let mut c = [0.0; STATES];
+    c[U] = -w0 / v2;
+    c[W] = u0 / v2;
+    c
+}
+
+/// The longitudinal model ([`LONGITUDINAL`], rotor and downwash lag included) with the
+/// incidence loop closed, u = −(k_α α + k_q q + k_i ∫α), the integral appended.
+pub fn pitch_closed(linear: &Linear, elevator: &DVector<f64>, k: [f64; 3]) -> DMatrix<f64> {
+    let s = LONGITUDINAL;
+    let n = s.len();
+    let c = incidence_row(linear);
+    let mut m = DMatrix::zeros(n + 1, n + 1);
+    for (i, &si) in s.iter().enumerate() {
+        for (j, &sj) in s.iter().enumerate() {
+            let feedback = k[0] * c[sj] + if sj == Q { k[1] } else { 0.0 };
+            m[(i, j)] = linear.a[(si, sj)] - elevator[si] * feedback;
+        }
+        m[(i, n)] = -elevator[si] * k[2];
+    }
+    for (j, &sj) in s.iter().enumerate() {
+        m[(n, j)] = c[sj];
+    }
+    m
+}
+
+/// The lateral model ([`LATERAL`]) with the coordination closed and, for the
+/// instructor, the bank loop, both integrals appended (bank, sideslip), as the game's
+/// laws linearised about wings level.
+pub fn lateral_closed(
+    linear: &Linear,
+    [aileron, rudder]: [&DVector<f64>; 2],
+    row: &Row,
+    gains: ([f64; 3], [f64; 3]),
+    bank_loop: bool,
+) -> DMatrix<f64> {
+    let s = LATERAL;
+    let n = s.len();
+    let (roll, yaw) = gains;
+    let (u0, w0) = (linear.x0[U], linear.x0[W]);
+    let speed = (u0 * u0 + w0 * w0).sqrt();
+    let theta = linear.x0[THETA];
+    // Commands as rows over (states of `s`, bank integral, sideslip integral).
+    let mut a_cmd = DVector::zeros(n + 2);
+    if bank_loop {
+        a_cmd[s.iter().position(|&x| x == PHI).unwrap()] = -roll[0];
+        a_cmd[s.iter().position(|&x| x == P).unwrap()] = -roll[1];
+        a_cmd[n] = -roll[2];
+    }
+    let mut r_cmd = &a_cmd * row.rudder_per_aileron;
+    for (j, &sj) in s.iter().enumerate() {
+        r_cmd[j] += match sj {
+            V => -yaw[0] / speed,
+            R => -yaw[1],
+            // The yaw rate of the turn and of a roll about the flight path, left alone.
+            PHI => yaw[1] * G0 * theta.cos() / speed,
+            P => row.rudder_per_roll_rate + yaw[1] * (w0 / u0),
+            _ => 0.0,
+        };
+    }
+    r_cmd[n + 1] = -yaw[2];
+    let mut m = DMatrix::zeros(n + 2, n + 2);
+    for (i, &si) in s.iter().enumerate() {
+        for (j, &sj) in s.iter().enumerate() {
+            m[(i, j)] = linear.a[(si, sj)];
+        }
+        for j in 0..n + 2 {
+            m[(i, j)] += aileron[si] * a_cmd[j] + rudder[si] * r_cmd[j];
+        }
+    }
+    m[(n, s.iter().position(|&x| x == PHI).unwrap())] = if bank_loop { 1.0 } else { 0.0 };
+    m[(n + 1, s.iter().position(|&x| x == V).unwrap())] = 1.0 / speed;
+    m
+}
+
+/// The least damping ratio of a closed loop's modes faster than [`SLOW_MODES`]: a real
+/// stable mode counts as 1, an unstable one as −1.
+pub fn least_damping(m: &DMatrix<f64>) -> f64 {
+    m.complex_eigenvalues()
+        .iter()
+        .filter(|l| l.norm() > SLOW_MODES)
+        .map(|l| {
+            if l.re >= 0.0 {
+                -1.0
+            } else if l.im.abs() > 1e-9 {
+                -l.re / l.norm()
+            } else {
+                1.0
+            }
+        })
+        .fold(1.0, f64::min)
+}
+
+/// Elevator command, and load factor, holding an incidence and a pitch rate at the
+/// trim's speed, sideslip and throttle: wings level, flight path horizontal, rotor and
+/// downwash settled (Newton on q̇, Ω̇ and ε̇).
+fn held(
+    aircraft: &Aircraft,
+    env: &dyn Environment,
+    trim: &Trim,
+    alpha: f64,
+    pitch_rate: f64,
+) -> Option<(f64, f64)> {
+    let f = trim.flight;
+    let (sa, ca) = alpha.sin_cos();
+    let state = |x: &Vector3<f64>| -> [f64; STATES] {
+        let mut s = [0.0; STATES];
+        s[U] = f.speed * ca * f.beta.cos();
+        s[V] = f.speed * f.beta.sin();
+        s[W] = f.speed * sa * f.beta.cos();
+        s[Q] = pitch_rate;
+        s[THETA] = alpha;
+        s[OMEGA] = x[1];
+        s[EPSILON] = x[2];
+        s
+    };
+    let evaluate = |x: &Vector3<f64>| {
+        let mut d = f.deflections;
+        d.elevator = x[0];
+        derivative(aircraft, env, &d, f.throttle, f.altitude, &state(x))
+    };
+    let residual = |x: &Vector3<f64>| {
+        let r = evaluate(x);
+        Vector3::new(r[Q], r[OMEGA] / 100.0, r[EPSILON])
+    };
+    let mut x = Vector3::new(f.deflections.elevator, f.rotor_speed, f.downwash);
+    for _ in 0..50 {
+        let r = residual(&x);
+        if r.amax() < 1e-11 {
+            let w_rate = evaluate(&x)[W];
+            let load = -(w_rate - G0 * ca - pitch_rate * state(&x)[U]) / G0;
+            return Some((x[0] / aircraft.travel().elevator, load));
+        }
+        let steps = [1e-6, 1e-4 * x[1].abs().max(1.0), 1e-7];
+        let mut jacobian = Matrix3::zeros();
+        for (c, h) in steps.iter().enumerate() {
+            let (mut plus, mut minus) = (x, x);
+            plus[c] += h;
+            minus[c] -= h;
+            jacobian.set_column(c, &((residual(&plus) - residual(&minus)) / (2.0 * h)));
+        }
+        x -= jacobian.lu().solve(&r)?;
+    }
+    None
+}
+
+/// One row: trim, secant linearisation, the three loops and the statics, for a stall
+/// incidence.
+pub fn row(
+    aircraft: &Aircraft,
+    env: &dyn Environment,
+    speed: f64,
+    stall_alpha: f64,
+) -> Result<Row, String> {
+    let (trim, flight) = trim_at(aircraft, env, 0.0, speed)?;
+    let linear = linearise_secant(aircraft, env, &trim);
     let [aileron, elevator, rudder] = control_columns(aircraft, env, &trim, &linear);
     let a = &linear.a;
     let dynamic_pressure = 0.5 * RHO0 * speed * speed;
     let failed = |what: &str| format!("{what} at {:.0} km/h", speed * 3.6);
 
-    // Bank: ṗ = L_p p + L_δa δa, φ̇ = p, and the bank's integral, u = −K (φ, p, ∫φ):
-    // s³ + (L_δa k_p − L_p) s² + L_δa k_φ s + L_δa k_i is matched to the response. The
-    // airframe's roll damping is often more than the response asks: the rate gain stays
-    // zero then, and the poles are faster and as stable (Routh).
+    // Bank: ṗ = L_p p + L_δa δa, φ̇ = p, and the integral, u = −(k_φ φ + k_p p + k_i ∫φ):
+    // s³ + (L_δa k_p − L_p) s² + L_δa k_φ s + L_δa k_i. The pair of the response and a
+    // real pole c, at the integral's place, or further out where the airframe's roll
+    // damping alone exceeds the response's (no rate gain then).
     let (omega, zeta) = ROLL_RESPONSE;
     let (l_p, l_a) = (a[(P, P)], aileron[P]);
-    let wanted = response(omega, zeta, true);
-    let roll = [
-        wanted[1] / l_a,
-        (wanted[2] + l_p).max(0.0) / l_a,
-        wanted[0] / l_a,
-    ];
+    let c = (INTEGRAL_FRACTION * omega).max(-l_p - 2.0 * zeta * omega);
+    let wanted = with_real_pole(omega, zeta, c);
+    let roll = [wanted[1] / l_a, (wanted[2] + l_p) / l_a, wanted[0] / l_a];
 
-    // Incidence (α = w / V) and pitch rate, then its integral.
-    let alpha_q = DMatrix::from_row_slice(
+    // Incidence (α = w / V) and pitch rate, then its integral, on the model with the
+    // rotor and the downwash settled: its stiffness is the aeroplane's true static one
+    // (the downwash frozen, a near-neutral aeroplane looked stiff, and the loops built on
+    // it were poorly damped once the lag was back: aerodynamicist, 2026-10-29). The
+    // gentlest design from the lowest frequency whose rate gain still damps and whose
+    // closed loop, on the whole longitudinal model, is damped enough; or else the best
+    // damped.
+    let (s, b) = residualised(&linear, &elevator, &[W, Q], &[OMEGA, EPSILON])
+        .ok_or_else(|| failed("no settled incidence model"))?;
+    let settled = DMatrix::from_row_slice(
         2,
         2,
-        &[a[(W, W)], a[(W, Q)] / speed, a[(Q, W)] * speed, a[(Q, Q)]],
+        &[s[(0, 0)], s[(0, 1)] / speed, s[(1, 0)] * speed, s[(1, 1)]],
     );
-    let b_alpha = DVector::from_vec(vec![elevator[W] / speed, elevator[Q]]);
-    let omega = natural_frequency(&alpha_q, MIN_PITCH_FREQUENCY);
-    let (aa, bb) = augmented(&alpha_q, &b_alpha);
-    let k = place(&aa, &bb, &response(omega, DAMPING, true))
-        .ok_or_else(|| failed("no incidence loop"))?;
-    let pitch = [k[0], k[1], k[2]];
+    let (aa, bb) = augmented(&settled, &DVector::from_vec(vec![b[0] / speed, b[1]]));
+    let (from, to, step) = PITCH_FREQUENCIES;
+    let mut chosen: Option<([f64; 3], f64, f64)> = None;
+    let mut best: Option<([f64; 3], f64, f64)> = None;
+    let mut omega = from;
+    while omega <= to + 1e-9 && chosen.is_none() {
+        if let Some(k) = place(&aa, &bb, &response(omega, DAMPING)) {
+            let k = [k[0], k[1], k[2]];
+            let damping = least_damping(&pitch_closed(&linear, &elevator, k));
+            if k[1] >= 0.0 && damping >= PITCH_DAMPING_SOUGHT {
+                chosen = Some((k, omega, damping));
+            } else if best.is_none_or(|(_, _, z)| damping > z) {
+                best = Some((k, omega, damping));
+            }
+        }
+        omega += step;
+    }
+    let (pitch, omega, damping) = chosen.or(best).ok_or_else(|| failed("no incidence loop"))?;
+    let flight =
+        format!("{flight}; incidence loop at {omega:.2} rad/s, closed-loop damping {damping:.2}");
 
     // Sideslip (β = v / V) and yaw rate, then its integral.
     let beta_r = DMatrix::from_row_slice(
@@ -265,24 +472,30 @@ pub fn row(aircraft: &Aircraft, env: &dyn Environment, speed: f64) -> Result<Row
     let b_beta = DVector::from_vec(vec![rudder[V] / speed, rudder[R]]);
     let omega = natural_frequency(&beta_r, MIN_YAW_FREQUENCY);
     let (aa, bb) = augmented(&beta_r, &b_beta);
-    let k = place(&aa, &bb, &response(omega, DAMPING, true))
-        .ok_or_else(|| failed("no sideslip loop"))?;
+    let k = place(&aa, &bb, &response(omega, DAMPING)).ok_or_else(|| failed("no sideslip loop"))?;
     let yaw = [k[0], k[1], k[2]];
 
-    // Statics at constant speed, rotor and downwash settled.
-    let (s, b) = residualised(&linear, &elevator, &[W, Q], &[OMEGA, EPSILON])
-        .ok_or_else(|| failed("no static incidence"))?;
-    let load_per_alpha = -s[(0, 0)] * speed / G0;
-    let elevator_per_alpha = -s[(1, 0)] * speed / b[1];
-    let elevator_per_pitch_rate = -s[(1, 1)] / b[1];
+    // Statics: secants from the level flight's incidence to the guard's limit, at this
+    // speed, and over the pitch rate of one more g.
+    let alpha = trim.flight.alpha;
+    let far = (stall_alpha - STALL_MARGIN).max(alpha + 1.0_f64.to_radians());
+    let held_at = |alpha: f64, rate: f64| {
+        held(aircraft, env, &trim, alpha, rate).ok_or_else(|| failed("no held incidence"))
+    };
+    let (e1, n1) = held_at(alpha, 0.0)?;
+    let (e2, n2) = held_at(far, 0.0)?;
+    let rate = G0 / speed;
+    let (e3, _) = held_at(alpha, rate)?;
+    let load_per_alpha = (n2 - n1) / (far - alpha);
+    let elevator_per_alpha = (e2 - e1) / (far - alpha);
+    let elevator_per_pitch_rate = (e3 - e1) / rate;
+    let zero_load_alpha = alpha - n1 / load_per_alpha;
+    let elevator_at_zero_load = e1 - (alpha - zero_load_alpha) * elevator_per_alpha;
     // Feet with the hands: the rudder cancelling the yawing acceleration of the roll
     // rate and of the aileron.
     let rudder_per_roll_rate = -a[(R, P)] / rudder[R];
     let rudder_per_aileron = -aileron[R] / rudder[R];
-    let alpha = trim.flight.alpha;
-    let zero_load_alpha = alpha - trim.flight.flight_path.cos() / load_per_alpha;
-    let elevator_at_zero_load =
-        trim.commands(aircraft).pitch - (alpha - zero_load_alpha) * elevator_per_alpha;
+    let aileron_per_roll_rate = -l_p / l_a;
 
     let normalised = |k: f64| k * dynamic_pressure;
     Ok(Row {
@@ -295,18 +508,15 @@ pub fn row(aircraft: &Aircraft, env: &dyn Environment, speed: f64) -> Result<Row
         elevator_per_pitch_rate,
         rudder_per_roll_rate,
         rudder_per_aileron,
+        aileron_per_roll_rate,
         roll: roll.map(normalised),
         pitch: pitch.map(normalised),
         yaw: yaw.map(normalised),
     })
 }
 
-/// The whole table and the stall incidence.
+/// The stall incidence, and the whole table.
 pub fn assist_gains(aircraft: &Aircraft, env: &dyn Environment) -> Result<AssistGains, String> {
-    let rows = SPEEDS_KMH
-        .iter()
-        .map(|v| row(aircraft, env, v / 3.6))
-        .collect::<Result<Vec<_>, _>>()?;
     let mut stall_alpha = f64::INFINITY;
     let mut notes = Vec::new();
     for (throttle, label) in [(0.0, "idle"), (1.0, "full throttle")] {
@@ -324,6 +534,10 @@ pub fn assist_gains(aircraft: &Aircraft, env: &dyn Environment) -> Result<Assist
             }
         ));
     }
+    let rows = SPEEDS_KMH
+        .iter()
+        .map(|v| row(aircraft, env, v / 3.6, stall_alpha))
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(AssistGains {
         stall_alpha,
         stall_note: notes.join(", "),
@@ -352,7 +566,7 @@ pub fn to_ron(id: &str, gains: &AssistGains) -> String {
     let list = |v: &[f64]| v.iter().map(|x| number(*x)).collect::<Vec<_>>().join(", ");
     for r in &gains.rows {
         text.push_str(&format!(
-            "        // {}\n        (speed: Kmh({}), load_per_alpha: {}, zero_load_alpha: Rad({}), elevator_at_zero_load: {}, elevator_per_alpha: {}, elevator_per_pitch_rate: {}, rudder_per_roll_rate: {}, rudder_per_aileron: {}, roll: ({}), pitch: ({}), yaw: ({})),\n",
+            "        // {}\n        (speed: Kmh({}), load_per_alpha: {}, zero_load_alpha: Rad({}), elevator_at_zero_load: {}, elevator_per_alpha: {}, elevator_per_pitch_rate: {}, rudder_per_roll_rate: {}, rudder_per_aileron: {}, aileron_per_roll_rate: {}, roll: ({}), pitch: ({}), yaw: ({})),\n",
             r.flight,
             number(r.speed * 3.6),
             number(r.load_per_alpha),
@@ -362,6 +576,7 @@ pub fn to_ron(id: &str, gains: &AssistGains) -> String {
             number(r.elevator_per_pitch_rate),
             number(r.rudder_per_roll_rate),
             number(r.rudder_per_aileron),
+            number(r.aileron_per_roll_rate),
             list(&r.roll),
             list(&r.pitch),
             list(&r.yaw),
@@ -389,7 +604,7 @@ mod tests {
         let a = DMatrix::from_row_slice(2, 2, &[-0.5, 1.0, -9.0, -0.8]);
         let b = DVector::from_vec(vec![-0.1, -12.0]);
         let (aa, bb) = augmented(&a, &b);
-        let wanted = response(4.0, 0.8, true);
+        let wanted = response(4.0, 0.8);
         let k = place(&aa, &bb, &wanted).unwrap();
         let closed = &aa - &bb * k.transpose();
         let got = characteristic(&closed);
@@ -411,6 +626,70 @@ mod tests {
                 .any(|p| (p - Complex::new(-1.0, 0.0)).norm() < 1e-6),
             "{poles}"
         );
+    }
+
+    /// The loops closed on the whole linear model (secants, all states, the downwash lag
+    /// and the rotor included), with the gains of the file's rows at their equivalent
+    /// airspeed, at sea level and at 4 000 m, tank full and empty: every mode faster than
+    /// the phugoid and the spiral damped to 0.5 at least (aerodynamicist, 2026-10-29).
+    #[test]
+    fn the_closed_loops_are_damped_across_the_envelope() {
+        use escadrille_fdm::atmosphere::isa;
+
+        let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let data = load_aircraft(&assets, "spad7").unwrap();
+        let full = data
+            .build(&Loading { fuel_fraction: 1.0 })
+            .unwrap()
+            .aircraft;
+        let gains = assist_gains(&full, &STILL_AIR).unwrap();
+        let mut worst = (f64::INFINITY, String::new());
+        for fuel in [1.0, 0.0] {
+            let aircraft = data
+                .build(&Loading {
+                    fuel_fraction: fuel,
+                })
+                .unwrap()
+                .aircraft;
+            for altitude in [0.0, 4_000.0] {
+                let sigma = isa(altitude).density / RHO0;
+                for r in &gains.rows {
+                    let speed = r.speed / sigma.sqrt();
+                    let Ok((trim, _)) = trim_at(&aircraft, &STILL_AIR, altitude, speed) else {
+                        continue;
+                    };
+                    let linear = linearise_secant(&aircraft, &STILL_AIR, &trim);
+                    let [aileron, elevator, rudder] =
+                        control_columns(&aircraft, &STILL_AIR, &trim, &linear);
+                    let (roll, pitch, yaw) = r.at(0.5 * RHO0 * r.speed * r.speed);
+                    let loops = [
+                        ("incidence", pitch_closed(&linear, &elevator, pitch)),
+                        (
+                            "instructor's bank and coordination",
+                            lateral_closed(&linear, [&aileron, &rudder], r, (roll, yaw), true),
+                        ),
+                        (
+                            "coordination",
+                            lateral_closed(&linear, [&aileron, &rudder], r, (roll, yaw), false),
+                        ),
+                    ];
+                    for (name, m) in loops {
+                        let z = least_damping(&m);
+                        if z < worst.0 {
+                            worst = (
+                                z,
+                                format!(
+                                    "{name} at {:.0} km/h EAS, {altitude} m, fuel {fuel}",
+                                    r.speed * 3.6
+                                ),
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        eprintln!("least damping {:.2}: {}", worst.0, worst.1);
+        assert!(worst.0 >= 0.5, "least damping {:.2}: {}", worst.0, worst.1);
     }
 
     /// The file follows the flight model: when the model changes, this fails and prints
@@ -437,6 +716,7 @@ mod tests {
                     && close(f.elevator_per_pitch_rate, g.elevator_per_pitch_rate)
                     && close(f.rudder_per_roll_rate, g.rudder_per_roll_rate)
                     && close(f.rudder_per_aileron, g.rudder_per_aileron)
+                    && close(f.aileron_per_roll_rate, g.aileron_per_roll_rate)
                     && f.roll.iter().zip(&g.roll).all(|(a, b)| close(*a, *b))
                     && f.pitch.iter().zip(&g.pitch).all(|(a, b)| close(*a, *b))
                     && f.yaw.iter().zip(&g.yaw).all(|(a, b)| close(*a, *b))

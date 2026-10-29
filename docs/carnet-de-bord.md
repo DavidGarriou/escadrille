@@ -2137,3 +2137,36 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - l'équilibre manche au neutre à 88 km/h.
 
   Ses conclusions seront consignées à leur arrivée.
+
+### Revue de l'aérodynamicien sur les aides, et corrections
+
+- **R** Revue reçue. Verdict : « à corriger », rien de bloquant, toutes les boucles stables. Trois défauts dans mon calcul des gains :
+  - **inclinaison** : boucle quatre fois trop lente, environ 10 s pour remettre les ailes à plat ;
+  - **incidence** : boucle conçue sans le retard de la déflexion, amortie à 0,15-0,3 seulement en piqué et en altitude ;
+  - **statiques** : prises sur des tangentes, elles changeaient de signe d'une ligne à l'autre.
+- **A** Corrections dans `fdm_lab assist` :
+  - linéarisation par sécantes (`modes::linearise_secant`, partagée avec la marge statique) ;
+  - roulis placé selon l'amortissement propre du SPAD ;
+  - incidence conçue sur le modèle à déflexion établie : la plus douce dès 4 rad/s, vérifiée sur tout le modèle longitudinal ;
+  - statiques par équilibres non linéaires, en sécante jusqu'à la limite de la garde ;
+  - coordination portée à 3 rad/s au moins ;
+  - nouveau coefficient : l'aileron par vitesse de roulis.
+
+  Nouveau test : amortissement d'au moins 0,5 sur toute l'enveloppe, à 0 et 4 000 m, réservoir plein et vide (0,52 au pire).
+- **A** Corrections dans le jeu :
+  - mise en virage de l'instructeur limitée à 45°/s, avec l'aileron de ce roulis ; un premier essai, sans cette anticipation, dépassait jusqu'à 78° ;
+  - anti-emballement de la coordination tenant compte du palonnier du pilote ;
+  - pédale enfoncée, la boucle de dérapage se suspend : sinon, plus raide, elle annulait le palonnier volontaire du joueur.
+
+  Tests ajoutés : temps de réponse en inclinaison et palonnier du pilote respecté (11 tests au total).
+- **R** Gardé et documenté : l'incidence de décrochage au minimum plein gaz (12,0°) est une borne prudente, qui coûte environ 0,4 g en croisière.
+- **R** Pas d'action, selon la revue :
+  - décrochage à 85 km/h : l'écart avec l'indice historique (confiance D) reste dans les 10 % ;
+  - neutre à 88 km/h : conséquence du plan fixe et du centrage.
+- **⚠** Cause probable du manche nerveux, selon la revue :
+  - centrage presque neutre : 39,5 % de la corde réservoir plein ;
+  - marge statique nulle vers 160 km/h, négative au-delà de 165 km/h, phugoïde instable vers 180 km/h ;
+  - les sources décrivent pourtant un avion « très stable ».
+
+  À investiguer, sans rien changer sans source : bilan de masses à relire, sources de centrage à chercher (rapport britannique n° 96, rapport McCook, circulaire n° 286, notice du S.XIII). Également signalés : la spirale à basse vitesse (aucun dièdre dans les données) et des libellés trompeurs dans `fdm_lab modes`.
+- **D** À proposer au joueur : lancer l'enquête sur le centrage (historien pour les sources, aérodynamicien pour le bilan de masses).

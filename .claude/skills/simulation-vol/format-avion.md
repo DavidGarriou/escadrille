@@ -229,7 +229,9 @@ Fichier **calculé**, jamais écrit à la main : `cargo run -p fdm_lab -- assist
 - **En-tête** : deux commentaires `//! C:` couvrent tout le fichier, sans ligne vide.
 - **`stall_alpha`** : incidence de la plus basse vitesse stabilisée ; c'est le minimum des balayages au ralenti et plein gaz.
 - **Lignes** : une par vitesse équivalente, chacune trimée au niveau de la mer, en palier ou, au-delà de la vitesse maximale, en piqué plein gaz.
-  - **Statiques** : charge par incidence (par Pa), incidence de charge nulle, profondeur de charge nulle, profondeur par incidence, profondeur par vitesse de tangage, palonnier par vitesse de roulis et par aileron.
+  - **Statiques** : charge par incidence (par Pa), incidence de charge nulle, profondeur de charge nulle, profondeur par incidence, profondeur par vitesse de tangage, palonnier par vitesse de roulis et par aileron, aileron par vitesse de roulis.
+    - Les quatre premières viennent d'équilibres non linéaires, pris par sécante de l'incidence du palier à la limite de la garde (`stall_alpha` − `STALL_MARGIN`).
+    - Les autres viennent de la linéarisation par sécantes.
   - **Gains** `roll`, `pitch`, `yaw` : trois chacun (erreur, vitesse angulaire, intégrale), multipliés par la pression dynamique de la ligne.
 - **Côté jeu** : il interpole en vitesse équivalente et divise les gains par sa propre pression dynamique.
 

@@ -84,7 +84,7 @@ Le palonnier du joueur (L2/R2) s'ajoute toujours à celui de la coordination.
 
 ## Avancement (2026-10-29)
 
-**Étapes 1 à 3 faites ; étape 4 : vérifications passées, revue de l'aérodynamicien en cours.**
+**Étapes 1 à 4 faites.** La revue de l'aérodynamicien a été appliquée ; il reste ton essai.
 
 ### Ce qui est en place
 
@@ -94,13 +94,20 @@ Le palonnier du joueur (L2/R2) s'ajoute toujours à celui de la coordination.
   - `crates/game/src/realism/` : réglages, préréglages, cycle par Home (touche I au clavier) ;
   - les aides tournent au pas fixe, entre les commandes du pilote et le pas du modèle ;
   - le préréglage s'affiche 3 s à l'écran quand il change, et en permanence dans la télémétrie (ligne « Aides »).
-- **Tests sans rendu** : 9 tests :
-  - tests de fumée par préréglage ;
-  - absence de triche en As ;
-  - coordination ;
-  - palier mains libres en Arcade ;
-  - branchement dans Bevy ;
-  - cycle des préréglages.
+- **Tests sans rendu** :
+  - 11 tests dans le jeu :
+    - fumée par préréglage ;
+    - absence de triche en As ;
+    - coordination ;
+    - palonnier du pilote respecté ;
+    - mise en virage et retour à plat de l'instructeur ;
+    - palier mains libres en Arcade ;
+    - branchement dans Bevy ;
+    - cycle des préréglages ;
+  - 3 tests dans `fdm_lab` :
+    - le fichier suit le modèle ;
+    - placement de pôles ;
+    - amortissement des boucles fermées sur tout le modèle linéaire, à toutes les lignes, au niveau de la mer et à 4 000 m, réservoir plein et vide : au moins 0,5 exigé, 0,52 au pire.
 
 ### Écarts au plan, et pourquoi
 
@@ -122,12 +129,46 @@ Le palonnier du joueur (L2/R2) s'ajoute toujours à celui de la coordination.
    - Elle ne corrige pas non plus le léger aileron à droite que demande l'équilibre.
    - Mains libres, l'inclinaison part donc à gauche en Pilote et en Vétéran comme en As. En Arcade, l'instructeur tient les ailes à plat.
 
-### Constat pour l'aérodynamicien : la profondeur est très puissante
+### Revue de l'aérodynamicien (2026-10-29) et suites
 
-- Depuis la croisière à 160 km/h, il suffit d'environ +0,1 de commande de profondeur, soit 5 % de la course, pour atteindre 10° d'incidence.
-- Un quart de manche arrière met l'avion à 13° et le fait décrocher, avec abattée.
-- La marge statique sortie par `fdm_lab modes` vaut 1,5 % à 160 km/h, contre 10,1 % à 100 km/h.
-- C'est probablement la vraie cause du manche « trop sensible » et des décrochages faciles. Aucun coefficient n'est changé sans source.
+Verdict : « à corriger », rien de bloquant ; toutes les boucles étaient stables.
+
+1. **Boucle d'inclinaison quatre fois trop lente** :
+   - comme l'amortissement propre du SPAD en roulis dépasse celui que demande la réponse, le gain de vitesse de roulis était nul, et les pôles dominants tombaient vers 0,7 rad/s au lieu de 3. Il fallait environ 10 s pour remettre les ailes à plat ;
+   - **corrigé** : la troisième racine est placée là où cet amortissement la met.
+   - Pour une mise en virage douce, l'instructeur demande en outre l'inclinaison à 45°/s au plus, avec l'aileron qui tient ce roulis, tiré du modèle.
+   - Test : 30° en moins de 3 s, retour à plat en moins de 4 s.
+2. **Boucle d'incidence conçue sans le retard de la déflexion** :
+   - à grande vitesse et en altitude, son amortissement tombait vers 0,15 à 0,3, alors que 0,8 était visé ;
+   - **corrigé** : la conception se fait sur le modèle où la déflexion est établie, qui donne la vraie raideur, presque nulle, de l'avion. C'est la plus douce à partir de 4 rad/s qui garde un gain de vitesse de tangage amortissant, vérifiée sur tout le modèle longitudinal : amortissement de 0,84 à 0,90 ;
+   - test d'amortissement ajouté, comme demandé.
+3. **Statiques bruitées** : elles étaient prises sur des tangentes, et la profondeur par incidence changeait de signe d'une ligne à l'autre.
+   - **Corrigé** : équilibres non linéaires, une profondeur tenant une incidence à la vitesse de la ligne, pris par sécante entre l'incidence du palier et la limite de la garde, et sur la vitesse de tangage d'un g de plus.
+   - La linéarisation par sécantes de `fdm_lab` (`linearise_secant`) sert aussi aux boucles. Les courbes sont maintenant régulières.
+4. **Coordination** :
+   - le palonnier du pilote compte désormais dans l'anti-emballement ;
+   - sa boucle, portée à 3 rad/s au moins, ramène le dérapage de la mise en virage serré de 7,7° à 3,3° ;
+   - quand le pilote appuie sur une pédale, la boucle se suspend et le dérapage est le sien (test).
+5. **Incidence de décrochage** :
+   - le minimum plein gaz (12,0°) mesure la vitesse stable minimale : traction, et probablement décrochage local de l'aile gauche dans le souffle ;
+   - c'est une borne prudente, qui coûte environ 0,4 g à 160 km/h (3,37 g au lieu de 3,78) ;
+   - **gardée, et documentée**.
+6. **Décrochage à 85 km/h et équilibre au neutre à 88 km/h** : **pas d'action**.
+   - 82 km/h au niveau de la mer et à 729 kg font 80,6 km/h à la masse de la fiche, contre 75,6 km/h pour un indice de confiance D : l'écart reste dans les 10 %.
+   - Le neutre à 88 km/h découle du plan fixe à 0° et du centrage. La vraie gêne est la pente presque plate de la courbe d'équilibre, d'où un palier difficile à tenir ; elle se règle avec le point 7.
+7. **Cause du manche nerveux : centrage presque neutre**, données à investiguer en priorité, sans rien changer sans source.
+   - **Centrage** : réservoir plein, il est à 39,5 % de la corde (33,5 % réservoir vide).
+   - **Marge statique** : elle passe de 9 % à 100 km/h à 0 % vers 160 km/h, et devient négative au-delà de 165 km/h. Vers 180 km/h, la phugoïde se dédouble en une racine instable.
+   - **Ce que dit l'histoire** : les sources décrivent un avion « très stable ».
+   - **Sensibilité** : à 160 km/h, il faut 0,056 de commande par g ; avec 10 % de marge, il en faudrait 0,135. La marge est le levier principal.
+   - **Anomalie à part** : la marge perd environ 10 points de 100 à 180 km/h, au ralenti compris.
+   - **À faire** :
+     - relire le bilan de masses (`masses.ron` : masse de fermeture, moteur, radiateur, siège, réservoir) sur le dessin ;
+     - chercher des sources de centrage : rapport britannique n° 96, rapport McCook sur le S.XIII, *Air Service Information Circular* n° 286, notice du S.XIII ;
+     - décomposer M_α par élément à 100 et 180 km/h.
+8. **Autres questions ouvertes** :
+   - la spirale vite divergente à basse vitesse, avec des ailes sans dièdre dans `aircraft.ron` : question pour l'historien ;
+   - les libellés des modes de `fdm_lab modes` : le « retard de la déflexion » à −1,5 s⁻¹ est en fait la racine lente d'incidence.
 
 ### Ton essai
 
@@ -136,7 +177,7 @@ Le palonnier du joueur (L2/R2) s'ajoute toujours à celui de la coordination.
    - En simulation, mains libres, l'inclinaison atteint 29° en 50 s, en Pilote comme en As ; le dérapage, lui, est annulé.
 2. **Arcade** (Home) :
    - manche lâché : ailes à plat et palier ;
-   - manche à droite : virage à 60° ;
+   - manche à droite : mise en virage progressive, puis 60° ;
    - manche tiré : ressource bornée ;
    - essaie aussi de le faire décrocher.
 3. **As** : comparer avec les deux premiers ; c'est le vol d'hier.

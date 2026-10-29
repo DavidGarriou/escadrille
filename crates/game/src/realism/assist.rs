@@ -20,6 +20,7 @@ use std::f64::consts::{PI, TAU};
 
 use bevy::math::{DVec3, EulerRot};
 use escadrille_data::assist::AssistFile;
+pub use escadrille_data::assist::STALL_MARGIN;
 use escadrille_fdm::aircraft::PilotControls;
 use escadrille_fdm::constants::{G0, RHO0};
 use escadrille_fdm::environment::Environment;
@@ -30,10 +31,12 @@ use crate::flight::PilotInput;
 
 /// Largest bank the instructor gives, rad (plan `m2-aides-pilotage.md`).
 pub const INSTRUCTOR_BANK: f64 = 60.0 * PI / 180.0;
+/// Fastest change of the bank the instructor asks for, rad/s: a smooth roll-in, the
+/// aileron short of its stop, and less adverse yaw for the rudder to meet (full aileron
+/// rolled the SPAD at 70°/s into 8° of sideslip).
+pub const INSTRUCTOR_ROLL_RATE: f64 = 45.0 * PI / 180.0;
 /// Largest load factor the instructor asks for (plan).
 pub const INSTRUCTOR_LOAD: f64 = 3.5;
-/// The stall guard holds the incidence this far below the stall's, rad (plan).
-pub const STALL_MARGIN: f64 = 2.0 * PI / 180.0;
 /// Time the instructor takes to bring the flight path back to level, stick released, or
 /// within its climb limit, s: a gentle levelling, slower than the incidence and the bank.
 pub const LEVELLING_S: f64 = 4.0;
@@ -48,6 +51,9 @@ const INTEGRAL_ZONE: f64 = 2.0 * PI / 180.0;
 /// The same for the bank: the integral holds the aeroplane's overbanking in a steep
 /// turn, not the roll into it.
 const BANK_INTEGRAL_ZONE: f64 = 10.0 * PI / 180.0;
+/// Pilot's rudder beyond which the coordination lets his feet have the sideslip they
+/// ask for: its loop pauses, its integral held, the adverse yaw still met.
+const PEDAL_PRESSED: f64 = 0.05;
 /// Below this share of the lowest row's dynamic pressure, the gains stop growing: in a
 /// tail slide they would ask for full travel at the slightest error anyway.
 const LOWEST_PRESSURE_SHARE: f64 = 0.5;
@@ -109,6 +115,7 @@ pub struct Gains {
     pub elevator_per_pitch_rate: f64,
     pub rudder_per_roll_rate: f64,
     pub rudder_per_aileron: f64,
+    pub aileron_per_roll_rate: f64,
     /// Aileron per radian of bank error, per rad/s of roll rate, per rad·s.
     pub roll: [f64; 3],
     /// Elevator per radian of incidence error, per rad/s of pitch rate, per rad·s.
@@ -136,6 +143,7 @@ impl Gains {
             ),
             rudder_per_roll_rate: mix(self.rudder_per_roll_rate, other.rudder_per_roll_rate),
             rudder_per_aileron: mix(self.rudder_per_aileron, other.rudder_per_aileron),
+            aileron_per_roll_rate: mix(self.aileron_per_roll_rate, other.aileron_per_roll_rate),
             ..Self::default()
         };
         mix_all(&self.roll, &other.roll, &mut g.roll);
@@ -186,6 +194,7 @@ impl From<&AssistFile> for AssistTable {
                         elevator_per_pitch_rate: r.elevator_per_pitch_rate,
                         rudder_per_roll_rate: r.rudder_per_roll_rate,
                         rudder_per_aileron: r.rudder_per_aileron,
+                        aileron_per_roll_rate: r.aileron_per_roll_rate,
                         roll: r.roll,
                         pitch: r.pitch,
                         yaw: r.yaw,
@@ -236,6 +245,9 @@ pub struct AssistState {
     sideslip: f64,
     /// Integral of the instructor's bank error, rad·s.
     bank: f64,
+    /// The bank the instructor is rolling to, rad: towards the stick's at
+    /// [`INSTRUCTOR_ROLL_RATE`], from the aeroplane's own when it takes over.
+    bank_target: Option<f64>,
     /// Integral of the incidence's error, rad·s: the instructor's, or the stall guard's
     /// while it holds.
     incidence: f64,
@@ -261,56 +273,65 @@ impl AssistState {
             }
             FlightAssist::Coordinated { stall_guard } => {
                 self.bank = 0.0;
+                self.bank_target = None;
                 let pitch = if stall_guard {
                     self.guard(pilot.pitch, limit, m, &g, dt)
                 } else {
                     self.incidence = 0.0;
                     pilot.pitch
                 };
-                let rudder = self.coordinate(pilot.roll, m, &g, dt);
                 PilotControls {
                     pitch,
-                    yaw: (pilot.yaw + rudder).clamp(-1.0, 1.0),
+                    yaw: self.coordinate(pilot.yaw, pilot.roll, m, &g, dt),
                     ..pilot
                 }
             }
             FlightAssist::Instructor => {
-                let roll = self.bank(INSTRUCTOR_BANK * input.stick.x, m, &g, dt);
+                let wanted = INSTRUCTOR_BANK * input.stick.x;
+                let previous = self.bank_target.unwrap_or(m.bank);
+                let step = INSTRUCTOR_ROLL_RATE * dt;
+                let target = previous + wrap(wanted - previous).clamp(-step, step);
+                self.bank_target = Some(target);
+                let roll = self.bank(target, (target - previous) / dt, m, &g, dt);
                 let most = g.load_at(limit);
                 let load = wanted_load(input.stick.y, most, m).min(most);
                 let pitch = self.hold(g.alpha_for(load), m.pitch_rate_of(load), m, &g, dt);
-                let rudder = self.coordinate(roll, m, &g, dt);
                 PilotControls {
                     roll,
                     pitch,
-                    yaw: (pilot.yaw + rudder).clamp(-1.0, 1.0),
+                    yaw: self.coordinate(pilot.yaw, roll, m, &g, dt),
                     throttle: pilot.throttle,
                 }
             }
         }
     }
 
-    /// Aileron giving a bank.
-    fn bank(&mut self, bank: f64, m: &Measured, g: &Gains, dt: f64) -> f64 {
+    /// Aileron giving a bank that moves at a roll rate: the aileron of that rate,
+    /// corrected by the errors and, near a target at rest, their integral.
+    fn bank(&mut self, bank: f64, rate: f64, m: &Measured, g: &Gains, dt: f64) -> f64 {
         let [k_bank, k_rate, k_integral] = g.roll;
         let error = wrap(m.bank - bank);
-        let free = -k_bank * error - k_rate * m.rates.x;
-        if error.abs() < BANK_INTEGRAL_ZONE {
+        let free = g.aileron_per_roll_rate * rate - k_bank * error - k_rate * (m.rates.x - rate);
+        if error.abs() < BANK_INTEGRAL_ZONE && rate == 0.0 {
             self.bank = integrate(self.bank, error, free, k_integral, dt);
         }
         (free - k_integral * self.bank).clamp(-1.0, 1.0)
     }
 
-    /// Rudder meeting the adverse yaw of the roll and the aileron, and cancelling the
-    /// sideslip left; the yaw rate of the turn, and of a roll about the flight path, is
-    /// left alone.
-    fn coordinate(&mut self, aileron: f64, m: &Measured, g: &Gains, dt: f64) -> f64 {
+    /// The pilot's rudder, plus the one meeting the adverse yaw of the roll and the
+    /// aileron and cancelling the sideslip left; the yaw rate of the turn, and of a roll
+    /// about the flight path, is left alone. With the pilot's foot on the rudder bar, the
+    /// sideslip is his.
+    fn coordinate(&mut self, pilot: f64, aileron: f64, m: &Measured, g: &Gains, dt: f64) -> f64 {
         let [k_beta, k_rate, k_integral] = g.yaw;
         let p = m.rates.x;
         let turn = G0 / m.airspeed * m.bank.sin() * m.pitch.cos() + p * m.alpha.tan();
-        let free = g.rudder_per_roll_rate * p + g.rudder_per_aileron * aileron
-            - k_beta * m.beta
-            - k_rate * (m.rates.z - turn);
+        let adverse = g.rudder_per_roll_rate * p + g.rudder_per_aileron * aileron;
+        if pilot.abs() > PEDAL_PRESSED {
+            return (pilot + adverse).clamp(-1.0, 1.0);
+        }
+        // The pilot's foot counts in the stop the integral must not wind against.
+        let free = pilot + adverse - k_beta * m.beta - k_rate * (m.rates.z - turn);
         self.sideslip = integrate(self.sideslip, m.beta, free, k_integral, dt);
         (free - k_integral * self.sideslip).clamp(-1.0, 1.0)
     }
@@ -507,7 +528,7 @@ mod tests {
     /// Prints a flight, every half second, for diagnosis (`cargo test -p escadrille
     /// print_a_flight -- --ignored --nocapture`): `ASSIST=off|veteran|pilot|arcade`,
     /// `STICK=x,y`, `THROTTLE`, `SECONDS`, `ROLL_FOR` (seconds the stick's x is held),
-    /// `CUT_AT` (second the throttle goes to idle).
+    /// `CUT_AT` (second the throttle goes to idle), `EVERY` (steps between lines, 60).
     #[test]
     #[ignore]
     fn print_a_flight() {
@@ -526,6 +547,7 @@ mod tests {
         let seconds: f64 = var("SECONDS", "20").parse().unwrap();
         let roll_for: f64 = var("ROLL_FOR", "1000").parse().unwrap();
         let cut_at: f64 = var("CUT_AT", "1000").parse().unwrap();
+        let every: usize = var("EVERY", "60").parse().unwrap();
         let mut f = spad();
         let mut memory = AssistState::default();
         let dt = 1.0 / STEP_HZ;
@@ -535,7 +557,7 @@ mod tests {
             let x = if t < roll_for { xy[0] } else { 0.0 };
             let input = stick(x, xy[1], if t < cut_at { throttle } else { 0.0 }, &f.start);
             let c = memory.commands(assist, &input, &m, &f.table, dt);
-            if k % 60 == 0 {
+            if k % every == 0 {
                 eprintln!(
                     "t {t:5.1} V {:5.1} h {:6.0} a {:+5.1} b {:+5.1} phi {:+6.1} th {:+5.1} gam {:+5.1} pqr {:+5.2} {:+5.2} {:+5.2} out {:+.2} {:+.2} {:+.2}",
                     m.airspeed * 3.6,
@@ -611,8 +633,8 @@ mod tests {
         assert!(guarded(&beginner) && !beginner.crashed, "{beginner:?}");
         let bank = beginner.last.unwrap().bank;
         assert!((bank - INSTRUCTOR_BANK).abs() < 0.05, "{bank} {beginner:?}");
-        // Coordinated, a few degrees of sideslip as the full aileron rolls it in.
-        assert!(beginner.max_abs_beta < 0.1, "{beginner:?}");
+        // Coordinated, a few degrees of sideslip as it rolls in.
+        assert!(beginner.max_abs_beta < 0.07, "{beginner:?}");
     }
 
     #[test]
@@ -642,6 +664,28 @@ mod tests {
     }
 
     #[test]
+    fn the_instructor_banks_and_levels_within_seconds() {
+        // Half the stick to the right: 30° of bank within 3 s; released at 10 s: wings
+        // level within 4 s (the bank loop was four times too slow before the
+        // aerodynamicist's review, 2026-10-29).
+        let bank_at = |seconds: f64| {
+            fly(FlightAssist::Instructor, seconds, 0.0, |t, s| {
+                stick(if t < 10.0 { 0.5 } else { 0.0 }, 0.0, s.throttle, s)
+            })
+            .last
+            .unwrap()
+            .bank
+        };
+        let banked = bank_at(3.0);
+        assert!(
+            (banked - 0.5 * INSTRUCTOR_BANK).abs() < 3f64.to_radians(),
+            "{banked}"
+        );
+        let level = bank_at(14.0);
+        assert!(level.abs() < 3f64.to_radians(), "{level}");
+    }
+
+    #[test]
     fn coordination_cancels_the_sideslip_of_a_rolling_turn() {
         // Into a 30° turn by the aileron alone, then the stick centred: coordinated, the
         // sideslip stays a fraction of the uncoordinated one.
@@ -661,6 +705,29 @@ mod tests {
             "{} {}",
             coordinated.max_abs_beta,
             free.max_abs_beta
+        );
+    }
+
+    #[test]
+    fn the_pilot_s_rudder_still_yaws_the_aeroplane() {
+        // Coordinated, full right rudder for three seconds: the sideslip is the pilot's.
+        let pilot = |t: f64, s: &PilotControls| {
+            let mut input = stick(0.0, 0.0, s.throttle, s);
+            input.controls.yaw = if t < 3.0 { 1.0 } else { 0.0 };
+            input
+        };
+        let veteran = fly(
+            FlightAssist::Coordinated { stall_guard: false },
+            3.0,
+            1.0,
+            pilot,
+        );
+        let ace = fly(FlightAssist::Off, 3.0, 1.0, pilot);
+        assert!(
+            veteran.max_abs_beta > 0.7 * ace.max_abs_beta && ace.max_abs_beta > 0.05,
+            "{} {}",
+            veteran.max_abs_beta,
+            ace.max_abs_beta
         );
     }
 

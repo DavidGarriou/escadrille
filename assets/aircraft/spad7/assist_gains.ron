@@ -4,25 +4,25 @@
     aircraft: "spad7",
     stall_alpha: Rad(0.210000), // C: incidence of the lowest steady speed: idle 13.8° at 82 km/h, full throttle 12.0° at 76 km/h
     rows: [
-        // level flight, throttle 0.27
-        (speed: Kmh(90.0000), load_per_alpha: 0.0113941, zero_load_alpha: Rad(-0.0779072), elevator_at_zero_load: -0.198432, elevator_per_alpha: 0.723809, elevator_per_pitch_rate: 0.380065, rudder_per_roll_rate: 0.667939, rudder_per_aileron: 0.0990315, roll: (770.382, 0.0, 412.704), pitch: (63.0639, 176.487, 909.348), yaw: (-451.275, 720.090, -273.574)),
-        // level flight, throttle 0.26
-        (speed: Kmh(100.000), load_per_alpha: 0.0113731, zero_load_alpha: Rad(-0.0777688), elevator_at_zero_load: -0.177707, elevator_per_alpha: 0.601324, elevator_per_pitch_rate: 0.354355, rudder_per_roll_rate: 0.492853, rudder_per_aileron: 0.120335, roll: (744.009, 0.0, 398.576), pitch: (67.4719, 202.437, 1207.12), yaw: (-383.686, 766.357, -292.853)),
-        // level flight, throttle 0.27
-        (speed: Kmh(110.000), load_per_alpha: 0.0115267, zero_load_alpha: Rad(-0.0756208), elevator_at_zero_load: -0.122074, elevator_per_alpha: 0.236014, elevator_per_pitch_rate: 0.332125, rudder_per_roll_rate: 0.335878, rudder_per_aileron: 0.181148, roll: (744.692, 0.0, 398.942), pitch: (67.4384, 199.322, 1329.28), yaw: (-288.932, 798.898, -307.861)),
-        // level flight, throttle 0.29
-        (speed: Kmh(120.000), load_per_alpha: 0.0117205, zero_load_alpha: Rad(-0.0726694), elevator_at_zero_load: -0.0846645, elevator_per_alpha: -0.0455404, elevator_per_pitch_rate: 0.309918, rudder_per_roll_rate: 0.231076, rudder_per_aileron: 0.180402, roll: (674.870, 0.0, 361.537), pitch: (78.7638, 192.788, 1487.81), yaw: (-328.765, 884.081, -388.703)),
-        // level flight, throttle 0.37
-        (speed: Kmh(140.000), load_per_alpha: 0.0108830, zero_load_alpha: Rad(-0.0814323), elevator_at_zero_load: -0.133416, elevator_per_alpha: 0.293075, elevator_per_pitch_rate: 0.269095, rudder_per_roll_rate: 0.116244, rudder_per_aileron: 0.199229, roll: (756.525, 0.0, 405.281), pitch: (93.4342, 285.585, 2719.33), yaw: (-454.194, 1057.60, -612.708)),
-        // level flight, throttle 0.50
-        (speed: Kmh(160.000), load_per_alpha: 0.0108929, zero_load_alpha: Rad(-0.0811421), elevator_at_zero_load: -0.111318, elevator_per_alpha: 0.0408783, elevator_per_pitch_rate: 0.238573, rudder_per_roll_rate: 0.0272419, rudder_per_aileron: 0.217771, roll: (730.028, 0.0, 391.086), pitch: (127.538, 287.091, 3455.37), yaw: (-599.923, 1226.63, -917.735)),
-        // level flight, throttle 0.68
-        (speed: Kmh(180.000), load_per_alpha: 0.0112556, zero_load_alpha: Rad(-0.0787918), elevator_at_zero_load: -0.0974783, elevator_per_alpha: -0.176293, elevator_per_pitch_rate: 0.214216, rudder_per_roll_rate: -0.0422519, rudder_per_aileron: 0.269260, roll: (693.479, 0.0, 371.507), pitch: (192.435, 278.972, 4524.20), yaw: (-765.907, 1392.87, -1314.58)),
-        // dive of 0.1° at full throttle
-        (speed: Kmh(200.000), load_per_alpha: 0.0112324, zero_load_alpha: Rad(-0.0787104), elevator_at_zero_load: -0.0962067, elevator_per_alpha: -0.203921, elevator_per_pitch_rate: 0.193749, rudder_per_roll_rate: -0.0720976, rudder_per_aileron: 0.291862, roll: (693.754, 0.0, 371.654), pitch: (242.806, 304.659, 6079.26), yaw: (-953.724, 1560.49, -1819.17)),
-        // dive of 5.4° at full throttle
-        (speed: Kmh(230.000), load_per_alpha: 0.0110470, zero_load_alpha: Rad(-0.0788083), elevator_at_zero_load: -0.0947190, elevator_per_alpha: -0.248865, elevator_per_pitch_rate: 0.172780, rudder_per_roll_rate: -0.0778927, rudder_per_aileron: 0.330329, roll: (694.024, 0.0, 371.799), pitch: (357.109, 342.887, 9039.43), yaw: (-1313.27, 1885.50, -2845.75)),
-        // dive of 11.6° at full throttle
-        (speed: Kmh(260.000), load_per_alpha: 0.0108396, zero_load_alpha: Rad(-0.0790261), elevator_at_zero_load: -0.0941901, elevator_per_alpha: -0.268502, elevator_per_pitch_rate: 0.155622, rudder_per_roll_rate: -0.0750024, rudder_per_aileron: 0.280836, roll: (724.145, 0.0, 387.935), pitch: (464.422, 388.895, 12671.4), yaw: (-1730.02, 2210.89, -4206.51)),
+        // level flight, throttle 0.27; incidence loop at 4.00 rad/s, closed-loop damping 0.84
+        (speed: Kmh(90.0000), load_per_alpha: 0.0103049, zero_load_alpha: Rad(-0.0992429), elevator_at_zero_load: -0.227942, elevator_per_alpha: 0.779941, elevator_per_pitch_rate: 0.380990, rudder_per_roll_rate: 0.667013, rudder_per_aileron: 0.0988942, aileron_per_roll_rate: 1.31932, roll: (1565.83, 0.0, 1904.16), pitch: (463.263, 174.606, 911.431), yaw: (-3423.06, 1549.07, -2185.55)),
+        // level flight, throttle 0.26; incidence loop at 4.00 rad/s, closed-loop damping 0.84
+        (speed: Kmh(100.000), load_per_alpha: 0.0104066, zero_load_alpha: Rad(-0.0938570), elevator_at_zero_load: -0.210641, elevator_per_alpha: 0.716397, elevator_per_pitch_rate: 0.355407, rudder_per_roll_rate: 0.493152, rudder_per_aileron: 0.120408, aileron_per_roll_rate: 1.16681, roll: (1817.90, 0.0, 2412.12), pitch: (472.984, 169.274, 986.615), yaw: (-3577.19, 1668.89, -2344.25)),
+        // level flight, throttle 0.27; incidence loop at 4.00 rad/s, closed-loop damping 0.85
+        (speed: Kmh(110.000), load_per_alpha: 0.0104652, zero_load_alpha: Rad(-0.0905257), elevator_at_zero_load: -0.196581, elevator_per_alpha: 0.662085, elevator_per_pitch_rate: 0.333069, rudder_per_roll_rate: 0.335695, rudder_per_aileron: 0.181049, aileron_per_roll_rate: 1.10489, roll: (2203.01, 0.0, 3133.28), pitch: (572.553, 159.188, 1055.60), yaw: (-3642.28, 1754.14, -2461.54)),
+        // level flight, throttle 0.29; incidence loop at 4.00 rad/s, closed-loop damping 0.86
+        (speed: Kmh(120.000), load_per_alpha: 0.0106199, zero_load_alpha: Rad(-0.0854698), elevator_at_zero_load: -0.166859, elevator_per_alpha: 0.553562, elevator_per_pitch_rate: 0.310918, rudder_per_roll_rate: 0.231070, rudder_per_aileron: 0.180398, aileron_per_roll_rate: 0.953824, roll: (2363.83, 0.0, 3528.33), pitch: (664.639, 139.829, 1103.67), yaw: (-3630.22, 1808.12, -2543.92)),
+        // level flight, throttle 0.37; incidence loop at 4.00 rad/s, closed-loop damping 0.88
+        (speed: Kmh(140.000), load_per_alpha: 0.0106339, zero_load_alpha: Rad(-0.0837398), elevator_at_zero_load: -0.155579, elevator_per_alpha: 0.504754, elevator_per_pitch_rate: 0.269740, rudder_per_roll_rate: 0.116245, rudder_per_aileron: 0.199230, aileron_per_roll_rate: 0.829476, roll: (2845.11, 0.0, 4321.38), pitch: (442.516, 108.881, 1170.83), yaw: (-3447.37, 1859.30, -2644.64)),
+        // level flight, throttle 0.50; incidence loop at 4.00 rad/s, closed-loop damping 0.89
+        (speed: Kmh(160.000), load_per_alpha: 0.0106388, zero_load_alpha: Rad(-0.0829536), elevator_at_zero_load: -0.143600, elevator_per_alpha: 0.455455, elevator_per_pitch_rate: 0.239012, rudder_per_roll_rate: 0.0272421, rudder_per_aileron: 0.217773, aileron_per_roll_rate: 0.709500, roll: (3306.89, 0.0, 5222.71), pitch: (678.731, 48.0195, 1202.55), yaw: (-3113.14, 1869.19, -2697.71)),
+        // level flight, throttle 0.68; incidence loop at 4.25 rad/s, closed-loop damping 0.89
+        (speed: Kmh(180.000), load_per_alpha: 0.0106627, zero_load_alpha: Rad(-0.0820044), elevator_at_zero_load: -0.133031, elevator_per_alpha: 0.413559, elevator_per_pitch_rate: 0.214442, rudder_per_roll_rate: -0.0422523, rudder_per_aileron: 0.262750, aileron_per_roll_rate: 0.639536, roll: (3915.43, 0.0, 6397.72), pitch: (954.184, 4.64960, 1429.94), yaw: (-2673.28, 1859.53, -2729.55)),
+        // dive of 0.1° at full throttle; incidence loop at 4.75 rad/s, closed-loop damping 0.89
+        (speed: Kmh(200.000), load_per_alpha: 0.0106915, zero_load_alpha: Rad(-0.0810660), elevator_at_zero_load: -0.124632, elevator_per_alpha: 0.380624, elevator_per_pitch_rate: 0.193987, rudder_per_roll_rate: -0.0720982, rudder_per_aileron: 0.291865, aileron_per_roll_rate: 0.565871, roll: (4361.71, 0.0, 7249.08), pitch: (1325.91, 8.23363, 1991.41), yaw: (-2153.21, 1841.87, -2752.97)),
+        // dive of 5.4° at full throttle; incidence loop at 5.50 rad/s, closed-loop damping 0.89
+        (speed: Kmh(230.000), load_per_alpha: 0.0106661, zero_load_alpha: Rad(-0.0799099), elevator_at_zero_load: -0.116218, elevator_per_alpha: 0.337275, elevator_per_pitch_rate: 0.172950, rudder_per_roll_rate: -0.0778932, rudder_per_aileron: 0.328810, aileron_per_roll_rate: 0.481577, roll: (5005.16, 0.0, 8454.40), pitch: (1970.96, 14.0503, 3179.78), yaw: (-1380.12, 1902.14, -2908.66)),
+        // dive of 11.6° at full throttle; incidence loop at 6.25 rad/s, closed-loop damping 0.90
+        (speed: Kmh(260.000), load_per_alpha: 0.0106422, zero_load_alpha: Rad(-0.0792139), elevator_at_zero_load: -0.110539, elevator_per_alpha: 0.307416, elevator_per_pitch_rate: 0.155747, rudder_per_roll_rate: -0.0750028, rudder_per_aileron: 0.297001, aileron_per_roll_rate: 0.430750, roll: (5805.70, 0.0, 9924.24), pitch: (2628.87, 33.4049, 4781.82), yaw: (-1733.13, 2213.68, -4220.43)),
     ],
 )

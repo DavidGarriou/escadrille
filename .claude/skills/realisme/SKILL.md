@@ -65,18 +65,27 @@ pub enum Preset { Arcade, Pilot, Veteran, Ace, Custom }
   - `crates/game/src/realism/mod.rs` : `RealismSettings` (un seul champ pour l'instant, `flight_assist`), `Preset`, cycle par le bouton Home ;
   - `realism/assist.rs` : les contrôleurs, en code pur testable sans Bevy.
 - **Place** : au pas fixe, entre `FlightSet::Command` (l'avion du joueur prend les commandes du pilote) et `FlightSet::Step`.
-- **Gains** : `fdm_lab assist <id>` (`tools/fdm_lab/src/assist.rs`). Trois modèles réduits, avec placement de pôles et intégrateur :
-  - roulis (p, φ) ;
-  - incidence (α, q), avec Ω et ε résidualisés pour les statiques ;
-  - dérapage (β, r).
+- **Gains** : `fdm_lab assist <id>` (`tools/fdm_lab/src/assist.rs`). Ils viennent d'une linéarisation par sécantes, avec placement de pôles et intégrateur :
+  - **roulis** (p, φ) : la troisième racine est placée là où l'amortissement propre la met ;
+  - **incidence** (α, q) : sur le modèle à déflexion établie, la conception la plus douce, dès 4 rad/s, dont la boucle fermée sur tout le modèle longitudinal est amortie à 0,7 ;
+  - **dérapage** (β, r) : à 3 rad/s au moins ;
+  - **statiques** : par équilibres non linéaires, en sécante de l'incidence du palier à la limite de la garde.
 
-  Le fichier écrit est décrit dans `simulation-vol/format-avion.md`.
+  Le fichier écrit est décrit dans `simulation-vol/format-avion.md`. Un test exige un amortissement d'au moins 0,5 sur toute l'enveloppe, à 0 et 4 000 m, réservoir plein et vide.
 - **Lois** :
-  - **coordination** : PI sur β, amortissement de r au-delà de celui du virage, et anticipation du lacet inverse par la vitesse de roulis et l'aileron ;
+  - **coordination** :
+    - PI sur β ;
+    - amortissement de r au-delà de celui du virage ;
+    - anticipation du lacet inverse par la vitesse de roulis et l'aileron ;
+    - pédale du pilote enfoncée : la boucle se suspend ;
   - **garde** : min(profondeur du pilote, profondeur qui tient α_décrochage − 2°), avec la profondeur statique de l'incidence et de la vitesse de tangage ;
-  - **instructeur** : inclinaison jusqu'à 60°, facteur de charge de 0 à 3,5 g autour du palier, retour au palier en 4 s, montée limitée à 30° tant que la vitesse le permet.
+  - **instructeur** :
+    - inclinaison jusqu'à 60°, demandée à 45°/s au plus, avec l'aileron qui tient ce roulis ;
+    - facteur de charge de 0 à 3,5 g autour du palier ;
+    - retour au palier en 4 s ;
+    - montée limitée à 30° tant que la vitesse le permet.
 - **Limite connue** : la garde seule (Pilote) ne rend pas la vitesse d'une chandelle. Trop cabré, l'avion passe sur le dos au sommet comme il le ferait réellement ; seul l'instructeur limite la montée.
-- **Diagnostic** : le test ignoré `print_a_flight` (`realism/assist.rs`) imprime un vol, réglé par variables d'environnement : `ASSIST`, `STICK`, `THROTTLE`, `SECONDS`, `ROLL_FOR`, `CUT_AT`.
+- **Diagnostic** : le test ignoré `print_a_flight` (`realism/assist.rs`) imprime un vol, réglé par variables d'environnement : `ASSIST`, `STICK`, `THROTTLE`, `SECONDS`, `ROLL_FOR`, `CUT_AT`, `EVERY`.
 
 ## Tests
 

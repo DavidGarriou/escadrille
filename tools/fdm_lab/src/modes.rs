@@ -95,6 +95,23 @@ const SECANT_ANGLE: f64 = 1.0 * std::f64::consts::PI / 180.0;
 /// Half-step of the static stability in rotor speed, fraction of the trimmed speed.
 const SECANT_ROTOR: f64 = 0.02;
 
+/// [`linearise`] by secants over [`SECANT_ANGLE`] in incidence, sideslip and downwash
+/// and [`SECANT_ROTOR`] in rotor speed: the slopes of the piecewise-linear tables over a
+/// degree, not those of one segment (the static stability, the assists' gains).
+pub fn linearise_secant(aircraft: &Aircraft, env: &dyn Environment, trim: &Trim) -> Linear {
+    let f = trim.flight;
+    let (speed, angle) = (f.speed * SECANT_ANGLE.tan(), SECANT_ANGLE);
+    let rotor = (SECANT_ROTOR * f.rotor_speed).max(1e-3);
+    linearise_with(
+        aircraft,
+        env,
+        trim,
+        [
+            speed, speed, speed, 1e-5, 1e-5, 1e-5, 1e-6, 1e-6, rotor, angle,
+        ],
+    )
+}
+
 /// Same as [`linearise`] with the given half-steps of central differences.
 fn linearise_with(
     aircraft: &Aircraft,
@@ -308,17 +325,7 @@ pub fn static_stability(
     env: &dyn Environment,
     trim: &Trim,
 ) -> Option<StaticStability> {
-    let f = trim.flight;
-    let (speed, angle) = (f.speed * SECANT_ANGLE.tan(), SECANT_ANGLE);
-    let rotor = (SECANT_ROTOR * f.rotor_speed).max(1e-3);
-    let linear = &linearise_with(
-        aircraft,
-        env,
-        trim,
-        [
-            speed, speed, speed, 1e-5, 1e-5, 1e-5, 1e-6, 1e-6, rotor, angle,
-        ],
-    );
+    let linear = &linearise_secant(aircraft, env, trim);
     // Longitudinal: u, w, q, θ with Ω and ε eliminated.
     let long = reduced(linear, &[0, 2, 4, 7], &[8, 9])?;
     let (z_w, m_w) = (long[(1, 1)], long[(2, 1)]);

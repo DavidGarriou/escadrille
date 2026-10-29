@@ -14,12 +14,18 @@ use serde::Deserialize;
 use crate::units::{Angle, Speed};
 use crate::{DataError, load_checked};
 
+/// The stall guard holds the incidence this far below [`AssistFile::stall_alpha`], rad
+/// (plan `m2-aides-pilotage.md`): the game's limit, and the end of the statics' secants.
+pub const STALL_MARGIN: f64 = 2.0 * std::f64::consts::PI / 180.0;
+
 /// The assists' figures at one speed.
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct AssistRow {
     /// Equivalent airspeed.
     pub speed: Speed,
-    /// Load factor per radian of incidence, per pascal of dynamic pressure.
+    /// Load factor per radian of incidence, per pascal of dynamic pressure. The statics
+    /// are secants from the level flight's incidence to the guard's limit, at the row's
+    /// speed, wings level, the rotor and the downwash settled.
     pub load_per_alpha: f64,
     /// Incidence of zero load factor.
     pub zero_load_alpha: Angle,
@@ -34,6 +40,9 @@ pub struct AssistRow {
     /// aileron (per unit of command): the adverse yaw a pilot meets with his feet.
     pub rudder_per_roll_rate: f64,
     pub rudder_per_aileron: f64,
+    /// Aileron command holding a steady roll rate, per rad/s: the roll damping to
+    /// overcome.
+    pub aileron_per_roll_rate: f64,
     /// Aileron command per radian of bank, per rad/s of roll rate and per rad·s of the
     /// bank's integral, × Pa (u = −K x).
     pub roll: [f64; 3],
@@ -74,6 +83,7 @@ pub fn load_assist_gains(assets: &Path, id: &str) -> Result<Option<AssistFile>, 
             r.elevator_per_pitch_rate,
             r.rudder_per_roll_rate,
             r.rudder_per_aileron,
+            r.aileron_per_roll_rate,
         ]
         .iter()
         .chain(&r.roll)
