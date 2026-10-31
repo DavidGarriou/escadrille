@@ -1,8 +1,8 @@
 # SPAD S.VII C.1 — fiche de recherche
 
 - Identifiant : `spad7` (même nom que `assets/aircraft/spad7/`)
-- Dernière mise à jour : 2026-10-25
-- État : **en cours** (onzième passe). Sont désormais sourcés par des documents d'époque lus :
+- Dernière mise à jour : 2026-10-31
+- État : **en cours** (douzième passe). Sont désormais sourcés par des documents d'époque lus :
   - le profil « Spad » (B) ;
   - les polaires du RAF 15 (A pour ce profil) ;
   - la courbe de puissance et la loi d'altitude du Hispano de 180 hp (B pour un 8Ab) ;
@@ -29,6 +29,12 @@
     - aucun témoignage d'époque sur le pied à tenir sur un S.VII ; T8 précisé sans être recompté ;
     - convention « right hand tractor » éclaircie par des textes britanniques de 1917-1918 : sens **horaire vu du pilote** proposé en **B** (§ 6.5.3) ;
     - notice britannique du S.VII (1918) repérée à l'Australian War Memorial, non numérisée (§ 6.5.6).
+  - **douzième passe (2026-10-31), centrage** (§ 3.1) :
+    - **aucune donnée de centrage** trouvée pour aucun SPAD (position, pesée, limites, point neutre) ;
+    - repère d'époque lu : 0,33 à 0,38 de la corde moyenne, selon Barnwell en 1918 (C pour le SPAD) ;
+    - XIII « lourd de la queue » en palier selon McCook (1921, résumé) : remarque d'équilibre, pas de stabilité ;
+    - dièdre nul maintenu (C) ; plan fixe réglable et débattement de la profondeur : non trouvés ;
+    - identifiants archive.org de quatre manuels de conception à télécharger ; demande D15 (circulaires de McCook Field).
 - Fiches liées : [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (moteur et hélice), [`profil-spad7.md`](profil-spad7.md) (profil d'aile)
 - Contexte de jeu visé : escadrille SPA 3 (« Cigognes », Groupe de Combat 12), Flandres, été 1917
 
@@ -116,6 +122,12 @@ Méthode et accès :
 - **Textes intégraux** de S1, S3 et S4, récupérés le 2026-10-25 par raw.githubusercontent.com et recherchés mot à mot [LU].
 - **Web** : une trentaine de requêtes en français, anglais, allemand, italien et russe, toutes vues en **résumé**. Échec DNS de l'outil de lecture sur onze sites (§ 9.5).
 - **Rien n'a été téléchargé.** Documents à demander au § 6.5.6.
+
+**Douzième passe (2026-10-31) : centrage.** Objet : une donnée de centrage du S.VII ou d'un SPAD voisin, demandée par le joueur (« centrage : ok ») après la revue du modèle de vol (`docs/plans/m2-aides-pilotage.md`, point 7). Méthode et bilan au § 3.1.
+- **Relus localement, comme des données** [LU-OCR] : *Flight* (208 numéros), *Aerial Age*, ACA 1917-18 vol. II et Brockett, sur « centre of gravity » et « C.G. » près de « Spad » ; articles de Barnwell (S101) et de Halliwell (S89).
+- **Web** : une vingtaine de requêtes en anglais, français, allemand et italien, toutes en **résumé**. Échec DNS de l'outil de lecture sur archive.org, ntrs.nasa.gov et babel.hathitrust.org (2026-10-31).
+- **Rien n'a été téléchargé.** Documents à télécharger au § 9.6 (lignes « 12e passe ») ; demande D15 dans `demandes.md`.
+- Session interrompue par la limite d'usage vers 15 h 30 UTC, puis reprise ; aucune recherche n'a été perdue, mais le temps restant n'a pas permis de requêtes en russe ni en tchèque.
 
 ## 1. Identification et contexte
 
@@ -460,8 +472,46 @@ Documents qui lèveraient ces manques : § 9.6 (lignes de la septième passe).
 | Carburant | 135 L au total : réservoir principal dans le fuselage sous le siège, réservoir d'appoint dans la partie centrale (cabane) | — | S13 [RÉSUMÉ] | C | 105 L dans une source de jeu (exclue, S39). Essence et huile : 80 kg (S46) ou 105 kg (S47) dans la charge des tableaux ; à 0,72 kg/L, 105 kg d'essence seule feraient environ 146 L (C). Contenances non lues |
 | Huile | non trouvé séparément | — | — | — | Comprise dans « essence et huile » (S46, S47) |
 | Munitions | non trouvé (nombre de cartouches) | — | — | — | Armement : 40 kg (88 lb) dans S46 ; armement et munitions : 25 kg (55 lb) dans S47 |
-| Centrage, et son évolution | **non trouvé** (septième passe) | — | Ni le rapport britannique n° 96 (P10), ni le rapport de McCook sur le XIII (P12, S15 en résumé), ni une notice SPAD n'ont pu être lus ; aucun résumé n'en cite un centrage. Seul indice, qualitatif et pour le XIII : « lourd de la queue » (T8) | — | À estimer (`E:`). Le centrage du JN-2 (S43) n'est pas transposable (§ 2.4) |
+| Centrage, et son évolution | **non trouvé** (septième passe ; toujours non trouvé en douzième passe, § 3.1) | — | Ni le rapport britannique n° 96 (P10), ni le rapport de McCook sur le XIII (P12, S15 en résumé), ni une notice SPAD n'ont pu être lus ; aucun résumé n'en cite un centrage. Seul indice, qualitatif et pour le XIII : « lourd de la queue » (T8) | — | À estimer (`E:`). Le centrage du JN-2 (S43) n'est pas transposable (§ 2.4) |
 | Inertie | **non trouvé** | — | Comparable de famille pour une estimation par composants : répartition de la masse à vide du biplace S.XI (moteur 29 %, eau 4 %, ailes 22 %, empennage mobile 2,6 %, fuselage et reste 42 %), S49 [LU-OCR], § 2.5.1 | C (famille) pour les proportions | À estimer par composants (`fdm_lab inertia`). Le S.XI a un moteur à réducteur de 225 kg et une cellule plus grande : proportions indicatives seulement. Positions du moteur, du pilote, du réservoir et de la mitrailleuse : non trouvées (§ 2.5.3) |
+
+### 3.1 Douzième passe (2026-10-31) : enquête sur le centrage
+
+**Question.** Le modèle de vol place le centre de gravité du S.VII 150 ch à **39,5 % de la corde réservoir plein** (33,5 % vide). Ce centrage vient d'un bilan par composants fermé par une masse estimée (`spad7-calculs.md` § 4). La marge statique s'annule vers 160 km/h, alors que l'avion est réputé stable (§ 6.2, trait « à confirmer »). On cherche une donnée de centrage du S.VII ou d'un SPAD voisin : position du centre de gravité, pesée par essieu, limites d'une notice, point neutre mesuré. Accessoirement : dièdre, plan fixe réglable, débattement de la profondeur.
+
+**Méthode et accès.**
+- **Outil de lecture** : échec DNS le 2026-10-31 sur archive.org, ntrs.nasa.gov et babel.hathitrust.org. Rien n'a été ouvert en ligne ; tout ce qui vient du web est **[RÉSUMÉ]**.
+- **Relus localement, comme des données** [LU-OCR] : les 208 numéros de *Flight* (1916-1919), *Aerial Age* (trois fichiers), le volume II du rapport ACA 1917-18 et la bibliographie de Brockett (S56), recherchés sur « centre of gravity » ou « C.G. » à moins de 1 500 caractères de « Spad ». Quatre numéros répondent (2 août 1917, 11 juillet 1918, 15 mai et 9 octobre 1919) ; **aucun passage ne porte sur le centrage d'un SPAD** (initiales de noms propres, article général sur les radiateurs). Relus en plus : l'article de Barnwell (S101) et le passage de Halliwell sur l'équilibre (S89).
+- **Web** : une vingtaine de requêtes en anglais, français, allemand et italien. Manuels de conception de 1916-1921 (Pomilio, Judge, Barnwell, Klemin, Warner), rapports NACA, circulaires de McCook Field, essais allemands d'avions capturés (*Technische Berichte* de la Flugzeugmeisterei), notices françaises, répliques.
+
+**Résultat principal : aucune donnée de centrage trouvée, pour aucun SPAD** (VII, XIII, XI ou XVI). Ni position du centre de gravité, ni pesée par essieu, ni limites de notice, ni point neutre ou moment de stabilité mesuré. Aucun rapport NACA sur un SPAD n'est apparu dans les recherches restreintes à NTRS. **Le centrage reste à estimer (`E:`)** ; rien ne permet aujourd'hui de dire, sources à l'appui, que 39,5 % est faux ni qu'il est juste.
+
+**Ce qui a été trouvé (contexte et indices, aucun chiffre SPAD)**
+
+| N° | Constat | Avion | Source, lecture | Confiance pour le S.VII | Portée |
+|---|---|---|---|---|---|
+| 1 | Pratique de conception énoncée en 1918 : la meilleure position du centre de gravité va de **0,33 à 0,38 de la corde moyenne**, comptée depuis son bord d'attaque. La corde moyenne y est celle d'un plan unique fictif qui recevrait la même réaction que l'ensemble des plans de la cellule. Hors de ces limites, il faut un plan fixe plus grand : centre de gravité trop en avant, tendance à piquer ; trop en arrière, tendance à cabrer et à décrocher. L'auteur note aussi que le calage du plan fixe fixe la vitesse normale de l'avion, et que la pratique courante est un plan fixe de profil symétrique, dit « non porteur » | général (aucun type cité) | F. S. Barnwell, S101, *Flight*, 16 mai 1918, p. 538 environ [LU-OCR] | **C** (règle de concepteur, pas une mesure) | Repère d'époque, pas une valeur SPAD. **Comparaison** (C, calcul) : 33,5 % (vide) est dans la fourchette, 39,5 % (plein) la dépasse de 1,5 point. Elle ne vaut que si le pourcentage du modèle est rapporté à la même corde moyenne de cellule, décalage compris ; **à vérifier par l'aérodynamicien** sur la définition de `cg_from_datum` |
+| 2 | « Lourd de la queue » en palier, et aussi en montée à pleins gaz | **SPAD XIII**, exemplaire américain 17956, moteur Wright de 220 hp, essai de McCook Field, avril 1921 | L. G. Meister, S15 (complément du 2026-10-31) [RÉSUMÉ] ; formulation anglaise vue dans le résumé : *tail heavy flying level, and also climbing with wide-open throttle* | C (autre type, autre moteur, autre constructeur) | Complète T8, qui ne citait que « lourd de la queue » au roulage. C'est une remarque d'**équilibre** (trim), pas de **stabilité** : voir n° 3 |
+| 3 | Sens d'époque de *tail heavy* : un défaut d'équilibre. Sur un avion à plan fixe **non réglable**, on le corrige au sol en vérifiant le calage du plan fixe et le décalage des plans ; trop de décalage rend l'avion lourd de la queue, trop peu lourd du nez. Avec un plan fixe réglable en vol, le pilote le règle jusqu'à l'équilibre | général | F. W. Halliwell, S89, *Flight*, 6 février 1919, p. 178-179 environ [LU-OCR] | B pour le sens du terme (texte d'époque, lu) | Avancer la portance (plus de décalage) équivaut à reculer le centre de gravité : *tail heavy* désigne donc une tendance à cabrer, que le pilote corrige en poussant (C, raisonnement). **Pour le modèle** (C) : un avion équilibré au neutre à 88 km/h demande de pousser en palier rapide, ce qui va **dans le même sens** que la remarque de Meister sur le XIII. Cela ne dit rien de la marge statique : un avion peut être lourd de la queue et stable |
+| 4 | Le XIII essayé ne semble pas avoir eu de plan fixe réglable en vol : un pilote d'essai qui en aurait disposé aurait annulé le défaut avant de le noter | XIII | déduction de n° 2 et n° 3 | C (interprétation) | Indice faible, sur un autre type. Rien pour le S.VII |
+| 5 | Comparables déjà au dossier, rappelés : centre de gravité dessiné à 29 % de la corde sur le Sperry Messenger du NACA Report 304 (`spad7-calculs.md`) ; centre de gravité du JN-2 de 4 à 18 in en avant du centre de poussée moyen (S43, § 2.4) | autres avions | [LU] | non transposables | Ordres de grandeur d'avions contemporains, pas des valeurs SPAD |
+
+**Questions secondaires**
+- **Dièdre** : rien de nouveau. Le S.VII reste qualifié de « flat-winged » dans le tableau italien de 1919 (S47 [LU-IMG]) ; le XIII est donné sans dièdre (S15, revu en résumé le 2026-10-31) ; le S.XI n'en a pas (S49). L'indice d'un **dièdre nul** est donc maintenu (C, trois documents de la famille, dont un seul sur le S.VII). Rien n'autorise à en ajouter un pour corriger la spirale.
+- **Plan fixe réglable** : **non trouvé** pour le S.VII. Indices de famille : plan fixe du S.XI traversant le fuselage et calé à 0° par rapport au longeron supérieur (S49) ; XIII probablement sans réglage en vol (n° 4, C). Aucun calage du plan fixe du S.VII trouvé.
+- **Débattement de la profondeur** : **non trouvé**, pour aucun SPAD. Les ±25° restent `E:`.
+
+**Ce qui n'a pas été trouvé, et où le chercher**
+- Les **manuels de conception** n'ont pas pu être ouverts. Leurs identifiants archive.org sont trouvés (§ 9.6, lignes « 12e passe ») : Pomilio (1919), Judge (1916), Barnwell et Sayers (1917), et un manuel de calcul des structures de l'Engineering Division de McCook Field. Aucun résumé ne montre qu'ils prennent le SPAD pour exemple : c'est à vérifier dans le texte.
+- **Complément de la session principale (2026-10-31)** : les quatre manuels ont été téléchargés en texte OCR depuis archive.org et fouillés comme des données [LU-OCR]. Aucune copie n'est commitée.
+  - **Aucun ne donne de centrage du SPAD.** Recherches faites : « spad », « s. p. a. d. », « center/centre of gravity ».
+  - Pomilio (1919) : 79 occurrences du centre de gravité, aucune sur le SPAD. Il décrit la pesée en deux positions, trois balances sous les roues et la béquille ou le moyeu. Elle permettrait de calculer le centrage d'un avion conservé (D1 à D6).
+  - Judge (1916) et Barnwell et Sayers (1917) : le SPAD n'y apparaît pas.
+  - *Structural Analysis and Design of Airplanes* (Engineering Division) : le « S.P.A.D. truss » n'y est cité que pour la structure de la cellule (§ 78, fig. 56), pas pour le centrage.
+- **NTRS** : la recherche « spad » de 1915 à 1935, par l'API, ne renvoie que deux documents : le Blériot-Spad 91 « Jockey » (1928) et un rapport général de 1922 sur les avions commerciaux. **Aucun rapport du NACA ne porte sur le S.VII ou le XIII.**
+- La **circulaire n° 286** (essai du XIII, 1921) est signalée « usage officiel, non disponible » dans un catalogue (S102) ; la collection des circulaires de McCook Field est à l'University of Alabama in Huntsville (S102), qui détient aussi une circulaire sur le SPAD 16 (n° 153, estimation de performances, 1920). Demande D15.
+- Les **essais allemands d'un S.VII capturé** (pesée, centrage, essai statique de la Flugzeugmeisterei) : aucune référence trouvée (requête en allemand, résumé seulement).
+- Les **notices de réglage** (D1 à D3) et les **plans Blériot-Spad** (D4) restent les sources les plus probables d'un centrage ou de ses limites ; leurs demandes sont complétées pour le centrage (`demandes.md`, compléments du 2026-10-31).
 
 ## 4. Moteur et hélice (résumé ; détail dans [`hispano-suiza-8a.md`](hispano-suiza-8a.md))
 - 150 ch : Hispano-Suiza 8Aa ; 180 ch : Hispano-Suiza 8Ab. V8 à refroidissement liquide, entraînement **direct** de l'hélice.
@@ -1239,6 +1289,10 @@ Conséquences attendues, inchangées (C, physique élémentaire) : à pleine pui
 - **S94** — Royal Aircraft Factory, « Experiments on the rotation of a propeller slipstream in a pusher aeroplane », R&M n° 408, novembre 1917, dans *Technical Report of the Advisory Committee for Aeronautics for the Year 1917-18*, vol. II, HMSO, 1921, p. 334-336 ; suite : D. H. Pinsent, « Exploration of the slipstream velocity in a pusher machine », R&M n° 444, avril 1918, p. 336 et suivantes. archive.org `technicalreport1917aero_2`. **[LU-OCR]**. Primaire (essais en vol sur le F.E.9 n° 4818).
 - **S1, S3, S4 (complément)** — textes intégraux récupérés le 2026-10-25 aux adresses du § 9.1 et recherchés mot à mot (« torque », « rudder », « swerv », « rigg », « incidence », « Spad ») **[LU]**.
 
+**Lues en douzième passe (2026-10-31)**. Texte OCR d'archive.org déjà téléchargé, relu comme des données.
+- **S101** — F. S. Barnwell (Captain, R.F.C.), « The Modern Aeroplane », *Flight*, 16 mai 1918, p. 538 environ (suite de la p. 514 ; page lue dans le sommaire du numéro). `Flight_International_Magazine_1918-05-16-pdf`. **[LU-OCR]**. Passage utilisé : stabilité longitudinale, position du centre de gravité de 0,33 à 0,38 de la corde moyenne, plan fixe symétrique. Secondaire d'époque (concepteur de la British & Colonial Aeroplane Co.) ; règle générale, aucun type d'avion cité.
+- **S89 (complément)** — passage sur l'avion « lourd du nez » ou « lourd de la queue » à plan fixe fixe ou réglable, *Flight*, 6 février 1919, p. 178-179 environ **[LU-OCR]**.
+
 ### 9.2 Vues seulement en résumé de recherche [RÉSUMÉ] (pages non ouvertes ; consultées le 2026-10-20)
 - **S5** — Wikipedia (en), « SPAD S.VII », https://en.wikipedia.org/wiki/SPAD_S.VII (wiki : piste).
 - **S6** — Wikipédia (fr), « SPAD S.VII », https://fr.wikipedia.org/wiki/SPAD_VII (wiki : piste).
@@ -1324,6 +1378,13 @@ Conséquences attendues, inchangées (C, physique élémentaire) : à pleine pui
 - **S15 (complément)** — This Day in Aviation, « 27 April 1921: Performance test of Spad 13 equipped with 220 h.p. Wright engine », https://www.thisdayinaviation.com/27-april-1921-performance-test-spad-13-equipped-220-h-p-wright-engine/ : roulage et décollage du XIII (§ 6.1, T8).
 - **S31 (complément)** — même fil CombatACE que S31, premier message (juillet 2009) : gouvernail des S.VII de 180 et 200 ch, vol de Tallman avec le petit gouvernail (§ 6.5.4).
 
+**Douzième passe (consultées en résumé le 2026-10-31 ; aucune page ouverte)**
+- **S15 (complément)** — This Day in Aviation, « 27 April 1921: Performance test of Spad 13 equipped with 220 h.p. Wright engine » (adresse en S15) et https://thisdayinaviation.com/?p=49509 : remarque de L. G. Meister, *tail heavy flying level, and also climbing with wide-open throttle* ; XIII sans flèche ni dièdre, calages 1½° et 1° (§ 3.1).
+- **S102** — Circulaires de McCook Field vues en résumé :
+  - University of Alabama in Huntsville Archives, collection des *Air Service Information Circulars*, https://archives.uah.edu/repositories/2/archival_objects/86912 : « Performance Estimate of Spad 16-A with 236 H.P. Lorraine-Dietrich Engine », *Air Service Information Circular (Heavier-Than-Air)* vol. II, n° 153 (rapport du 4 septembre 1920, publié en décembre 1920), dossier « D52.1 / Spad / 69 ». Autres circulaires de la même collection : https://archives.uah.edu/subjects/375 ;
+  - catalogue de documents publics de l'University of North Texas, https://mocat.library.unt.edu/catalog/323-ch816 : circulaire n° 286 du 1er octobre 1921, « Performance test of Spad 13 equipped with 220 H. P. Wright engine », Flight Test Branch performance test report 60, marquée « Official Use. Not Available » selon le résumé ; et https://mocat.library.unt.edu/catalog/307-ch492 : « Structural weight analysis of airplanes », circulaire de 3 p. du 8 mai 1920 (contenu non vu).
+- **S103** — Notices archive.org de manuels de conception, vues en résumé : O. Pomilio, *Airplane Design and Construction*, McGraw-Hill, New York, 1919 (`airplanedesigna00pomigoog`, exemplaire de l'University of Wisconsin numérisé par Google, 425 p. ; `airplanedesignco00pomirich`, exemplaire de l'University of California) ; A. W. Judge, *The Design of Aeroplanes*, Whittaker, Londres et New York, 1916 selon la notice (`designaeroplane00judggoog`) ; F. S. Barnwell, avec W. H. Sayers, *Aeroplane Design*, R. M. McBride, New York, 1917 (`aeroplanedesign00barnrich`) ; Engineering Division (Airplane Section, Structure and Aerodynamics Branch), *Structural Analysis and Design of Airplanes* (`ost-design-structuralanalys00unit`, date non relevée). **Aucun résumé ne montre de SPAD dans ces ouvrages.**
+
 ### 9.3 Pistes bibliographiques [PISTE] (non consultées ; éditions à vérifier)
 - **P1** — J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8, Albatros Productions, 1988 (fiche de catalogue de libraire).
 - **P2** — T. Gronczewski et S. M. Fleischer, *Spad VII C.1*, Aviatik Vintage Aircraft n° 1, 2004 (14 pages de plans selon une revue).
@@ -1358,6 +1419,8 @@ Ajoutées en septième passe (géométrie de détail) :
 
 Ajoutées en onzième passe (couple de l'hélice) :
 - **P28** — *Agenda de l'aviateur 1917-1918*, sous la direction de M. Percheron, 228 p., éditeur à vérifier (notice des Bibliothèques numériques de la Défense vue en résumé ; extraits reproduits sur http://chezpeps.free.fr/henri/html/agenda_aviateur_1917_1918.htm, inaccessible). Préceptes de pilotage remis aux pilotes.
+- **P30** (douzième passe) — Manuels de conception de 1916-1919 (S103) : Pomilio, Judge, Barnwell et Sayers, Engineering Division. À fouiller sur « Spad », « center of gravity », « balance », « weight » ; contenu inconnu.
+- **P31** (douzième passe) — Essais allemands de SPAD monoplaces capturés (pesée, centrage, essai statique) : piste à vérifier, **aucune référence trouvée** (requête en allemand du 2026-10-31, résumé). Éventuels dépôts : Bundesarchiv-Militärarchiv (Fribourg-en-Brisgau), archives du Deutsches Museum ; pistes proposées par le moteur de recherche, non vérifiées.
 - **P29** — Articles d'époque sur le couple et le réglage, relevés dans S56 : J. Morris (*Aeronautics*, 8 janvier 1919) ; « Torque. The correction of propeller torque » (*Aerial Age*, 4 avril 1921) ; R. J. Goodman Crouch (*Aeronautical Journal*, avril 1919) ; « Alpha » (*Aerial Age Weekly*, 23 juillet 1917) ; *Manual of rigging notes* (Dayton, [1918]). Références complètes au § 6.5.6.
 
 ### 9.4 Historique des escadrilles
@@ -1367,6 +1430,8 @@ Ajoutées en onzième passe (couple de l'hélice) :
 albindenis.free.fr ; en.wikipedia.org ; fr.wikipedia.org ; it.wikisource.org ; catalog.hathitrust.org ; gallica.bnf.fr (403 selon le coordinateur) ; www.gutenberg.org (direct) ; projekt-gutenberg.org ; www.theaerodrome.com ; flyingmachines.ru ; www.avionslegendaires.net ; historynet.com ; www.flightglobal.com (archives de *Flight*) ; www.thisdayinaviation.com ; www.hydroretro.net ; digital.library.unt.edu ; bibliotheques-numeriques.defense.gouv.fr ; m-selig.ae.illinois.edu ; aergistal.github.io ; web.archive.org ; www.google.com. Seuls github.com, raw.githubusercontent.com et, par intermittence, api.github.com répondent.
 
 **Cas particulier** : archive.org et ntrs.nasa.gov répondent au `curl` du conteneur (coordinateur, 2026-10-20), mais **pas** à l'outil de lecture de l'historien (DNS en échec). Ils ne sont exploitables que par téléchargement préalable (§ 9.6).
+
+**Douzième passe (2026-10-31)** : échec DNS de l'outil de lecture pour archive.org, ntrs.nasa.gov et babel.hathitrust.org.
 
 **Onzième passe (2026-10-25)** : échec DNS de l'outil de lecture pour www.awm.gov.au, www.compasslibrary.com, www.stmarysbooks.com, lib.ecu.edu, francearchives.gouv.fr, mediatheque.museeairespace.fr, books.google.com, combatace.com, discovery.nationalarchives.gov.uk, www.history.navy.mil et chezpeps.free.fr. api.github.com et raw.githubusercontent.com répondent.
 
@@ -1416,6 +1481,12 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 | 2 (9e passe) | Fil S11, page entière | `https://theaerodrome.com/forum/threads/climbing-performance-of-the-spad-vii.30985/` | texte exact de l'« Air Board summary » et du rapport M.96, avec leurs références (§ 5.6) |
 | 1 et 2 (10e passe) | Dix documents sur les conditions des essais de montée : NACA TM 15 (Grimault), rapport du NACA sur les instruments d'altitude, images de Tizard dans *Flight* (mars 1917), NACA TN 20, dossiers Hartmann (Reims 1911, Nieuport), histoire des essais de Villacoublay, Toussaint 1919 | adresses exactes au § 5.7.7 | départ du chronomètre, zéro et graduation des altimètres français, atmosphère de réduction avant 1920 |
 | 1 et 2 (11e passe) | Notices de réglage du S.VII et de la famille (britannique de 1918 à l'AWM, *Rigging notes* de l'Air Board à l'IWM, notice française du XIII, bulletins américains), plans Blériot-Spad du Musée de l'Air, articles d'époque sur le couple | cotes et adresses au § 6.5.6 | réglage dissymétrique éventuel de la cellule, de la dérive ou des ailerons |
+| 1 (12e passe) | O. Pomilio, *Airplane Design and Construction* (1919), texte OCR | `airplanedesigna00pomigoog` (sinon `airplanedesignco00pomirich`) | **fait le 2026-10-31 (session principale) : rien sur le SPAD**, méthode de pesée seulement |
+| 1 (12e passe) | A. W. Judge, *The Design of Aeroplanes* (1916 selon la notice), texte OCR | `designaeroplane00judggoog` | **fait le 2026-10-31 : SPAD absent** |
+| 1 (12e passe) | F. S. Barnwell (avec W. H. Sayers), *Aeroplane Design* (1917), texte OCR | `aeroplanedesign00barnrich` | **fait le 2026-10-31 : SPAD absent** |
+| 2 (12e passe) | Engineering Division, *Structural Analysis and Design of Airplanes*, texte OCR | `ost-design-structuralanalys00unit` | **fait le 2026-10-31 : le SPAD n'y est cité que pour la structure de sa cellule** |
+| 2 (12e passe) | NACA TR 467 (rayons de giration mesurés), déjà proposé par l'aérodynamicien | NTRS (identifiant à relever) | inertie ; vérifier s'il donne aussi le centrage des avions mesurés |
+| 2 (12e passe) | Recherche « Spad » sur NTRS par l'API (`https://ntrs.nasa.gov/api/citations/search?q=spad`), à faire par la session principale | NTRS | **fait le 2026-10-31 : deux résultats de 1915 à 1935, ni S.VII ni XIII** |
 
 ## 10. Journal des décisions
 - **2026-10-20 — Sous-version pour la SPA 3, été 1917.** S5, S8 et S16 font du 8Ab de 180 ch le moteur des S.VII neufs à partir du printemps 1917 (« avril 1917 » pour S16). Guynemer juge le 150 ch insuffisant dès décembre 1916 (S1). Aucun état des appareils de la SPA 3 n'a été trouvé. **Retenu : S.VII 180 ch (8Ab), confiance C**, en sachant que la SPA 3 alignait sans doute encore des 150 ch et quelques SPAD XIII à partir de fin juillet 1917 (S18, S1). Ce choix sera à revoir dès que l'historique d'Albin Denis ou les journaux de marche seront accessibles.
@@ -1558,3 +1629,11 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
   - Le trait « couple marqué » reste à confirmer.
 - **2026-10-25 — Pas de cible pour la croisière.** Aucune source ne chiffre ni ne décrit le pied ou le gauchissement tenus en palier ou en montée sur un S.VII. Le résultat du modèle (2 % de course au plus) n'a pas de cible historique : il ne doit être présenté ni comme validé, ni comme contredit.
 - **2026-10-25 — Documents demandés** (§ 6.5.6) : en priorité, la notice britannique du S.VII de 1918 (AWM, cote 629.133343 T255) et la section S.VII des *Rigging notes* de l'Air Board (IWM, objet 1500085766).
+
+**Douzième passe (2026-10-31 ; centrage)**
+- **2026-10-31 — Centrage : non trouvé, aucune valeur proposée.** Aucune position du centre de gravité, pesée, limite de notice ni point neutre pour aucun SPAD (§ 3.1). Le centrage du modèle reste une estimation (`E:`) issue du bilan par composants. Je ne propose **pas** de valeur de remplacement : je n'en ai aucune de sourcée.
+- **2026-10-31 — Repère d'époque retenu comme contrôle, pas comme cible : 0,33 à 0,38 de la corde moyenne de cellule** (Barnwell, S101, C pour le SPAD). Raison : texte d'époque lu, écrit par un concepteur de chasseurs, mais règle générale sans mesure ni type cité. Le centrage plein du modèle (39,5 %) la dépasse de peu ; le centrage vide (33,5 %) y entre. Cela **ne prouve pas** que le modèle a tort : la comparaison exige la même définition de la corde moyenne (décalage compris), et la règle de Barnwell n'est pas une limite du S.VII. Décision de l'usage à l'aérodynamicien.
+- **2026-10-31 — « Lourd de la queue » (Meister, XIII) : remarque d'équilibre, pas de stabilité.** Le sens d'époque est établi par Halliwell (S89, B pour le terme). Elle va dans le même sens que l'équilibre au neutre à 88 km/h du modèle (C), mais ne dit rien de la marge statique et porte sur un autre type. Elle ne justifie ni d'avancer ni de reculer le centrage.
+- **2026-10-31 — Réputation de stabilité (§ 6.2) : inchangée, « à confirmer ».** Aucun témoignage direct nouveau sur le S.VII. Le trait reste un essai non bloquant ; il ne peut pas, seul, servir à fixer le centrage.
+- **2026-10-31 — Dièdre : nul maintenu (C)**, sur trois documents de la famille, dont S47 pour le S.VII. Plan fixe réglable et débattement de la profondeur : non trouvés ; ±25° reste `E:`.
+- **2026-10-31 — Documents** : quatre manuels de conception à télécharger (identifiants archive.org au § 9.6) ; demande D15 (circulaires de McCook Field à l'University of Alabama in Huntsville) ; compléments « centrage » ajoutés aux demandes D1 à D6 (`demandes.md`).

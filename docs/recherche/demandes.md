@@ -26,6 +26,7 @@ Règles :
 | D12 | 3 | Museo Francesco Baracca (Lugo) | SPAD VII S.2489 : dossier de restauration (1990-1993) et photos de détail | seulement si le joueur retient ce candidat de livrée | en attente |
 | D13 | 1 | Libraires d'ouvrages anciens ; bibliothèques de la Défense | Klaeylé et Osché, *Guynemer : les avions d'un as* (1998) ; *Icare* n° 122 (1987) ; F. Blech, *Spa 3 : « Cigogne de Guynemer » (ailes basses)* (1986) | achat ; consultation pour Blech | à envoyer |
 | D14 | 1 | Musée de l'Armée (Paris), service des collections et photothèque | gros plan de S.254 aux Invalides (21e épisode du blog), autres photos de S.254 de 1917 ; dossier du dépôt au Musée de l'Air | photos de référence, légendes et dates | à envoyer |
+| D15 | 1 | University of Alabama in Huntsville, Archives and Special Collections | *Air Service Information Circulars* de McCook Field : n° 286 (essai du SPAD XIII, 1921) et toute pièce du dossier « D52.1 / Spad » | copie numérique | à envoyer |
 
 ## D1 — Australian War Memorial : notice technique britannique du S.VII
 
@@ -279,6 +280,48 @@ Deux photos de presse de 1917 sont à tenter d'abord par téléchargement (sessi
 - **Seulement si le joueur retient ce candidat de livrée** (`spad7-aspect.md` § 12.4).
 - **Ce qu'on cherche** : dossier de la restauration de 1990-1993 par le GAVS de Turin ; finition, marques, moteur d'origine ; photos de détail.
 
+## D15 — University of Alabama in Huntsville : circulaires de McCook Field
+
+- **Documents** :
+  - *Air Service Information Circular* vol. III, **n° 286**, 1er octobre 1921 : « Performance test of Spad 13 equipped with 220 H. P. Wright engine » (Flight Test Branch, performance test report 60). Un catalogue la dit « Official Use. Not Available » (`spad7.md`, S102) : à vérifier auprès de l'UAH ;
+  - toute pièce du dossier **« D52.1 / Spad »**, cote portée par la circulaire n° 153 (« Performance Estimate of Spad 16-A… », 1920), https://archives.uah.edu/repositories/2/archival_objects/86912.
+- **Ce qu'on cherche**, par ordre d'importance :
+  1. la **position du centre de gravité** de l'avion essayé, ou une pesée par roues et béquille, et sa masse à l'essai ;
+  2. le calage du plan fixe, le débattement de la profondeur, et le texte exact de la remarque « tail heavy » ;
+  3. les cotes d'empennage et le décalage des plans du XIII (convention du « 1¼° », `spad7.md` § 2.2).
+- **Pourquoi** : le centrage du modèle (39,5 % de la corde réservoir plein) n'a **aucune source** (`spad7.md` § 3.1). C'est le premier levier de la marge statique, donc du manche nerveux signalé par le joueur. Le XIII n'est qu'un comparable (C), mais c'est le SPAD le mieux documenté par un essai officiel.
+- **Démarche** : formulaire de demande de reproduction des Archives and Special Collections de l'UAH (adresse à vérifier sur son site). Demander d'abord si le n° 286 est dans la collection et s'il contient une page de masses et de centrage.
+- **Message proposé** (en anglais) :
+
+> Dear Archivist,
+>
+> I am researching the SPAD fighters of 1917-1918 for a historical flight simulation project. Your McCook Field collection includes Air Service Information Circulars, among them no. 153 (Spad 16-A), filed under "D52.1 / Spad".
+>
+> Do you also hold Air Service Information Circular vol. III, no. 286 (1 October 1921), "Performance test of Spad 13 equipped with 220 H.P. Wright engine"? If so, could you tell me whether it gives the weight and centre of gravity position of the aircraft tested, and whether a digital copy could be supplied, and at what cost? I would also be grateful to know of any other Spad documents in file D52.1.
+>
+> The copy would be used for private research only.
+>
+> Thank you very much.
+>
+> [nom], [adresse]
+
+## D1 à D6 — Compléments du 2026-10-31 : centrage
+
+Enquête sur le centrage (`spad7.md` § 3.1). Ajouter à ce que l'on cherche dans chaque demande :
+- **D1** (notice britannique du S.VII) et **D2** (*Rigging notes*) : position du centre de gravité ou limites de centrage ; calage du plan fixe et indication d'un plan fixe réglable ; débattements de la profondeur ; dièdre ;
+- **D3** (*Air Service Bulletins*) : même chose pour le S.XI (n° 192) et pour tout bulletin sur le S.VII ou le XIII ;
+- **D4** (plans Blériot-Spad) : épure de centrage, devis de masses par élément, position du réservoir et du siège ;
+- **D5** (fonds Dorand, STAé) : fiches de pesée des avions essayés (masse par roue et sur la béquille), procès-verbaux mentionnant la stabilité ou l'équilibre ;
+- **D6** (Martlesham) : le rapport n° 96 peut noter la masse en essai, le chargement et une remarque d'équilibre (« tail heavy », « nose heavy »).
+
+Phrase à ajouter aux messages en anglais :
+
+> I am also looking for the centre of gravity position (or its permitted limits), the tailplane incidence and the elevator travel of this aircraft.
+
+Phrase à ajouter aux messages en français :
+
+> Je cherche aussi la position du centre de gravité (ou ses limites admises), le calage du plan fixe et le débattement de la gouverne de profondeur.
+
 ## Journal
 
 | Date | Demande | Événement |
@@ -286,3 +329,4 @@ Deux photos de presse de 1917 sont à tenter d'abord par téléchargement (sessi
 | 2026-10-25 | D1 à D7 | Fichier créé, sur demande du joueur ; rien n'est encore envoyé |
 | 2026-10-26 | D4 (complément), D8 à D12 | Ajoutés par l'historien pour le modèle 3D (plan `m3-modele-spad7.md`, parties B1 et B2) ; rien n'est envoyé |
 | 2026-10-27 | D8 et D9 (compléments), D13, D14 | Ajoutés par l'historien pour la seconde couche de livrée de S.254 (`spad7-aspect.md` § 12.6) ; rien n'est envoyé |
+| 2026-10-31 | D15 ; D1 à D6 (compléments) | Ajoutés par l'historien pour l'enquête sur le centrage (`spad7.md` § 3.1) ; rien n'est envoyé |

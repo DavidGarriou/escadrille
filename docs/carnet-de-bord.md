@@ -2218,3 +2218,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Rien n'a été écrit dans le dépôt. Leur travail est conservé et peut reprendre là où il s'est arrêté.
 - **A** Reprise programmée à 19 h 05 UTC.
 - **A** 19 h 06 UTC : la reprise programmée s'est déclenchée. Les deux agents ont été relancés là où ils s'étaient arrêtés.
+- **R** Rapport de l'historien, douzième passe (`spad7.md` § 3.1) :
+  - **aucune donnée de centrage**, pour aucun SPAD : ni position du centre de gravité, ni pesée, ni limites de notice, ni point neutre mesuré ;
+  - trouvé : la règle de conception de Barnwell (1918, *Flight*), centrage optimal de 0,33 à 0,38 de la corde moyenne de la cellule, confiance C pour le SPAD ;
+  - trouvé : le « lourd de la queue » du SPAD XIII de McCook, qui est une remarque d'**équilibre** et non de stabilité (Halliwell, 1919) ;
+  - **dièdre nul** maintenu : le S.VII est dit « flat-winged » ;
+  - non trouvés : plan fixe réglable, débattement de la profondeur.
+- **A** Demande D15 ajoutée par l'historien dans `demandes.md`, et compléments de D1 à D6 pour le centrage. **Rien n'est envoyé** : c'est au joueur de le faire.
+- **A** La session principale a téléchargé et fouillé le texte OCR des quatre manuels de conception (archive.org), que l'outil de l'historien ne pouvait pas lire ; aucune copie n'est commitée.
+  - Pomilio, Judge, Barnwell et Sayers, Engineering Division : **aucun centrage de SPAD**. Le manuel de McCook ne cite le SPAD que pour la structure de sa cellule.
+  - Recherche « spad » sur la NTRS : deux résultats de 1915 à 1935, aucun sur le S.VII ou le XIII.
+  - Complément écrit dans `spad7.md` § 3.1 et § 9.6.
