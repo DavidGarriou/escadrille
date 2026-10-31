@@ -33,7 +33,9 @@ Données par arme dans `assets/weapons/<id>.ron`, sourcées comme les avions : c
 
 | Composant | Effets |
 |---|---|
-| Toile des ailes | trous → perte de portance, traînée accrue ; déchirure qui s'agrandit avec la vitesse |
+| Toile des ailes | trous → perte de portance, traînée accrue, **sur les seules bandes touchées** ; déchirure qui s'agrandit avec la vitesse |
+| Empennage (dérive, plan fixe, gouvernes) | toile déchirée → surface et efficacité réduites (stabilité de route, gouvernail) ; pièce arrachée |
+| Aile entière | longeron ou haubans rompus sous charge → **aile coupée ou arrachée** : panneau perdu, roulis brutal |
 | Longerons, mâts, haubans | résistance réduite → rupture sous charge (skill `simulation-vol`, structure) |
 | Câbles de commande | câble coupé → gouverne libre, perte d'une commande |
 | Moteur | ratés, perte de puissance, fuite d'huile, grippage ; rotatifs : cylindre arraché, balourd |
@@ -43,6 +45,8 @@ Données par arme dans `assets/weapons/<id>.ron`, sourcées comme les avions : c
 | Armes, train | enrayage, arme détruite ; atterrissage difficile |
 
 Le feu se propage, la fumée se voit de loin ; une glissade ou un piqué peut parfois l'éteindre.
+
+**Exigence du joueur** (2026-10-31, `docs/gdd/combat-degats.md`) : tous les dégâts sont **visibles** sur le modèle 3D (trous, toile déchirée, pièces arrachées, câbles coupés qui pendent) **et** agissent sur le vol. Chaque type de dégât a son essai dans `fdm_lab` et sa capture.
 
 ## IA de chasse
 

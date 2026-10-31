@@ -2280,3 +2280,23 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Pistes notées par la revue, sans action pour l'instant :
   - critère insensible à la phase et tracé pour les essais de robustesse « vitesse nulle » et « glissade sur la queue » ;
   - un vrai second réservoir dans le schéma quand viendront les réservoirs crevés (skill `combat`).
+
+### Combat, dégâts et son : exigences du joueur
+
+- **Q** Le joueur : « Par la suite, il faut penser au modèle de combat. Les dégâts sur les avions et pilotes doivent être particulièrement réalistes : dérive déchirée, ailes endommagées ou coupées, câbles sectionnés, etc. Tous les dégâts doivent être visibles et influencer le vol de l'avion. Le comportement des armes doit être réaliste. Il faut aussi ajouter le son. »
+- **R** Ce qui existe déjà :
+  - le skill `combat` décrit les dégâts par composant, agissant sur le modèle de vol, et des armes simulées balle par balle ;
+  - les conventions du modèle 3D prévoient `hit_` et `dmg_` ;
+  - le combat est au M4, le son au M6.
+
+  Trois exigences n'étaient pas écrites : l'aile coupée ou arrachée, la dérive déchirée, et le fait que **tous** les dégâts soient visibles.
+- **A** Ajouts :
+  - `docs/gdd/combat-degats.md` : exigences, effets sur le vol et rendu de chaque dégât cité, besoins par domaine, ordre proposé, questions ouvertes ;
+  - feuille de route : M4 (exigences et critère de fin), M6 ;
+  - skill `combat` : empennage, aile coupée, exigence de visibilité ;
+  - skill `pipeline-assets` : pièces endommageables à prévoir dans le modèle 3D.
+- **D** À demander au joueur :
+  - avancer un premier son (moteur et vent), qui sert au pilotage, juste après le M2 ;
+  - préparer dès le M3 le découpage du modèle 3D en pièces endommageables.
+
+  Aucun code avant un plan du M4 validé.

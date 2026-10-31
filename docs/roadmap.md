@@ -37,9 +37,16 @@ DdT : les scènes de référence sont capturées et approuvées par le joueur ; 
 
 ## M4 — Combat
 - Armes, synchronisation, balistique, volumes d'impact, modèle de dégâts par composants.
+- **Exigences du joueur** (2026-10-31, `docs/gdd/combat-degats.md`) :
+  - dégâts particulièrement réalistes sur l'avion et le pilote : dérive déchirée, ailes endommagées ou coupées, câbles sectionnés… ;
+  - tous les dégâts sont **visibles** et **agissent sur le vol** ;
+  - armes au comportement réaliste.
 - Second avion (proposition : Albatros D.V) piloté par une IA qui utilise les mêmes commandes.
 
-DdT : un duel 1 contre 1 gagnable et perdable en préréglage Pilote ; l'IA ne triche pas (vérifié par un test).
+DdT :
+- un duel 1 contre 1 gagnable et perdable en préréglage Pilote ;
+- l'IA ne triche pas (vérifié par un test) ;
+- chaque dégât du tableau de `combat-degats.md` se voit sur le modèle (captures) et a son essai dans `fdm_lab`.
 
 ## M5 — Niveaux de réalisme
 - `RealismSettings`, préréglages du tableau de `docs/vision.md`, instructeur virtuel, écran de réglages.
@@ -47,7 +54,7 @@ DdT : un duel 1 contre 1 gagnable et perdable en préréglage Pilote ; l'IA ne t
 DdT : un vol scripté « débutant » par préréglage passe les tests de fumée ; un débutant s'amuse en Arcade ; un joueur exigeant ne voit pas d'aide cachée en As.
 
 ## M6 — Son et moteurs rotatifs
-- Audio procédural (moteurs, vent, câbles, armes, ambiance du front).
+- Audio procédural (moteurs, vent, câbles, armes, ambiance du front). Demandé par le joueur le 2026-10-31 ; un premier son du moteur et du vent pourrait être avancé (question ouverte, `docs/gdd/combat-degats.md` § 5).
 - Sopwith Camel et Fokker Dr.I : précession gyroscopique, coupe-contact, mélange.
 
 DdT : essais qualitatifs gyroscopiques conformes aux sources ; le joueur reconnaît le moteur à l'oreille.

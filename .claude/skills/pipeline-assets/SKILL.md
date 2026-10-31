@@ -39,6 +39,7 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 | `hit_<composant>` | volumes d'impact (maillages convexes, masqués) |
 | `wire_<nom>` | câbles et haubans (rendus avec le shader de câbles) |
 | `dmg_<pièce>` | variantes endommagées |
+| (à venir, M4) | **pièces endommageables** : panneaux d'aile entre les mâts, dérive, gouvernail, plan fixe par côté, chaque câble en nœud propre, pour qu'un dégât puisse les trouer, les détacher ou les couper (`docs/gdd/combat-degats.md`) |
 | `<nœud>_LOD1`, `_LOD2`… | niveaux de détail |
 
 - **Dirigeables et ballons** (`assets/airships/<id>/`) : mêmes règles, plus `gas_cell_<n>` (volume de chaque cellule de gaz, masqué), `frame` (structure, visible quand l'enveloppe brûle), `gondola_<n>`, `engine_<n>`, `gunner_<n>` (poste de tir, axe = direction centrale du champ de tir), `ballast_<n>`. LOD poussés : l'objet est visible de très loin.
