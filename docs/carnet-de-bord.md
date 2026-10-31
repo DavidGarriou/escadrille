@@ -2203,3 +2203,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - le réglage de tir, renvoyé aux armes.
 
   Questions toujours ouvertes : son avis préréglage par préréglage au prochain vol, et l'enquête sur le centrage.
+
+## 2026-10-31
+
+### Enquête sur le centrage
+
+- **Q** Le joueur : « centrage : ok », donc l'enquête proposée après la revue du 2026-10-29 est validée.
+- **A** Deux agents lancés en parallèle :
+  - **historien** : sources de centrage du S.VII ou d'un SPAD voisin, par de nouvelles pistes (manuels de conception de 1918-1921, rapports NACA et McCook, revues d'époque). Accessoirement : dièdre, plan fixe réglable, débattement de la profondeur. Résultats dans `docs/recherche/spad7.md` ;
+  - **aérodynamicien** (lecture seule) : relecture du bilan de masses (`masses.ron`) et décomposition de M_α par élément à 100 et 180 km/h, pour expliquer la marge qui chute avec la vitesse.
+- **D** Aucune donnée ne change avant leurs rapports, et rien sans source ou sans justification physique notée.
