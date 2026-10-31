@@ -2217,3 +2217,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - L'historien avait commencé par Barnwell (1918) et le corpus de *Flight* ; l'aérodynamicien en était à la relecture du contexte.
   - Rien n'a été écrit dans le dépôt. Leur travail est conservé et peut reprendre là où il s'est arrêté.
 - **A** Reprise programmée à 19 h 05 UTC.
+- **A** 19 h 06 UTC : la reprise programmée s'est déclenchée. Les deux agents ont été relancés là où ils s'étaient arrêtés.
