@@ -2264,3 +2264,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - N_v passe de 113,0 à 120,3 (R2 sur la dérive).
 - **A** `just check` passe, `just test` aussi (314 tests).
 - **⚠** Revue de l'aérodynamicien sur ces changements **en cours** au moment du commit : elle fera l'objet d'un commit séparé.
+- **R** Revue de l'aérodynamicien sur ces changements. Verdict : **OK**, rien à changer dans le modèle ; il retrouve les marges à 0,05 point près.
+  - **10 L de cabane** : mieux fondés que les 20 L estimés. Le point équivalent est acceptable, mais « les deux réservoirs se vident ensemble » est physiquement faux (le réservoir en charge reste plein) ; l'écart est inférieur à 0,4 % de corde.
+  - **N_v +6 %** : suppression d'un artefact, la dérive volant dans l'ancien creux de la table ; le roulis hollandais le confirme.
+  - **Qualitatifs** : plausibles, inchangés à 1 ou 2 unités près.
+  - **Commande de profondeur par g** à 160 km/h, plein : de 0,054 à **0,068** de course (+26 %). Le manche reste léger : il faut 17 % de la course pour les 3,5 g disponibles.
+  - **Leviers restants** contre le manche nerveux, hors du modèle de vol : le débattement de profondeur de ±25° (estimé, sans source) et la courbe de la manette.
+- **A** Retouches de commentaires demandées par la revue :
+  - origines des C_m et des C_L dans les deux tables, et dans leurs copies du modèle de comparaison ;
+  - formulation du carburant ;
+  - pentes du plan fixe et de la dérive dans `aircraft.ron` ;
+  - N_v absolus datés dans `spad7-calculs.md`.
+- **⚠** La ligne **D** plus haut garde les « 20 L » du choix du joueur : les données en ont pris 10, comme l'explique la ligne ⚠ qui la suit.
+- **R** Vérifié en plus : phugoïde à 180 km/h au niveau de la mer **stable** (ζ 0,49, période 63 s) ; avant, une racine instable doublait en 13,6 s.
+- **A** Pistes notées par la revue, sans action pour l'instant :
+  - critère insensible à la phase et tracé pour les essais de robustesse « vitesse nulle » et « glissade sur la queue » ;
+  - un vrai second réservoir dans le schéma quand viendront les réservoirs crevés (skill `combat`).

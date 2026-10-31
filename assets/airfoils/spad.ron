@@ -26,8 +26,8 @@ Airfoil(
         (alpha: Deg(-7.5), cl: -0.38, cd: 0.035, cm: -0.052),
         (alpha: Deg(-6.0), cl: -0.272, cd: 0.022, cm: -0.054),
 
-        //! S: NACA Report 233 (Munk and Miller, 1927), table XXX, p. 80: RAF 15, 20 atm, Re 3 580 000, aspect ratio 6, no wall correction; 4.5° read 0.507 on the page image (OCR 0.557); the « 16 ± » row taken at 16°
-        //! C: C_m from −4.5° to 15° on the least-squares line of the measured points over C_L, C_m = −0.0503 + 0.0041 C_L (aerodynamic centre at 24.6 % of the chord; largest residual 0.0047): the jumps of 0.003 to 0.005 from point to point are within the table's accuracy (profil-spad7.md, « presque constant jusqu'à 15° »), and the model read them as a centre moving by ±4 % of the chord (aerodynamicist, 2026-10-31, spad7-calculs.md § 4.1, measured values there)
+        //! S: C_L and C_D: NACA Report 233 (Munk and Miller, 1927), table XXX, p. 80: RAF 15, 20 atm, Re 3 580 000, aspect ratio 6, no wall correction; 4.5° read 0.507 on the page image (OCR 0.557); the « 16 ± » row taken at 16°
+        //! C: C_m from −4.5° to 15° on the least-squares line of the measured points over C_L, C_m = −0.0503 + 0.0041 C_L (aerodynamic centre at 24.6 % of the chord; largest residual 0.0047): the jumps of 0.003 to 0.005 from point to point are within the table's accuracy (profil-spad7.md § 3.1: the authors' warning that some series disagree, p. 73, and the historian's reading of the column as « presque constant jusqu'à 15° »), and the model read them as a centre moving by ±4 % of the chord (aerodynamicist, 2026-10-31, spad7-calculs.md § 4.1, measured values there)
         (alpha: Deg(-4.5), cl: -0.162, cd: 0.0139, cm: -0.0510),
         (alpha: Deg(-3.0), cl: -0.052, cd: 0.0087, cm: -0.0505),
         (alpha: Deg(-1.5), cl: 0.052, cd: 0.0083, cm: -0.0501),

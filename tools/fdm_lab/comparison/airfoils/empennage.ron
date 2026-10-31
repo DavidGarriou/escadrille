@@ -13,7 +13,7 @@ Airfoil(
         delta: 0.05,         // S: TR 416, fig. 11, aspect ratio 6
     )),
     points: [
-        //! C: Report 233 table XXX moved by +2.25° (measured zero-lift incidence of the RAF 15, raw) and C_m brought to 0 (straight mean line), up to 8.25°; the negative half is the exact mirror
+        //! C: C_D, and C_L at ±8.25° only: Report 233 table XXX moved by +2.25° (measured zero-lift incidence of the RAF 15, raw) and C_m brought to 0 (straight mean line), up to 8.25°; the negative half is the exact mirror
         //! C: C_L linear from −8.25° to +8.25° at the table's own slope, 0.629 / 8.25° = 0.0762 per degree: a thin symmetric section has a constant slope through zero (thin-aerofoil theory), and the mirrored segment of the cambered RAF 15 near its zero lift left a dip to 0.069 per degree there, which cost the model about a point of static margin where the tailplane flies (aerodynamicist, 2026-10-31, spad7-calculs.md § 4.1)
         //! E: maximum capped at C_L 0.85 near 11.25° (thin symmetric section of 5 to 7 %, maximum 0.8 to 0.9 at Re 1 to 3 × 10⁶, order of an NACA 0006: aerodynamicist), then a gentle fall; drag and nose-down moment past it
         (alpha: Deg(-20.0), cl: -0.72, cd: 0.220, cm: 0.10),

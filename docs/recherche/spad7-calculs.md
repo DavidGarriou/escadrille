@@ -157,7 +157,7 @@ Les angles sont nuls.
   - spirale de ×2 en 17,50 s à ×2 en 17,40 s ;
   - performances à 0,2 % près ;
   - vrille et manœuvres à la marge ; départ au décrochage toujours à gauche.
-- **Sillage du fuselage** : aucun facteur (option a du plan, décision du joueur). Le panneau inférieur entier est derrière le fuselage (η_v d'environ 0,8 à 0,9) ; il porte 52,6 des 116 N·m/(m/s) de N_v, que le modèle surestime donc de 5 à 9 %. La partie fixe ajoutée n'en représente pas plus de 1 % : l'écart venait surtout du gouvernail du bas, déjà compté à pleine pression avant la correction.
+- **Sillage du fuselage** : aucun facteur (option a du plan, décision du joueur). Le panneau inférieur entier est derrière le fuselage (η_v d'environ 0,8 à 0,9) ; il porte 52,6 des 116 N·m/(m/s) de N_v, que le modèle surestime donc de 5 à 9 %. Ces valeurs absolues datent d'avant la table d'empennage linéaire du 2026-10-31 (§ 4.1). Depuis, la pente de la dérive passe de 1,77 à 1,79 par radian et N_v d'environ 6 % (113,0 à 120,3 au point du rapport d'essais) ; la surestimation garde la même proportion. La partie fixe ajoutée n'en représente pas plus de 1 % : l'écart venait surtout du gouvernail du bas, déjà compté à pleine pression avant la correction.
 
 ## 4. Masses, centrage et chargement d'essai
 
