@@ -2238,3 +2238,29 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** À décider par le joueur :
   1. corriger les deux tables : C_m de l'aile lissé, plan fixe linéaire à travers zéro ;
   2. garder 39,5 %, ou avancer le centrage à 38 % (limite de Barnwell, deux repositionnements justifiés) ou à 35 % (bas de la fourchette, pour la stabilité décrite par les témoins, sans source de mesure).
+- **D** Le joueur choisit les options recommandées :
+  - **corriger les deux tables** : C_m de l'aile lissé, plan fixe linéaire ;
+  - **centrage à 38 %** : pilote à −1,10 m, 20 L dans le réservoir de cabane.
+
+  Procédure : tests, campagne d'essais en vol, revue de l'aérodynamicien, puis régénération du départ du vol d'essai et des gains des aides.
+- **A** Appliqué (détail dans `spad7-calculs.md` § 4.1, « Appliqué le 2026-10-31 ») :
+  - **R1** : `spad.ron`, C_m sur la droite des moindres carrés, recalculée : identique, résidu 0,0047 ;
+  - **R2** : `spad_empennage.ron`, C_L linéaire à 0,0762/° ;
+  - **pilote** : x −1,10 ;
+  - **carburant** : point équivalent des deux réservoirs.
+- **⚠** Écart à la décision du joueur : **10 L** dans le réservoir de cabane, ceux du S.XI (S49, comparable de famille), au lieu des 20 L estimés sans source. Le centrage plein vaut donc **38,6 %** (39,5 % avant ; vide 32,9 %) et non 38 %.
+- **R** Marge statique, réservoir plein, niveau de la mer :
+  - en palier : 100 km/h +8,4 %, 130 +4,3, 160 +2,8, 180 +1,7 ;
+  - au ralenti : +6,8 / +2,8 / +1,6 / +0,4 ;
+  - l'avion est stable à toutes les vitesses (avant : +0,3 % à 160 km/h, −1,6 % à 180).
+- **A** Régénérés :
+  - `assets/scenarios/vol-essai.ron` (équilibre de départ) ;
+  - `assist_gains.ron` (amortissement en boucle fermée de 0,52 au pire, test passé) ;
+  - les copies des deux tables dans le modèle de comparaison du Messenger (`tools/fdm_lab/comparison/airfoils/`), qu'un test garde identiques : l'étalonnage de la traînée de toile tient toujours.
+- **R** Campagne `just essai spad7` comparée à la même campagne sur les données d'avant :
+  - performances inchangées à 0,2 % près, tous les essais réussis ;
+  - tracés du piqué et du décrochage lus : sains ;
+  - au point du rapport (74 %, 153 km/h, 2 000 m), la marge reste à 5,5 % : R1 y retire ce que le centrage ajoute ;
+  - N_v passe de 113,0 à 120,3 (R2 sur la dérive).
+- **A** `just check` passe, `just test` aussi (314 tests).
+- **⚠** Revue de l'aérodynamicien sur ces changements **en cours** au moment du commit : elle fera l'objet d'un commit séparé.

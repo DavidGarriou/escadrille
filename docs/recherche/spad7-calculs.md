@@ -240,6 +240,33 @@ Les deux corrections de données :
 
 Aucune n'est appliquée sans la décision du joueur.
 
+
+**Appliqué le 2026-10-31, décision du joueur (R1, R2 et centrage vers 38 %) :**
+- **R1** : `spad.ron`, C_m de −4,5° à 15° sur la droite −0,0503 + 0,0041 C_L (moindres carrés recalculés, identiques).
+
+  C_m mesurés (Report 233, tableau XXX), gardés ici pour la traçabilité :
+
+  | α (°) | −4,5 | −3 | −1,5 | 0 | 1,5 | 3 | 4,5 | 6 | 9 | 12 | 15 |
+  |---|---|---|---|---|---|---|---|---|---|---|---|
+  | C_m | −0,054 | −0,052 | −0,053 | −0,048 | −0,045 | −0,044 | −0,049 | −0,045 | −0,048 | −0,049 | −0,046 |
+- **R2** : `spad_empennage.ron`, C_L linéaire de −8,25° à +8,25° à 0,0762/°. La dérive utilise la même table : N_v passe de 113,0 à 120,3 N·m/(m/s) au point du rapport d'essais.
+- **Centrage** :
+  - pilote à x −1,10 (centre de gravité d'un pilote assis, 5 à 10 cm devant la ligne hanche-tête, E:) ;
+  - carburant en un point équivalent aux deux réservoirs, pondéré par volume : 125 L sous le siège à (−0,95 ; 0 ; −0,15) et 10 L dans la partie centrale du plan supérieur à (−0,40 ; 0 ; −1,27) ;
+  - les 10 L sont ceux du S.XI (S49, comparable de famille), préférés aux 20 L estimés sans source ;
+  - point équivalent (−0,909 ; 0 ; −0,233) ; les deux réservoirs se vident ensemble.
+- **Résultat** : centrage plein **38,6 %** de la corde (39,5 % avant), vide 32,9 %.
+
+  | Marge statique, réservoir plein, niveau de la mer | 100 km/h | 130 | 160 | 180 |
+  |---|---|---|---|---|
+  | palier | +8,4 % | +4,3 % | +2,8 % | +1,7 % |
+  | ralenti | +6,8 % | +2,8 % | +1,6 % | +0,4 % |
+
+  L'avion est désormais stable à toutes les vitesses.
+- **Campagne d'essais** : performances inchangées à 0,2 % près, tous les essais réussis.
+  - Au point du rapport (74 % de carburant, 153 km/h, 2 000 m), la marge reste à 5,5 % : R1 y retire ce que le centrage ajoute, car la table en dents de scie était stabilisante à fort C_L.
+  - Départ du vol d'essai et gains des aides régénérés.
+
 ## 5. Valeurs aérodynamiques (aérodynamicien, 2026-10-22)
 
 Calculées par l'aérodynamicien sur la géométrie du § 3 et contrôlées avec le modèle lui-même, **sans réglage** (12 campagnes d'essai dans un dossier de travail). Origine détaillée dans les commentaires de `aircraft.ron`.

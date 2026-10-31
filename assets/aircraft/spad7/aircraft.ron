@@ -19,8 +19,8 @@ Aircraft(
         cg_empty_m: (-0.313, 0.0, -0.459),                            // C: fdm_lab inertia spad7 (masses.ron)
         inertia_empty_kg_m2: (ixx: 784.0, iyy: 778.0, izz: 1359.0, ixz: 24.0), // C: fdm_lab inertia spad7 (masses.ron)
         pilot: Lb(176.0),                                             // S: S46 crew load (p. 204-205)
-        pilot_m: (-1.15, 0.0, -0.37),                                 // C: seat behind the cockpit opening of the drawing, about 0.45 m above the floor
-        fuel: (capacity: L(135.0), density_kg_per_l: 0.72, position_m: (-0.95, 0.0, -0.15)), // C: 135 L in all (S13, seen in summary); E: density; main tank under the seat (S13)
+        pilot_m: (-1.10, 0.0, -0.37),                                 // C: seat behind the cockpit opening of the drawing, about 0.45 m above the floor; E: a seated pilot's centre of gravity 5 to 10 cm ahead of his hip-head line, the head at −1.15 (aerodynamicist, 2026-10-31, spad7-calculs.md § 4.1)
+        fuel: (capacity: L(135.0), density_kg_per_l: 0.72, position_m: (-0.909, 0.0, -0.233)), // C: 135 L in all (S13, seen in summary); E: density; one point for two tanks, by volume: the main tank under the seat (S13) at (−0.95, 0, −0.15) and the gravity tank in the centre section of the upper plane (S13) with the 10 L of the S.XI's (S49, family comparable) at (−0.40, 0, −1.27), between the spars (E:); both drain together (spad7-calculs.md § 4.1)
         payload: [
             (name: "armement (Vickers et munitions)", mass: Lb(88.0), position_m: (-0.10, 0.0, -0.75)), // S: S46 armament load; E: gun on the cowling, ammunition box behind the engine
             (name: "huile", mass: Kg(8.0), position_m: (0.15, 0.0, -0.20)),                            // E: about 2 h at 2.8 L/h (H20) plus the circuit, inside the 176 lb of petrol and oil of S46

@@ -10,14 +10,14 @@ Scenario(
     altitude: M(1000.0),     // C: the player's choice (2026-10-28)
     speed: Kmh(160.0),       // C: the player's choice (2026-10-28)
     equilibrium: (
-        //! C: fdm_lab trim of 2026-10-28 (level flight at the scenario's speed and altitude)
-        alpha: Rad(0.002390627),
-        beta: Rad(0.010710592),
-        roll: 0.003231507,
-        pitch: -0.107616461,
-        yaw: 0.006225157,
-        throttle: 0.544079927,
-        rotor_speed: RadS(154.615477009),
-        downwash: Rad(0.043699084),
+        //! C: fdm_lab trim of 2026-10-31 (level flight at the scenario's speed and altitude), after the centre of gravity and the two tables (spad7-calculs.md § 4.1)
+        alpha: Rad(0.002935419),
+        beta: Rad(0.010727963),
+        roll: 0.003004055,
+        pitch: -0.094663640,
+        yaw: 0.006399405,
+        throttle: 0.544743846,
+        rotor_speed: RadS(154.655060302),
+        downwash: Rad(0.043962871),
     ),
 )
