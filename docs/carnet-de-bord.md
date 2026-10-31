@@ -2213,3 +2213,7 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **historien** : sources de centrage du S.VII ou d'un SPAD voisin, par de nouvelles pistes (manuels de conception de 1918-1921, rapports NACA et McCook, revues d'époque). Accessoirement : dièdre, plan fixe réglable, débattement de la profondeur. Résultats dans `docs/recherche/spad7.md` ;
   - **aérodynamicien** (lecture seule) : relecture du bilan de masses (`masses.ron`) et décomposition de M_α par élément à 100 et 180 km/h, pour expliquer la marge qui chute avec la vitesse.
 - **D** Aucune donnée ne change avant leurs rapports, et rien sans source ou sans justification physique notée.
+- **⚠** Les deux agents se sont arrêtés vers 15 h 30 UTC sur la limite d'usage hebdomadaire, levée à 19 h UTC.
+  - L'historien avait commencé par Barnwell (1918) et le corpus de *Flight* ; l'aérodynamicien en était à la relecture du contexte.
+  - Rien n'a été écrit dans le dépôt. Leur travail est conservé et peut reprendre là où il s'est arrêté.
+- **A** Reprise programmée à 19 h 05 UTC.
