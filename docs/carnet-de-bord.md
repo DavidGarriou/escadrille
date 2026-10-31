@@ -2229,3 +2229,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Pomilio, Judge, Barnwell et Sayers, Engineering Division : **aucun centrage de SPAD**. Le manuel de McCook ne cite le SPAD que pour la structure de sa cellule.
   - Recherche « spad » sur la NTRS : deux résultats de 1915 à 1935, aucun sur le S.VII ou le XIII.
   - Complément écrit dans `spad7.md` § 3.1 et § 9.6.
+- **R** Rapport de l'aérodynamicien, consigné dans `spad7-calculs.md` § 4.1 :
+  - **centrage** : 39,5 % n'est contredit par aucune donnée du dépôt. Le bilan relu contre le dessin le reculerait plutôt (moteur, armement) ; fourchette défendable de 35 à 44 % plein ;
+  - **marge qui chute avec la vitesse** (−10,6 points de 100 à 180 km/h) : pas de défaut de code. Environ 6,6 points sont physiques (inclinaison de la portance des plans d'un biplan, déflexion, fuselage). Environ 4 points sont des artefacts des tables : C_m du RAF 15 en dents de scie, creux de pente du plan fixe autour de zéro, venu du miroir d'un profil cambré.
+- **A** Corrections de documentation sans effet sur le modèle :
+  - `spad7-calculs.md` § 4 reprend les valeurs à vide de `aircraft.ron` ;
+  - le commentaire du moteur dans `masses.ron` donne la bonne longueur de boîte.
+- **D** À décider par le joueur :
+  1. corriger les deux tables : C_m de l'aile lissé, plan fixe linéaire à travers zéro ;
+  2. garder 39,5 %, ou avancer le centrage à 38 % (limite de Barnwell, deux repositionnements justifiés) ou à 35 % (bas de la fourchette, pour la stabilité décrite par les témoins, sans source de mesure).

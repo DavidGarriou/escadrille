@@ -175,9 +175,70 @@ Les angles sont nuls.
 | Réservoir et circuits vides | 10 kg | E: |
 | Fuselage, capots, poste, commandes | 62,4 kg | fermeture sur 1 100 lb |
 
-Résultat : 499,2 kg, centre de gravité à vide à x = −0,313 m (26 % de la corde depuis le bord d'attaque) et z = −0,406 m ; inertie au centre de gravité à vide (785 ; 778 ; 1 360) kg·m², ixz = 40 kg·m². L'inertie n'a aucun recoupement mesuré : le NACA TR 467 (rayons de giration mesurés d'avions de l'époque), proposé par l'aérodynamicien, reste à lire.
+Résultat : 499,2 kg, centre de gravité à vide à x = −0,313 m (26 % de la corde depuis le bord d'attaque) et z = −0,459 m ; inertie au centre de gravité à vide (784 ; 778 ; 1 359) kg·m², ixz = 24 kg·m² (valeurs de `aircraft.ron`, recopiées ici le 2026-10-31 : le texte gardait celles d'une version antérieure du bilan). L'inertie n'a aucun recoupement mesuré : le NACA TR 467 (rayons de giration mesurés d'avions de l'époque), proposé par l'aérodynamicien, reste à lire.
 
 **Chargement des essais de S46** (charge totale 451 lb, lue sur l'image, `spad7.md` § 3) : pilote 176 lb ; armement 88 lb ; divers 11 lb ; essence et huile 176 lb. L'huile est mise à part (8 kg, E: environ 2 h à 2,8 L/h de H20 plus le contenu du circuit) ; il reste 71,8 kg d'essence, soit 99,7 L à 0,72 kg/L, c'est-à-dire **74 % des 135 L** du réservoir (contenance C, S13 vue en résumé). Masse totale : 703,5 kg (S46 : 1 551 lb).
+
+### 4.1 Revue du centrage et de la marge (aérodynamicien, 2026-10-31)
+
+Enquête validée par le joueur après la revue des aides. Le dessin et le modèle, cités entre parenthèses, situent chaque élément.
+
+**Le centrage plein vaut 39,5 % de la corde (1,21 m) ; aucune donnée du dépôt ne le contredit.**
+- **Repère** : l'origine `cg_from_datum` est le bord d'attaque du plan inférieur ; les deux plans ont même quart de corde et même corde, sans décalage. Le pourcentage se compare donc directement à la règle de Barnwell, centrage optimal de 0,33 à 0,38 de la corde moyenne de cellule (`spad7.md` § 3.1, S101, C) : 39,5 % la dépasse de 1,5 point.
+- **Corde** : avec la corde dessinée de 1,37 m (§ 3, conflit non tranché), on aurait 34,9 %. Mais l'aérodynamique du modèle est bâtie sur 1,21 m.
+
+**Bilan de masses relu contre le dessin.** Effet sur le centrage plein (1 cm vaut 0,83 % de corde ; + = vers l'arrière) :
+
+| Composant | Position retenue | Ce que dit le dessin | Effet |
+|---|---|---|---|
+| Moteur | x +0,18 | cylindres centrés vers +0,04 (échappements de −0,17 à +0,25) ; centre de gravité vers +0,04 à +0,12 | +1,4 à +3,2 % |
+| Radiateur et eau | 0,55 | eau en partie dans les chemises : vers 0,44 | +0,5 % |
+| Armement | −0,10 | culasse de −0,25 à −0,70, munitions derrière le moteur : vers −0,40 à −0,50 | +1,4 à +1,8 % |
+| Pilote | −1,15 | assis, centre de gravité 5 à 10 cm devant la ligne hanche-tête : −1,05 à −1,10 | −0,45 à −0,9 % |
+| Réservoir | −0,95 | « sous le siège » (S13) : −1,10 donnerait +1,8 % ; 20 L dans le réservoir de cabane (S13) donneraient −0,9 % | −0,9 à +1,8 % |
+| Empennage, plans | conformes | masses incertaines : ±5 kg d'empennage font ±1,6 %, 20 kg de plans en moins +2,5 % | — |
+
+**Fourchette défendable avec le seul dépôt : environ 35 à 44 % plein**, valeur centrale 39,5 %. Les écarts tirés du dessin reculent plutôt le centre de gravité. Le repère « 25 à 33 % » souvent cité n'est pas sourcé dans le dépôt : seuls existent Barnwell (C), le Sperry Messenger à 29 % (§ 6) et le JN-2, non transposable.
+
+**Marge qui chute avec la vitesse** (ralenti, niveau de la mer, réservoir plein, sécantes à ±1°) : de +7,7 % à 100 km/h à −2,9 % à 180 km/h, soit −10,6 points.
+
+| Élément (% de corde) | 100 km/h | 180 km/h | Écart |
+|---|---|---|---|
+| plan supérieur | −1,3 | −8,6 | −7,3 |
+| plan inférieur | −8,4 | −7,8 | +0,6 |
+| plan fixe et profondeur | +19,1 | +15,6 | −3,5 |
+| hélice, fuselage, traînées | −1,7 | −2,1 | −0,4 |
+
+Il n'y a pas de défaut de code : souffle, régime de l'hélice et termes en q̄ n'y sont pour rien. Les causes :
+- **Bras vertical des plans, effet réel, −2,75 points nets.**
+  - Quand l'incidence croît, la portance de chaque plan s'incline vers l'avant. Au-dessus du centre de gravité (+0,85 m), cette force pique ; en dessous (−0,42 m), elle cabre.
+  - Le terme est proportionnel au poids, donc pèse en 1/q̄.
+  - Il est négligeable sur un monoplan, pas sur un biplan où z/c vaut 0,7 (Etkin, `modele-aero.md`).
+- **C_m du RAF 15 en dents de scie, artefact des données, environ −3,3 points.**
+  - Les C_m de `assets/airfoils/spad.ron` sautent de 0,003 à 0,005 d'un point à l'autre, alors que la fiche les dit « presque constants » (`profil-spad7.md`).
+  - La sécante y lit un foyer qui bouge de ±4 % de corde.
+- **Plan fixe, −3,5 points**, trois causes :
+  - creux de pente (0,069/° contre 0,076) entre −0,75 et +0,75° dans `spad_empennage.ron`, un artefact du profil cambré recopié en miroir : environ −1 point ;
+  - déflexion qui croît un peu à fort C_L (dε/dα de 0,476 à 0,510), effet réel ;
+  - un reste non isolé.
+- **Fuselage, −0,56 point** : écoulement transversal, effet réel.
+
+**Pistes chiffrées.** Marge K en % ; commande de profondeur par g, en fraction de la course, en palier à 160 et 180 km/h :
+
+| Variante | ral. 100 | ral. 160 | ral. 180 | pal. 100 | pal. 160 | pal. 180 | par g, 160 / 180 |
+|---|---|---|---|---|---|---|---|
+| actuel | +7,7 | −0,9 | −2,9 | +8,9 | +0,3 | −1,6 | 0,054 / 0,035 |
+| R1 : C_m de l'aile lissé | +6,3 | −0,3 | −1,2 | +7,4 | +0,9 | −0,1 | 0,058 / 0,042 |
+| R2 : plan fixe linéaire | +7,5 | +0,1 | −2,2 | +9,1 | +1,2 | −0,7 | 0,060 / 0,039 |
+| R1 + R2 | +6,0 | +0,7 | −0,6 | +7,5 | +1,8 | +0,7 | 0,063 / 0,045 |
+| centre de gravité −0,05 m (35,3 %) | +11,2 | +4,0 | +1,8 | +12,7 | +4,9 | +3,1 | 0,081 / 0,056 |
+| centre de gravité −0,10 m (31,2 %) | +14,7 | +8,8 | +6,5 | +16,9 | +9,7 | +7,8 | 0,109 / 0,077 |
+
+Les deux corrections de données :
+- **R1** : C_m = −0,0503 + 0,0041 C_L, droite de moindres carrés de −4,5° à 15° ; écart maximal 0,0047, foyer à 24,6 % de corde.
+- **R2** : pente propre de la table, 0,0762/°, constante à travers zéro (théorie des profils minces). La même table sert à la dérive : N_v est à revérifier.
+
+Aucune n'est appliquée sans la décision du joueur.
 
 ## 5. Valeurs aérodynamiques (aérodynamicien, 2026-10-22)
 

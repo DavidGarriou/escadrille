@@ -11,7 +11,7 @@ Masses(
         (
             name: "moteur Hispano-Suiza 8Aa, à sec",
             mass: Lb(447.0),                              // C: mean of the 150 hp Hispano dry masses, H19 p. 203 (440 and 455 lb) and H20 (445 lb), hispano-suiza-8a.md § 6
-            position_m: (0.18, 0.0, -0.50),               // E: crankshaft on the thrust line (z −0.40, hub read again on 2026-10-26), cylinders above it; engine from the propeller flange (x 0.75) back about 1.15 m
+            position_m: (0.18, 0.0, -0.50),               // E: crankshaft on the thrust line (z −0.40, hub read again on 2026-10-26), cylinders above it; engine from the propeller flange (x 0.75) back about 1.25 m, the box below; the drawing's exhausts (x −0.17 to +0.25) put the cylinders' centre nearer +0.04 (aerodynamicist, 2026-10-31, spad7-calculs.md § 4.1)
             shape: Box(size_m: (1.25, 0.80, 0.80)),       // E: overall size of a 150 hp V8 Hispano
         ),
         (
