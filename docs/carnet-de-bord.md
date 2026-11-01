@@ -2412,4 +2412,5 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Décision encore ouverte : avancer un premier son (moteur et vent) juste après le M2 (`combat-degats.md` § 6, question 1).
 - **⚠** Tout le travail est sur `main-tcd0yw`, 187 commits devant `main`. `gh` n'est pas installé ici : l'existence d'une pull request n'a pas pu être vérifiée.
 - **⚠** Push impossible à la clôture : l'agent SSH de cette machine n'a aucune clé chargée (`Permission denied (publickey)`) et il n'y a pas de `~/.ssh/config`. Cette entrée est commitée en local. Claude n'a pas utilisé directement les fichiers de clé de `~/.ssh` : le joueur charge sa clé, puis pousse.
+- **A** Le joueur a chargé sa clé dans l'agent et poussé `87fe39d` : l'incident est clos, l'agent de la session a désormais accès à GitHub.
 - **D** Proposition au joueur : installer les deux outils, faire un vol court pour juger le centrage, puis passer au plan du train et du sol, qui clôt le M2. Aucun code avant la validation de ce plan.
