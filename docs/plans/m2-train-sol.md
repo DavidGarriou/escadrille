@@ -45,7 +45,7 @@ Chaque étape : tests, `just check`, `just test`, carnet, commit et push. Une é
 
 ### 0. Prérequis et recherche
 
-- `cargo-nextest` et `cargo-deny` installés sur la machine du joueur : sans eux, ni `just check` ni `just test` ne tournent.
+- `cargo-nextest` et `cargo-deny` : installés par le joueur le 2026-11-01 ; `just check` et `just test` sont verts sur sa machine.
 - **Historien**, treizième passe, en parallèle du code :
   - train et béquille du S.VII : sandows, pneus, sabot ;
   - technique de décollage et d'atterrissage, en particulier queue haute ou trois points ;

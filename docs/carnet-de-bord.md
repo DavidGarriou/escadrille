@@ -2431,4 +2431,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Les aides actuelles ne valent pas au sol : à l'arrêt, l'avion est au-delà de l'incidence limite, et la garde pousserait le manche en permanence. Le plan les coupe au contact. Elle reste active jusqu'au toucher, donc le posé en Pilote se fait queue haute.
 - **⚠** Aucune source sur les sandows, les pneus ou la charge de rupture : ces valeurs seront `E:`, et les essais de sol seront qualitatifs. Treizième passe de l'historien prévue en parallèle.
 - **D** Quatre décisions demandées au joueur : départ au lancement, terrain dessiné, aides au sol, règle des accidents.
+
+### Outils installés, `just check` réparé
+
+- **A** Le joueur a installé `cargo-nextest` 0.9.150 et `cargo-deny` 0.20.2 (`cargo-nextest` 0.9.148 dans les sessions cloud, `session-start.sh`).
+- **⚠** Premier `just check` sur cette machine : **échec** de `cargo deny`, sur une seule erreur. `clipboard-win` 5.4.1 a été retirée de crates.io (*yanked*). Cette crate ne sert que sous Windows, par `arboard` et `bevy_egui`, et ne se compile pas sous Linux. Le carnet donne `just check` vert au commit `a73e58f`, le même jour, et `Cargo.lock` n'a pas changé depuis : la cause est extérieure au dépôt.
+- **A** `cargo update -p clipboard-win` : passage à 5.4.3. Vérifié à blanc avant : un seul paquet change, sans nouvelle dépendance. Ni `deny.toml` ni la version de Bevy ne bougent.
+- **R** `just check` passe (`advisories ok, bans ok, licenses ok, sources ok`) et `just test` aussi : 319 tests passés, 1 ignoré.
+- **R** Le plan `m2-train-sol.md` attend toujours la validation du joueur.
 - **D** Proposition au joueur : installer les deux outils, faire un vol court pour juger le centrage, puis passer au plan du train et du sol, qui clôt le M2. Aucun code avant la validation de ce plan.
