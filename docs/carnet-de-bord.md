@@ -2413,4 +2413,22 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Tout le travail est sur `main-tcd0yw`, 187 commits devant `main`. `gh` n'est pas installé ici : l'existence d'une pull request n'a pas pu être vérifiée.
 - **⚠** Push impossible à la clôture : l'agent SSH de cette machine n'a aucune clé chargée (`Permission denied (publickey)`) et il n'y a pas de `~/.ssh/config`. Cette entrée est commitée en local. Claude n'a pas utilisé directement les fichiers de clé de `~/.ssh` : le joueur charge sa clé, puis pousse.
 - **A** Le joueur a chargé sa clé dans l'agent et poussé `87fe39d` : l'incident est clos, l'agent de la session a désormais accès à GitHub.
+
+### Plan du train et du sol
+
+- **Q** Le joueur : « Oui, plan du train ».
+- **A** Plan `docs/plans/m2-train-sol.md`, dernier incrément du M2. Aucun code : la validation du joueur est attendue.
+  - contact au sol dans `crates/fdm/src/ground.rs` : roues, sandows, frottements, béquille, points de structure ;
+  - section `undercarriage` d'`aircraft.ron`, essais de sol dans `fdm_lab` ;
+  - départs au sol et en finale, pré, gizmos de forces, aides au sol.
+- **R** Chiffres calculés depuis les données, réservoirs pleins :
+  - assiette trois points de 14,4° ; le plan supérieur y est à environ 16,7°, au-delà du décrochage ;
+  - 150 kg sur la béquille (20,5 %) et 290 kg par roue ;
+  - le centre de gravité passe à la verticale des roues à 22° sous la ligne de vol, l'hélice touche à 22,7°, avec 0,27 m de garde en ligne de vol.
+
+  Ils vont dans le sens de Meister (S.XIII) : s'arrête court, ne capote pas.
+- **⚠** Écart trouvé en préparant le plan : `fdm_lab` calcule à 240 Hz, comme le veut l'ADR 0005, mais **le jeu fait un seul pas RK4 à 120 Hz**. Les essais ne valident donc pas exactement ce que le joueur pilote. Le plan le corrige (étape 2), avec un ADR 0008 pour le contact.
+- **⚠** Les aides actuelles ne valent pas au sol : à l'arrêt, l'avion est au-delà de l'incidence limite, et la garde pousserait le manche en permanence. Le plan les coupe au contact. Elle reste active jusqu'au toucher, donc le posé en Pilote se fait queue haute.
+- **⚠** Aucune source sur les sandows, les pneus ou la charge de rupture : ces valeurs seront `E:`, et les essais de sol seront qualitatifs. Treizième passe de l'historien prévue en parallèle.
+- **D** Quatre décisions demandées au joueur : départ au lancement, terrain dessiné, aides au sol, règle des accidents.
 - **D** Proposition au joueur : installer les deux outils, faire un vol court pour juger le centrage, puis passer au plan du train et du sol, qui clôt le M2. Aucun code avant la validation de ce plan.
