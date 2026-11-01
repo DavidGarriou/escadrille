@@ -210,6 +210,10 @@ pub struct Contact {
     pub cord_travel: f64,
     /// Speed along the wheel, m/s (0 for a skid or a hard point).
     pub rolling_speed: f64,
+    /// Where it touches, body axes from the centre of gravity, m.
+    pub at: DVec3,
+    /// Force of the ground there, normal and friction, body axes, N.
+    pub force: DVec3,
 }
 
 /// Forces of the ground on the aircraft in one state.
@@ -378,13 +382,16 @@ impl Undercarriage {
             let normal = skid.spring.normal(load, compression, velocity.z);
             let axis = state.attitude * DVec3::Y;
             let (friction, _) = skid.rubbing.force(velocity, normal, axis);
-            out.wrench += seen.wrench(skid.shoe, normal, friction);
+            let wrench = seen.wrench(skid.shoe, normal, friction);
+            out.wrench += wrench;
             out.contacts.push(Contact {
                 point: ContactPoint::Skid(i),
                 load: normal,
                 compression,
                 cord_travel,
                 rolling_speed: 0.0,
+                at: skid.shoe,
+                force: wrench.force,
             });
         }
         for (i, point) in self.hard_points.iter().enumerate() {
@@ -397,13 +404,16 @@ impl Undercarriage {
             let normal =
                 (point.stiffness * compression + point.damping * ramp * velocity.z).max(0.0);
             let friction = sliding(velocity, normal, point.friction);
-            out.wrench += seen.wrench(point.position, normal, friction);
+            let wrench = seen.wrench(point.position, normal, friction);
+            out.wrench += wrench;
             out.contacts.push(Contact {
                 point: ContactPoint::HardPoint(i),
                 load: normal,
                 compression,
                 cord_travel: 0.0,
                 rolling_speed: 0.0,
+                at: point.position,
+                force: wrench.force,
             });
         }
         out
@@ -425,13 +435,16 @@ impl Undercarriage {
         let normal = wheel.spring.normal(load, compression, velocity.z);
         let (friction, rolling_speed) = wheel.rubbing.force(velocity, normal, attitude * DVec3::Y);
 
-        out.wrench += seen.wrench(point, normal, friction);
+        let wrench = seen.wrench(point, normal, friction);
+        out.wrench += wrench;
         out.contacts.push(Contact {
             point: ContactPoint::Wheel(index),
             load: normal,
             compression,
             cord_travel,
             rolling_speed,
+            at: point,
+            force: wrench.force,
         });
     }
 }

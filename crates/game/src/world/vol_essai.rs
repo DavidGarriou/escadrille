@@ -11,16 +11,27 @@ use bevy::math::DVec3;
 use bevy::prelude::*;
 use escadrille_data::mockup::load_mockup;
 use escadrille_data::scenario::load_scenario;
+use escadrille_fdm::aircraft::PilotControls;
 
+use super::meadow::spawn_meadow;
 use super::plain::spawn_plain;
 use crate::ASSETS_DIR;
 use crate::camera::{PilotEye, View, spawn_flight_camera};
 use crate::dev::capture::CaptureHold;
 use crate::flight::bridge::to_bevy;
-use crate::flight::{ON_THE_FIELD, TEST_FLIGHT, spawn_scenario};
+use crate::flight::{
+    FINAL_APPROACH, ON_THE_FIELD, PilotInput, StartCommands, TEST_FLIGHT, spawn_scenario,
+};
 
 pub const SCENE_CHASE: &str = "vol-essai-poursuite";
 pub const SCENE_PILOT: &str = "vol-essai-pilote";
+/// At rest on the field, from the chase view and from the pilot's seat.
+pub const SCENE_FIELD: &str = "terrain-repos";
+pub const SCENE_FIELD_PILOT: &str = "terrain-pilote";
+/// Rolling, throttle open: long enough a capture (`--frames`) shows the tail coming up.
+pub const SCENE_ROLL: &str = "terrain-roulage";
+/// The meadow as the pilot sees it from the start of the final approach.
+pub const SCENE_FINAL: &str = "terrain-finale";
 
 /// What a flight's scenes share: the plain and its assets.
 #[derive(SystemParam)]
@@ -35,33 +46,46 @@ pub struct Scene<'w, 's> {
 }
 
 /// `just run`, and the scenes on the field: the SPAD at rest.
-pub fn spawn_on_the_field(scene: Scene) -> Result {
-    spawn_flight(ON_THE_FIELD, scene)
+pub fn spawn_on_the_field(mut scene: Scene) -> Result {
+    spawn_flight(ON_THE_FIELD, &mut scene)
 }
 
 /// The scenes in flight.
-pub fn spawn(scene: Scene) -> Result {
-    spawn_flight(TEST_FLIGHT, scene)
+pub fn spawn(mut scene: Scene) -> Result {
+    spawn_flight(TEST_FLIGHT, &mut scene)
 }
 
-fn spawn_flight(name: &str, scene: Scene) -> Result {
+/// The scene of the final approach.
+pub fn spawn_on_final(mut scene: Scene) -> Result {
+    spawn_flight(FINAL_APPROACH, &mut scene)
+}
+
+/// The rolling scene: on the field, throttle open and the stick pushed.
+pub fn spawn_rolling(mut scene: Scene) -> Result {
+    spawn_flight(ON_THE_FIELD, &mut scene)?;
+    let held = PilotControls {
+        throttle: 1.0,
+        pitch: -0.5,
+        ..PilotControls::default()
+    };
+    scene.commands.insert_resource(StartCommands(held));
+    scene.commands.insert_resource(PilotInput::holding(held));
+    Ok(())
+}
+
+fn spawn_flight(name: &str, scene: &mut Scene) -> Result {
     let Scene {
-        mut commands,
+        commands,
         asset_server,
-        mut meshes,
-        mut materials,
-        mut images,
-        mut media,
-        mut hold,
+        meshes,
+        materials,
+        images,
+        media,
+        hold,
     } = scene;
-    spawn_plain(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        &mut images,
-        &mut media,
-    );
-    let (aircraft, cg) = spawn_scenario(name, &mut commands, &asset_server, &mut hold)?;
+    spawn_plain(commands, meshes, materials, images, media);
+    spawn_meadow(commands, meshes, materials, images);
+    let (aircraft, cg) = spawn_scenario(name, commands, asset_server, hold)?;
     // The pilot's eye of the 3D model's file (its node cam_pilot_eye).
     let assets = Path::new(ASSETS_DIR);
     let id = load_scenario(assets, name)?.aircraft;
@@ -71,7 +95,7 @@ fn spawn_flight(name: &str, scene: Scene) -> Result {
     commands
         .entity(aircraft)
         .insert(PilotEye(to_bevy(eye - cg).as_vec3()));
-    spawn_flight_camera(&mut commands);
+    spawn_flight_camera(commands);
     Ok(())
 }
 

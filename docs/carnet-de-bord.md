@@ -2513,5 +2513,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Tests de fumée par préréglage, sans toucher au palonnier :
   - **Pilote** : décolle, écart de cap au plus 7° ;
   - **Arcade** : décolle aux seuls gaz, écart au plus 7° ;
-  - **As** : même roulage sans aide, l'avion part en cheval de bois (plus de 29°) ;
+  - **As** : même roulage sans aide, l'avion part en cheval de bois (au moins 28° de cap) ;
   - **Vétéran** et **As** : le palonnier reste au joueur, et la garde n'intervient pas à l'arrêt.
+- **A** Étape 7 :
+  - **pré** (`crates/game/src/world/meadow.rs`) : 800 × 300 m (`E:`), est-ouest, posé sur la plaine, car la tuile de 2 km aurait dessiné un terrain tous les 2 km. Sans T, faute de source de jour ;
+  - **gizmos de forces** : touche G (plugin `dev`), air, traction, et sol à chaque contact ;
+  - **scènes** `terrain-repos`, `terrain-pilote`, `terrain-roulage`, `terrain-finale`.
+- **⚠** Première capture : l'herbe était un aplat, et sur `terrain-roulage` on ne voyait même pas que l'avion roulait. Sans repère au sol, ni la vitesse ni la hauteur à l'arrondi ne se lisent. Une tuile de touffes de 40 m, sans couture, s'ajoute sur le pré. Reste à voir si la plaine en demande autant quand on se pose ailleurs.
+- **R** Captures **regardées** sur la RX 7800 XT : l'avion est posé sur ses trois points ; depuis le poste, queue basse, le capot et la Vickers bouchent l'avant, comme l'écrivent les témoins ; depuis la finale, le pré se voit au-dessus du viseur. `vol-essai-poursuite` ne change pas. 5,5 ms par image en 1080p au repos, contre 4,3 ms avant le pré et l'atmosphère de la plaine.
+- **A** `just check` passe, `just test` aussi. Revue du directeur artistique lancée sur le pré.

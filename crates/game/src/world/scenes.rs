@@ -19,6 +19,10 @@ pub const KNOWN_SCENES: &[&str] = &[
     super::degats::SCENE_CLOSE,
     super::vol_essai::SCENE_CHASE,
     super::vol_essai::SCENE_PILOT,
+    super::vol_essai::SCENE_FIELD,
+    super::vol_essai::SCENE_FIELD_PILOT,
+    super::vol_essai::SCENE_ROLL,
+    super::vol_essai::SCENE_FINAL,
 ];
 
 /// Run condition: the capture asks for scene `name`.

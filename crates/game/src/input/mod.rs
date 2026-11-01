@@ -13,7 +13,8 @@
 //!
 //! Keyboard, for development (physical keys, labels of an AZERTY keyboard): arrows for
 //! the stick, Q / D for the rudder, Page up / down for the throttle, Home / End for the
-//! neutral, V view, T telemetry, R start again, N next start, P pause, I preset.
+//! neutral, V view, T telemetry, R start again, N next start, P pause, I preset; G draws
+//! the forces (`crate::dev`).
 //!
 //! The profile is written here for now; RON profiles and remapping come later.
 

@@ -93,14 +93,14 @@ pub fn spawn_plain(
 }
 
 /// SplitMix64: a well-mixed hash, enough for fields.
-fn mix(mut z: u64) -> u64 {
+pub fn mix(mut z: u64) -> u64 {
     z = z.wrapping_add(0x9e37_79b9_7f4a_7c15);
     z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
     z = (z ^ (z >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
     z ^ (z >> 31)
 }
 
-fn unit(h: u64) -> f32 {
+pub fn unit(h: u64) -> f32 {
     (h >> 40) as f32 / (1u64 << 24) as f32
 }
 

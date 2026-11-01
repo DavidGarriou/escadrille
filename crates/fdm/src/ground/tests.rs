@@ -432,6 +432,8 @@ fn a_part_gives_way_beyond_its_limit_times_the_tolerance() {
         compression: 0.1,
         cord_travel: 0.0,
         rolling_speed: 0.0,
+        at: DVec3::ZERO,
+        force: DVec3::ZERO,
     };
     let loads = GroundLoads {
         wrench: Wrench::default(),
