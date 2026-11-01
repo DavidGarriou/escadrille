@@ -2333,3 +2333,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** `tools/asset_check` :
   - les dimensions ignorent les pièces de l'hélice et les futurs nœuds masqués (`prop_*`, `hit_*`, `dmg_*`) ;
   - le contrôle des bouches de canon ne vise plus que les nœuds `gun_*_muzzle`, la pièce `gun_1` étant la mitrailleuse elle-même.
+- **A** Étape 2 du plan, la structure sous la toile (`build.py`, `build_frame` et `build_fuselage_frame`), dans le nœud de sa pièce :
+  - **nervures** au pas des nervures (19 cm aux ailes, 20 cm à l'empennage), taillées dans le profil réduit à 85 % de l'épaisseur. Elles sont coupées à l'axe des gouvernes : leur partie arrière bouge avec la gouverne ;
+  - **longerons d'ailes** à 12 et 46 % de la corde nominale, droits et arrêtés avant les saumons arrondis ;
+  - **empennage** : longeron arrière droit juste devant l'axe de la profondeur et du gouvernail (étambot de la dérive) ;
+  - **fuselage** : poutre en bois du poste à l'étambot, avec quatre longerons, des cadres tous les 45 cm et un câble diagonal par travée sur chaque flanc.
+
+  Valeurs estimées (`E:`).
+- **⚠** Premier essai : les longerons de l'empennage suivaient une fraction de la corde locale, donc la forme du contour (en V, en zigzag). Corrigé par des longerons droits le long de l'axe des gouvernes.
+- **R** Vérifications : aperçus Blender avec la toile rendue transparente, regardés ; captures `avion-studio` et `vol-essai-pilote` regardées, rien ne perce la toile.

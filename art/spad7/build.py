@@ -379,6 +379,8 @@ class Station:
             self.normal = Vector((0.0, 1.0, 0.0))
         # Rounded corners near a free tip: the leading and trailing edges come in.
         le_in, te_in = tip_inset
+        self.full_chord = chord
+        self.rounded = le_in > 0.0
         le = self.qc + self.chord_dir * (0.25 * chord - le_in)
         self.chord = max(chord - le_in - te_in, 0.02 * chord)
         self.qc = le - self.chord_dir * (0.25 * self.chord)
@@ -451,6 +453,112 @@ def loft_runs(stations, hinge_of, section, body_parts, controls):
         i = j + 1
 
 
+# --- Structure under the fabric (M4 plan, step 2) -----------------------------------------
+
+FRAME_DEPTH = 0.85      # E: ribs and spars inside the skin, share of the section's depth
+RIB_WEB = 0.008         # E: a rib's web, m
+SPAR_WIDTH = 0.03       # E: a box spar's width, m
+TAIL_POST = 0.04        # E: the tail surfaces' rear spar (the fin's post), just ahead of the hinge of their control, chord fraction
+
+
+def inner_section(section, depth=FRAME_DEPTH):
+    """A section shrunk about its mean line: the frame inside the fabric."""
+    def inner(u):
+        hu, hl = section(u)
+        mean, half = 0.5 * (hu + hl), 0.5 * (hu - hl) * depth
+        return mean + half, mean - half
+    return inner
+
+
+class Lerped:
+    """A station between two others, same interface as Station."""
+
+    def __init__(self, a, b, t):
+        self.qc = a.qc.lerp(b.qc, t)
+        self.chord = a.chord + t * (b.chord - a.chord)
+        self.full_chord = getattr(a, "full_chord", a.chord) + t * (
+            getattr(b, "full_chord", b.chord) - getattr(a, "full_chord", a.chord))
+        self.rounded = getattr(a, "rounded", False) or getattr(b, "rounded", False)
+        self.chord_dir = a.chord_dir.lerp(b.chord_dir, t).normalized()
+        self.normal = a.normal.lerp(b.normal, t).normalized()
+
+    def point(self, u):
+        return self.qc + self.chord_dir * ((0.25 - u) * self.chord)
+
+
+def station_at(stations, d):
+    """The station at a spanwise distance d, between two of `stations` [(d, station)]."""
+    for (d0, a), (d1, b) in zip(stations, stations[1:]):
+        if d0 - 1e-9 <= d <= d1 + 1e-9:
+            return Lerped(a, b, 0.0 if d1 - d0 < 1e-9 else (d - d0) / (d1 - d0))
+    return Lerped(stations[-1][1], stations[-1][1], 0.0)
+
+
+def wing_spar(u):
+    """A wing's spar at a fraction u of the nominal chord: straight along the span."""
+    return lambda st, hinge: u * getattr(st, "full_chord", st.chord) / st.chord
+
+
+def post_spar(offset):
+    """A post just ahead of a control's hinge (the fin's), where there is one."""
+    return lambda st, hinge: None if hinge is None else hinge_fraction(st, hinge) - offset
+
+
+def build_frame(stations, hinge_at, section, pitch, spars, body_parts, controls):
+    """The structure inside a fabric surface, along its stations [(spanwise distance,
+    station)]: a rib every `pitch`, cut at a control's hinge (the aft part moves with the
+    control), and box spars in the fixed part, each giving its chord fraction at a station
+    (`wing_spar`, `post_spar`), interrupted where it would leave the
+    fabric or meet a rounded tip. Seen through holes in the fabric, and when it burns
+    (damages 2, 3, 4, 35 of docs/gdd/combat-degats.md)."""
+    inner = inner_section(section)
+    span = (stations[-1][1].qc - stations[0][1].qc).normalized()
+    half = span * (0.5 * RIB_WEB)
+    total = stations[-1][0]
+
+    def rib(builder, st, u0, u1):
+        r = ring(inner, st.qc, st.chord_dir, st.normal, st.chord, u0, u1)
+        builder.loft([[p - half for p in r], [p + half for p in r]], "wood", cap_start=True, cap_end=True)
+
+    k = 0
+    while k * pitch <= total + 1e-6:
+        d = min(k * pitch, total)
+        st = station_at(stations, d)
+        hinge = hinge_at(d)
+        if hinge is None:
+            rib(body_parts, st, 0.01, 0.985)
+        else:
+            uh = hinge_fraction(st, hinge)
+            if uh > 0.05:
+                rib(body_parts, st, 0.01, uh - 0.015)
+            if uh < 0.95:
+                rib(controls[hinge["node"]], st, uh + 0.015, 0.985)
+        k += 1
+
+    for spar in spars:
+        run = []
+
+        def close(run):
+            if len(run) >= 2:
+                body_parts.loft(run, "wood", cap_start=True, cap_end=True)
+
+        for d, st in stations:
+            hinge = hinge_at(d)
+            u_local = spar(st, hinge)
+            limit = hinge_fraction(st, hinge) - 0.02 if hinge is not None else 0.95
+            if (getattr(st, "rounded", False) or u_local is None
+                    or not 0.05 <= u_local <= limit):
+                close(run)
+                run = []
+                continue
+            hu, hl = inner(u_local)
+            centre = st.point(u_local) + st.normal * (0.5 * (hu + hl) * st.chord)
+            h, w = 0.5 * (hu - hl) * st.chord, 0.5 * SPAR_WIDTH
+            run.append([centre + st.chord_dir * a + st.normal * b
+                        for a, b in ((w, h), (-w, h), (-w, -h), (w, -h))])
+        close(run)
+
+
 def build_surface(surface, data, body_parts, controls):
     """Lofts every panel of a surface, both sides if mirrored; the parts aft of a
     control's hinge go to that control's node."""
@@ -505,6 +613,18 @@ def build_surface(surface, data, body_parts, controls):
                 region = next((r for r in regions if r[0] <= mid <= r[1]), None)
                 return region[2] if region else None
             loft_runs([st for _, st in stations], hinge_of, section, body_parts, controls)
+            # The structure under the fabric.
+            def hinge_at(d, length=length, regions=regions):
+                eta = d / length
+                region = next((r for r in regions if r[0] <= eta <= r[1]), None)
+                return region[2] if region else None
+            if wing:
+                spars = [wing_spar(u) for u in feature(data, "strut_spars")[0]]
+            else:
+                spars = [post_spar(TAIL_POST)]
+            pitch = RIBS[0] if wing else feature(data, "tail_ribs")[0][0]
+            build_frame([(e * length, st) for e, st in stations], hinge_at, section, pitch,
+                        spars, body_parts, controls)
             # Close the panel's ends, unless a control already closes them.
             for e, s in (stations[0], stations[-1]):
                 if not any(a <= e <= b for a, b, _ in regions):
@@ -570,6 +690,13 @@ def build_outline_surface(surface, rows, data, body_parts, controls):
                   for (c0, _), (c1, _) in zip(stations, stations[1:])]
         loft_runs([st for _, st in stations], lambda k: hinges[k], symmetric_section,
                   body_parts, controls)
+        # The structure under the fabric.
+        c0 = stations[0][0]
+        sdir = 1.0 if stations[-1][0] >= c0 else -1.0
+        spars = [post_spar(TAIL_POST)]
+        build_frame([(abs(c - c0), st) for c, st in stations],
+                    lambda d: region_at(surface, data, side, c0 + sdir * d), symmetric_section,
+                    feature(data, "tail_ribs")[0][0], spars, body_parts, controls)
         ends = [stations[-1]] if surface["mirrored"] else [stations[0], stations[-1]]
         for c, s in ends:
             if region_at(surface, data, side, c) is None:
@@ -651,6 +778,42 @@ def build_fuselage(data, parts):
     opening = feature(data, "cockpit_opening")
     parts.delete_faces(lambda c: c.z < -0.80 and abs(c.y) < opening_half_width(opening, c.x))
     return keys
+
+
+FUSELAGE_BAY = 0.45       # E: spacing of the fuselage's frames (uprights and cross pieces), m
+LONGERON = 0.03           # E: ash longerons, m
+FRAME_STRUT = 0.022       # E: uprights and cross pieces, m
+BRACING_WIRE = 0.003      # E: the bays' diagonal wires, m
+
+
+def build_fuselage_frame(keys, parts):
+    """The wire-braced wooden box girder under the fuselage's fabric, from the cockpit's
+    front to the sternpost: four longerons inside the section's corners, a frame of
+    uprights and cross pieces every FUSELAGE_BAY, a diagonal wire in each side bay. Seen
+    through holes and when the fabric burns (M4 plan, step 2)."""
+    x_front, x_back = COWL_END_X, keys[-1][0] + 0.05
+
+    def corners(x):
+        top, bottom, hw = fuselage_at(keys, x)
+        exponent = 2.0 if x > 0.0 else 2.0 + 1.6 * min(-x / 1.2, 1.0)
+        k = 0.9 * 0.5 ** (1.0 / exponent)
+        zc, hh = 0.5 * (top + bottom), 0.5 * (bottom - top)
+        return [Vector((x, sy * k * hw, zc + sz * k * hh)) for sy, sz in ((1, -1), (-1, -1), (-1, 1), (1, 1))]
+
+    n = max(2, int((x_front - x_back) / 0.1))
+    xs = [x_front - (x_front - x_back) * i / n for i in range(n + 1)]
+    for c in range(4):
+        tube(parts, [corners(x)[c] for x in xs], LONGERON, "wood", n=8)
+    bays = max(1, int((x_front - x_back) / FUSELAGE_BAY))
+    frames = [x_front - (x_front - x_back) * i / bays for i in range(bays + 1)]
+    for x in frames:
+        c = corners(x)
+        for a, b in ((0, 1), (1, 2), (2, 3), (3, 0)):
+            round_bar(parts, c[a], c[b], FRAME_STRUT, "wood", n=6)
+    for xa, xb in zip(frames, frames[1:]):
+        a, b = corners(xa), corners(xb)
+        for i, j in ((0, 3), (1, 2)):   # each side: from the top at one frame to the bottom at the next
+            round_bar(parts, a[i], b[j], BRACING_WIRE, "metal", n=4)
 
 
 def build_cockpit(data, parts, keys):
@@ -1515,6 +1678,7 @@ def main(argv):
 
     parts = Builder()
     keys = build_fuselage(data, parts)
+    build_fuselage_frame(keys, parts)
     build_cockpit(data, parts, keys)
     build_nose(data, parts, keys)
     with part("exhaust_{lr}"):
