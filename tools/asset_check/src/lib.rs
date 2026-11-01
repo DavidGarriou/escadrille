@@ -18,7 +18,7 @@ use std::path::Path;
 
 use escadrille_data::aircraft::{AircraftData, Loading, load_aircraft};
 use escadrille_data::frames::from_gltf;
-use escadrille_data::mockup::{AcceptedDeviation, load_mockup};
+use escadrille_data::mockup::{AcceptedDeviation, MockupFile, load_mockup};
 use escadrille_data::model::{Contract, contract};
 use glam::{DQuat, DVec3};
 
@@ -86,6 +86,7 @@ struct Placed {
     translation: DVec3,
     rotation: DQuat,
     vertices: Vec<DVec3>,
+    triangles: Vec<[DVec3; 3]>,
 }
 
 /// The model's nodes in body axes, parents' transforms applied.
@@ -116,15 +117,30 @@ fn placed_nodes(gltf: &gltf::Gltf) -> Result<Vec<Placed>, String> {
         let translation = parent_t + parent_r * (t * parent_s);
         let rotation = parent_r * r;
         let mut vertices = Vec::new();
+        let mut triangles = Vec::new();
         if let Some(mesh) = node.mesh() {
             for primitive in mesh.primitives() {
-                let positions = primitive
-                    .reader(|_| blob)
+                let reader = primitive.reader(|_| blob);
+                let positions: Vec<DVec3> = reader
                     .read_positions()
-                    .ok_or("a primitive without positions")?;
-                vertices.extend(positions.map(|p| {
-                    from_gltf(translation + rotation * (DVec3::from(p.map(f64::from)) * scale))
-                }));
+                    .ok_or("a primitive without positions")?
+                    .map(|p| {
+                        from_gltf(translation + rotation * (DVec3::from(p.map(f64::from)) * scale))
+                    })
+                    .collect();
+                if primitive.mode() == gltf::mesh::Mode::Triangles {
+                    let indices: Vec<usize> = match reader.read_indices() {
+                        Some(i) => i.into_u32().map(|i| i as usize).collect(),
+                        None => (0..positions.len()).collect(),
+                    };
+                    for t in indices.as_chunks::<3>().0 {
+                        let corner = |k: usize| positions.get(t[k]).copied();
+                        if let (Some(a), Some(b), Some(c)) = (corner(0), corner(1), corner(2)) {
+                            triangles.push([a, b, c]);
+                        }
+                    }
+                }
+                vertices.extend(positions);
             }
         }
         out.push(Placed {
@@ -132,6 +148,7 @@ fn placed_nodes(gltf: &gltf::Gltf) -> Result<Vec<Placed>, String> {
             translation: from_gltf(translation),
             rotation,
             vertices,
+            triangles,
         });
         for child in node.children() {
             stack.push((child, translation, rotation, scale));
@@ -213,11 +230,141 @@ pub fn check_aircraft_model(assets: &Path, id: &str, path: &Path) -> Result<Repo
     let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
     let licences = std::fs::read_to_string(assets.join("LICENCES.md")).unwrap_or_default();
     let relative = format!("assets/aircraft/{id}/model.glb");
-    let accepted = load_mockup(assets, id)
-        .map_err(|e| e.to_string())?
-        .map(|m| m.accepted_deviations)
+    let mockup = load_mockup(assets, id).map_err(|e| e.to_string())?;
+    let accepted = mockup
+        .as_ref()
+        .map(|m| m.accepted_deviations.clone())
         .unwrap_or_default();
-    check_model(&data, &bytes, &licences, &relative, &accepted)
+    // A model whose maquette.ron places hit volumes is prepared for damage: all of it.
+    let damage = mockup
+        .as_ref()
+        .filter(|m| m.features.iter().any(|f| f.name.starts_with("hit_")));
+    check_model(&data, &bytes, &licences, &relative, &accepted, damage)
+}
+
+/// The damage nodes a model prepared for damage must have (plan
+/// `docs/plans/m4-degats-modele-3d.md`, skill `pipeline-assets`), from its data:
+/// - the parts: each wing's panels between its struts, the other surfaces by side, the
+///   two halves of the fuselage, each strut, the undercarriage, each gun;
+/// - the hit volumes of the parts no visible mesh stands for: engine, main tank, pilot,
+///   control cables, each wing panel's spars;
+/// - the damaged variants: each wing panel's stub, the fuselage's, each strut broken,
+///   each leg broken;
+/// - the effect points of the engine, the main tank and the cockpit.
+///
+/// Each wire and each blade's variants are checked node by node.
+/// Why a mesh is not a closed convex solid, if it is not: flat (no extent along an
+/// axis), open (an edge not shared by exactly two triangles, vertices welded at 0.01 mm:
+/// an export splits them along sharp edges), or concave (a vertex more than 0.1 mm
+/// beyond the plane of a face).
+pub fn solid_fault(triangles: &[[DVec3; 3]]) -> Option<String> {
+    let corners = || triangles.iter().flatten();
+    let (lo, hi) = corners().fold(
+        (DVec3::splat(f64::MAX), DVec3::splat(f64::MIN)),
+        |(lo, hi), &v| (lo.min(v), hi.max(v)),
+    );
+    if triangles.len() < 4 || (hi - lo).min_element() < 1e-3 {
+        return Some("flat".to_owned());
+    }
+    let key = |v: DVec3| (v * 1e5).round().as_i64vec3().to_array();
+    let mut edges: std::collections::HashMap<([i64; 3], [i64; 3]), usize> =
+        std::collections::HashMap::new();
+    for t in triangles {
+        for k in 0..3 {
+            let (a, b) = (key(t[k]), key(t[(k + 1) % 3]));
+            if a != b {
+                *edges
+                    .entry(if a < b { (a, b) } else { (b, a) })
+                    .or_default() += 1;
+            }
+        }
+    }
+    if edges.values().any(|&n| n != 2) {
+        return Some("open".to_owned());
+    }
+    for [a, b, c] in triangles {
+        let n = (*b - *a).cross(*c - *a);
+        if n.length() < 1e-9 {
+            continue;
+        }
+        let n = n.normalize();
+        let (below, above) = corners().fold((0.0f64, 0.0f64), |(lo, hi), &v| {
+            let d = (v - *a).dot(n);
+            (lo.min(d), hi.max(d))
+        });
+        if below < -1e-4 && above > 1e-4 {
+            return Some("concave".to_owned());
+        }
+    }
+    None
+}
+
+pub fn damage_nodes(data: &AircraftData, mockup: &MockupFile) -> Vec<String> {
+    let mut out: Vec<String> = [
+        "fuselage_front",
+        "fuselage_rear",
+        "dmg_fuselage_rear_stub",
+        "hit_engine",
+        "hit_fuel_main",
+        "fx_engine",
+        "fx_fuel_main",
+        "fx_cockpit",
+    ]
+    .map(String::from)
+    .to_vec();
+    for part in ["head", "torso", "arm_l", "arm_r", "legs"] {
+        out.push(format!("hit_pilot_{part}"));
+    }
+    for lr in ["l", "r"] {
+        for control in ["aileron", "elevator", "rudder"] {
+            out.push(format!("hit_cable_{control}_{lr}"));
+        }
+        for part in ["gear", "wheel"] {
+            out.push(format!("{part}_{lr}"));
+        }
+        out.push(format!("dmg_gear_{lr}_broken"));
+    }
+    let mut ys: Vec<f64> = mockup.struts.iter().map(|s| s.y_m).collect();
+    ys.sort_by(f64::total_cmp);
+    ys.dedup_by(|a, b| (*a - *b).abs() < 1e-6);
+    let panels: &[&str] = match ys.len() {
+        0 => &["root"],
+        1 => &["root", "tip"],
+        _ => &["root", "mid", "tip"],
+    };
+    for surface in &data.file.surfaces {
+        if let Some(plane) = surface.name.strip_suffix("_wing") {
+            for lr in ["l", "r"] {
+                for panel in panels {
+                    let part = format!("wing_{plane}_{lr}_{panel}");
+                    out.push(format!("dmg_{part}_stub"));
+                    for spar in ["front", "rear"] {
+                        out.push(format!("hit_spar_{part}_{spar}"));
+                    }
+                    out.push(part);
+                }
+            }
+        } else if surface.mirrored {
+            out.push(format!("{}_l", surface.name));
+            out.push(format!("{}_r", surface.name));
+        } else {
+            out.push(surface.name.clone());
+        }
+    }
+    for (k, _) in ys.iter().enumerate() {
+        let io = if k == 0 { "inner" } else { "outer" };
+        for lr in ["l", "r"] {
+            for fr in ["front", "rear"] {
+                let strut = format!("strut_{lr}_{io}_{fr}");
+                out.push(format!("dmg_{strut}_broken"));
+                out.push(strut);
+            }
+        }
+    }
+    for k in 1..=mockup.gun_muzzles_m.len() {
+        out.push(format!("gun_{k}"));
+    }
+    out
 }
 
 /// Whether a node's mesh counts in the aircraft's dimensions: not the propeller (its
@@ -239,6 +386,7 @@ pub fn check_model(
     licences: &str,
     relative: &str,
     accepted: &[AcceptedDeviation],
+    damage: Option<&MockupFile>,
 ) -> Result<Report, String> {
     let mut checks = Checks::default();
     let gltf = match gltf::Gltf::from_slice(glb) {
@@ -270,6 +418,85 @@ pub fn check_model(
             format!("missing: {missing:?}")
         },
     );
+
+    if let Some(mockup) = damage {
+        let names: Vec<&str> = nodes.iter().filter_map(|n| n.name.as_deref()).collect();
+        let has = |name: &str| names.contains(&name);
+        // A hit volume may come in convex pieces, numbered: `hit_cable_aileron_l_1`, `_2`.
+        let has_volume = |name: &str| {
+            has(name)
+                || names.iter().any(|n| {
+                    n.strip_prefix(name)
+                        .and_then(|rest| rest.strip_prefix('_'))
+                        .is_some_and(|k| !k.is_empty() && k.bytes().all(|b| b.is_ascii_digit()))
+                })
+        };
+        let required = damage_nodes(data, mockup);
+        let mut missing: Vec<String> = required
+            .iter()
+            .filter(|r| {
+                if r.starts_with("hit_") {
+                    !has_volume(r)
+                } else {
+                    !has(r)
+                }
+            })
+            .cloned()
+            .collect();
+        // Each wire can be cut, each blade can break.
+        for name in &names {
+            let variant = if name.starts_with("wire_") {
+                Some(format!("dmg_{name}_cut"))
+            } else if name.starts_with("prop_blade_") {
+                Some(format!("dmg_{name}_stub"))
+            } else {
+                None
+            };
+            if let Some(v) = variant.filter(|v| !has(v)) {
+                missing.push(v);
+            }
+        }
+        let blades = names
+            .iter()
+            .filter(|n| n.starts_with("prop_blade_"))
+            .count();
+        checks.add(
+            "damage nodes",
+            missing.is_empty() && blades > 0,
+            if missing.is_empty() && blades > 0 {
+                format!(
+                    "{} parts, hit volumes, variants and effect points, every wire and blade's variant",
+                    required.len()
+                )
+            } else if blades == 0 {
+                "no propeller blade node (prop_blade_<n>)".to_owned()
+            } else {
+                format!("missing: {}", missing.join(", "))
+            },
+        );
+        // A hit volume is a convex solid, which the ray tests of the M4 take as one
+        // (parry3d's convex shapes).
+        let hits: Vec<&Placed> = nodes
+            .iter()
+            .filter(|n| n.name.as_deref().is_some_and(|s| s.starts_with("hit_")))
+            .collect();
+        let bad: Vec<String> = hits
+            .iter()
+            .filter_map(|n| {
+                solid_fault(&n.triangles)
+                    .map(|f| format!("{} ({f})", n.name.as_deref().unwrap_or("?")))
+            })
+            .collect();
+        checks.add(
+            "hit volumes",
+            bad.is_empty(),
+            if bad.is_empty() {
+                format!("{} closed convex volumes", hits.len())
+            } else {
+                bad.join(", ")
+            },
+        );
+    }
 
     for hinge in &contract.hinges {
         let Some(node) = find(&hinge.node) else {

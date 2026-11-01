@@ -61,7 +61,7 @@ impl MaterialExtension for WireAa {
     }
 }
 
-/// Gives the meshes of each new `wire_*` node of a model the wire material, made from
+/// Gives the meshes of each new `wire_*` or `dmg_wire_*` node of a model the wire material, made from
 /// their own material in alpha blending.
 pub fn widen_wires(
     mut commands: Commands,
@@ -71,7 +71,8 @@ pub fn widen_wires(
     mut wires: ResMut<Assets<WireMaterial>>,
 ) {
     for (name, extras, children) in &nodes {
-        if !name.as_str().starts_with("wire_") {
+        // The wires, and their halves once cut.
+        if !(name.as_str().starts_with("wire_") || name.as_str().starts_with("dmg_wire_")) {
             continue;
         }
         let Some(diameter) = extra_number(&extras.value, "diameter_m") else {

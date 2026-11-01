@@ -1186,6 +1186,7 @@ def build_wires(data, wires):
         wires[name] = Builder()
         tube(wires[name], points, diameter, "wire", n=6)
         diameters[name] = diameter
+        ENDS[name] = (Vector(points[0]), Vector(points[-1]), diameter)
 
     for side in (1, -1):
         for x in spars:
@@ -1238,6 +1239,268 @@ def build_windscreen(data, parts, keys):
     c, d = (x - lean, -half * 0.9, top - height), (x - lean, half * 0.9, top - height)
     parts.face([a, b, c, d], "glass")
     tube(parts, [a, d, c, b], 0.012, "metal", n=6)
+
+
+# --- Damage: hit volumes, effect points, damaged variants (M4 plan, steps 3 and 4) -------
+
+ENDS = {}               # each wire's ends and diameter, from build_wires
+SPLINTER = 0.04         # E: depth of the jagged end of broken wood, m
+STUB = 0.12             # E: length of a broken spar or longeron left in place, m
+STREAM = math.radians(12)   # E: a cut wire's halves stream aft, this far below the flight path
+
+
+def oriented_box(parts, a, b, width, height, material, up=Vector((0, 0, -1)), jagged=False):
+    """A box from a to b (body axes), `width` across and `height` along `up`; with
+    `jagged`, its end at b is splintered (broken wood): its corners at uneven depths and a
+    point out of the middle."""
+    a, b = Vector(a), Vector(b)
+    axis = (b - a).normalized()
+    side = axis.cross(up)
+    if side.length < 1e-6:
+        side = axis.cross(Vector((1, 0, 0)))
+    side.normalize()
+    normal = side.cross(axis).normalized()
+    w, h = 0.5 * width, 0.5 * height
+    corners = [(w, h), (-w, h), (-w, -h), (w, -h)]
+    start = [a + side * x + normal * y for x, y in corners]
+    if not jagged:
+        end = [b + side * x + normal * y for x, y in corners]
+        parts.loft([start, end], material, cap_start=True, cap_end=True)
+        return
+    depths = (0.0, -0.6, -0.25, -0.9)
+    end = [b + axis * (SPLINTER * d) + side * x + normal * y for (x, y), d in zip(corners, depths)]
+    parts.loft([start, end], material, cap_start=True)
+    tip = b + axis * (0.8 * SPLINTER)
+    for i in range(4):
+        parts.face([end[i], end[(i + 1) % 4], tip], material)
+
+
+def write_node(builder, name, parent, materials, smooth=math.radians(35)):
+    """One node from a builder, its origin at the centre of its bounds."""
+    builder.prepare()
+    corners = [v.co for v in builder.bm.verts]
+    centre = sum(corners, Vector()) / len(corners)
+    obj = new_object(name, parent, Matrix.Translation(centre))
+    builder.write(obj, materials, smooth=smooth)
+    return obj
+
+
+def build_hits(data, keys, body, materials):
+    """Hit volumes `hit_<component>` of the parts no visible mesh stands for (the visible
+    parts are their own hit shapes): engine, radiator, tanks, oil, ammunition, gear of
+    the synchroniser, carburettor, magnetos, pilot, the control cables' runs, each wing
+    panel's spars. Closed convex boxes, hidden in the game (pipeline-assets)."""
+    def box(name, centre, size):
+        b = Builder()
+        c, (sx, sy, sz) = Vector(centre), size
+        oriented_box(b, c - Vector((0.5 * sx, 0, 0)), c + Vector((0.5 * sx, 0, 0)), sy, sz, "hit")
+        write_node(b, name, body, materials)
+
+    def bar(name, a, b_, width, height):
+        b = Builder()
+        oriented_box(b, a, b_, width, height, "hit")
+        write_node(b, name, body, materials)
+
+    # Engine: the two cylinder banks under the camshaft covers, the crankcase down to
+    # below the crankshaft (C: covers and hub of maquette.ron; E: margins).
+    y, z, d, x0, x1 = feature(data, "camshaft_bulges")[0]
+    hub_z = data["propeller"]["hub"][2]
+    top, bottom = z - 0.5 * d, hub_z + 0.20
+    box("hit_engine", (0.5 * (x0 + x1) + 0.05 - 0.10, 0.0, 0.5 * (top + bottom)),
+        (x1 - x0 + 0.30, 2 * y + 0.12, bottom - top))
+    x_face, zc, diameter = feature(data, "radiator")[0]
+    box("hit_radiator", (x_face - 0.06, 0.0, zc), (0.12, diameter, diameter))
+    for name in ("hit_fuel_main", "hit_fuel_gravity", "hit_oil", "hit_ammunition",
+                 "hit_synchronizer", "hit_carburettor"):
+        x, y, z, sx, sy, sz = feature(data, name)[0]
+        box(name, (x, y, z), (sx, sy, sz))
+    for (x, y, z, sx, sy, sz), lr in zip(feature(data, "hit_magnetos"), ("l", "r")):
+        box(f"hit_magneto_{lr}", (x, y, z), (sx, sy, sz))
+    for (x, y, z, sx, sy, sz), name in zip(feature(data, "hit_pilot"),
+                                            ("head", "torso", "arm_l", "arm_r", "legs")):
+        box(f"hit_pilot_{name}", (x, y, z), (sx, sy, sz))
+
+    # Control cables: elevator and rudder along the bottom longerons from the cockpit to
+    # the tail, ailerons from the stick down to the lower plane and along it to the
+    # bellcrank (E: runs, damage 20).
+    x_tail = keys[-1][0] + 0.25
+    for lr, sy in (("l", -1), ("r", 1)):
+        for control, dz in (("elevator", -0.03), ("rudder", 0.03)):
+            a_top, a_bottom, a_hw = fuselage_at(keys, -1.15)
+            b_top, b_bottom, b_hw = fuselage_at(keys, x_tail)
+            bar(f"hit_cable_{control}_{lr}", (-1.15, sy * 0.6 * a_hw, a_bottom - 0.08 + dz),
+                (x_tail, sy * 0.6 * b_hw, b_bottom - 0.03 + dz), 0.03, 0.03)
+        x_crank, y_crank, _, _ = feature(data, "aileron_linkage")[0]
+        lower = next(s for s in data["surfaces"] if s["name"] == "lower_wing")
+        root_y = lower["panels"][0]["root"][1]
+        z_root = wing_surface_z(data, "lower_wing", x_crank, root_y, upper=True) + 0.03
+        z_crank = wing_surface_z(data, "lower_wing", x_crank, y_crank, upper=True) + 0.03
+        # Two straight runs: one convex volume each, numbered (pipeline-assets).
+        bar(f"hit_cable_aileron_{lr}_1", (-1.05, 0.0, -0.45), (x_crank, sy * root_y, z_root),
+            0.03, 0.03)
+        bar(f"hit_cable_aileron_{lr}_2", (x_crank, sy * root_y, z_root),
+            (x_crank, sy * y_crank, z_crank), 0.03, 0.03)
+
+    # Each wing panel's two spars (damages 5 to 7).
+    for plane, (inner_y, outer_y, tip_y) in wing_panels(data).items():
+        for lr, sy in (("l", -1), ("r", 1)):
+            for panel, (y0, y1) in zip(("root", "mid", "tip"),
+                                       ((inner_y[0], inner_y[1]), (outer_y[0], outer_y[1]), (tip_y[0], tip_y[1]))):
+                for spar, (x, h) in zip(("front", "rear"), spar_lines(data, plane)):
+                    a = (x, sy * y0, spar_z(data, plane, x, y0))
+                    b_ = (x, sy * y1, spar_z(data, plane, x, y1))
+                    bar(f"hit_spar_wing_{plane.split('_')[0]}_{lr}_{panel}_{spar}", a, b_, SPAR_WIDTH, h)
+
+
+def wing_panels(data):
+    """Spanwise ranges (y from, y to) of each wing's root, mid and tip panels: cut at the
+    intermediate and outer struts (SPLIT), the tip short of its rounding."""
+    out = {}
+    for name in ("upper_wing", "lower_wing"):
+        surface = next(s for s in data["surfaces"] if s["name"] == name)
+        root_y = surface["panels"][0]["root"][1]
+        tip_y = surface["panels"][-1]["tip"][1] - TIP_RADIUS
+        out[name] = ((root_y, SPLIT["inner"]), (SPLIT["inner"], SPLIT["outer"]), (SPLIT["outer"], tip_y))
+    return out
+
+
+def spar_lines(data, plane):
+    """x and depth of a wing's front and rear spars (wing_spar, FRAME_DEPTH)."""
+    surface = next(s for s in data["surfaces"] if s["name"] == plane)
+    chord = surface["panels"][0]["chord_root"]
+    le_x = surface["panels"][0]["root"][0] + 0.25 * chord
+    out = []
+    for u in feature(data, "strut_spars")[0]:
+        x = le_x - u * chord
+        hu, hl = spad_section(u)
+        out.append((x, (hu - hl) * chord * FRAME_DEPTH))
+    return out
+
+
+def spar_z(data, plane, x, y):
+    """z of a wing's mean line at (x, y)."""
+    return 0.5 * (wing_surface_z(data, plane, x, y, upper=True) + wing_surface_z(data, plane, x, y, upper=False))
+
+
+def build_effect_points(data, keys, body):
+    """Empty nodes `fx_<name>` where smoke, steam, flames and leaks come from (damages 26
+    to 35): the engine under the cowl's top, the radiator, each exhaust's end, the two
+    tanks, the cockpit."""
+    y, z, d, x0, x1 = feature(data, "camshaft_bulges")[0]
+    x_face, zc, diameter = feature(data, "radiator")[0]
+    z_pipe, _, _, x_end = feature(data, "exhaust_pipe")[0]
+    _, _, hw_end = fuselage_at(keys, x_end)
+    x_tank = feature(data, "hit_fuel_main")[0][0]
+    _, tank_bottom, _ = fuselage_at(keys, x_tank)
+    xg, _, zg, _, _, sg = feature(data, "hit_fuel_gravity")[0]
+    points = {
+        "fx_engine": (0.5 * (x0 + x1), 0.0, z - 0.5 * d),
+        "fx_radiator": (x_face, 0.0, zc - 0.35 * diameter),
+        "fx_exhaust_l": (x_end, -(hw_end + 0.035), z_pipe),
+        "fx_exhaust_r": (x_end, hw_end + 0.035, z_pipe),
+        "fx_fuel_main": (x_tank, 0.0, tank_bottom),
+        "fx_fuel_gravity": (xg, 0.0, zg + 0.5 * sg),
+        "fx_cockpit": (-1.05, 0.0, -0.95),
+    }
+    for name, p in points.items():
+        new_empty(name, body, node_matrix(p, (0, 1, 0), (0, 0, -1)))
+
+
+def build_damaged(data, keys, body, prop, materials):
+    """Damaged variants `dmg_<part>_<state>`, hidden in the game until the damage
+    happens (damages 6, 7, 9 to 13, 17, 19, 25, 46): what stays of a lost wing panel or
+    rear fuselage (splintered spars, longerons), each strut broken in two, each wire cut
+    with its halves streaming aft, each blade broken, the windscreen shattered, each
+    undercarriage leg broken."""
+    def node(name, build, parent=body, smooth=math.radians(35)):
+        b = Builder()
+        build(b)
+        return write_node(b, name, parent, materials, smooth)
+
+    # Wing panels: the stub left on the inboard part when a panel goes.
+    for plane, ranges in wing_panels(data).items():
+        short = plane.split("_")[0]
+        for lr, sy in (("l", -1), ("r", 1)):
+            for panel, (y0, _) in zip(("root", "mid", "tip"), ranges):
+                def stub(b, y0=y0, sy=sy, plane=plane):
+                    for x, h in spar_lines(data, plane):
+                        z0 = spar_z(data, plane, x, y0)
+                        oriented_box(b, (x, sy * (y0 - 0.02), z0), (x, sy * (y0 + STUB), z0),
+                                     SPAR_WIDTH, h, "wood", jagged=True)
+                node(f"dmg_wing_{short}_{lr}_{panel}_stub", stub)
+
+    # Rear fuselage: the four longerons broken behind the cockpit.
+    def fuselage_stub(b):
+        x = FUSELAGE_SPLIT_X
+        top, bottom, hw = fuselage_at(keys, x)
+        k = 0.9 * 0.5 ** (1.0 / 3.6)
+        zc, hh = 0.5 * (top + bottom), 0.5 * (bottom - top)
+        for sy_, sz in ((1, -1), (-1, -1), (-1, 1), (1, 1)):
+            p = Vector((x + 0.02, sy_ * k * hw, zc + sz * k * hh))
+            oriented_box(b, p, p - Vector((STUB, 0, 0)), LONGERON, LONGERON, "wood", jagged=True)
+    node("dmg_fuselage_rear_stub", fuselage_stub)
+
+    # Struts broken in two, each half splintered at the break.
+    upper = next(s for s in data["surfaces"] if s["name"] == "upper_wing")
+    chord = upper["panels"][0]["chord_root"]
+    le_x = upper["panels"][0]["root"][0] + 0.25 * chord
+    spars = [le_x - f * chord for f in feature(data, "strut_spars")[0]]
+    for _, y in data["mockup"]["struts"]:
+        io = "inner" if abs(y - SPLIT["inner"]) < abs(y - SPLIT["outer"]) else "outer"
+        for lr, sy in (("l", -1), ("r", 1)):
+            for fr, x in zip(("front", "rear"), spars):
+                bottom = Vector((x, sy * y, wing_surface_z(data, "lower_wing", x, y, upper=True)))
+                top = Vector((x, sy * y, wing_surface_z(data, "upper_wing", x, y, upper=False)))
+                def broken(b, bottom=bottom, top=top):
+                    oriented_box(b, bottom, bottom.lerp(top, 0.45), STRUT_CHORD, STRUT_THICK, "wood",
+                                 up=Vector((1, 0, 0)), jagged=True)
+                    oriented_box(b, top, top.lerp(bottom, 0.40), STRUT_CHORD, STRUT_THICK, "wood",
+                                 up=Vector((1, 0, 0)), jagged=True)
+                node(f"dmg_strut_{lr}_{io}_{fr}_broken", broken)
+
+    # Wires cut in the middle, their halves streaming aft from their ends.
+    for name, (a, b_, diameter) in sorted(ENDS.items()):
+        half = 0.5 * (b_ - a).length
+        aft = Vector((-math.cos(STREAM), 0.0, math.sin(STREAM)))
+        def cut(b, a=a, b_=b_, half=half, diameter=diameter, aft=aft):
+            for end in (a, b_):
+                tube(b, [end, end + aft * half], diameter, "wire", n=6)
+        # Drawn by the wire shader too (render/wires.rs).
+        node(f"dmg_{name}_cut", cut, smooth=math.pi)["diameter_m"] = diameter
+
+    # Propeller blades broken at a third of their length, under `prop` (they turn).
+    p = data["propeller"]
+    hub, axis, radius = Vector(p["hub"]), Vector(p["axis"]), p["radius"]
+    for blade, k in ((1, 1), (-1, 2)):
+        def stump(b, blade=blade):
+            root = hub + Vector((0, 0, -1)) * blade * 0.12
+            end = hub + Vector((0, 0, -1)) * blade * 0.38 * radius
+            oriented_box(b, root, end, 0.16, 0.04, "propeller_wood", up=axis, jagged=True)
+        node(f"dmg_prop_blade_{k}_stub", stump, parent=prop)
+
+    # The windscreen shattered: its frame, and shards in its corners.
+    x, half, height, rake = feature(data, "windscreen")[0]
+    top, _, _ = fuselage_at(keys, x)
+    lean = height * math.tan(math.radians(rake))
+    a, b_ = Vector((x, half, top)), Vector((x, -half, top))
+    c, d = Vector((x - lean, -half * 0.9, top - height)), Vector((x - lean, half * 0.9, top - height))
+    def shattered(b):
+        tube(b, [a, d, c, b_], 0.012, "metal", n=6)
+        b.face([a, a.lerp(b_, 0.35), a.lerp(d, 0.30)], "glass")
+        b.face([b_, b_.lerp(c, 0.45), b_.lerp(a, 0.25)], "glass")
+        b.face([d, d.lerp(a, 0.20), d.lerp(c, 0.30)], "glass")
+    node("dmg_windscreen_broken", shattered)
+
+    # Undercarriage legs broken: what stays under the fuselage.
+    for lr, side in (("l", -1), ("r", 1)):
+        fx, fy, fz, ax, ay, az, chord = feature(data, "gear_front_leg")[0]
+        rx, ry, rz, bx, by, bz = feature(data, "gear_rear_leg")[0]
+        def legs(b, side=side):
+            f0, f1 = Vector((fx, side * fy, fz)), Vector((ax, side * ay, az))
+            r0, r1 = Vector((rx, side * ry, rz)), Vector((bx, side * by, bz))
+            oriented_box(b, f0, f0.lerp(f1, 0.5), chord, LEG_THICK, "wood", up=Vector((1, 0, 0)), jagged=True)
+            oriented_box(b, r0, r0.lerp(r1, 0.4), REAR_LEG_CHORD, LEG_THICK, "wood", up=Vector((1, 0, 0)), jagged=True)
+        node(f"dmg_gear_{lr}_broken", legs)
 
 
 # --- Fabric textures (pass 5) ------------------------------------------------------------
@@ -1609,6 +1872,7 @@ def make_materials(livery, colours):
         "leather": principled("cuir", (0.24, 0.13, 0.06), 0.55),
         "cockpit": principled("intérieur du poste", (0.10, 0.08, 0.06), 0.9),
         "glass": principled("verre", (0.02, 0.03, 0.03), 0.05),
+        "hit": principled("volume d'impact, masqué", (0.8, 0.1, 0.1), 0.9),
     }
     m["control"] = m["fuselage"] = m["surface"]
     # The propeller's varnish, and the windscreen's glass.
@@ -1732,6 +1996,11 @@ def main(argv):
            for i in range(n)]
     disc.face(rim, "disc")
     disc.write(blur, materials)
+
+    # Damage (M4 plan): hit volumes, effect points, damaged variants.
+    build_hits(data, keys, body, materials)
+    build_effect_points(data, keys, body)
+    build_damaged(data, keys, body, prop, materials)
 
     # The pilot's eye and the gun muzzles look forward (glTF -Z), upright (glTF +Y).
     mock = data["mockup"]

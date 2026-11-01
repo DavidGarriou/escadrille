@@ -151,6 +151,25 @@ Mockup(
         (name: "fabric_transmission", rows: [[0.35, 0.25, 0.03, 0.012, 0.035, 0.10]]),           // E: share of the sunlight the doped fabric lets through, seen against the light: between ribs, under a tape (one more layer), over a rib's wooden cap (12 mm wide) and over a spar (35 mm wide, at strut_spars), and under a livery's paint; no measurement found (spad7-aspect.md § 10: structure seen through the fabric)                                                      // E: rib pitch of the tail surfaces, as the planes' (not found)
         (name: "windscreen", rows: [[-0.80, 0.15, 0.22, 30.0]]),                                  // E: x of its foot ahead of the cockpit opening, half-width, height and rake back in degrees (a glass screen, Hall and Bordeaux, spad7-aspect.md § 9; not drawn); high enough for the sight line to cross the glass under its frame
         (name: "vickers", rows: [[0.11, 0.60, 0.45, 0.10, 0.13]]),                                // E: jacket diameter and length, receiver length, width and height of the Vickers on the cowl (the muzzle of gun_muzzles_m at its front)
+        (name: "hit_pilot", rows: [
+        //! E: hit volumes of the pilot (M4 plan, docs/gdd/combat-degats.md, damages 36 to 39), centre x y z and size, m: head, torso, left arm, right arm, legs; seated with his centre of gravity at x −1.10 (aircraft.ron), his eye at pilot_eye_m, his feet on the rudder bar
+            [-1.15, 0.00, -1.13, 0.22, 0.18, 0.24],
+            [-1.20, 0.00, -0.80, 0.26, 0.40, 0.50],
+            [-1.00, -0.21, -0.78, 0.40, 0.10, 0.12],
+            [-1.00, 0.21, -0.78, 0.40, 0.10, 0.12],
+            [-0.72, 0.00, -0.42, 0.60, 0.36, 0.20],
+        ]),
+        (name: "hit_fuel_main", rows: [[-0.95, 0.00, -0.15, 0.50, 0.50, 0.40]]),                // E: main tank under the seat (S13), centred on the fuel's point of aircraft.ron, about 0.10 m³ of 125 L
+        (name: "hit_fuel_gravity", rows: [[-0.40, 0.00, -1.27, 0.30, 0.40, 0.06]]),             // E: gravity tank of 10 L (S.XI, S49) in the centre section of the upper plane, between the spars
+        (name: "hit_oil", rows: [[-0.30, 0.00, -0.30, 0.25, 0.30, 0.20]]),                      // E: oil tank behind the engine, low (position not found)
+        (name: "hit_ammunition", rows: [[-0.45, 0.12, -0.85, 0.25, 0.15, 0.18]]),               // E: ammunition box under the Vickers' feed block, behind the engine
+        (name: "hit_synchronizer", rows: [[-0.15, 0.00, -0.92, 0.12, 0.08, 0.10]]),             // E: synchronising gear at the rear of the engine, driven from a camshaft, under the gun
+        (name: "hit_carburettor", rows: [[-0.10, 0.00, -0.70, 0.20, 0.18, 0.15]]),              // E: carburettor between the cylinder banks at the rear (position not found)
+        (name: "hit_magnetos", rows: [
+        //! E: the two magnetos at the rear of the engine, centre and size, m (position not found)
+            [-0.30, -0.15, -0.55, 0.12, 0.10, 0.12],
+            [-0.30, 0.15, -0.55, 0.12, 0.10, 0.12],
+        ]),
         (name: "vickers_parts", rows: [[0.060, 0.070, 0.050, 0.18, 0.040, 0.060]]),                // E: feed block (out to the right, length, height), crank handle's length, front and rear ring sights' diameters: proportions of the Vickers .303 aircraft gun, to check on a drawing or a photograph; two ring sights (« deux viseurs circulaires », Hall, spad7-aspect.md § 7), their centres on the sight line through pilot_eye_m
         (name: "tail_bracing", rows: [[-4.35, 0.75, -1.05, -0.32]]),                              // E: x of the bracing wires, y of their fitting on the tailplane, z of their ends on the fin and at the sternpost foot (aircraft.ron: 4 bracing wires of 0.8 m)
         (name: "cockpit_opening", rows: [

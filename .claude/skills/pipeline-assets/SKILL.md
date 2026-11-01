@@ -30,16 +30,17 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 
 | Nœud | Rôle |
 |---|---|
-| `body` | cellule |
+| `body` | cellule ; ses enfants sont les pièces endommageables (ci-dessous) |
 | `prop` | hélice (pivot sur l'axe moteur) ; `prop_blur` : disque flou |
 | `ctrl_aileron_<l/r>_<upper/lower>`, `ctrl_elevator`, `ctrl_rudder` | gouvernes animées par le FDM |
 | `cockpit_stick`, `cockpit_rudder_bar`, `gauge_<nom>_needle` | commandes et aiguilles animées |
 | `cam_pilot_eye` | position de l'œil du pilote |
 | `gun_<n>_muzzle` | sortie de chaque arme |
-| `hit_<composant>` | volumes d'impact (maillages convexes, masqués) |
-| `wire_<nom>` | câbles et haubans (rendus avec le shader de câbles) |
-| `dmg_<pièce>` | variantes endommagées |
-| (à venir, M4) | **pièces endommageables** : panneaux d'aile entre les mâts, dérive, gouvernail, plan fixe par côté, chaque câble en nœud propre, pour qu'un dégât puisse les trouer, les détacher ou les couper (`docs/gdd/combat-degats.md`) |
+| pièces : `wing_<upper/lower>_<l/r>_<root/mid/tip>`, `fuselage_front`, `fuselage_rear`, `tailplane_<l/r>`, `fin`, `strut_<l/r>_<inner/outer>_<front/rear>`, `cabane_<l/r>_<front/rear>`, `gear_<l/r>`, `wheel_<l/r>`, `axle`, `skid`, `gun_<n>`, `windscreen`, `exhaust_<l/r>`, `linkage_<l/r>`, `prop_blade_<n>` (sous `prop`) | **pièces endommageables** : chacune peut être trouée, détachée ou brisée (`docs/gdd/combat-degats.md` § 3 bis) ; la structure sous la toile est dans le nœud de sa pièce |
+| `hit_<composant>` | volumes d'impact des organes qu'aucune pièce visible ne représente : boîtes fermées et convexes, matériau `hit`, **masquées par le jeu**. Un composant en plusieurs morceaux convexes a un nœud par morceau, numéroté (`hit_cable_aileron_l_1`, `_2`) |
+| `fx_<nom>` | points d'effets, sans maillage : fumée, vapeur, fuites, flammes, feu du poste |
+| `wire_<famille>_<l/r>_<n>` | un nœud par câble (rendu avec le shader de câbles) |
+| `dmg_<pièce>_<état>` | variantes endommagées, **masquées par le jeu** jusqu'au dégât (M4) : `_stub` (moignon), `_broken`, `_cut` |
 | `<nœud>_LOD1`, `_LOD2`… | niveaux de détail |
 
 - **Dirigeables et ballons** (`assets/airships/<id>/`) : mêmes règles, plus `gas_cell_<n>` (volume de chaque cellule de gaz, masqué), `frame` (structure, visible quand l'enveloppe brûle), `gondola_<n>`, `engine_<n>`, `gunner_<n>` (poste de tir, axe = direction centrale du champ de tir), `ballast_<n>`. LOD poussés : l'objet est visible de très loin.
@@ -58,8 +59,8 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
   - L'empennage suit les contours dessinés (`outlines`), et la longueur passe sans écart accepté (6,037 m pour 6,08).
   - La hauteur reste un écart accepté, à la valeur du modèle Blender (2,271 m au sol).
 - `mockup` refuse d'écraser un `model.glb` qu'il n'a pas écrit (`--force` pour passer outre).
-- **Câbles** : nœuds `wire_flying`, `wire_landing`, `wire_incidence`, `wire_cabane` et `wire_tail`, aux vrais diamètres.
-  - Chaque nœud porte le diamètre de ses câbles dans ses extras glTF (`diameter_m`).
+- **Câbles** : un nœud par câble, `wire_<famille>_<l/r>_<n>` (familles `flying`, `landing`, `incidence`, `cabane`, `tail`), aux vrais diamètres.
+  - Chaque nœud porte le diamètre de son câble dans ses extras glTF (`diameter_m`), comme sa variante coupée `dmg_wire_…_cut`.
   - Ses tubes sont lissés : leurs normales s'écartent de l'axe, comme le demande le shader des câbles du jeu (skill `rendu-visuel`).
 - **Mesures du dessin** : le script lisse les sections et les contours (filtre binomial, ±0,2 m) avant de les lofter. Les données gardent les mesures brutes ; leur bruit, de 1 à 2 cm, faisait onduler les surfaces.
 - **Rendu de contrôle hors jeu** : un rendu Cycles du `.blend` sert à juger la forme. Le disque flou de l'hélice y est masqué, et le débruitage est absent du paquet Ubuntu.
@@ -71,6 +72,15 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
   - **Transmission** (alpha de la couleur) : part de lumière que laisse passer la toile à contre-jour, moindre sous un ruban ou sous la peinture d'une livrée, presque nulle sur les nervures, les fausses nervures et les longerons (`fabric_transmission`). Le matériau porte dans ses extras glTF `diffuse_transmission` et `transmission_depth_m`, que le jeu applique (skill `rendu-visuel`).
   - **Structure** (`features` de `maquette.ron`) : rubans et coutures des nervures, fausses nervures de l'extrados jusqu'au longeron avant, toile qui se creuse entre les nervures. Les nervures peintes tombent sur les festons du bord de fuite.
   - **Mipmaps** : Bevy 0.20 ne les génère pas pour les images d'un glTF, et sans elles les rubans et les coutures scintillent de loin. Le jeu les calcule au chargement (`crates/game/src/render/mipmaps.rs`) : couleur moyennée en lumière linéaire, normales renormalisées, filtrage anisotrope ×16. Cela coûte environ 0,5 s par texture 4K en profil de développement. Des KTX2 avec mipmaps faites hors ligne l'éviteront plus tard.
+
+- **Dégâts** (2026-11-01, plan `docs/plans/m4-degats-modele-3d.md`) : le modèle est prêt à montrer chaque dégât du catalogue ; la logique, les trous de la toile et les effets animés viendront au M4.
+  - **Pièces** : chaque face reçoit une pièce, comme elle reçoit sa région de toile (`with part(…)` dans le script), résolue par sa position : aile coupée aux mâts, fuselage coupé derrière le poste. Une face sans pièce va au fuselage : les pièces couvrent toute la cellule par construction. Les pièces voisines partagent les sommets de leur jointure : pas de couture visible.
+  - **Structure sous la toile** : nervures, longerons, bords d'attaque et de fuite de chaque surface, longerons, cadres et croisillons du fuselage, en bois, dans le nœud de leur pièce. Elle se voit par un trou, quand la toile brûle ou dans la galerie.
+  - **Volumes `hit_`** : moteur, radiateur, réservoirs, huile, munitions, synchronisation, carburateur, magnétos, pilote (tête, torse, bras, jambes), câbles de commande, longerons de chaque panneau. Les données qui ne sont pas dans `aircraft.ron` sont des `features` de `maquette.ron` (`format-avion.md`).
+  - **Variantes `dmg_`** : moignon de chaque panneau d'aile et du fuselage arrière (longerons éclatés), chaque mât en deux tronçons, chaque câble coupé (deux moitiés qui flottent à 12° vers l'arrière), moignon de chaque pale (sous `prop`, il tourne avec elle), pare-brise brisé, chaque jambe du train rompue.
+  - **Dans le jeu** (`crates/game/src/render/damage.rs`) : un observateur global masque les nœuds `hit_` et `dmg_` dès que le modèle apparaît, avant sa première image. ⚠ Bevy nomme les maillages d'un nœud d'après le maillage et le matériau (`dmg_prop_blade_1_stub.bois…`) : on masque les nœuds, pas leurs maillages, sinon un nœud remontré resterait invisible.
+  - **Galerie** : scène `degats-spad7` (`crates/game/src/world/degats.rs`), avec un panneau sans toile, un panneau perdu, un mât brisé, des câbles coupés, une pale cassée et le pare-brise brisé.
+  - **Coût** : 192 nœuds au lieu de 16 (180 maillages au lieu de 12) ; le GLB passe de 4,9 à 6,9 Mo. Sous lavapipe, `avion-studio` coûte 249 ms par image avant comme après ; le coût réel se mesure sur la RX 7800 XT.
 
 ## Modèle provisoire (`tools/mockup`)
 
@@ -108,7 +118,8 @@ Les fichiers sources vont dans `art/` (gros fichiers binaires : Git LFS, open so
 `tools/asset_check` (lancé par `just test` sur chaque `assets/aircraft/<id>/model.glb`, ou `cargo run -p asset_check [avion…]`) :
 - glTF valide, nœuds obligatoires présents, échelle uniforme et positive (un miroir par échelle négative est refusé) ;
 - gouvernes : pivot à 1 cm du segment de charnière (un aileron posé sur l'autre aile échoue), axe à 1° ; hélice : pivot à 1 cm du moyeu, axe à 1° ; œil et armes vers l'avant (5° et 1°) ;
-- envergure, longueur et hauteur à 1 % ;
-- fichier maison ou inscrit dans `assets/LICENCES.md`.
+- envergure, longueur et hauteur à 1 % (sans les pales, les volumes d'impact ni les variantes) ;
+- fichier maison ou inscrit dans `assets/LICENCES.md` ;
+- **contrat des dégâts**, quand `maquette.ron` déclare un volume `hit_` (`damage_nodes`) : les pièces déduites des données (panneaux de chaque aile selon ses mâts, surfaces par côté, mâts, train, armes), les volumes d'impact obligatoires (moteur, réservoir principal, pilote, câbles, longerons de chaque panneau), les variantes de chaque panneau, mât et jambe, les points d'effets du moteur, du réservoir et du poste ; une variante coupée pour chaque `wire_`, un moignon pour chaque `prop_blade_` ; chaque `hit_` fermé (arêtes partagées par deux faces, sommets soudés à 0,01 mm) et convexe (à 0,1 mm).
 
 Un modèle en miroir, retourné ou décalé de 5 cm échoue (tests de `tools/asset_check`). À venir : textures (format, espaces colorimétriques).

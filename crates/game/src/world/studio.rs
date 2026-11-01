@@ -3,6 +3,9 @@
 //! - `avion-studio`: at rest on its wheels and tail skid, seen three-quarter front from a
 //!   standing man's eye, in afternoon sun: the model, its materials and textures;
 //! - `contre_jour_toile`: flying overhead against the sun: the translucent fabric.
+//!
+//! The gallery of damage (`degats-spad7`, module `degats`) stands it on the grass the
+//! same way, seen from its right.
 
 use std::path::Path;
 
@@ -26,18 +29,32 @@ const AIRCRAFT: &str = "spad7";
 /// Heading of the aircraft, north.
 const HEADING_DEG: f64 = 0.0;
 
-/// The camera, from the centre of gravity (NED, m): ahead and to the left, at the eye of
-/// a man standing on the grass.
-const CAMERA_FROM_CG: DVec3 = DVec3::new(6.4, -6.2, 0.0);
+/// Height of the camera above the grass: the eye of a man standing on it, m.
 const EYE_HEIGHT_M: f64 = 1.65;
 
-/// Point looked at, from the centre of gravity (NED, m): the middle of the wings' gap.
-const TARGET_FROM_CG: DVec3 = DVec3::new(-0.4, 0.0, -0.3);
-
-/// Sun from the west-north-west, behind the camera's left shoulder, 35° high: the
-/// light of a summer afternoon over Flanders.
-const SUN_AZIMUTH_DEG: f64 = -70.0;
+/// The sun's elevation: a summer afternoon over Flanders.
 const SUN_ELEVATION_DEG: f64 = 35.0;
+
+/// Where the camera stands and looks, and where the sun shines from.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct View {
+    /// The camera's foot on the grass, from the centre of gravity (NED, m); its eye is
+    /// [`EYE_HEIGHT_M`] above it.
+    pub camera_from_cg: DVec3,
+    /// Point looked at, from the centre of gravity (NED, m).
+    pub target_from_cg: DVec3,
+    /// The sun's azimuth, from north towards east, degrees; it stands
+    /// [`SUN_ELEVATION_DEG`] high.
+    pub sun_azimuth_deg: f64,
+}
+
+/// `avion-studio`: ahead and to the left, looking at the middle of the wings' gap; the
+/// sun from the west-north-west, behind the camera's left shoulder.
+pub const STUDIO: View = View {
+    camera_from_cg: DVec3::new(6.4, -6.2, 0.0),
+    target_from_cg: DVec3::new(-0.4, 0.0, -0.3),
+    sun_azimuth_deg: -70.0,
+};
 
 /// Pitch of the aircraft resting on its wheels and tail skid (rad, nose up positive):
 /// the angle of the line through the bottom of the wheels and the skid's shoe.
@@ -53,6 +70,32 @@ pub fn spawn(
     mut media: ResMut<Assets<ScatteringMedium>>,
     mut hold: ResMut<CaptureHold>,
 ) -> Result {
+    let model = spawn_at_rest(
+        &mut commands,
+        &asset_server,
+        &mut meshes,
+        &mut materials,
+        &mut media,
+        &mut hold,
+        STUDIO,
+    )?;
+    commands
+        .entity(model)
+        .observe(super::maquette::turn_the_propeller);
+    Ok(())
+}
+
+/// The SPAD at rest on the grass, seen from `view`: the model's entity, its propeller
+/// still to be set.
+pub fn spawn_at_rest(
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+    meshes: &mut Assets<Mesh>,
+    materials: &mut Assets<StandardMaterial>,
+    media: &mut Assets<ScatteringMedium>,
+    hold: &mut CaptureHold,
+    view: View,
+) -> Result<Entity> {
     let assets = Path::new(ASSETS_DIR);
     let mockup = load_mockup(assets, AIRCRAFT)?.ok_or("the SPAD has no maquette.ron")?;
     let cg = centre_of_gravity()?;
@@ -67,29 +110,22 @@ pub fn spawn(
     );
     // The wheels' bottom on the ground (z = 0, down positive).
     let position = DVec3::new(0.0, 0.0, -(attitude * (wheel - cg)).z);
-    spawn_spad(
-        &mut commands,
-        &asset_server,
-        &mut hold,
-        position,
-        attitude,
-        cg,
-    );
+    let model = spawn_spad(commands, asset_server, hold, position, attitude, cg);
     spawn_outdoors(
-        &mut commands,
-        &mut meshes,
-        &mut materials,
-        &mut media,
-        sun_direction(SUN_AZIMUTH_DEG, SUN_ELEVATION_DEG),
+        commands,
+        meshes,
+        materials,
+        media,
+        sun_direction(view.sun_azimuth_deg, SUN_ELEVATION_DEG),
     );
     let at = |from_cg: DVec3| (to_bevy(position + from_cg)).as_vec3();
-    let eye = at(CAMERA_FROM_CG) * Vec3::new(1.0, 0.0, 1.0) + Vec3::Y * EYE_HEIGHT_M as f32;
+    let eye = at(view.camera_from_cg) * Vec3::new(1.0, 0.0, 1.0) + Vec3::Y * EYE_HEIGHT_M as f32;
     commands.spawn(outdoor_camera(
-        Transform::from_translation(eye).looking_at(at(TARGET_FROM_CG), Vec3::Y),
+        Transform::from_translation(eye).looking_at(at(view.target_from_cg), Vec3::Y),
         40.0,
         13.0,
     ));
-    Ok(())
+    Ok(model)
 }
 
 /// `contre_jour_toile` (skill `rendu-visuel`): the SPAD flying level over a man standing
@@ -108,7 +144,7 @@ pub fn spawn_contre_jour(
     // three-quarter from below, the nose towards him.
     let attitude = DQuat::from_euler(EulerRot::ZYX, 45f64.to_radians(), 0.0, 10f64.to_radians());
     let position = DVec3::new(15.0, 0.0, -(13.0 + EYE_HEIGHT_M));
-    spawn_spad(
+    let model = spawn_spad(
         &mut commands,
         &asset_server,
         &mut hold,
@@ -116,6 +152,9 @@ pub fn spawn_contre_jour(
         attitude,
         cg,
     );
+    commands
+        .entity(model)
+        .observe(super::maquette::turn_the_propeller);
     // Seen 41° high to the north; the sun to the north too, 50° high.
     spawn_outdoors(
         &mut commands,
@@ -149,7 +188,8 @@ fn sun_direction(azimuth_deg: f64, elevation_deg: f64) -> DVec3 {
     DVec3::new(el.cos() * az.cos(), el.cos() * az.sin(), -el.sin())
 }
 
-/// The model, its entity at the centre of gravity as the flight plugin will place it.
+/// The model, its entity at the centre of gravity as the flight plugin will place it:
+/// the entity of the model's root.
 fn spawn_spad(
     commands: &mut Commands,
     asset_server: &AssetServer,
@@ -157,25 +197,25 @@ fn spawn_spad(
     position_ned: DVec3,
     attitude: DQuat,
     cg: DVec3,
-) {
+) -> Entity {
     hold.0 += 1;
     let model = asset_server
         .load(GltfAssetLabel::Scene(0).from_asset(format!("aircraft/{AIRCRAFT}/model.glb")));
-    commands
+    let aircraft = commands
         .spawn((
             Name::new("SPAD VII"),
             render_transform(position_ned, attitude, DVec3::ZERO),
             Visibility::default(),
         ))
-        .with_children(|aircraft| {
-            aircraft
-                .spawn((
-                    Name::new("Model"),
-                    WorldAssetRoot(model),
-                    model_transform(cg),
-                ))
-                .observe(super::maquette::turn_the_propeller);
-        });
+        .id();
+    commands
+        .spawn((
+            Name::new("Model"),
+            WorldAssetRoot(model),
+            model_transform(cg),
+            ChildOf(aircraft),
+        ))
+        .id()
 }
 
 /// Grass, the atmosphere and the sun, its shadows sharp near the aircraft.

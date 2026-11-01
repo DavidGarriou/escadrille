@@ -1,5 +1,6 @@
 //! Rendering: how the game's assets are prepared for the GPU (skill `rendu-visuel`).
 
+pub mod damage;
 pub mod fabric;
 pub mod mipmaps;
 pub mod wires;
@@ -11,6 +12,7 @@ pub struct RenderingPlugin;
 impl Plugin for RenderingPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(MaterialPlugin::<wires::WireMaterial>::default())
+            .add_observer(damage::hide_damage_nodes)
             .add_systems(
                 Update,
                 (

@@ -187,6 +187,7 @@ Mockup(
   - poste : `cockpit_opening`, `cockpit_edge`, `windscreen` ;
   - câblage et détails : `wires`, `aileron_linkage`, `tail_bracing`, `ribs`, `vickers` ;
   - toile : `rib_tapes` (largeur, épaisseur, pas des coutures, teinte sous le vernis), `false_ribs` (fraction de corde atteinte), `fabric_sag` (creux entre deux nervures), `tail_ribs` (pas des nervures de l'empennage), `fabric_transmission` (part de lumière transmise : entre nervures, sous un ruban, sur une nervure, largeur d'une nervure, largeur d'un longeron, sous la peinture).
+  - volumes d'impact (dégâts, plan `m4-degats-modele-3d.md`) : une ligne `[x, y, z, longueur, largeur, hauteur]` (centre et dimensions de la boîte, m) pour `hit_fuel_main`, `hit_fuel_gravity`, `hit_oil`, `hit_ammunition`, `hit_synchronizer`, `hit_carburettor` ; deux lignes (gauche, droite) pour `hit_magnetos` ; cinq (tête, torse, bras gauche, bras droit, jambes) pour `hit_pilot`. **Un `maquette.ron` qui déclare un volume `hit_` engage le modèle au contrat des dégâts** que vérifie `asset_check` (skill `pipeline-assets`).
 
 `accepted_deviations` : cotes que `tools/asset_check` accepte pour ce modèle provisoire, tant qu'il mesure la valeur inscrite (à 5 mm). Si une donnée la fait bouger, le contrôle échoue de nouveau ; s'il revient dans la tolérance, il demande de retirer l'écart (skill `pipeline-assets`).
 
