@@ -5,6 +5,7 @@
 pub mod assist;
 pub mod campaign;
 pub mod conditions;
+pub mod ground;
 pub mod modes;
 pub mod performance;
 pub mod plots;

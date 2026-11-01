@@ -12,7 +12,7 @@ use crate::aero::surface::{
 };
 use crate::aero::system::MutualInduction;
 use crate::environment::StandardEnvironment;
-use crate::ground::{Skid, Spring, Undercarriage, Wheel};
+use crate::ground::{Rubbing, Skid, Spring, Undercarriage, Wheel};
 use crate::propulsion::engine::tests::engine;
 use crate::propulsion::propeller::tests::{anchors, table};
 use crate::propulsion::propeller::{Propeller, PropellerGeometry};
@@ -924,14 +924,20 @@ fn gear() -> Undercarriage {
         radius: 0.3,
         guide: DVec3::NEG_Z,
         spring,
-        rolling: 0.07,
-        grip: 0.6,
-        cornering: 0.2,
+        rubbing: Rubbing {
+            along: 0.07,
+            grip: 0.6,
+            cornering: 0.2,
+        },
     };
     let skid = Skid {
         shoe: DVec3::new(-3.9, 0.0, 0.35),
         spring,
-        friction: 0.5,
+        rubbing: Rubbing {
+            along: 0.5,
+            grip: 0.9,
+            cornering: 0.1,
+        },
     };
     Undercarriage::new(vec![wheel(0.77), wheel(-0.77)], vec![skid], Vec::new()).unwrap()
 }

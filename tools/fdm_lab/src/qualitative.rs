@@ -1152,6 +1152,8 @@ fn flown(
             seconds,
             load_factor,
         ),
+        Manoeuvre::TakeOff => crate::ground::observed_take_off(aircraft),
+        Manoeuvre::GroundHandling => crate::ground::observed_handling(aircraft),
     }
 }
 

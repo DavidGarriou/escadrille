@@ -2471,3 +2471,20 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **Sandows, pneus, frottements** : valeurs `E:`, en attendant la treizième passe de l'historien. La course de 125 mm vient du S.XI.
 - **⚠** Piège évité : `fdm_lab` place ses calculs au niveau de la mer à 0 m d'altitude, sol compris. Avec un train, les roues auraient été sous terre. Ses environnements passent à `NO_GROUND`, sans sol : les essais en vol ne le voient pas.
 - **A** `just test` passe (340 tests) avec le vrai train du SPAD : les essais en vol ne bougent pas. Dans le jeu, l'ancien arrêt au contact reste en place jusqu'à l'étape 5.
+- **A** Étape 4 : `fdm_lab sol <avion>` (`tools/fdm_lab/src/ground.rs`), et dans `essais.ron` les manœuvres `TakeOff` et `GroundHandling`, les robustesses `HardLanding`, `GroundLoop` et `NoseOver`. Pilote scripté, avec les commandes du joueur.
+- **⚠** Les essais ont trouvé deux fautes de ma part, et aucune ne se voyait dans les tests :
+  - **ressort de la glissière inversé** : 91 mm d'essieu à l'arrêt au lieu de 20. J'avais écrit k cos² θ, et le bon résultat est k / cos² θ. Mon test d'alors validait l'erreur : il est refait sur l'énergie stockée ;
+  - **béquille isotrope** : en fin de roulage, l'avion partait seul en cheval de bois vers 40 km/h, jusqu'à 170° de cap, plein palonnier, contre le « no tendency to turn » de Meister. Les roues sont devant le centre de gravité et déstabilisent ; un sabot qui frotte pareil dans toutes les directions ne compense pas. Or un sabot étroit trace un sillon et résiste de côté. La béquille a maintenant la même loi directionnelle que les roues (adhérence 0,8, pente à 8°, `E:`). C'est une justification physique : la valeur reste estimée.
+- **R** Campagne `just essai spad7`, valeurs `E:`, sans cible historique :
+  - **repos** : assiette 14,9°, 296 kg par roue, 127 kg sur la béquille, 20 mm d'essieu ;
+  - **point fixe** : 1 593 tr/min et 4,0 kN, le calcul de `spad7-calculs.md` ;
+  - **mise en mouvement** : 15 % de gaz ;
+  - **décollage** : sans palonnier, l'avion part à **gauche** et finit en cheval de bois, saumon au sol ; au pied, palonnier jusqu'à 54 % à droite, écart de cap 11°, envol en 11,4 s sur 152 m à 100 km/h, 15 m à 319 m ;
+  - **arrêt** : de 82 km/h en 161 m et 16,7 s, cap tenu à 2,5° ;
+  - **virages de roulage** : 3,8 °/s à 30 % de gaz, 20 °/s à 50 % manche poussé, la technique d'époque ;
+  - **posés** : 5,9 kN par roue à 0,5 m/s, 13 kN à 2 m/s, 20 kN à 3 m/s ; butée vers 2,5 m/s ; à 4 m/s, rebond, décrochage et aile au sol, sans intervention du pilote scripté ;
+  - **capotage** : seulement en le cherchant, manche poussé à fond plein gaz ; l'hélice touche d'abord.
+- **R** Les performances en vol ne bougent pas. L'envol de 152 m reste au-dessus des 88 m estimés hors outil, qui ignoraient le début queue basse ; le temps total, 11,4 s, tombe dans les 10 à 15 s de cette estimation.
+- **A** ADR 0008 (contact par efforts de pénalité dans le RK4, à 240 Hz), au statut **Proposé** ; `modele-aero.md` et `format-avion.md` à jour.
+- **R** Convergence : diviser le pas par deux change l'envol et le posé de moins de 1 % (test). Dérive à l'arrêt : 0,7 cm/s, soit 40 cm par minute, gardée pour l'instant.
+- **A** `just check` passe, `just test` aussi (350 tests). Revue de l'aérodynamicien lancée sur le contact, les valeurs `E:` et les essais.

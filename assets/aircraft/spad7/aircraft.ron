@@ -218,7 +218,7 @@ Aircraft(
                 stiffness_n_per_m: 75000.0,                                    // E: with the preload, the axle reaches its stop at a sink of about 2.2 m/s: a drop of about 25 cm
                 travel: Mm(125.0),                                             // S: 125 mm on the S.XI, comparable of the family (spad7.md § 2.5.1), confidence C
                 stop_stiffness_n_per_m: 2000000.0,                             // E: axle on the end of its slides, stiff compared with the cord
-                damping_n_s_per_m: 1700.0,                                     // E: about 0.12 of critical at the wheel, rubber and the slides' rubbing together: rebounds to about two thirds of the speed
+                damping_n_s_per_m: 680.0,                                      // E: about 0.12 of critical at the wheel, rubber and the slides' rubbing together: rebounds to about two thirds of the speed
             ),
             rolling_resistance: 0.07,                                          // E: firm grass; spad7-calculs.md takes 0.05 to 0.10 for the take-off
             grip: 0.6,                                                         // E: tyre sideways on grass
@@ -235,6 +235,8 @@ Aircraft(
                 damping_n_s_per_m: 500.0,                                      // E: about 0.2 of critical at the tail, the leaf rubbing on its pivot
             ),
             friction: 0.5,                                                     // E: an ash or iron shoe rubbing on turf: the only brake
+            grip: 0.8,                                                         // E: a narrow shoe cuts a groove and resists going sideways more than along; behind the centre of gravity it keeps the aircraft straight, as T8 reports (« no tendency to turn »)
+            cornering_slip: Deg(8.0),                                          // E: a groove holds the shoe at smaller angles than a tyre; stiff enough to keep the aircraft straight (it has to outweigh the wheels ahead of the centre of gravity), soft enough for rudder and power to turn it
         ),
         hard_point_stiffness_n_per_m: 150000.0,                                // E: wood and fabric give a few centimetres under a tonne
         hard_point_damping_n_s_per_m: 8000.0,                                  // E: wood and fabric do not rebound

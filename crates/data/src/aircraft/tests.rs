@@ -269,11 +269,15 @@ fn the_undercarriage_is_built_from_the_centre_of_gravity() {
     assert_eq!(right.axle + cg, DVec3::from_array(spec.wheels.centre_m));
     assert_eq!(left.axle.y + cg.y, -spec.wheels.centre_m[1]);
     assert_eq!(left.guide.y, -right.guide.y);
-    // A sloping cord: the wheel rises less than the cord moves, against a softer spring.
+    // A sloping cord: the wheel rises less than the cord moves, so it meets a stiffer
+    // spring, and stores the same energy at the same load on the cord.
     let cosine = -right.guide.z;
     assert!((0.5..0.9).contains(&cosine), "{cosine}");
-    assert!(right.spring.travel < spec.wheels.spring.travel.si());
-    assert!(right.spring.stiffness < spec.wheels.spring.stiffness_n_per_m);
+    let cord = spec.wheels.spring;
+    assert!(right.spring.stiffness > cord.stiffness_n_per_m);
+    let along = 0.5 * cord.stiffness_n_per_m * cord.travel.si().powi(2);
+    let felt = 0.5 * right.spring.stiffness * right.spring.travel.powi(2);
+    assert!((along - felt).abs() < 1e-9 * along, "{along} {felt}");
     assert_eq!(gear.skids().len(), 1);
     let mirrored = spec.hard_points.iter().filter(|h| h.mirrored).count();
     assert_eq!(gear.hard_points().len(), spec.hard_points.len() + mirrored);

@@ -49,11 +49,19 @@ fn wheel(y: f64) -> Wheel {
         radius: 0.3,
         guide: DVec3::new(-0.3f64.sin(), 0.0, -0.3f64.cos()),
         spring: WHEEL_SPRING,
-        rolling: 0.07,
-        grip: 0.6,
-        cornering: 0.2,
+        rubbing: Rubbing {
+            along: 0.07,
+            grip: 0.6,
+            cornering: 0.2,
+        },
     }
 }
+
+const SHOE: Rubbing = Rubbing {
+    along: 0.5,
+    grip: 0.9,
+    cornering: 0.1,
+};
 
 fn gear() -> Undercarriage {
     Undercarriage::new(
@@ -61,7 +69,7 @@ fn gear() -> Undercarriage {
         vec![Skid {
             shoe: DVec3::new(-3.9, 0.0, 0.35),
             spring: SKID_SPRING,
-            friction: 0.5,
+            rubbing: SHOE,
         }],
         vec![HardPoint {
             position: DVec3::new(0.0, 3.9, -0.8),
@@ -242,29 +250,34 @@ fn the_side_force_opposes_the_slip_and_stops_at_the_grip() {
 }
 
 #[test]
-fn the_skid_rubs_against_the_slide_in_every_direction() {
+fn the_shoe_resists_going_sideways_more_than_along() {
     let gear = Undercarriage::new(
         Vec::new(),
         vec![Skid {
             shoe: DVec3::ZERO,
             spring: SKID_SPRING,
-            friction: 0.5,
+            rubbing: SHOE,
         }],
         Vec::new(),
     )
     .unwrap();
-    for velocity in [DVec3::new(10.0, 0.0, 0.0), DVec3::new(-3.0, 4.0, 0.0)] {
+    let at = |velocity: DVec3| {
         let state = RigidBodyState {
             position_ned: DVec3::new(0.0, 0.0, 0.05),
             velocity_body: velocity,
             ..RigidBodyState::default()
         };
         let l = gear.loads(&state, &FLAT);
-        let friction = DVec3::new(l.wrench.force.x, l.wrench.force.y, 0.0);
-        let expected = 0.5 * l.contacts[0].load;
-        assert!((friction.length() - expected).abs() < 1e-2 * expected);
-        assert!(friction.normalize().dot(velocity.normalize()) < -0.999);
-    }
+        (l.wrench.force, l.contacts[0].load)
+    };
+    let (along, normal) = at(DVec3::new(10.0, 0.0, 0.0));
+    assert!((along.x + 0.5 * normal).abs() < 1e-3 * normal, "{along}");
+    assert!(along.y.abs() < 1e-9, "{along}");
+    let (across, normal) = at(DVec3::new(0.0, 10.0, 0.0));
+    assert!((across.y + 0.9 * normal).abs() < 1e-2 * normal, "{across}");
+    assert!(across.x.abs() < 1e-9, "{across}");
+    let (slipping, _) = at(DVec3::new(10.0, 1.0, 0.0));
+    assert!(slipping.y < 0.0 && slipping.x < 0.0, "{slipping}");
 }
 
 #[test]

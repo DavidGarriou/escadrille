@@ -81,9 +81,25 @@ pub enum Quantitative {
 pub enum Robustness {
     ZeroAirspeed,
     TailSlide,
-    SpinEntryRecovery { turns: u32 },
-    Inverted { seconds: f64 },
+    SpinEntryRecovery {
+        turns: u32,
+    },
+    Inverted {
+        seconds: f64,
+    },
     MaxDive,
+    /// On the field, three-point attitude, sinking at `sink` at the stall speed.
+    HardLanding {
+        sink: Speed,
+    },
+    /// On the field, rolling tail up at `speed`, full rudder for two seconds.
+    GroundLoop {
+        speed: Speed,
+    },
+    /// On the field, rolling tail up at `speed`, stick pushed fully at full throttle.
+    NoseOver {
+        speed: Speed,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -120,6 +136,12 @@ pub enum Manoeuvre {
         seconds: f64,
         load_factor: f64,
     },
+    /// From rest on the field, full throttle, the tail raised early, pulled above the
+    /// stall: what the rudder contains, and the same take-off without it.
+    TakeOff,
+    /// From the stall speed on three points, throttle closed, stick back: distance to stop,
+    /// and how the aircraft turns at taxiing speeds.
+    GroundHandling,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -202,6 +224,7 @@ impl Manoeuvre {
                 }
                 Ok(())
             }
+            Self::TakeOff | Self::GroundHandling => Ok(()),
         }
     }
 }

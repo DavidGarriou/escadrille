@@ -11,6 +11,7 @@ use escadrille_fdm::rigid_body::RigidBodyState;
 use glam::{DQuat, DVec3, EulerRot};
 use std::cell::Cell;
 
+use crate::ground;
 use crate::performance::max_level_speed;
 
 /// Integration step, s (ADR 0005: 120 Hz with two substeps).
@@ -146,6 +147,24 @@ const IDLE: PilotControls = PilotControls {
 };
 
 /// Runs one scenario.
+/// A scenario on the ground: `test` says whether it stayed finite, and what happened.
+fn on_the_ground(
+    aircraft: &Aircraft,
+    name: &str,
+    test: impl FnOnce(&ground::Rest) -> Result<(bool, String), String>,
+) -> RobustnessOutcome {
+    let (passed, details) = match ground::rest(aircraft).and_then(|rest| test(&rest)) {
+        Ok((true, details)) => (true, details),
+        Ok((false, _)) => (false, "**valeurs non finies (NaN)**".to_owned()),
+        Err(message) => (false, message),
+    };
+    RobustnessOutcome {
+        name: name.to_owned(),
+        passed,
+        details,
+    }
+}
+
 pub fn run(aircraft: &Aircraft, env: &dyn Environment, scenario: &Robustness) -> RobustnessOutcome {
     let (name, record, details) = match *scenario {
         Robustness::ZeroAirspeed => {
@@ -279,6 +298,52 @@ pub fn run(aircraft: &Aircraft, env: &dyn Environment, scenario: &Robustness) ->
                     record.max_rotor * 30.0 / std::f64::consts::PI
                 ),
             )
+        }
+        Robustness::HardLanding { sink } => {
+            return on_the_ground(aircraft, "Posé brutal", |rest| {
+                let l = ground::landing(aircraft, rest, sink.si())?;
+                Ok((
+                    l.finite,
+                    format!(
+                        "à {:.1} m/s : {:.1} kN sur une roue, essieu {:.0} mm, rebond {:.2} m, {:.1} kN sur la structure, hélice à {:+.2} m du sol",
+                        sink.si(),
+                        l.wheel_load / 1e3,
+                        l.travel * 1e3,
+                        l.rebound,
+                        l.hard_point / 1e3,
+                        l.clearance
+                    ),
+                ))
+            });
+        }
+        Robustness::GroundLoop { speed } => {
+            return on_the_ground(aircraft, "Plein palonnier au roulage", |rest| {
+                let g = ground::ground_loop(aircraft, rest, speed.si());
+                Ok((
+                    g.run.finite,
+                    format!(
+                        "à {:.0} km/h, queue haute : cap jusqu'à {:.0}°, inclinaison {:.0}°, {:.1} kN sur la structure",
+                        speed.si() * 3.6,
+                        g.heading.to_degrees(),
+                        g.bank.to_degrees(),
+                        g.hard_point / 1e3
+                    ),
+                ))
+            });
+        }
+        Robustness::NoseOver { speed } => {
+            return on_the_ground(aircraft, "Capotage", |rest| {
+                let n = ground::nose_over(aircraft, rest, speed.si());
+                Ok((
+                    n.run.finite,
+                    format!(
+                        "manche poussé à fond, plein gaz, à {:.0} km/h : assiette jusqu'à {:.0}°, hélice à {:+.2} m du sol",
+                        speed.si() * 3.6,
+                        n.lowest_pitch.to_degrees(),
+                        n.clearance
+                    ),
+                ))
+            });
         }
     };
     let passed = record.finite && record.bounded;

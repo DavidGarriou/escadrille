@@ -20,7 +20,7 @@ use escadrille_fdm::aero::surface::{
 };
 use escadrille_fdm::aero::system::{LiftingSystem, MutualInduction};
 use escadrille_fdm::aircraft::{Aircraft, ControlTravel, Downwash, Propulsion};
-use escadrille_fdm::ground::{GroundError, HardPoint, Skid, Spring, Undercarriage, Wheel};
+use escadrille_fdm::ground::{GroundError, HardPoint, Rubbing, Skid, Spring, Undercarriage, Wheel};
 use escadrille_fdm::propulsion::engine::{AltitudeLaw, EngineError, EnginePoint, InlineEngine};
 use escadrille_fdm::propulsion::propeller::{Propeller, PropellerGeometry};
 use escadrille_fdm::rigid_body::{Inertia, MassProperties, Rotor};
@@ -303,17 +303,17 @@ pub struct SpringSpec {
 
 impl SpringSpec {
     /// The spring as the ground feels it, along the vertical, for a cord whose axis has
-    /// this cosine with the vertical: the cord carries less and moves further than the
-    /// wheel rises.
+    /// this cosine with the vertical. A load N on the wheel pulls the cord by N cos θ, and
+    /// a rise x moves it by x / cos θ: stiffnesses and damping go as 1 / cos² θ.
     fn vertical(&self, cosine: f64) -> Spring {
         let square = cosine * cosine;
         Spring {
             contact_stiffness: self.contact_stiffness_n_per_m,
             preload: self.preload_n / cosine,
-            stiffness: self.stiffness_n_per_m * square,
+            stiffness: self.stiffness_n_per_m / square,
             travel: self.travel.si() * cosine,
-            stop_stiffness: self.stop_stiffness_n_per_m * square,
-            damping: self.damping_n_s_per_m * square,
+            stop_stiffness: self.stop_stiffness_n_per_m / square,
+            damping: self.damping_n_s_per_m / square,
         }
     }
 }
@@ -333,11 +333,22 @@ pub struct WheelsSpec {
     pub cornering_slip: Angle,
 }
 
+fn rubbing(along: f64, grip: f64, cornering_slip: Angle) -> Rubbing {
+    Rubbing {
+        along,
+        grip,
+        cornering: cornering_slip.si().tan(),
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct SkidSpec {
     pub shoe_m: [f64; 3],
     pub spring: SpringSpec,
+    /// Friction along the shoe.
     pub friction: f64,
+    pub grip: f64,
+    pub cornering_slip: Angle,
 }
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -369,14 +380,12 @@ impl UndercarriageSpec {
             radius: 0.5 * w.diameter.si(),
             guide: guide * side,
             spring: w.spring.vertical(-guide.z),
-            rolling: w.rolling_resistance,
-            grip: w.grip,
-            cornering: w.cornering_slip.si().tan(),
+            rubbing: rubbing(w.rolling_resistance, w.grip, w.cornering_slip),
         };
         let skid = Skid {
             shoe: vec3(self.skid.shoe_m) - cg,
             spring: self.skid.spring.vertical(1.0),
-            friction: self.skid.friction,
+            rubbing: rubbing(self.skid.friction, self.skid.grip, self.skid.cornering_slip),
         };
         let hard_point = |position: DVec3| HardPoint {
             position: position - cg,

@@ -6,11 +6,13 @@
 //! scripts a ground loop or a nose-over: they come from these forces and the rigid body.
 //!
 //! - **Wheel**: a sphere of the tyre's radius around the axle, so that the contact stays
-//!   below it at any attitude. Tyre and rubber cord work in series ([`Spring`]). Rolling
-//!   resistance along the wheel; across it, a side force that grows with the slip angle up
-//!   to the grip. No brakes, and the wheels' own rotation is left out.
-//! - **Skid**: a shoe on a [`Spring`], with friction in every direction. It is the only
-//!   brake, and it does not steer.
+//!   below it at any attitude. Tyre and rubber cord work in series ([`Spring`]). No brakes,
+//!   and the wheels' own rotation is left out.
+//! - **Skid**: a shoe on a [`Spring`]. It is the only brake, and it does not steer, but a
+//!   narrow shoe cuts a groove in the turf and resists going sideways: behind the centre
+//!   of gravity, that is what keeps the aircraft straight at low speed.
+//! - Both rub the same way ([`Rubbing`]): a resistance along them; across them, a side
+//!   force that grows with the slip angle up to a grip.
 //! - **Hard point**: a part of the airframe that should not touch: a stiff spring and
 //!   friction, to carry the aircraft through a ground loop or a nose-over.
 //!
@@ -27,7 +29,7 @@ use crate::rigid_body::{RigidBodyState, Wrench};
 /// Speed of a contact point under which friction fades to zero, m/s (numerical, not
 /// physical): small enough for the creep at rest to stay slow, large enough to keep the
 /// slope of the skid's friction in yaw within what RK4 holds at the step of ADR 0005.
-pub const CREEP_SPEED: f64 = 0.05;
+pub const CREEP_SPEED: f64 = 0.02;
 
 /// Compression over which the damping comes in, m: a tyre gives no load in the instant
 /// it touches, however fast it sinks (numerical; much less than the static compression).
@@ -99,6 +101,44 @@ impl Spring {
     }
 }
 
+/// How a wheel or a skid's shoe rubs on the ground, relative to the normal load.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Rubbing {
+    /// Resistance along it.
+    pub along: f64,
+    /// Largest side force.
+    pub grip: f64,
+    /// Tangent of the slip angle at which the side force would reach the grip, were it
+    /// to go on growing at its initial slope.
+    pub cornering: f64,
+}
+
+impl Rubbing {
+    fn is_valid(&self) -> bool {
+        [self.along, self.grip]
+            .iter()
+            .all(|v| v.is_finite() && *v >= 0.0)
+            && self.cornering.is_finite()
+            && self.cornering > 0.0
+    }
+
+    /// Friction on the ground, NED frame, for a point moving at `velocity` under a normal
+    /// force, with the axis of the wheel or shoe at `axis` (NED frame); and its speed
+    /// along it.
+    fn force(&self, velocity: DVec3, normal: f64, axis: DVec3) -> (DVec3, f64) {
+        let side = DVec3::new(axis.x, axis.y, 0.0)
+            .try_normalize()
+            .unwrap_or(DVec3::Y);
+        let along = DVec3::new(side.y, -side.x, 0.0);
+        let rolling = velocity.dot(along);
+        let slip = velocity.dot(side);
+        let resistance = self.along * normal * saturate(rolling / CREEP_SPEED);
+        let scale = CREEP_SPEED.hypot(self.cornering * rolling);
+        let side_force = self.grip * normal * saturate(slip / scale);
+        (-along * resistance - side * side_force, rolling)
+    }
+}
+
 /// A wheel. Positions are in body axes from the centre of gravity.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Wheel {
@@ -109,13 +149,7 @@ pub struct Wheel {
     pub guide: DVec3,
     /// As the ground feels it: compression and travel along the vertical.
     pub spring: Spring,
-    /// Rolling resistance over the normal load.
-    pub rolling: f64,
-    /// Largest side force over the normal load.
-    pub grip: f64,
-    /// Tangent of the slip angle at which the side force would reach the grip, were it
-    /// to go on growing at its initial slope.
-    pub cornering: f64,
+    pub rubbing: Rubbing,
 }
 
 /// A tail skid.
@@ -124,8 +158,7 @@ pub struct Skid {
     /// Point of the shoe with the cord at rest, m.
     pub shoe: DVec3,
     pub spring: Spring,
-    /// Friction force over the normal load.
-    pub friction: f64,
+    pub rubbing: Rubbing,
 }
 
 /// A point of the airframe that is not meant to touch the ground.
@@ -228,7 +261,7 @@ impl Seen<'_> {
     }
 }
 
-/// Friction in every direction: a sliding shoe or a scraping wing tip.
+/// Friction in every direction: a scraping wing tip.
 fn sliding(velocity: DVec3, normal: f64, friction: f64) -> DVec3 {
     let slide = DVec3::new(velocity.x, velocity.y, 0.0);
     -slide * (friction * normal / slide.length().hypot(CREEP_SPEED))
@@ -243,16 +276,11 @@ impl Undercarriage {
         let positive = |v: f64| v.is_finite() && v > 0.0;
         let friction = |v: f64| v.is_finite() && v >= 0.0;
         let wheels_valid = wheels.iter().all(|w| {
-            w.axle.is_finite()
-                && positive(w.radius)
-                && w.spring.is_valid()
-                && friction(w.rolling)
-                && friction(w.grip)
-                && positive(w.cornering)
+            w.axle.is_finite() && positive(w.radius) && w.spring.is_valid() && w.rubbing.is_valid()
         });
         let skids_valid = skids
             .iter()
-            .all(|s| s.shoe.is_finite() && s.spring.is_valid() && friction(s.friction));
+            .all(|s| s.shoe.is_finite() && s.spring.is_valid() && s.rubbing.is_valid());
         let points_valid = hard_points.iter().all(|h| {
             h.position.is_finite()
                 && positive(h.stiffness)
@@ -312,7 +340,8 @@ impl Undercarriage {
             let velocity = seen.velocity(skid.shoe);
             let (load, cord_travel) = skid.spring.load(compression);
             let normal = skid.spring.normal(load, compression, velocity.z);
-            let friction = sliding(velocity, normal, skid.friction);
+            let axis = state.attitude * DVec3::Y;
+            let (friction, _) = skid.rubbing.force(velocity, normal, axis);
             out.wrench += seen.wrench(skid.shoe, normal, friction);
             out.contacts.push(Contact {
                 point: ContactPoint::Skid(i),
@@ -358,19 +387,9 @@ impl Undercarriage {
         let point = wheel.axle + wheel.guide * cord_travel + down * (wheel.radius - tyre);
         let velocity = seen.velocity(point);
         let normal = wheel.spring.normal(load, compression, velocity.z);
+        let (friction, rolling_speed) = wheel.rubbing.force(velocity, normal, attitude * DVec3::Y);
 
-        let axis = attitude * DVec3::Y;
-        let side = DVec3::new(axis.x, axis.y, 0.0)
-            .try_normalize()
-            .unwrap_or(DVec3::Y);
-        let along = DVec3::new(side.y, -side.x, 0.0);
-        let rolling_speed = velocity.dot(along);
-        let slip = velocity.dot(side);
-        let resistance = wheel.rolling * normal * saturate(rolling_speed / CREEP_SPEED);
-        let scale = CREEP_SPEED.hypot(wheel.cornering * rolling_speed);
-        let side_force = wheel.grip * normal * saturate(slip / scale);
-
-        out.wrench += seen.wrench(point, normal, -along * resistance - side * side_force);
+        out.wrench += seen.wrench(point, normal, friction);
         out.contacts.push(Contact {
             point: ContactPoint::Wheel(index),
             load: normal,

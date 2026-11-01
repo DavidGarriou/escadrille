@@ -106,9 +106,15 @@ Implémentation : `crates/fdm/src/propulsion/engine.rs`.
 
 ## Sol
 
-- Roues et béquille : ressort-amortisseur non linéaire par point de contact, frottement (herbe, terre) ; la béquille qui frotte est le seul « frein ».
-- Pas de freins ; au sol, on dirige par la gouverne de direction (dans le souffle d'hélice) et la béquille.
-- Points de contact supplémentaires (saumons d'aile, nez, dos) pour le cheval de bois et le capotage.
+Composant `escadrille_fdm::ground`, ADR 0008. Effort de pénalité par point de contact, intégré par le RK4 du vol, sans contrainte ni impulsion.
+
+- **Roue** : sphère autour de l'axe. Pneu en série avec le sandow précontraint, butée en fin de course ; amortissement qui entre sur 2 cm de compression ; le sol ne fait que pousser.
+- **Glissière inclinée** d'un angle θ sur la verticale : une charge N tire le sandow de N cos θ, et une montée x le déplace de x / cos θ. Vu du sol, raideurs et amortissement valent k / cos² θ, et la course S cos θ.
+- **Frottement** (`Rubbing`) : résistance le long ; en travers, μ N sat(tan α / tan α₀), sat(r) = r / √(1 + r²). Sous 0,02 m/s, il s'annule linéairement : aucune division par la vitesse, et une dérive lente à l'arrêt.
+- **Stabilité de route** : les roues sont devant le centre de gravité (déstabilisantes), la béquille loin derrière. L'avion va droit si C_béquille · b > C_roues · a, C étant la pente de la force latérale. Un sabot étroit trace un sillon et résiste de côté plus que dans l'axe : c'est lui qui tient l'avion droit à basse vitesse, queue basse. Queue haute, seuls le gouvernail et le pied le tiennent.
+- **Pas de freins** ; la béquille frotte et ne dirige pas. On tourne au palonnier dans le souffle, en poussant le manche pour alléger la béquille.
+- **Points de structure** (saumons, capot, dos, dérive, plan fixe) : ressort raide et frottement, pour le cheval de bois et le capotage.
+- **Essais** : `fdm_lab sol <avion>` ; dans `essais.ron`, manœuvres `TakeOff` et `GroundHandling`, robustesse `HardLanding`, `GroundLoop`, `NoseOver`. Ils se font sur `ground::FIELD` ; tous les autres essais volent au-dessus de `NO_GROUND`.
 
 ## Structure
 

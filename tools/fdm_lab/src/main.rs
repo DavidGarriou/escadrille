@@ -21,7 +21,7 @@ use fdm_lab::polar::{AirframePolar, Reference, airframe_polar};
 use fdm_lab::report::{Cruise, Report, markdown, time_step_change};
 use fdm_lab::slipstream::{TN1146, swirl_balance, tail_off_roll, tn1146_model, tn1146_speed};
 use fdm_lab::trim::{Flight, LEVEL_AT_SPEED, Trim, solve_robust};
-use fdm_lab::{qualitative, robustness};
+use fdm_lab::{ground, qualitative, robustness};
 
 #[derive(Debug, Parser)]
 #[command(version, about = "Headless flight-test laboratory for Panache blanc")]
@@ -90,6 +90,13 @@ enum Command {
     /// Gains of the flight assists, from the linearised model, written to
     /// `assets/aircraft/<id>/assist_gains.ron` (plan `m2-aides-pilotage.md`, step 1).
     Assist { aircraft: String },
+    /// The aircraft on the ground (plan `m2-train-sol.md`): at rest, at full power, starting
+    /// to roll, taking off, stopping, landing hard, turned too hard, over its nose.
+    Sol {
+        aircraft: String,
+        #[arg(long, default_value = "target/essais")]
+        out: PathBuf,
+    },
     /// Print the ISA sea-level constants used by the FDM.
     Constants,
 }
@@ -501,6 +508,109 @@ fn montee(assets: &Path, id: &str, deltas: &[f64], airfield: f64) -> Result<bool
     Ok(true)
 }
 
+/// `fdm_lab sol`: the ground tests, reported against no target (`spad7.md` § 5.7.4).
+fn sol(assets: &Path, id: &str, out: &Path) -> Result<bool, String> {
+    let built = build(assets, id, 1.0)?;
+    let aircraft = &built.aircraft;
+    let dir = out.join(id);
+    std::fs::create_dir_all(&dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+    let plot = |name: &str, title: &str, run: &ground::Run| {
+        plots::manoeuvre(&dir.join(format!("sol-{name}.png")), title, &run.trace())
+    };
+    let r = ground::rest(aircraft)?;
+    println!(
+        "Repos : assiette {:.1}°, {:.0} kg par roue, {:.0} kg sur la béquille, essieu {:.0} mm, ralenti {:.0} tr/min, reste {:.1} cm/s",
+        r.pitch.to_degrees(),
+        r.wheel_load / escadrille_fdm::constants::G0,
+        r.skid_load / escadrille_fdm::constants::G0,
+        r.travel * 1e3,
+        r.rpm,
+        r.creep * 100.0
+    );
+    let (rpm, thrust) = ground::run_up(aircraft, &r);
+    println!("Point fixe : {rpm:.0} tr/min, {thrust:.0} N");
+    match ground::start_of_the_roll(aircraft, &r) {
+        Some((throttle, rpm)) => println!(
+            "Mise en mouvement : gaz {:.0} %, {rpm:.0} tr/min",
+            throttle * 100.0
+        ),
+        None => println!("Mise en mouvement : l'avion ne bouge pas"),
+    }
+    let t = ground::take_off(aircraft, &r, true)?;
+    println!(
+        "Décollage : queue levée {:?} (s, km/h), envol {:?} (s, m, km/h), 15 m {:?} (s, m), écart de cap {:.1}°, palonnier jusqu'à {:.0} %",
+        t.tail_up,
+        t.lift_off,
+        t.screen,
+        t.swing.to_degrees(),
+        t.rudder * 100.0
+    );
+    plot("decollage", "Décollage", &t.run)?;
+    let free = ground::take_off(aircraft, &r, false)?;
+    let swing = free
+        .run
+        .samples
+        .iter()
+        .map(|s| s.heading)
+        .fold(0.0, |a: f64, b| if b.abs() > a.abs() { b } else { a });
+    println!(
+        "Sans palonnier : cap jusqu'à {:+.1}°, envol {:?}",
+        swing.to_degrees(),
+        free.lift_off
+    );
+    plot(
+        "decollage-sans-palonnier",
+        "Décollage sans palonnier",
+        &free.run,
+    )?;
+    let s = ground::stop(aircraft, &r)?;
+    println!(
+        "Arrêt : de {:.0} km/h, {:.0} m en {:.1} s, assiette minimale {:.1}°",
+        s.speed_kmh,
+        s.distance,
+        s.seconds,
+        s.lowest_pitch.to_degrees()
+    );
+    plot("arret", "Arrêt, trois points", &s.run)?;
+    for sink in [0.5, 1.0, 2.0, 3.0, 4.0] {
+        let l = ground::landing(aircraft, &r, sink)?;
+        println!(
+            "Posé à {sink:.1} m/s : roue {:.1} kN, béquille {:.1} kN, essieu {:.0} mm, rebond {:.2} m, structure {:.1} kN, hélice {:+.2} m",
+            l.wheel_load / 1e3,
+            l.skid_load / 1e3,
+            l.travel * 1e3,
+            l.rebound,
+            l.hard_point / 1e3,
+            l.clearance
+        );
+    }
+    let g = ground::ground_loop(aircraft, &r, 60.0 / 3.6);
+    println!(
+        "Plein palonnier 2 s à 60 km/h, queue haute : cap {:.0}°, inclinaison {:.0}°, structure {:.1} kN",
+        g.heading.to_degrees(),
+        g.bank.to_degrees(),
+        g.hard_point / 1e3
+    );
+    plot("cheval-de-bois", "Plein palonnier à 60 km/h", &g.run)?;
+    for (throttle, stick) in [(0.2, 0.0), (0.3, 0.0), (0.3, -1.0), (0.5, -1.0)] {
+        let (rate, speed) = ground::taxi_turn(aircraft, &r, throttle, stick);
+        println!(
+            "Virage au roulage, gaz {:.0} %, manche {stick:+.0} : {:.1} °/s à {:.0} km/h",
+            throttle * 100.0,
+            rate.to_degrees(),
+            speed * 3.6
+        );
+    }
+    let n = ground::nose_over(aircraft, &r, 70.0 / 3.6);
+    println!(
+        "Manche poussé à fond à 70 km/h, plein gaz : assiette {:.0}°, hélice {:+.2} m",
+        n.lowest_pitch.to_degrees(),
+        n.clearance
+    );
+    plot("capotage", "Manche poussé à fond à 70 km/h", &n.run)?;
+    Ok(true)
+}
+
 fn assist(assets: &Path, id: &str) -> Result<bool, String> {
     let built = build(assets, id, 1.0)?;
     let gains = assist_gains(&built.aircraft, &STILL_AIR)?;
@@ -611,6 +721,7 @@ fn main() -> ExitCode {
             out,
         } => essai(&cli.assets, &aircraft, &confidence, &out),
         Command::Inertia { aircraft } => inertia(&cli.assets, &aircraft),
+        Command::Sol { aircraft, out } => sol(&cli.assets, &aircraft, &out),
         Command::Assist { aircraft } => assist(&cli.assets, &aircraft),
         Command::Montee {
             aircraft,

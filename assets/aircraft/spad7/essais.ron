@@ -73,8 +73,18 @@ Essais(
             name: "embardée au décollage",
             description: "Couple marqué : à pleine puissance, l'avion part à gauche, contré au pied droit (M2, au sol)",
             source: "T8 (spad7.md § 6.2)",
+            manoeuvre: Some(TakeOff),
+        ),
+        (
+            name: "au sol",
+            description: "Roule facilement, sans tendance à tourner ; s'arrête court, queue lourde ; capote peu (à confirmer, S.XIII)",
+            source: "T8 (spad7.md § 6.2)",
+            manoeuvre: Some(GroundHandling),
         ),
     ],
 
-    robustness: [ZeroAirspeed, TailSlide, SpinEntryRecovery(turns: 3), Inverted(seconds: 10.0), MaxDive], // E: the scenarios of the M1 plan (step 7)
+    robustness: [
+        ZeroAirspeed, TailSlide, SpinEntryRecovery(turns: 3), Inverted(seconds: 10.0), MaxDive, // E: the scenarios of the M1 plan (step 7)
+        HardLanding(sink: Ms(4.0)), GroundLoop(speed: Kmh(60.0)), NoseOver(speed: Kmh(70.0)),   // E: the ground of plan m2-train-sol.md, step 4: sink beyond what the gear takes, rough handling
+    ],
 )

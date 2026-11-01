@@ -130,7 +130,9 @@ Aircraft(
         skid: (
             shoe_m: (0.0, 0.0, 0.0),                      // C: sabot de la béquille, sandow au repos
             spring: (/* comme pour les roues */),
-            friction: 0.0,                                // E: seul frein de l'avion
+            friction: 0.0,                                // E: le long du sabot, seul frein de l'avion
+            grip: 0.0,                                    // E: en travers : un sabot étroit trace un sillon
+            cornering_slip: Deg(0.0),                     // E: comme pour les roues
         ),
         hard_point_stiffness_n_per_m: 0.0,                // E:
         hard_point_damping_n_s_per_m: 0.0,                // E:
