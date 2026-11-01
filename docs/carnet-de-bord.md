@@ -2387,3 +2387,29 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Docs à jour :
   - skills `pipeline-assets` (pièces, nœuds `hit_` `fx_` `dmg_`, cassures, galeries, contrôles), `combat` et `format-avion.md` (volumes de `maquette.ron`) ;
   - section « Réalisation » du plan.
+
+### Reprise du dépôt sur la machine du joueur
+
+- **Q** Le joueur : « Je t'ai fourni un répertoire de travail qui est un dépôt d'une autre session. Analyse ce dépôt pour reprendre le travail. »
+- **A** Lecture de la feuille de route, des plans, du carnet, des retours et du code. Aucun code ni asset modifié. Pour la première fois, Claude travaille sur la machine du joueur (Fedora, RX 7800 XT, manette branchée) et non plus dans le conteneur.
+- **R** Vérifications sur cette machine :
+  - `cargo fmt --check` et `cargo clippy --workspace --all-targets -- -D warnings` : rien à signaler ;
+  - `cargo test --workspace` : 319 tests passés, 0 échec, 1 ignoré ;
+  - `just modele spad7` sous **Blender 5.2.2** (sortie dans `target/`) : `asset_check` passe ;
+  - capture `avion-studio` sur la RX 7800 XT, et `degats-spad7` déjà présente dans `target/captures/` : **regardées**, rendu correct.
+- **R** Modèle reconstruit sous Blender 5.2.2, comparé au `model.glb` du dépôt, fait sous 4.0.2 :
+  - mêmes 192 nœuds, 201 851 triangles et 20 matériaux ; textures identiques au pixel, mieux compressées (6,7 Mo au lieu de 7,3) ;
+  - une seule différence : le `clearcoatRoughnessFactor` de l'hélice (0,03) n'est plus exporté. Le script ne le fixe pas, il prenait la valeur par défaut de Blender. Effet très faible ; à regarder quand le modèle sera régénéré dans `assets/`.
+- **R** Coût de rendu sur la RX 7800 XT, en 1920×1080 : 4,30 ms par image pour `avion-studio`, 4,36 pour `degats-spad7`, 4,44 pour `degats-spad7-proche`, soit environ 225 images par seconde avec les 192 nœuds. C'est la mesure que le plan `m4-degats-modele-3d.md` laissait à faire ; sans nuages ni terrain réel, elle ne dit rien encore du budget du M3.
+- **⚠** `cargo-nextest` et `cargo-deny` ne sont pas installés ici : `just test` et `just check` ne tournent pas tels quels, et `cargo deny check` n'a pas pu être vérifié. `Cargo.lock` n'a pas changé depuis le 2026-10-28. Rien n'a été installé sans l'accord du joueur (commande dans le `README.md`).
+- **R** État des jalons :
+  - **M1** : encore ouvert. Tout est fait sauf l'essai du joueur, la lecture du rapport d'essais, dont l'accord déclenche l'écriture de `docs/essais/spad7.md`. La ligne « Jalon en cours » de `CLAUDE.md` reste donc juste ;
+  - **M2** : vol d'essai et aides faits. Il manque l'essentiel de la fin : le **train et le sol**, absents de `crates/fdm` et du schéma d'`aircraft.ron`, donc décollage et atterrissage ; puis les gizmos de forces et le vol de dix minutes ;
+  - **M3** : avancé sur le modèle ; manquent le poste de pilotage (B7), le bois, le métal et la rugosité (B5), la seconde livrée, puis nuages et terrain ;
+  - **M4** : modèle 3D prêt ; logique, armes et effets en vol non commencés, sans plan validé.
+- **⚠** Le joueur n'a pas volé depuis le recul du centrage du 2026-10-31, qui visait le manche nerveux : le dernier retour date du 2026-10-29. Le détail par préréglage reste aussi à recueillir.
+- **⚠** Toutes les demandes aux archives (D1 à D15) sont encore « à envoyer », sauf D12, en attente. Elles relèvent du joueur.
+- **⚠** Décision encore ouverte : avancer un premier son (moteur et vent) juste après le M2 (`combat-degats.md` § 6, question 1).
+- **⚠** Tout le travail est sur `main-tcd0yw`, 187 commits devant `main`. `gh` n'est pas installé ici : l'existence d'une pull request n'a pas pu être vérifiée.
+- **⚠** Push impossible à la clôture : l'agent SSH de cette machine n'a aucune clé chargée (`Permission denied (publickey)`) et il n'y a pas de `~/.ssh/config`. Cette entrée est commitée en local. Claude n'a pas utilisé directement les fichiers de clé de `~/.ssh` : le joueur charge sa clé, puis pousse.
+- **D** Proposition au joueur : installer les deux outils, faire un vol court pour juger le centrage, puis passer au plan du train et du sol, qui clôt le M2. Aucun code avant la validation de ce plan.
