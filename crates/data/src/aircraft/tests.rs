@@ -1,15 +1,21 @@
 use std::path::PathBuf;
 
 use escadrille_fdm::aircraft::PilotControls;
-use escadrille_fdm::environment::StandardEnvironment;
+use escadrille_fdm::environment::{NO_GROUND, StandardEnvironment};
 use escadrille_fdm::rigid_body::RigidBodyState;
 use glam::{DMat3, DQuat, EulerRot};
 
 use super::*;
 use crate::from_checked_str;
+use crate::mockup::load_mockup;
 
 fn assets() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures/assets")
+}
+
+/// The game's own assets, for what the fixtures do not hold.
+fn game_assets() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets")
 }
 
 fn fixture() -> AircraftData {
@@ -105,7 +111,10 @@ fn flying(speed: f64, alpha: f64) -> RigidBodyState {
 #[test]
 fn control_signs_come_from_the_geometry() {
     let aircraft = fixture().build(&FULL).unwrap().aircraft;
-    let env = StandardEnvironment::default();
+    let env = StandardEnvironment {
+        ground_altitude: NO_GROUND,
+        ..StandardEnvironment::default()
+    };
     let state = flying(45.0, 0.05);
     let neutral = PilotControls::default();
     let moment = |c: PilotControls| aircraft.loads(&state, &c, &env).wrench.moment;
@@ -235,4 +244,37 @@ fn an_installed_engine_delivers_less_than_on_the_bench() {
         installed < 0.97 * bench && installed > 0.94 * bench,
         "{installed} {bench}"
     );
+}
+
+#[test]
+fn the_undercarriage_stands_where_the_3d_model_draws_it() {
+    let data = load_aircraft(&game_assets(), "spad7").unwrap();
+    let spec = data.file.undercarriage.as_ref().unwrap();
+    let mockup = load_mockup(&game_assets(), "spad7").unwrap().unwrap();
+    assert_eq!(spec.wheels.centre_m, mockup.wheels.centre_m);
+    assert_eq!(spec.wheels.diameter, mockup.wheels.diameter);
+    assert_eq!(spec.skid.shoe_m, mockup.skid_m);
+}
+
+#[test]
+fn the_undercarriage_is_built_from_the_centre_of_gravity() {
+    let data = load_aircraft(&game_assets(), "spad7").unwrap();
+    let built = data.build(&FULL).unwrap();
+    let gear = built.aircraft.undercarriage().unwrap();
+    let cg = built.summary.cg_from_datum;
+    let [right, left] = gear.wheels() else {
+        panic!("two wheels: {:?}", gear.wheels());
+    };
+    let spec = data.file.undercarriage.as_ref().unwrap();
+    assert_eq!(right.axle + cg, DVec3::from_array(spec.wheels.centre_m));
+    assert_eq!(left.axle.y + cg.y, -spec.wheels.centre_m[1]);
+    assert_eq!(left.guide.y, -right.guide.y);
+    // A sloping cord: the wheel rises less than the cord moves, against a softer spring.
+    let cosine = -right.guide.z;
+    assert!((0.5..0.9).contains(&cosine), "{cosine}");
+    assert!(right.spring.travel < spec.wheels.spring.travel.si());
+    assert!(right.spring.stiffness < spec.wheels.spring.stiffness_n_per_m);
+    assert_eq!(gear.skids().len(), 1);
+    let mirrored = spec.hard_points.iter().filter(|h| h.mirrored).count();
+    assert_eq!(gear.hard_points().len(), spec.hard_points.len() + mirrored);
 }

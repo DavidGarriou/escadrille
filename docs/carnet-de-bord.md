@@ -2465,3 +2465,9 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Étape 2 : `Aircraft::advance` fait les deux sous-pas de l'ADR 0005, et le jeu l'appelle à 120 Hz. Le jeu calcule donc à 240 Hz, comme `fdm_lab`. `Aircraft::step` reste un pas RK4 simple : les outils, qui lui passent déjà 1/240 s, ne changent pas. Les tests des aides et le test d'équilibre du vol d'essai passent par `advance`.
 - **R** Coût mesuré sur le Ryzen 7 7800X3D : **1,0 ms par pas RK4**, 1,7 ms dans le conteneur. Soit 2 ms par pas de jeu, un quart de cœur pour un avion. À revoir au M4 avec plusieurs avions : l'ADR 0005 prévoit alors un pas plus long pour les avions lointains de l'IA.
 - **A** `just check` passe, `just test` aussi (338 tests). L'ADR 0008 attendra la mesure de convergence au sol, à l'étape 4.
+- **A** Étape 3 : section `undercarriage` dans `aircraft.ron` et son schéma (`crates/data`), décrite dans `format-avion.md`. Le chargeur construit le train depuis le centre de gravité.
+  - **Géométrie** : roues et béquille du dessin de 1917, identiques à `maquette.ron` (test).
+  - **Glissière** : la pente de la jambe arrière, soit environ 46° vers l'arrière. L'essieu recule donc en montant. Le chargeur en déduit le ressort vu du sol.
+  - **Sandows, pneus, frottements** : valeurs `E:`, en attendant la treizième passe de l'historien. La course de 125 mm vient du S.XI.
+- **⚠** Piège évité : `fdm_lab` place ses calculs au niveau de la mer à 0 m d'altitude, sol compris. Avec un train, les roues auraient été sous terre. Ses environnements passent à `NO_GROUND`, sans sol : les essais en vol ne le voient pas.
+- **A** `just test` passe (340 tests) avec le vrai train du SPAD : les essais en vol ne bougent pas. Dans le jeu, l'ancien arrêt au contact reste en place jusqu'à l'étape 5.

@@ -20,6 +20,7 @@ use escadrille_fdm::aero::surface::{
 };
 use escadrille_fdm::aero::system::{LiftingSystem, MutualInduction};
 use escadrille_fdm::aircraft::{Aircraft, ControlTravel, Downwash, Propulsion};
+use escadrille_fdm::ground::{GroundError, HardPoint, Skid, Spring, Undercarriage, Wheel};
 use escadrille_fdm::propulsion::engine::{AltitudeLaw, EngineError, EnginePoint, InlineEngine};
 use escadrille_fdm::propulsion::propeller::{Propeller, PropellerGeometry};
 use escadrille_fdm::rigid_body::{Inertia, MassProperties, Rotor};
@@ -288,6 +289,119 @@ pub struct DimensionsSpec {
     pub height: Length,
 }
 
+/// What touches the ground in series with rubber cord (`escadrille_fdm::ground::Spring`).
+/// Preload, stiffnesses, travel and damping are those of the cord, along its own axis.
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct SpringSpec {
+    pub contact_stiffness_n_per_m: f64,
+    pub preload_n: f64,
+    pub stiffness_n_per_m: f64,
+    pub travel: Length,
+    pub stop_stiffness_n_per_m: f64,
+    pub damping_n_s_per_m: f64,
+}
+
+impl SpringSpec {
+    /// The spring as the ground feels it, along the vertical, for a cord whose axis has
+    /// this cosine with the vertical: the cord carries less and moves further than the
+    /// wheel rises.
+    fn vertical(&self, cosine: f64) -> Spring {
+        let square = cosine * cosine;
+        Spring {
+            contact_stiffness: self.contact_stiffness_n_per_m,
+            preload: self.preload_n / cosine,
+            stiffness: self.stiffness_n_per_m * square,
+            travel: self.travel.si() * cosine,
+            stop_stiffness: self.stop_stiffness_n_per_m * square,
+            damping: self.damping_n_s_per_m * square,
+        }
+    }
+}
+
+/// The right wheel, mirrored.
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct WheelsSpec {
+    /// Axle with the cord at rest.
+    pub centre_m: [f64; 3],
+    pub diameter: Length,
+    /// Direction along which the axle rises under load.
+    pub guide: [f64; 3],
+    pub spring: SpringSpec,
+    pub rolling_resistance: f64,
+    pub grip: f64,
+    /// Slip angle at which the side force would reach the grip, on its initial slope.
+    pub cornering_slip: Angle,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct SkidSpec {
+    pub shoe_m: [f64; 3],
+    pub spring: SpringSpec,
+    pub friction: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct HardPointSpec {
+    pub name: String,
+    pub position_m: [f64; 3],
+    pub mirrored: bool,
+}
+
+/// What touches the ground (`escadrille_fdm::ground`).
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct UndercarriageSpec {
+    pub wheels: WheelsSpec,
+    pub skid: SkidSpec,
+    pub hard_point_stiffness_n_per_m: f64,
+    pub hard_point_damping_n_s_per_m: f64,
+    pub hard_point_friction: f64,
+    pub hard_points: Vec<HardPointSpec>,
+}
+
+impl UndercarriageSpec {
+    /// Positions from the centre of gravity `cg`.
+    fn build(&self, cg: DVec3) -> Result<Undercarriage, GroundError> {
+        let w = &self.wheels;
+        let guide = vec3(w.guide).normalize_or_zero();
+        let mirror = DVec3::new(1.0, -1.0, 1.0);
+        let wheel = |side: DVec3| Wheel {
+            axle: vec3(w.centre_m) * side - cg,
+            radius: 0.5 * w.diameter.si(),
+            guide: guide * side,
+            spring: w.spring.vertical(-guide.z),
+            rolling: w.rolling_resistance,
+            grip: w.grip,
+            cornering: w.cornering_slip.si().tan(),
+        };
+        let skid = Skid {
+            shoe: vec3(self.skid.shoe_m) - cg,
+            spring: self.skid.spring.vertical(1.0),
+            friction: self.skid.friction,
+        };
+        let hard_point = |position: DVec3| HardPoint {
+            position: position - cg,
+            stiffness: self.hard_point_stiffness_n_per_m,
+            damping: self.hard_point_damping_n_s_per_m,
+            friction: self.hard_point_friction,
+        };
+        let hard_points = self
+            .hard_points
+            .iter()
+            .flat_map(|h| {
+                let right = vec3(h.position_m);
+                [Some(right), h.mirrored.then_some(right * mirror)]
+            })
+            .flatten()
+            .map(hard_point)
+            .collect();
+        Undercarriage::new(
+            vec![wheel(DVec3::ONE), wheel(mirror)],
+            vec![skid],
+            hard_points,
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename = "Aircraft")]
 pub struct AircraftFile {
@@ -313,6 +427,9 @@ pub struct AircraftFile {
     pub engine: EngineSpec,
     pub propeller: PropellerSpec,
     pub travel: TravelSpec,
+    /// What touches the ground; without it, the aircraft does not feel the ground.
+    #[serde(default)]
+    pub undercarriage: Option<UndercarriageSpec>,
 }
 
 /// An aircraft file with the aerofoil and propeller files it refers to.
@@ -755,6 +872,13 @@ impl AircraftData {
             travel,
         )
         .map_err(|e| self.invalid(format!("aircraft: {e:?}")))?;
+        let aircraft = match &f.undercarriage {
+            Some(spec) => aircraft.with_undercarriage(
+                spec.build(cg)
+                    .map_err(|e| self.invalid(format!("undercarriage: {e:?}")))?,
+            ),
+            None => aircraft,
+        };
         Ok(Built {
             aircraft,
             summary: Summary {

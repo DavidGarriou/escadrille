@@ -105,8 +105,9 @@ pub struct Wheel {
     /// Axle with the cord at rest, m.
     pub axle: DVec3,
     pub radius: f64,
-    /// Unit vector along which the axle rises under load.
+    /// Unit vector along which the axle rises under load; it has to rise.
     pub guide: DVec3,
+    /// As the ground feels it: compression and travel along the vertical.
     pub spring: Spring,
     /// Rolling resistance over the normal load.
     pub rolling: f64,
@@ -144,7 +145,7 @@ pub struct HardPoint {
 pub enum GroundError {
     /// A wheel, skid or hard point has a non-finite or non-positive value.
     BadContact,
-    /// The guide of an axle is not a unit vector.
+    /// The guide of an axle is not a unit vector, or does not rise.
     BadGuide,
 }
 
@@ -164,7 +165,7 @@ pub struct Contact {
     pub load: f64,
     /// Total compression, m.
     pub compression: f64,
-    /// Travel of the cord, m (0 for a hard point).
+    /// Travel of the axle along its guide, or of the skid's cord, m (0 for a hard point).
     pub cord_travel: f64,
     /// Speed along the wheel, m/s (0 for a skid or a hard point).
     pub rolling_speed: f64,
@@ -262,7 +263,8 @@ impl Undercarriage {
         if !(wheels_valid && skids_valid && points_valid) {
             return Err(GroundError::BadContact);
         }
-        if !wheels.iter().all(|w| (w.guide.length() - 1.0).abs() < 1e-9) {
+        let rises = |w: &Wheel| (w.guide.length() - 1.0).abs() < 1e-9 && w.guide.z < 0.0;
+        if !wheels.iter().all(rises) {
             return Err(GroundError::BadGuide);
         }
         let reach = wheels
@@ -350,7 +352,8 @@ impl Undercarriage {
         }
         let attitude = seen.state.attitude;
         let down = attitude.conjugate() * DVec3::Z;
-        let (load, cord_travel) = wheel.spring.load(compression);
+        let (load, rise) = wheel.spring.load(compression);
+        let cord_travel = rise / -wheel.guide.z;
         let tyre = load / wheel.spring.contact_stiffness;
         let point = wheel.axle + wheel.guide * cord_travel + down * (wheel.radius - tyre);
         let velocity = seen.velocity(point);

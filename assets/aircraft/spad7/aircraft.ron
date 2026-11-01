@@ -204,5 +204,50 @@ Aircraft(
         rotor_inertia_kg_m2: 6.7,                                              // C: wooden propeller of 22 kg (E:), m R² / 5 = 6.3 at 2.40 m, plus 0.3 to 0.6 of crankshaft
     ),
 
+    // Plan docs/plans/m2-train-sol.md. The sources give the kind of undercarriage, not its
+    // figures: rubber cord, tyres and friction are estimates, to be corrected by the
+    // thirteenth research pass.
+    undercarriage: Some((
+        wheels: (
+            centre_m: (0.136, 0.77, 0.764),                                    // C: axle on the 1917 drawing at line centres (T6), as in maquette.ron
+            diameter: Mm(610.0),                                               // C: tyre 0.608 m at line centre on the drawing (T6), as in maquette.ron
+            guide: (-0.724, 0.0, -0.689),                                      // C: from the axle along the rear leg of maquette.ron (x −0.561, z −0.534): the axle slides along it (S48)
+            spring: (
+                contact_stiffness_n_per_m: 250000.0,                           // E: a tyre of 75 mm section about 11 mm flatter under the 290 kg of a wheel, and 50 mm near its limit
+                preload_n: 500.0,                                              // E: the cord keeps the axle at the foot of its slides in flight, with little to spare
+                stiffness_n_per_m: 75000.0,                                    // E: with the preload, the axle reaches its stop at a sink of about 2.2 m/s: a drop of about 25 cm
+                travel: Mm(125.0),                                             // S: 125 mm on the S.XI, comparable of the family (spad7.md § 2.5.1), confidence C
+                stop_stiffness_n_per_m: 2000000.0,                             // E: axle on the end of its slides, stiff compared with the cord
+                damping_n_s_per_m: 1700.0,                                     // E: about 0.12 of critical at the wheel, rubber and the slides' rubbing together: rebounds to about two thirds of the speed
+            ),
+            rolling_resistance: 0.07,                                          // E: firm grass; spad7-calculs.md takes 0.05 to 0.10 for the take-off
+            grip: 0.6,                                                         // E: tyre sideways on grass
+            cornering_slip: Deg(12.0),                                         // E: usual order for a narrow tyre at low pressure
+        ),
+        skid: (
+            shoe_m: (-4.38, 0.0, -0.09),                                       // C: shoe on the 1917 drawing (T6), as in maquette.ron
+            spring: (
+                contact_stiffness_n_per_m: 60000.0,                            // E: an ash shoe sinking into turf
+                preload_n: 200.0,                                              // E: as for the wheels
+                stiffness_n_per_m: 30000.0,                                    // E: about 4 cm under the 150 kg the skid carries at rest, a third of its travel
+                travel: Mm(120.0),                                             // E: order of a wheel's travel
+                stop_stiffness_n_per_m: 2000000.0,                             // E: as for the wheels
+                damping_n_s_per_m: 500.0,                                      // E: about 0.2 of critical at the tail, the leaf rubbing on its pivot
+            ),
+            friction: 0.5,                                                     // E: an ash or iron shoe rubbing on turf: the only brake
+        ),
+        hard_point_stiffness_n_per_m: 150000.0,                                // E: wood and fabric give a few centimetres under a tonne
+        hard_point_damping_n_s_per_m: 8000.0,                                  // E: wood and fabric do not rebound
+        hard_point_friction: 0.5,                                              // E: as for the skid
+        hard_points: [
+            (name: "saumon inférieur", position_m: (-0.3025, 3.91, 0.0), mirrored: true),  // C: tip of the lower wing above
+            (name: "saumon supérieur", position_m: (-0.3025, 3.91, -1.27), mirrored: true), // C: tip of the upper wing above
+            (name: "capot", position_m: (0.65, 0.0, -0.131), mirrored: false),             // C: lowest point of the cowling at the nose, maquette.ron
+            (name: "plan supérieur", position_m: (-0.3025, 0.0, -1.27), mirrored: false),  // C: upper wing on the axis, for an aircraft on its back
+            (name: "dérive", position_m: (-4.757, 0.0, -1.40), mirrored: false),           // C: top of the fin above
+            (name: "plan fixe", position_m: (-4.26, 1.405, -0.70), mirrored: true),        // C: tip of the tailplane above
+        ],
+    )),
+
     travel: (aileron: Deg(20.0), elevator: Deg(25.0), rudder: Deg(30.0)),      // E: usual period throws, no SPAD source (the XIII manual, S38, still to be found)
 )

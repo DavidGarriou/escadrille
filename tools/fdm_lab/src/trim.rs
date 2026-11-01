@@ -389,7 +389,7 @@ pub(crate) mod tests {
     use std::path::PathBuf;
 
     use escadrille_data::aircraft::{Loading, load_aircraft};
-    use escadrille_fdm::environment::StandardEnvironment;
+    use escadrille_fdm::environment::{NO_GROUND, StandardEnvironment};
 
     use super::*;
 
@@ -406,7 +406,7 @@ pub(crate) mod tests {
 
     pub(crate) const STILL_AIR: StandardEnvironment = StandardEnvironment {
         wind_ned: DVec3::ZERO,
-        ground_altitude: 0.0,
+        ground_altitude: NO_GROUND,
     };
 
     /// The test flight's start (`assets/scenarios/vol-essai.ron`, plan

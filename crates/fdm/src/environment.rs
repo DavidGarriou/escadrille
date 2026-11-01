@@ -8,6 +8,10 @@ use glam::DVec3;
 
 use crate::atmosphere::{AtmosphereState, isa};
 
+/// Ground altitude of a world without ground: the flight tests, whose states at sea level
+/// stand for the air over the sea, with the wheels nowhere near it.
+pub const NO_GROUND: f64 = f64::NEG_INFINITY;
+
 pub trait Environment {
     /// Air properties at a NED position.
     fn atmosphere(&self, position_ned: DVec3) -> AtmosphereState;

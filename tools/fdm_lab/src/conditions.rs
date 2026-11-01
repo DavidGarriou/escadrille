@@ -12,7 +12,7 @@
 use escadrille_fdm::aircraft::Aircraft;
 use escadrille_fdm::atmosphere::{AtmosphereState, isa};
 use escadrille_fdm::constants::{GAMMA_AIR, R_AIR};
-use escadrille_fdm::environment::{Environment, altitude};
+use escadrille_fdm::environment::{Environment, NO_GROUND, altitude};
 use glam::DVec3;
 
 use crate::performance::{CLIMB_STEP, PerformanceError, best_climb, integrate_climb};
@@ -57,7 +57,7 @@ impl Environment for NonStandardDay {
     }
 
     fn ground_altitude(&self, _position_ned: DVec3) -> f64 {
-        0.0
+        NO_GROUND
     }
 }
 
@@ -170,7 +170,7 @@ mod tests {
         }
 
         fn ground_altitude(&self, _position_ned: DVec3) -> f64 {
-            0.0
+            NO_GROUND
         }
     }
 

@@ -109,10 +109,44 @@ Aircraft(
     ),
 
     travel: (aileron: Deg(0.0), elevator: Deg(0.0), rudder: Deg(0.0)), // S: / E:
+
+    undercarriage: Some((                                 // facultatif : sans lui, l'avion ne sent pas le sol
+        wheels: (                                         // roue droite, symétrisée
+            centre_m: (0.0, 0.0, 0.0),                    // C: axe de la roue, sandow au repos
+            diameter: Mm(0.0),                            // C:
+            guide: (0.0, 0.0, -1.0),                      // C: direction de montée de l'essieu sous la charge, normalisée au chargement ; elle doit monter
+            spring: (                                     // pneu en série avec le sandow
+                contact_stiffness_n_per_m: 0.0,           // E: pneu
+                preload_n: 0.0,                           // E: charge à partir de laquelle le sandow cède
+                stiffness_n_per_m: 0.0,                   // E: sandow
+                travel: Mm(0.0),                          // S: / E: course de l'essieu
+                stop_stiffness_n_per_m: 0.0,              // E: butée en fin de course
+                damping_n_s_per_m: 0.0,                   // E:
+            ),
+            rolling_resistance: 0.0,                      // E: résistance au roulement / charge
+            grip: 0.0,                                    // E: force latérale maximale / charge
+            cornering_slip: Deg(0.0),                     // E: angle de dérive où la force latérale atteindrait l'adhérence sur sa pente initiale
+        ),
+        skid: (
+            shoe_m: (0.0, 0.0, 0.0),                      // C: sabot de la béquille, sandow au repos
+            spring: (/* comme pour les roues */),
+            friction: 0.0,                                // E: seul frein de l'avion
+        ),
+        hard_point_stiffness_n_per_m: 0.0,                // E:
+        hard_point_damping_n_s_per_m: 0.0,                // E:
+        hard_point_friction: 0.0,                         // E:
+        hard_points: [                                    // ce qui ne devrait pas toucher : saumons, capot, dérive…
+            (name: "saumon", position_m: (0.0, 0.0, 0.0), mirrored: true), // C:
+        ],
+    )),
 )
 ```
 
-Prévus plus tard, hors du schéma actuel : train d'atterrissage (M2), limites structurales (M4), armes (M4).
+- **Ressorts** : préchargement, raideurs, course et amortissement sont ceux du sandow, le long de son axe. Le chargeur en déduit le ressort que le sol ressent à la verticale, d'après la pente de `guide`.
+- **Cohérence** : pour un avion qui a un `maquette.ron`, roues et béquille y sont les mêmes. Un test le vérifie pour le SPAD.
+- **Essais en vol** : leurs états au niveau de la mer n'ont pas de sol sous eux (`NO_GROUND`, `escadrille_fdm::environment`).
+
+Prévus plus tard, hors du schéma actuel : limites structurales (M4), armes (M4).
 
 ### Charnière déclarée (`hinge_m`)
 

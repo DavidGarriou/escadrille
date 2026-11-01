@@ -10,7 +10,7 @@ use escadrille_data::aircraft::{Built, Loading, load_aircraft};
 use escadrille_data::essais::{Confidence, Quantitative, load_essais};
 use escadrille_data::masses::load_masses;
 use escadrille_fdm::aircraft::Aircraft;
-use escadrille_fdm::environment::{Environment, StandardEnvironment};
+use escadrille_fdm::environment::{Environment, NO_GROUND, StandardEnvironment};
 use fdm_lab::assist::{assist_gains, to_ron};
 use fdm_lab::campaign::{self, validated};
 use fdm_lab::conditions::{NonStandardDay, time_to_pressure_altitude};
@@ -96,7 +96,7 @@ enum Command {
 
 const STILL_AIR: StandardEnvironment = StandardEnvironment {
     wind_ned: glam::DVec3::ZERO,
-    ground_altitude: 0.0,
+    ground_altitude: NO_GROUND,
 };
 
 fn build(assets: &Path, id: &str, fuel_fraction: f64) -> Result<Built, String> {
