@@ -345,6 +345,80 @@ fn a_wing_tip_on_the_ground_pushes_it_up() {
 }
 
 #[test]
+fn the_contact_stays_on_the_ground_at_any_attitude() {
+    let gear = gear();
+    for pitch in [0.0, 0.26, -0.1] {
+        let attitude = DQuat::from_euler(EulerRot::ZYX, 0.4, pitch, 0.0);
+        let lowest = attitude * DVec3::new(0.6, 0.77, 1.2);
+        let state = RigidBodyState {
+            position_ned: DVec3::new(0.0, 0.0, -lowest.z - 0.3 + 0.1),
+            attitude,
+            ..RigidBodyState::default()
+        };
+        for contact in gear.loads(&state, &FLAT).contacts {
+            if let ContactPoint::Wheel(_) = contact.point {
+                let at = state.position_ned + attitude * contact.at;
+                assert!(
+                    at.z.abs() < 1e-3,
+                    "pitch {pitch}: {contact:?}, depth {}",
+                    at.z
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn tail_down_the_sloping_slide_feels_stiffer_from_the_ground() {
+    let gear = gear();
+    let load_at = |pitch: f64| {
+        let attitude = DQuat::from_euler(EulerRot::ZYX, 0.0, pitch, 0.0);
+        let lowest = attitude * DVec3::new(0.6, 0.77, 1.2);
+        let state = RigidBodyState {
+            position_ned: DVec3::new(0.0, 0.0, -lowest.z - 0.3 + 0.06),
+            attitude,
+            ..RigidBodyState::default()
+        };
+        gear.loads(&state, &FLAT).contacts[0].load
+    };
+    assert!(
+        load_at(0.26) > load_at(0.0),
+        "{} {}",
+        load_at(0.26),
+        load_at(0.0)
+    );
+}
+
+#[test]
+fn the_wheels_turn_a_slip_further_and_the_skid_turns_it_back() {
+    // Rolling with the nose off to the right of the path: the velocity comes from the left.
+    let attitude = DQuat::from_euler(EulerRot::ZYX, 0.1, 0.0, 0.0);
+    let state = |height: f64| RigidBodyState {
+        position_ned: DVec3::new(0.0, 0.0, -height),
+        attitude,
+        velocity_body: attitude.conjugate() * DVec3::X * 15.0,
+        ..RigidBodyState::default()
+    };
+    let wheels = Undercarriage::new(vec![wheel(0.77), wheel(-0.77)], Vec::new(), Vec::new());
+    let moment = wheels.unwrap().loads(&state(1.46), &FLAT).wrench.moment.z;
+    assert!(
+        moment > 0.0,
+        "ahead of the centre of gravity, they swing it: {moment}"
+    );
+    let skid = Skid {
+        shoe: DVec3::new(-3.9, 0.0, 0.35),
+        spring: SKID_SPRING,
+        rubbing: SHOE,
+    };
+    let tail = Undercarriage::new(Vec::new(), vec![skid], Vec::new());
+    let moment = tail.unwrap().loads(&state(0.3), &FLAT).wrench.moment.z;
+    assert!(
+        moment < 0.0,
+        "far behind it, the skid straightens it: {moment}"
+    );
+}
+
+#[test]
 fn the_ground_only_pushes() {
     let spring = WHEEL_SPRING;
     assert_eq!(spring.normal(spring.load(0.01).0, 0.01, -5.0), 0.0);

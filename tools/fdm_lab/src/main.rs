@@ -584,14 +584,19 @@ fn sol(assets: &Path, id: &str, out: &Path) -> Result<bool, String> {
             l.clearance
         );
     }
-    let g = ground::ground_loop(aircraft, &r, 60.0 / 3.6);
+    let g = ground::ground_loop(aircraft, &r, 75.0 / 3.6);
     println!(
-        "Plein palonnier 2 s à 60 km/h, queue haute : cap {:.0}°, inclinaison {:.0}°, structure {:.1} kN",
+        "Pied gauche 1 s à 75 km/h, queue haute, plein gaz : cap {:.0}°, inclinaison {:.0}°, structure {:.1} kN",
         g.heading.to_degrees(),
         g.bank.to_degrees(),
         g.hard_point / 1e3
     );
-    plot("cheval-de-bois", "Plein palonnier à 60 km/h", &g.run)?;
+    plot("cheval-de-bois", "Pied gauche à 75 km/h, plein gaz", &g.run)?;
+    let three = ground::rudder_on_three_points(aircraft, &r, 60.0 / 3.6);
+    println!(
+        "Même pied à 60 km/h, trois points, ralenti : cap {:.0}°",
+        three.heading.to_degrees()
+    );
     for (throttle, stick) in [(0.2, 0.0), (0.3, 0.0), (0.3, -1.0), (0.5, -1.0)] {
         let (rate, speed) = ground::taxi_turn(aircraft, &r, throttle, stick);
         println!(

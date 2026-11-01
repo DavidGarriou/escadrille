@@ -306,19 +306,15 @@ pub struct SpringSpec {
 }
 
 impl SpringSpec {
-    /// The spring as the ground feels it, along the vertical, for a cord whose axis has
-    /// this cosine with the vertical. A load N on the wheel pulls the cord by N cos θ, and
-    /// a rise x moves it by x / cos θ: stiffnesses and damping go as 1 / cos² θ.
-    fn vertical(&self, cosine: f64) -> Spring {
-        let square = cosine * cosine;
+    fn spring(&self) -> Spring {
         Spring {
             contact_stiffness: self.contact_stiffness_n_per_m,
             contact_travel: self.contact_travel.si(),
-            preload: self.preload_n / cosine,
-            stiffness: self.stiffness_n_per_m / square,
-            travel: self.travel.si() * cosine,
-            stop_stiffness: self.stop_stiffness_n_per_m / square,
-            damping: self.damping_n_s_per_m / square,
+            preload: self.preload_n,
+            stiffness: self.stiffness_n_per_m,
+            travel: self.travel.si(),
+            stop_stiffness: self.stop_stiffness_n_per_m,
+            damping: self.damping_n_s_per_m,
         }
     }
 }
@@ -388,12 +384,12 @@ impl UndercarriageSpec {
             axle: vec3(w.centre_m) * side - cg,
             radius: 0.5 * w.diameter.si(),
             guide: guide * side,
-            spring: w.spring.vertical(-guide.z),
+            spring: w.spring.spring(),
             rubbing: rubbing(w.rolling_resistance, w.grip, w.cornering_slip),
         };
         let skid = Skid {
             shoe: vec3(self.skid.shoe_m) - cg,
-            spring: self.skid.spring.vertical(1.0),
+            spring: self.skid.spring.spring(),
             rubbing: rubbing(self.skid.friction, self.skid.grip, self.skid.cornering_slip),
         };
         let hard_point = |position: DVec3| HardPoint {

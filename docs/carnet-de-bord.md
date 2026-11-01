@@ -2540,3 +2540,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Le sandow de S106 est calculé pour un axe vertical. Je garde ses **charges vues de la roue** (1,7 kN de précontrainte, 24,8 kN en butée), ramenées le long des glissières du SPAD, inclinées de 46° : 1,17 kN et 127 kN/m. Copier la raideur du cordon telle quelle aurait donné 35 kN en butée, loin au-delà de toute limite.
 - **D** Limite de 20 kN par roue, entre les 14 kN de la règle française et les 24,8 kN de S106 : 14 kN casseraient le train dès 2,3 m/s, un posé seulement ferme selon les mêmes sources.
 - **R** Résultats (`fdm_lab sol`) : au repos, 6 mm d'essieu, le chiffre de l'historien ; 5 kN par roue à 0,5 m/s, 11,5 kN à 2 m/s, 18 kN à 3 m/s, 25 kN à 4 m/s, essieu presque en butée. Arrêt de 84 km/h en 184 m.
+- **R** Revue de l'aérodynamicien sur le contact. Verdict : **bloquant**, un seul point, avec cinq points importants. Le reste tient : signes, stabilité de route, levée de queue, convergence.
+- **⚠** **Bloquant** : le ressort de roue était figé pour l'assiette de vol, avec cos θ = 0,689. Or l'avion roule et se pose à 15° queue basse, où la glissière fait 61° avec la verticale (cos θ = 0,48). La raideur vue du sol était sous-estimée d'un facteur 2,1, la charge de butée de 44 %, et le point d'application partait sous le sol. **A** Le ressort se calcule à chaque état, selon l'assiette ; `aircraft.ron` donne les valeurs le long du sandow. Deux tests ajoutés : le contact reste au sol à toute assiette, et la glissière est plus raide queue basse.
+- **A** Autres corrections de la revue :
+  - **course** : 125 mm lus comme la montée de la roue en ligne de vol, soit 181 mm le long de la glissière et 85,5 kN/m (`E:`, à vérifier sur l'image de S49) : on retrouve 3,2 kJ ;
+  - **amortissement** : 700 N·s/m, soit 0,2 du critique à l'assiette du posé. La revue note que le vrai terme physique serait le frottement dans la glissière ;
+  - **limite de roue** : 24 kN (S106), et son commentaire ne s'appuie plus sur le résultat visé ;
+  - **`CREEP_SPEED`** : 0,03 m/s. À 0,02, le mode couplé des roues, du roulis et du lacet sortait de la limite du RK4, avec un état au repos incohérent. Dérive à l'arrêt : 1,4 cm/s, soit 84 cm par minute ;
+  - **cheval de bois** : l'ancien essai vérifiait en fait un roulage sur trois points. Il devient une seconde de pied gauche à 75 km/h, queue haute, plein gaz ; le même pied à 60 km/h sur trois points n'écarte le cap que de 3° ;
+  - **décrochage** de référence pris à 0 m, et non à 500 m ;
+  - **commentaires** du sabot justifiés par la physique, et non par le résultat cherché.
+- **D** Adhérence latérale des roues gardée à 0,6, contre le 0,35 proposé par la fiche (confiance D) : c'est un frottement longitudinal transposé, et il interdit de basculer sur une aile, ce qui demande plus de 0,53.
+- **⚠** Le « 152 m » d'envol donné plus haut était **faux** : le temps était celui de l'envol, mais la distance et la vitesse étaient lues 0,5 s plus tard. Corrigé dans `fdm_lab`.
+- **R** Campagne après correction : les charges retombent sur les mesures de la revue, 12,3 kN à 2 m/s, 19,7 kN à 3 m/s, 28,2 kN à 4 m/s. Avec 24 kN, 3 m/s survit et 4 m/s casse. Arrêt comparable aux 164 et 217 m de Roosevelt Field (S108) ; « s'arrête court » reste qualitatif.
+- **A** `just test` passe (377 tests).

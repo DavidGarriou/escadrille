@@ -85,6 +85,6 @@ Essais(
 
     robustness: [
         ZeroAirspeed, TailSlide, SpinEntryRecovery(turns: 3), Inverted(seconds: 10.0), MaxDive, // E: the scenarios of the M1 plan (step 7)
-        HardLanding(sink: Ms(4.0)), GroundLoop(speed: Kmh(60.0)), NoseOver(speed: Kmh(70.0)),   // E: the ground of plan m2-train-sol.md, step 4: sink beyond what the gear takes, rough handling
+        HardLanding(sink: Ms(4.0)), GroundLoop(speed: Kmh(75.0)), NoseOver(speed: Kmh(70.0)),   // E: the ground of plan m2-train-sol.md, step 4: sink beyond what the gear takes, rough handling
     ],
 )

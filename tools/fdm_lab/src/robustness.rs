@@ -317,12 +317,12 @@ pub fn run(aircraft: &Aircraft, env: &dyn Environment, scenario: &Robustness) ->
             });
         }
         Robustness::GroundLoop { speed } => {
-            return on_the_ground(aircraft, "Plein palonnier au roulage", |rest| {
+            return on_the_ground(aircraft, "Cheval de bois", |rest| {
                 let g = ground::ground_loop(aircraft, rest, speed.si());
                 Ok((
                     g.run.finite,
                     format!(
-                        "à {:.0} km/h, queue haute : cap jusqu'à {:.0}°, inclinaison {:.0}°, {:.1} kN sur la structure",
+                        "plein gaz à {:.0} km/h, queue haute, une seconde de pied gauche : cap jusqu'à {:.0}°, inclinaison {:.0}°, {:.1} kN sur la structure",
                         speed.si() * 3.6,
                         g.heading.to_degrees(),
                         g.bank.to_degrees(),

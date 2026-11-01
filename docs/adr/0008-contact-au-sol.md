@@ -30,7 +30,7 @@ Contraintes :
 **Option 1 : efforts de pénalité dans le RK4, à 240 Hz**, dans `escadrille_fdm::ground`.
 
 - `Aircraft::advance` fait les deux sous-pas de l'ADR 0005, et le jeu l'appelle à 120 Hz. `Aircraft::step` reste un pas RK4 simple, pour les outils.
-- Le frottement s'annule linéairement sous `CREEP_SPEED` (0,02 m/s), sans aucune division par une vitesse.
+- Le frottement s'annule linéairement sous `CREEP_SPEED` (0,03 m/s), sans aucune division par une vitesse. Sa pente croît avec la charge : le mode couplé des roues, du roulis et du lacet vaut 2,1 au pas de 240 Hz, sous la limite de 2,785 du RK4 ; il valait 3,2 à 0,02 m/s, avec un état au repos incohérent.
 - L'amortissement entre sur 2 cm de compression : un pneu ne donne aucune charge à l'instant où il touche.
 - Un environnement peut ne pas avoir de sol (`NO_GROUND`) : c'est le cas de tous les essais en vol, dont les états au niveau de la mer n'ont pas de sens avec des roues.
 
@@ -38,8 +38,8 @@ Raison principale : le contact reste un composant comme les autres, déterminist
 
 ## Mesures (SPAD VII, 2026-11-01)
 
-- **Convergence** : diviser le pas par deux change la distance d'envol et la charge maximale d'un posé à 2 m/s de moins de 1 % (test de `fdm_lab`).
-- **Dérive à l'arrêt** : 0,7 cm/s au ralenti, soit 40 cm par minute.
+- **Convergence** : diviser le pas par deux change la distance d'envol et la charge maximale d'un posé à 2 et 4 m/s de moins de 1 % (test de `fdm_lab`).
+- **Dérive à l'arrêt** : 1,4 cm/s au ralenti, soit 84 cm par minute.
 - **Coût** : 2 ms par pas de jeu pour un avion, soit un quart de cœur.
 
 ## Conséquences

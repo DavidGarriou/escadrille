@@ -92,7 +92,7 @@ pub enum Robustness {
     HardLanding {
         sink: Speed,
     },
-    /// On the field, rolling tail up at `speed`, full rudder for two seconds.
+    /// On the field, rolling tail up at `speed`, full throttle, a second of full left rudder.
     GroundLoop {
         speed: Speed,
     },

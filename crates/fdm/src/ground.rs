@@ -16,10 +16,11 @@
 //! - **Hard point**: a part of the airframe that should not touch: a stiff spring and
 //!   friction, to carry the aircraft through a ground loop or a nose-over.
 //!
-//! Friction is regularised below [`CREEP_SPEED`]: it never divides by a speed, and its
-//! slope is bounded, which the explicit integrator needs. The price is a slow creep under
-//! a steady force at rest. The ground is level: its height comes from
-//! [`Environment::ground_altitude`], and its normal is the vertical.
+//! Friction is regularised below [`CREEP_SPEED`]: it never divides by a speed. Its slope
+//! grows with the normal load, and the explicit integrator holds it only within limits
+//! (see there). The price is a slow creep under a steady force at rest. The ground is
+//! level: its height comes from [`Environment::ground_altitude`], and its normal is the
+//! vertical.
 
 use glam::DVec3;
 
@@ -27,9 +28,14 @@ use crate::environment::Environment;
 use crate::rigid_body::{RigidBodyState, Wrench};
 
 /// Speed of a contact point under which friction fades to zero, m/s (numerical, not
-/// physical): small enough for the creep at rest to stay slow, large enough to keep the
-/// slope of the skid's friction in yaw within what RK4 holds at the step of ADR 0005.
-pub const CREEP_SPEED: f64 = 0.02;
+/// physical): small enough for the creep at rest to stay slow. Below it, the coupled mode
+/// of wheels, roll and yaw must stay within RK4's limit of 2.785 at the step of ADR 0005:
+/// 2.1 at this value, 3.2 at 0.02 m/s, where the state at rest is no longer consistent.
+pub const CREEP_SPEED: f64 = 0.03;
+
+/// Lowest cosine of a slide with the vertical: a slide lying flat, on an aircraft on its
+/// back or on its nose, does not make the spring infinitely stiff (numerical).
+const MIN_SLIDE_COSINE: f64 = 0.3;
 
 /// Compression over which the damping comes in, m: a tyre gives no load in the instant
 /// it touches, however fast it sinks (numerical; much less than the static compression).
@@ -182,7 +188,9 @@ pub struct Wheel {
     pub radius: f64,
     /// Unit vector along which the axle rises under load; it has to rise.
     pub guide: DVec3,
-    /// As the ground feels it: compression and travel along the vertical.
+    /// Along the guide, as the cord works. What the ground feels depends on the attitude:
+    /// a load N on the wheel pulls the cord by N cos θ, and a rise x moves it by x / cos θ,
+    /// θ the guide's angle to the vertical, 46° in the flying attitude and 61° tail down.
     pub spring: Spring,
     pub rubbing: Rubbing,
 }
@@ -462,12 +470,22 @@ impl Undercarriage {
         }
         let attitude = seen.state.attitude;
         let down = attitude.conjugate() * DVec3::Z;
-        let (load, rise) = wheel.spring.load(compression);
-        let cord_travel = rise / -wheel.guide.z;
-        let tyre = load / wheel.spring.contact_stiffness;
+        let cosine = (-wheel.guide.dot(down)).max(MIN_SLIDE_COSINE);
+        let square = cosine * cosine;
+        let spring = Spring {
+            preload: wheel.spring.preload / cosine,
+            stiffness: wheel.spring.stiffness / square,
+            travel: wheel.spring.travel * cosine,
+            damping: wheel.spring.damping / square,
+            ..wheel.spring
+        };
+        let (load, rise) = spring.load(compression);
+        let cord_travel = rise / cosine;
+        // What the rise leaves is the tyre's, rim included.
+        let tyre = compression - rise;
         let point = wheel.axle + wheel.guide * cord_travel + down * (wheel.radius - tyre);
+        let normal = spring.normal(load, compression, seen.velocity(wheel.axle).z);
         let velocity = seen.velocity(point);
-        let normal = wheel.spring.normal(load, compression, velocity.z);
         let (friction, rolling_speed) = wheel.rubbing.force(velocity, normal, attitude * DVec3::Y);
 
         let wrench = seen.wrench(point, normal, friction);

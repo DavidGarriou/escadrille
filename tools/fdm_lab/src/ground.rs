@@ -387,21 +387,23 @@ pub fn take_off(aircraft: &Aircraft, rest: &Rest, rudder: bool) -> Result<TakeOf
 }
 
 fn take_off_at(aircraft: &Aircraft, rest: &Rest, rudder: bool, dt: f64) -> Result<TakeOff, String> {
-    let stall = stall_speed(aircraft, &free_air(), 500.0).map_err(error)?;
+    let stall = stall_speed(aircraft, &free_air(), 0.0).map_err(error)?;
     let rotation = ROTATION * stall.speed;
     let (mut skid_off, mut lift_off, mut screen) = (None, None, None);
-    let mut airborne_since = None;
+    // When, how far and how fast the last contact ended: it counts if nothing touches
+    // again within [`AIRBORNE`].
+    let mut left_the_ground = None;
     let mut tail_is_up = false;
     let run = run_at(aircraft, stopped(&rest.state), 45.0, dt, |s| {
         if skid_off.is_none() && s.time > 0.1 && s.loads.skid == 0.0 {
             skid_off = Some((s.time, s.airspeed * 3.6));
         }
         if s.touching {
-            airborne_since = None;
+            left_the_ground = None;
         } else if s.time > 0.1 {
-            let since = *airborne_since.get_or_insert(s.time);
-            if lift_off.is_none() && s.time - since >= AIRBORNE {
-                lift_off = Some((since, s.distance, s.airspeed * 3.6));
+            let left = *left_the_ground.get_or_insert((s.time, s.distance, s.airspeed * 3.6));
+            if lift_off.is_none() && s.time - left.0 >= AIRBORNE {
+                lift_off = Some(left);
             }
         }
         let height = -s.state.position_ned.z;
@@ -461,7 +463,7 @@ pub struct Stop {
 
 /// Rolling on three points at [`TOUCHDOWN`] times the stall, throttle closed, stick back.
 pub fn stop(aircraft: &Aircraft, rest: &Rest) -> Result<Stop, String> {
-    let stall = stall_speed(aircraft, &free_air(), 500.0).map_err(error)?;
+    let stall = stall_speed(aircraft, &free_air(), 0.0).map_err(error)?;
     let speed = TOUCHDOWN * stall.speed;
     let forward = rest.state.attitude.conjugate() * DVec3::X * speed;
     let start = RigidBodyState {
@@ -514,7 +516,7 @@ pub fn landing(aircraft: &Aircraft, rest: &Rest, sink: f64) -> Result<Landing, S
 }
 
 fn landing_at(aircraft: &Aircraft, rest: &Rest, sink: f64, dt: f64) -> Result<Landing, String> {
-    let stall = stall_speed(aircraft, &free_air(), 500.0).map_err(error)?;
+    let stall = stall_speed(aircraft, &free_air(), 0.0).map_err(error)?;
     let speed = TOUCHDOWN * stall.speed;
     const ABOVE: f64 = 0.15;
     let ned = DVec3::new(speed, 0.0, sink);
@@ -594,13 +596,31 @@ fn tail_up(aircraft: &Aircraft, rest: &Rest, speed: f64) -> RigidBodyState {
     }
 }
 
-/// Full rudder for two seconds, rolling at `speed` tail up, throttle closed: the ground loop.
+/// A second of full left rudder, rolling at `speed` tail up at full throttle, then the feet
+/// off: the ground loop. Throttle closed, the tail would fall and the skid hold it.
 pub fn ground_loop(aircraft: &Aircraft, rest: &Rest, speed: f64) -> Rough {
     let start = tail_up(aircraft, rest, speed);
-    rough(run(aircraft, start, 12.0, |s| {
+    rough(run(aircraft, start, 10.0, |s| {
         Some(PilotControls {
-            yaw: if s.time < 2.0 { 1.0 } else { 0.0 },
+            yaw: if s.time < 1.0 { -1.0 } else { 0.0 },
             pitch: hold_pitch(s, TAIL_UP_PITCH),
+            throttle: 1.0,
+            ..PilotControls::default()
+        })
+    }))
+}
+
+/// The same rudder on three points at `speed`, throttle closed: the skid holds it.
+pub fn rudder_on_three_points(aircraft: &Aircraft, rest: &Rest, speed: f64) -> Rough {
+    let forward = rest.state.attitude.conjugate() * DVec3::X * speed;
+    let start = RigidBodyState {
+        velocity_body: forward,
+        ..stopped(&rest.state)
+    };
+    rough(run(aircraft, start, 6.0, |s| {
+        Some(PilotControls {
+            yaw: if s.time < 1.0 { -1.0 } else { 0.0 },
+            pitch: 1.0,
             ..PilotControls::default()
         })
     }))
@@ -871,6 +891,12 @@ mod tests {
         );
         let (w1, w2) = (coarse.wheel_load, fine.wheel_load);
         assert!((w1 - w2).abs() < 0.01 * w2, "{w1} and {w2}");
+        let (coarse, fine) = (
+            landing_at(&a, &r, 4.0, DT).unwrap(),
+            landing_at(&a, &r, 4.0, 0.5 * DT).unwrap(),
+        );
+        let (w1, w2) = (coarse.wheel_load, fine.wheel_load);
+        assert!((w1 - w2).abs() < 0.01 * w2, "{w1} and {w2}");
     }
 
     #[test]
@@ -910,12 +936,21 @@ mod tests {
     }
 
     #[test]
-    fn full_rudder_in_a_fast_roll_does_not_spin_it_round() {
+    fn a_boot_of_rudder_tail_up_at_full_power_ground_loops_it() {
         let a = spad();
         let r = rest(&a).unwrap();
-        let g = ground_loop(&a, &r, 60.0 / 3.6);
+        let g = ground_loop(&a, &r, 75.0 / 3.6);
         assert!(g.run.finite);
-        assert!(g.heading < 90.0 * DEG, "{}", g.heading.to_degrees());
+        assert!(g.heading > 60.0 * DEG, "{}", g.heading.to_degrees());
+    }
+
+    #[test]
+    fn on_three_points_the_skid_holds_the_same_rudder() {
+        let a = spad();
+        let r = rest(&a).unwrap();
+        let g = rudder_on_three_points(&a, &r, 60.0 / 3.6);
+        assert!(g.run.finite);
+        assert!(g.heading < 10.0 * DEG, "{}", g.heading.to_degrees());
     }
 
     #[test]
