@@ -18,8 +18,10 @@
 //! - **On the ground** (plan `m2-train-sol.md`, step 6), none of that holds: the aeroplane
 //!   stands past the guard's incidence, and sideslip means nothing at rest. They give
 //!   way to the **heading hold**, on the rudder alone; the pilot's rudder adds to it and
-//!   moves the heading held. With the throttle open, the instructor raises the tail and
-//!   flies the aeroplane off.
+//!   moves the heading held. The guard alone stays while the speed could still lift the
+//!   aeroplane: a stick pulled back at the touch would throw it back into the air, tail
+//!   down, to stall. With the throttle open, the instructor raises the tail and flies
+//!   the aeroplane off.
 
 use std::f64::consts::{PI, TAU};
 
@@ -357,16 +359,26 @@ impl AssistState {
         table: &AssistTable,
         dt: f64,
     ) -> PilotControls {
-        (self.sideslip, self.bank, self.incidence) = (0.0, 0.0, 0.0);
+        (self.sideslip, self.bank) = (0.0, 0.0);
         self.bank_target = None;
         let pilot = input.controls;
         let mut out = pilot;
         if settings.ground_steering {
             out.yaw = self.hold_heading(pilot.yaw, m, table, dt);
         }
+        let guarded = matches!(
+            settings.flight_assist,
+            FlightAssist::Instructor | FlightAssist::Coordinated { stall_guard: true }
+        );
+        let limit = table.stall_alpha - STALL_MARGIN;
+        let g = table.at(m.dynamic_pressure);
+        if guarded && g.load_at(limit) >= 1.0 {
+            out.pitch = self.guard(pilot.pitch, limit, m, &g, dt);
+        } else {
+            self.incidence = 0.0;
+        }
         if settings.flight_assist == FlightAssist::Instructor && pilot.throttle >= TAKE_OFF_THROTTLE
         {
-            let g = table.at(m.dynamic_pressure);
             out.roll = self.bank(0.0, 0.0, m, &g, dt);
             out.pitch = self.take_off(m, &g, table.stall_alpha);
         } else {
@@ -567,7 +579,7 @@ mod tests {
 
     use crate::ASSETS_DIR;
     use crate::flight::simulation::ENVIRONMENT;
-    use crate::flight::{ON_THE_FIELD, STEP_HZ};
+    use crate::flight::{FINAL_APPROACH, ON_THE_FIELD, STEP_HZ};
     use crate::realism::Preset;
 
     struct Flight {
@@ -1028,6 +1040,98 @@ mod tests {
             "it turned right, and stayed there: {}",
             m.heading
         );
+    }
+
+    /// The final approach flown by a plain pilot in a preset: the glide, a flare from
+    /// `FLARE_M`, the stick back once down. Throttle closed, no rudder: the first load of
+    /// each part, the stopping place and what broke.
+    fn land(preset: Preset, flare: f64, sink_limit: f64) -> Landed {
+        const STICK: (f64, f64) = (1.2, 0.5);
+        const TAIL_DOWN_SPEED: f64 = 22.0;
+        let assets = Path::new(ASSETS_DIR);
+        let s = load_scenario(assets, FINAL_APPROACH).unwrap();
+        let aircraft = load_aircraft(assets, &s.aircraft)
+            .unwrap()
+            .build(&Loading {
+                fuel_fraction: s.fuel_fraction,
+            })
+            .unwrap()
+            .aircraft;
+        let table = AssistTable::from(&load_assist_gains(assets, &s.aircraft).unwrap().unwrap());
+        let gear = aircraft.undercarriage().unwrap();
+        let settings = preset.settings();
+        let mut memory = AssistState::default();
+        let mut state = s.initial_state();
+        let dt = 1.0 / STEP_HZ;
+        let glide = s.commands().pitch;
+        let mut out = Landed::default();
+        for _ in 0..(70.0 * STEP_HZ) as usize {
+            let m = Measured::of(&state, &ENVIRONMENT);
+            let height = -state.position_ned.z;
+            let down = out.touched_at.is_some();
+            let sink = (state.attitude * state.velocity_body).z;
+            // The glide; then the sink brought down with the height, and held off. On the
+            // wheels, the speed falls first: the stick comes back with the tail, or the
+            // aeroplane balloons.
+            let pitch = if down {
+                if m.airspeed > TAIL_DOWN_SPEED {
+                    glide
+                } else {
+                    1.0
+                }
+            } else if height < flare {
+                let wanted = (0.45 * (height - 1.6)).clamp(0.3, 6.0);
+                glide + 0.12 * (sink - wanted) - STICK.1 * m.rates.y
+            } else {
+                glide + STICK.0 * (-0.09 - m.pitch) - STICK.1 * m.rates.y
+            };
+            let controls = PilotControls {
+                roll: -2.0 * m.bank - 0.5 * m.rates.x,
+                pitch: pitch.clamp(-1.0, 1.0),
+                ..PilotControls::default()
+            };
+            let input = PilotInput::holding(controls);
+            let ground = Ground::of(&aircraft, &state, &ENVIRONMENT);
+            let loads = gear.loads(&state, &ENVIRONMENT);
+            if ground.is_some() && out.touched_at.is_none() {
+                out.touched_at = Some((m.airspeed * 3.6, state.position_ned.y));
+                out.sink = sink;
+            }
+            let tolerance = settings.landing_rule.tolerance();
+            if gear.overloaded(&loads, tolerance).is_some() {
+                out.broke = true;
+                break;
+            }
+            assert!(out.sink < sink_limit, "came down too hard: {out:?}");
+            let c = memory.next_commands(&settings, &input, &m, ground, &table, dt);
+            state = aircraft.advance(&state, &c, &ENVIRONMENT, dt);
+            if down && state.velocity_body.length() < 1.0 {
+                out.stopped_at = Some(state.position_ned);
+                break;
+            }
+        }
+        out
+    }
+
+    #[derive(Debug, Default)]
+    struct Landed {
+        /// Airspeed at the first touch, km/h, and how far east, m.
+        touched_at: Option<(f64, f64)>,
+        /// m/s.
+        sink: f64,
+        broke: bool,
+        stopped_at: Option<DVec3>,
+    }
+
+    #[test]
+    fn the_pilot_preset_lands_from_the_final_and_stops_on_the_meadow() {
+        let landed = land(Preset::Pilot, 12.0, 3.0);
+        assert!(!landed.broke, "{landed:?}");
+        let (speed, east) = landed.touched_at.expect("it came down");
+        assert!((75.0..125.0).contains(&speed), "{landed:?}");
+        let stopped = landed.stopped_at.expect("it stopped");
+        assert!(east > -400.0 && stopped.y < 400.0, "{landed:?}");
+        assert!(stopped.x.abs() < 150.0, "{landed:?}");
     }
 
     #[test]

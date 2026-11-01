@@ -527,6 +527,25 @@ pub fn check_model(
         }
     }
 
+    // The wheels turn about their axle in the game: a pivot beside it would show as a limp.
+    if let Some(gear) = &data.file.undercarriage {
+        let axle = DVec3::from_array(gear.wheels.centre_m);
+        let sides = [
+            ("wheel_r", axle),
+            ("wheel_l", axle * DVec3::new(1.0, -1.0, 1.0)),
+        ];
+        for (name, axle) in sides {
+            if let Some(node) = find(name) {
+                let off = (node.translation - axle) * DVec3::new(1.0, 0.0, 1.0);
+                checks.add(
+                    name,
+                    off.length() <= PIVOT_TOLERANCE_M,
+                    format!("pivot {:.1} mm off the axle", off.length() * 1e3),
+                );
+            }
+        }
+    }
+
     for node in nodes.iter().filter(|n| {
         n.name.as_deref().is_some_and(|s| {
             s == "cam_pilot_eye" || s.starts_with("gun_") && s.ends_with("_muzzle")

@@ -114,7 +114,7 @@ Le sol reste plat, et `Environment::ground_altitude` suffit. La pente et la natu
 ### 6. Aides au sol et tolérance (`crates/game/src/realism/`)
 
 - **Passage obligé** : les aides actuelles ne valent pas au sol, et certaines y seraient nuisibles.
-  - **Garde anti-décrochage** : à l'arrêt, l'avion est bien au-delà de l'incidence limite de 10°. La garde pousserait le manche en permanence. Coupée au contact, avec une petite temporisation pour les rebonds. Elle reste active jusqu'au toucher : **en Pilote, le posé se fait donc queue haute**, comme l'autorise T8.
+  - **Garde anti-décrochage** : à l'arrêt, l'avion est bien au-delà de l'incidence limite de 10°. La garde pousserait le manche en permanence. Elle se coupe au sol **quand la vitesse ne peut plus porter l'avion**, pas au contact : à 103 km/h, un manche tiré au toucher le renverrait en l'air queue basse, jusqu'au décrochage (écart à ce plan, trouvé par l'atterrissage scripté). Elle reste donc active jusqu'à la fin de l'arrondi : **en Pilote, le posé se fait queue haute**, comme l'autorise T8.
   - **Coordination** : le dérapage n'a pas de sens à l'arrêt, et les gains commencent à 90 km/h. Coupée au contact.
   - **Instructeur** : la commande d'attitude ne vaut pas au sol, voir la décision 3.
 - **Tenue de cap**, si elle est retenue : un régulateur sur le gouvernail seul, sans force ajoutée. Ses gains viennent de `fdm_lab assist`, souffle de l'hélice compris, et vont dans `assist_gains.ron`. Le palonnier du joueur s'y ajoute et déplace le cap tenu.
