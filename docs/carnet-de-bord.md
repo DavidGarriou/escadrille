@@ -2342,3 +2342,48 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   Valeurs estimées (`E:`).
 - **⚠** Premier essai : les longerons de l'empennage suivaient une fraction de la corde locale, donc la forme du contour (en V, en zigzag). Corrigé par des longerons droits le long de l'axe des gouvernes.
 - **R** Vérifications : aperçus Blender avec la toile rendue transparente, regardés ; captures `avion-studio` et `vol-essai-pilote` regardées, rien ne perce la toile.
+- **A** Étapes 3 et 4 du plan (`build.py`) :
+  - **47 volumes d'impact `hit_`**, boîtes fermées et convexes : moteur, radiateur, réservoirs, huile, munitions, synchronisation, carburateur, magnétos, pilote (tête, torse, bras, jambes), câbles de commande, longerons de chaque panneau. Leurs positions et tailles non tirées d'`aircraft.ron` sont des `features` de `maquette.ron`, en `E:` ;
+  - **7 points d'effets `fx_`** : moteur, radiateur, échappements, réservoirs, poste ;
+  - **54 variantes `dmg_`** : moignons des 12 panneaux d'aile et du fuselage arrière, 8 mâts brisés, 28 câbles coupés, 2 moignons de pale, pare-brise touché, 2 jambes de train rompues.
+- **A** Étape 5, le contrat des dégâts dans `tools/asset_check`. Il s'applique quand `maquette.ron` déclare un volume `hit_`, et vérifie :
+  - la présence des pièces, volumes, variantes et points d'effets déduits des données (`damage_nodes`), soit 93 nœuds ;
+  - une variante coupée pour chaque câble et un moignon pour chaque pale ;
+  - que chaque `hit_` est fermé et convexe.
+  
+  Trois tests ajoutés.
+- **⚠** Le contrôle de convexité a trouvé une vraie faute : le parcours de chaque câble d'aileron, deux barres dans un seul nœud, n'était pas convexe. Correction : un composant en plusieurs morceaux a un nœud par morceau, numéroté (`hit_cable_aileron_l_1`, `_2`).
+- **A** Étape 6, le jeu :
+  - un observateur global (`crates/game/src/render/damage.rs`) masque les nœuds `hit_` et `dmg_` dès que le modèle apparaît ;
+  - les câbles coupés reçoivent le shader des câbles ;
+  - deux scènes de référence : `degats-spad7`, l'avion au repos vu de l'avant droit, et `degats-spad7-proche`, vue de l'œil du pilote ;
+  - le studio prend un point de vue explicite (`View`, `Eye`).
+- **⚠** Première galerie : aucune variante n'apparaissait. Bevy nomme les maillages d'un nœud d'après le maillage et le matériau (`dmg_prop_blade_1_stub.bois…`). Le masquage les attrapait directement, si bien qu'un nœud remontré restait invisible. Corrigé : seuls les nœuds sont masqués (sans `Mesh3d`), et un test le couvre.
+- **R** Non-régression : `avion-studio`, `vol-essai-pilote`, `vol-essai-poursuite` et `contre_jour_toile` ont été capturés, regardés et comparés aux images d'avant. Le modèle est identique : aucun volume ni aucune variante ne se voit. Dans les scènes de vol, seul le terrain est décalé, parce que le vol avance selon le temps de capture.
+- **R** Coût de rendu, mesuré sous lavapipe sur `avion-studio` : 249 ms par image avant comme après, avec 192 nœuds au lieu de 16 et un GLB de 6,9 Mo au lieu de 4,9. Le vrai coût se mesurera sur la RX 7800 XT.
+- **A** Commit et push des étapes 3 à 6 (`a73e58f`), `just check` et `just test` verts (319 tests).
+- **A** Première revue du directeur artistique : aucune régression, mais une galerie qui ne valide pas la moitié des dégâts. Il relève :
+  - des cassures toutes pareilles, en boîtes à pointe, sans bois frais ;
+  - des sections différentes de celles des pièces intactes ;
+  - un pare-brise brisé invisible ;
+  - un cadrage à revoir.
+- **A** Reprise selon la revue :
+  - une fonction commune `break_end` donne à chaque cassure une coupe déchirée en bois frais (matériau `wood_fresh`) et 3 à 5 éclats, tirés d'un générateur dont la graine est le nom du nœud ;
+  - le mât brisé garde sa section profilée, avec le tronçon du haut qui pend vers l'arrière ;
+  - le moignon de pale garde la pale vrillée, avec une cassure en noyer frais ;
+  - les longerons des moignons d'aile ont des longueurs inégales, et un bout de nervure pend ;
+  - les câbles coupés ont du mou et une boucle ouverte ;
+  - la galerie est recadrée, avec un soleil bas du côté de la caméra.
+- **A** L'historien, sur le pare-brise :
+  - le verre est attesté par Hall (SPA 124, 1917 ; C) ; le verre feuilleté de type Triplex est **ESTIMÉ** (D) ;
+  - un tel pare-brise reste en place sous une balle : un trou, du verre écrasé laiteux, des fêlures en rayons et en anneaux ;
+  - la ligne `windscreen` de `maquette.ron` citait à tort Bordeaux, qui parle du Nieuport de Guynemer : corrigée. Décision consignée dans `spad7-aspect.md` § 17, documents à consulter au § 15.
+- **⚠** De l'extérieur, le petit pare-brise reste caché par les mâts de cabane, la Vickers ou l'aile supérieure, sous tous les angles essayés (arrière, côté droit, avant de l'hélice). La vue rapprochée est donc l'œil du pilote, au champ de vision du vol (60°). C'est là que ce dégât compte.
+- **A** Deuxième revue : la galerie extérieure est approuvée. Corrigé ensuite :
+  - les fêlures sont devenues fines, effilées et translucides, sur un verre écrasé en dégradé ;
+  - la cassure de l'hélice est en noyer ;
+  - l'hélice de la galerie est tournée pour que le moignon se détache.
+- **R** Troisième revue : **approuvé**, plus rien ne bloque. Le pare-brise est lisible et crédible, et la gêne sur la visée reste supportable. Le noyer frais est juste. Les restes mineurs vont au M4 (liste dans le plan) : verre écrasé en paliers, moignon de pale vu par la tranche, boucle des câbles.
+- **A** Docs à jour :
+  - skills `pipeline-assets` (pièces, nœuds `hit_` `fx_` `dmg_`, cassures, galeries, contrôles), `combat` et `format-avion.md` (volumes de `maquette.ron`) ;
+  - section « Réalisation » du plan.

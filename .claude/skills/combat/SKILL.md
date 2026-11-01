@@ -25,7 +25,8 @@ Données par arme dans `assets/weapons/<id>.ron`, sourcées comme les avions : c
 
 ## Détection des impacts
 
-- **Volumes d'impact** par composant, nommés `hit_<composant>` dans le glTF (skill `pipeline-assets`) : moteur, réservoir, pilote, longerons, câbles de commande, gouvernes, hélice, mitrailleuses, train.
+- **Volumes d'impact** par composant, nommés `hit_<composant>` dans le glTF (skill `pipeline-assets`) : moteur, réservoir, pilote, longerons, câbles de commande, gouvernes, hélice, mitrailleuses, train. Chacun est une boîte fermée et convexe (contrôlée par `asset_check`) ; un composant en plusieurs morceaux a un nœud par morceau, numéroté (`hit_cable_aileron_l_1`, `_2`). Les pièces visibles (panneaux, mâts, gouvernes…) sont leurs propres formes de collision.
+- **Variantes** `dmg_<pièce>_<état>` et points d'effets `fx_<nom>` : déjà dans le modèle du SPAD, masqués par le jeu jusqu'au dégât (`docs/plans/m4-degats-modele-3d.md`) ; galeries `degats-spad7` et `degats-spad7-proche`.
 - Phase large par boîtes englobantes, phase fine par `parry3d-f64` (rayon contre forme convexe).
 - Résultat : `Hit { component, energy, position, normal }` traité par `DamageSet`.
 

@@ -19,6 +19,7 @@ normal map, each surface's faces projected flat on a shared atlas.
 
 import json
 import math
+import random
 import sys
 from contextlib import contextmanager
 
@@ -832,8 +833,9 @@ def build_cockpit(data, parts, keys):
 
 # --- Struts, gear, propeller, gun --------------------------------------------------------
 
-def streamlined_strut(parts, a, b, chord, thickness, material, n=16):
-    """A strut of elliptic section from a to b (body axes), its chord along x."""
+def streamlined_strut(parts, a, b, chord, thickness, material, n=16, cap_end=True):
+    """A strut of elliptic section from a to b (body axes), its chord along x; its
+    section at b, left open without `cap_end` (a break closes it)."""
     a, b = Vector(a), Vector(b)
     axis = (b - a).normalized()
     cx = Vector((1, 0, 0))
@@ -843,7 +845,8 @@ def streamlined_strut(parts, a, b, chord, thickness, material, n=16):
     for end in (a, b):
         rings.append([end + cx * (0.5 * chord * math.cos(2 * math.pi * i / n))
                       + cy * (0.5 * thickness * math.sin(2 * math.pi * i / n)) for i in range(n)])
-    parts.loft(rings, material, cap_start=True, cap_end=True)
+    parts.loft(rings, material, cap_start=True, cap_end=cap_end)
+    return rings[-1]
 
 
 def round_bar(parts, a, b, diameter, material, n=12):
@@ -1022,34 +1025,40 @@ def build_exhausts(data, parts, keys):
         tube(parts, collector + pipe[1:], d_pipe, "exhaust")
 
 
+def blade_ring(data, blade, r):
+    """The section of a blade at radius r (body axes, propeller at rest): `blade` +1 for
+    the one up, -1 for the one down."""
+    prop = data["propeller"]
+    hub, axis, radius = Vector(prop["hub"]), Vector(prop["axis"]), prop["radius"]
+    up = Vector((0, 0, -1))
+    pitch = PITCH_RATIO * 2 * radius
+    side_dir = axis.cross(up)          # where the top blade moves (positive rotation)
+    frac = r / radius
+    chord = (0.10 + 0.10 * math.sin(math.pi * min(frac / 0.9, 1.0) * 0.9)) * (1.0 if frac < 0.93 else max(0.25, (1 - frac) / 0.07))  # E: Éclair planform, widest near 0.6 R
+    thick = (0.14 - 0.08 * frac) * chord + (0.03 if frac < 0.2 else 0.0)            # E:
+    beta = math.atan2(pitch, 2 * math.pi * r)
+    radial = up * blade
+    motion = side_dir * blade
+    # Chord line: leading edge ahead in the direction of motion, and forward.
+    c_dir = (motion * math.cos(beta) + axis * math.sin(beta)).normalized()
+    n_dir = (axis * math.cos(beta) - motion * math.sin(beta)).normalized()
+    centre = hub + radial * r
+    loop = []
+    for j in range(16):
+        a = 2 * math.pi * j / 16
+        loop.append(centre + c_dir * (0.5 * chord * math.cos(a))
+                    + n_dir * (0.5 * thick * math.sin(a)))
+    return loop
+
+
 def build_propeller(data, root):
     prop = data["propeller"]
     hub, axis, radius = Vector(prop["hub"]), Vector(prop["axis"]), prop["radius"]
     up = Vector((0, 0, -1))
     node = new_object("prop", root, node_matrix(hub, axis, up))
     parts = Builder()
-    pitch = PITCH_RATIO * 2 * radius
-    side_dir = axis.cross(up)          # where the top blade moves (positive rotation)
     for blade in (1, -1):
-        rings = []
-        for k in range(13):
-            r = 0.12 + (radius - 0.12) * k / 12
-            frac = r / radius
-            chord = (0.10 + 0.10 * math.sin(math.pi * min(frac / 0.9, 1.0) * 0.9)) * (1.0 if frac < 0.93 else max(0.25, (1 - frac) / 0.07))  # E: Éclair planform, widest near 0.6 R
-            thick = (0.14 - 0.08 * frac) * chord + (0.03 if frac < 0.2 else 0.0)            # E:
-            beta = math.atan2(pitch, 2 * math.pi * r)
-            radial = up * blade
-            motion = side_dir * blade
-            # Chord line: leading edge ahead in the direction of motion, and forward.
-            c_dir = (motion * math.cos(beta) + axis * math.sin(beta)).normalized()
-            n_dir = (axis * math.cos(beta) - motion * math.sin(beta)).normalized()
-            centre = hub + radial * r
-            loop = []
-            for j in range(16):
-                a = 2 * math.pi * j / 16
-                loop.append(centre + c_dir * (0.5 * chord * math.cos(a))
-                            + n_dir * (0.5 * thick * math.sin(a)))
-            rings.append(loop)
+        rings = [blade_ring(data, blade, 0.12 + (radius - 0.12) * k / 12) for k in range(13)]
         with part(f"prop_blade_{1 if blade > 0 else 2}"):
             parts.loft(rings, "propeller_wood", cap_start=True, cap_end=True)
     # Hub boss.
@@ -1244,15 +1253,56 @@ def build_windscreen(data, parts, keys):
 # --- Damage: hit volumes, effect points, damaged variants (M4 plan, steps 3 and 4) -------
 
 ENDS = {}               # each wire's ends and diameter, from build_wires
-SPLINTER = 0.04         # E: depth of the jagged end of broken wood, m
-STUB = 0.12             # E: length of a broken spar or longeron left in place, m
+# E: the art director's review of 2026-11-01 (a broken spruce or ash piece in photographs
+# of wrecks: torn unevenly across, splinters along the grain, the fresh wood pale):
+SPLINTERS = (3, 5)      # splinters at a break
+SPLINTER_LENGTH = (1.0, 3.0)    # their length, in thicknesses of the piece
+SPAR_STUBS = ((0.30, 0.40), (0.10, 0.15))   # front and rear spar left in place, m
+LONGERON_STUB = (0.06, 0.25)    # a longeron left in place, m
+STRUT_HANG = (5.0, 15.0)        # the upper half of a strut hangs aft from its fitting, °
+STRUT_LEAN = (2.0, 8.0)         # the lower half leans aft on its foot, °
 STREAM = math.radians(12)   # E: a cut wire's halves stream aft, this far below the flight path
+WIRE_SAG = 0.04             # E: their sag, in fractions of their length
+WIRE_CURL = 0.035           # E: radius of the curl at a cut wire's free end, m
 
 
-def oriented_box(parts, a, b, width, height, material, up=Vector((0, 0, -1)), jagged=False):
+def break_end(parts, ring, axis, thickness, rng, wood="wood_fresh"):
+    """Closes the open end `ring` of a broken piece of wood (body axes): fresh `wood`
+    torn unevenly across, and splinters along the grain (SPLINTERS, SPLINTER_LENGTH).
+    `axis` points out of the piece; `rng`, seeded by the node's name, varies each break.
+    Each splinter is a closed solid, so that its normals point outwards."""
+    ring = [Vector(p) for p in ring]
+    axis = Vector(axis).normalized()
+    n = len(ring)
+    c = sum(ring, Vector()) / n
+    inner = [c.lerp(p, 0.55) + axis * (thickness * rng.uniform(-0.2, 0.6)) for p in ring]
+    centre = c + axis * (thickness * rng.uniform(0.0, 0.5))
+    for i in range(n):
+        j = (i + 1) % n
+        parts.face([ring[i], ring[j], inner[j], inner[i]], wood)
+        parts.face([inner[i], inner[j], centre], wood)
+    for _ in range(rng.randint(*SPLINTERS)):
+        i = rng.randrange(n)
+        u = ring[i] - c
+        u = u - axis * u.dot(axis)
+        if u.length < 1e-6:
+            continue
+        reach = u.length
+        u.normalize()
+        v = axis.cross(u)
+        p = c + u * (reach * rng.uniform(0.2, 0.75)) - axis * (0.1 * thickness)
+        size = min(0.3 * thickness, 0.25 * reach) * rng.uniform(0.6, 1.0)
+        base = [p + u * size, p + v * size - u * (0.5 * size), p - v * size - u * (0.5 * size)]
+        apex = (p + axis * (thickness * rng.uniform(*SPLINTER_LENGTH))
+                + (u * rng.uniform(-0.3, 0.3) + v * rng.uniform(-0.3, 0.3)) * thickness)
+        for k in range(3):
+            parts.face([base[k], base[(k + 1) % 3], apex], wood)
+        parts.face(list(reversed(base)), wood)
+
+
+def oriented_box(parts, a, b, width, height, material, up=Vector((0, 0, -1)), broken=None):
     """A box from a to b (body axes), `width` across and `height` along `up`; with
-    `jagged`, its end at b is splintered (broken wood): its corners at uneven depths and a
-    point out of the middle."""
+    `broken` (a seeded random.Random), its end at b is a break (break_end)."""
     a, b = Vector(a), Vector(b)
     axis = (b - a).normalized()
     side = axis.cross(up)
@@ -1263,16 +1313,10 @@ def oriented_box(parts, a, b, width, height, material, up=Vector((0, 0, -1)), ja
     w, h = 0.5 * width, 0.5 * height
     corners = [(w, h), (-w, h), (-w, -h), (w, -h)]
     start = [a + side * x + normal * y for x, y in corners]
-    if not jagged:
-        end = [b + side * x + normal * y for x, y in corners]
-        parts.loft([start, end], material, cap_start=True, cap_end=True)
-        return
-    depths = (0.0, -0.6, -0.25, -0.9)
-    end = [b + axis * (SPLINTER * d) + side * x + normal * y for (x, y), d in zip(corners, depths)]
-    parts.loft([start, end], material, cap_start=True)
-    tip = b + axis * (0.8 * SPLINTER)
-    for i in range(4):
-        parts.face([end[i], end[(i + 1) % 4], tip], material)
+    end = [b + side * x + normal * y for x, y in corners]
+    parts.loft([start, end], material, cap_start=True, cap_end=broken is None)
+    if broken is not None:
+        break_end(parts, end, axis, min(width, height), broken)
 
 
 def write_node(builder, name, parent, materials, smooth=math.radians(35)):
@@ -1410,37 +1454,49 @@ def build_damaged(data, keys, body, prop, materials):
     """Damaged variants `dmg_<part>_<state>`, hidden in the game until the damage
     happens (damages 6, 7, 9 to 13, 17, 19, 25, 46): what stays of a lost wing panel or
     rear fuselage (splintered spars, longerons), each strut broken in two, each wire cut
-    with its halves streaming aft, each blade broken, the windscreen shattered, each
-    undercarriage leg broken."""
+    with its halves streaming aft, each blade broken, the windscreen holed and cracked,
+    each undercarriage leg broken. The broken pieces keep the section of the intact ones;
+    each break is drawn from a generator seeded by the node's name, so that no two are
+    alike and every build gives the same."""
     def node(name, build, parent=body, smooth=math.radians(35)):
         b = Builder()
-        build(b)
+        build(b, random.Random(name))
         return write_node(b, name, parent, materials, smooth)
 
-    # Wing panels: the stub left on the inboard part when a panel goes.
+    # Wing panels: the stub left on the inboard part when a panel goes, its spars broken
+    # unevenly, a piece of rib hanging from the front one.
     for plane, ranges in wing_panels(data).items():
         short = plane.split("_")[0]
         for lr, sy in (("l", -1), ("r", 1)):
             for panel, (y0, _) in zip(("root", "mid", "tip"), ranges):
-                def stub(b, y0=y0, sy=sy, plane=plane):
-                    for x, h in spar_lines(data, plane):
+                def stub(b, rng, y0=y0, sy=sy, plane=plane):
+                    for (x, h), lengths in zip(spar_lines(data, plane), SPAR_STUBS):
                         z0 = spar_z(data, plane, x, y0)
-                        oriented_box(b, (x, sy * (y0 - 0.02), z0), (x, sy * (y0 + STUB), z0),
-                                     SPAR_WIDTH, h, "wood", jagged=True)
+                        end = y0 + rng.uniform(*lengths)
+                        oriented_box(b, (x, sy * (y0 - 0.02), z0), (x, sy * end, z0),
+                                     SPAR_WIDTH, h, "wood", broken=rng)
+                        if lengths is SPAR_STUBS[0]:
+                            at = Vector((x - 0.5 * SPAR_WIDTH, sy * (end - 0.06), z0))
+                            down = Vector((-math.cos(math.radians(35)), 0, math.sin(math.radians(35))))
+                            # A rib's web: deep in its plane, thin across the span (along y).
+                            oriented_box(b, at, at + down * rng.uniform(0.15, 0.25), 0.025, 2 * RIB_WEB,
+                                         "wood", up=Vector((0, 1, 0)), broken=rng)
                 node(f"dmg_wing_{short}_{lr}_{panel}_stub", stub)
 
-    # Rear fuselage: the four longerons broken behind the cockpit.
-    def fuselage_stub(b):
+    # Rear fuselage: the four longerons broken behind the cockpit, unevenly.
+    def fuselage_stub(b, rng):
         x = FUSELAGE_SPLIT_X
         top, bottom, hw = fuselage_at(keys, x)
         k = 0.9 * 0.5 ** (1.0 / 3.6)
         zc, hh = 0.5 * (top + bottom), 0.5 * (bottom - top)
         for sy_, sz in ((1, -1), (-1, -1), (-1, 1), (1, 1)):
             p = Vector((x + 0.02, sy_ * k * hw, zc + sz * k * hh))
-            oriented_box(b, p, p - Vector((STUB, 0, 0)), LONGERON, LONGERON, "wood", jagged=True)
+            oriented_box(b, p, p - Vector((rng.uniform(*LONGERON_STUB), 0, 0)), LONGERON, LONGERON,
+                         "wood", broken=rng)
     node("dmg_fuselage_rear_stub", fuselage_stub)
 
-    # Struts broken in two, each half splintered at the break.
+    # Struts broken in two: the upper half hangs aft from its fitting, the lower leans aft
+    # on its foot.
     upper = next(s for s in data["surfaces"] if s["name"] == "upper_wing")
     chord = upper["panels"][0]["chord_root"]
     le_x = upper["panels"][0]["root"][0] + 0.25 * chord
@@ -1451,56 +1507,163 @@ def build_damaged(data, keys, body, prop, materials):
             for fr, x in zip(("front", "rear"), spars):
                 bottom = Vector((x, sy * y, wing_surface_z(data, "lower_wing", x, y, upper=True)))
                 top = Vector((x, sy * y, wing_surface_z(data, "upper_wing", x, y, upper=False)))
-                def broken(b, bottom=bottom, top=top):
-                    oriented_box(b, bottom, bottom.lerp(top, 0.45), STRUT_CHORD, STRUT_THICK, "wood",
-                                 up=Vector((1, 0, 0)), jagged=True)
-                    oriented_box(b, top, top.lerp(bottom, 0.40), STRUT_CHORD, STRUT_THICK, "wood",
-                                 up=Vector((1, 0, 0)), jagged=True)
+                def broken(b, rng, bottom=bottom, top=top):
+                    # About y, a positive angle swings a downward piece forward.
+                    hang = Matrix.Rotation(-math.radians(rng.uniform(*STRUT_HANG)), 3, "Y")
+                    lean = Matrix.Rotation(math.radians(rng.uniform(*STRUT_LEAN)), 3, "Y")
+                    for root, other, f, turn in ((bottom, top, rng.uniform(0.40, 0.50), lean),
+                                                 (top, bottom, rng.uniform(0.35, 0.45), hang)):
+                        end = root + turn @ ((other - root) * f)
+                        ring = streamlined_strut(b, root, end, STRUT_CHORD, STRUT_THICK, "wood",
+                                                 cap_end=False)
+                        break_end(b, ring, end - root, STRUT_THICK, rng)
                 node(f"dmg_strut_{lr}_{io}_{fr}_broken", broken)
 
-    # Wires cut in the middle, their halves streaming aft from their ends.
+    # Wires cut in the middle: each half streams aft from its end, sagging, its free end
+    # curled.
+    aft = Vector((-math.cos(STREAM), 0.0, math.sin(STREAM)))
+    down = Vector((math.sin(STREAM), 0.0, math.cos(STREAM)))
     for name, (a, b_, diameter) in sorted(ENDS.items()):
         half = 0.5 * (b_ - a).length
-        aft = Vector((-math.cos(STREAM), 0.0, math.sin(STREAM)))
-        def cut(b, a=a, b_=b_, half=half, diameter=diameter, aft=aft):
+        def cut(b, rng, a=a, b_=b_, half=half, diameter=diameter):
             for end in (a, b_):
-                tube(b, [end, end + aft * half], diameter, "wire", n=6)
+                length = half - 1.5 * math.pi * WIRE_CURL
+                path = [end + aft * (length * k / 12) + down * (WIRE_SAG * length * math.sin(math.pi * k / 24))
+                        for k in range(13)]
+                # An open curl, tightening and drifting sideways: a spring of steel let go.
+                tip = path[-1]
+                r0 = WIRE_CURL * rng.uniform(0.7, 1.2)
+                sweep = math.radians(rng.uniform(200, 300))
+                drift = Vector((0, rng.uniform(-0.012, 0.012), 0))
+                for k in range(1, 11):
+                    f = k / 10
+                    phi, r = sweep * f, r0 * (1 - 0.5 * f)
+                    path.append(tip + aft * (r * math.sin(phi)) + down * (r0 - r * math.cos(phi)) + drift * f)
+                tube(b, path, diameter, "wire", n=6)
         # Drawn by the wire shader too (render/wires.rs).
         node(f"dmg_{name}_cut", cut, smooth=math.pi)["diameter_m"] = diameter
 
-    # Propeller blades broken at a third of their length, under `prop` (they turn).
-    p = data["propeller"]
-    hub, axis, radius = Vector(p["hub"]), Vector(p["axis"]), p["radius"]
+    # Propeller blades broken at about a third of their length, under `prop` (they turn):
+    # the blade's own twisted section up to the break.
+    radius = data["propeller"]["radius"]
     for blade, k in ((1, 1), (-1, 2)):
-        def stump(b, blade=blade):
-            root = hub + Vector((0, 0, -1)) * blade * 0.12
-            end = hub + Vector((0, 0, -1)) * blade * 0.38 * radius
-            oriented_box(b, root, end, 0.16, 0.04, "propeller_wood", up=axis, jagged=True)
+        def stump(b, rng, blade=blade):
+            r_break = radius * rng.uniform(0.33, 0.42)
+            rings = [blade_ring(data, blade, 0.12 + (r_break - 0.12) * i / 4) for i in range(5)]
+            b.loft(rings, "propeller_wood", cap_start=True)
+            centre = lambda ring: sum(ring, Vector()) / len(ring)
+            break_end(b, rings[-1], centre(rings[-1]) - centre(rings[-2]), 0.025, rng,
+                      wood="propeller_wood_fresh")
         node(f"dmg_prop_blade_{k}_stub", stump, parent=prop)
 
-    # The windscreen shattered: its frame, and shards in its corners.
+    # The windscreen hit: laminated glass stays whole, holed and cracked (IMPACTS).
     x, half, height, rake = feature(data, "windscreen")[0]
     top, _, _ = fuselage_at(keys, x)
     lean = height * math.tan(math.radians(rake))
     a, b_ = Vector((x, half, top)), Vector((x, -half, top))
     c, d = Vector((x - lean, -half * 0.9, top - height)), Vector((x - lean, half * 0.9, top - height))
-    def shattered(b):
+    def shattered(b, rng):
         tube(b, [a, d, c, b_], 0.012, "metal", n=6)
-        b.face([a, a.lerp(b_, 0.35), a.lerp(d, 0.30)], "glass")
-        b.face([b_, b_.lerp(c, 0.45), b_.lerp(a, 0.25)], "glass")
-        b.face([d, d.lerp(a, 0.20), d.lerp(c, 0.30)], "glass")
+        build_cracked_glass(b, (a, b_, c, d), rng)
     node("dmg_windscreen_broken", shattered)
 
-    # Undercarriage legs broken: what stays under the fuselage.
+    # Undercarriage legs broken: what stays under the fuselage, in their own sections.
     for lr, side in (("l", -1), ("r", 1)):
         fx, fy, fz, ax, ay, az, chord = feature(data, "gear_front_leg")[0]
         rx, ry, rz, bx, by, bz = feature(data, "gear_rear_leg")[0]
-        def legs(b, side=side):
-            f0, f1 = Vector((fx, side * fy, fz)), Vector((ax, side * ay, az))
-            r0, r1 = Vector((rx, side * ry, rz)), Vector((bx, side * by, bz))
-            oriented_box(b, f0, f0.lerp(f1, 0.5), chord, LEG_THICK, "wood", up=Vector((1, 0, 0)), jagged=True)
-            oriented_box(b, r0, r0.lerp(r1, 0.4), REAR_LEG_CHORD, LEG_THICK, "wood", up=Vector((1, 0, 0)), jagged=True)
+        def legs(b, rng, side=side):
+            for (p0, p1), f, leg_chord in ((((fx, side * fy, fz), (ax, side * ay, az)), 0.5, chord),
+                                           (((rx, side * ry, rz), (bx, side * by, bz)), 0.4, REAR_LEG_CHORD)):
+                p0, p1 = Vector(p0), Vector(p1)
+                end = p0.lerp(p1, f * rng.uniform(0.85, 1.1))
+                ring = streamlined_strut(b, p0, end, leg_chord, LEG_THICK, "wood", cap_end=False)
+                break_end(b, ring, end - p0, LEG_THICK, rng)
         node(f"dmg_gear_{lr}_broken", legs)
+
+
+# The windscreen's glass: attested by Hall (SPA 124, 1917; spad7-aspect.md), laminated
+# (Triplex) ESTIMÉ, confidence D: a French process already in aircraft windscreens in
+# 1915, and the one kept on S.254 is broken but in place. A bullet leaves the pane whole:
+# a hole, the glass crushed milky round it, cracks in rays and rings (historian,
+# 2026-11-01).
+IMPACTS = ((0.30, 0.42), (0.66, 0.72))  # E: across from the right edge, down from the top
+IMPACT_HOLE = (0.003, 0.005)    # E: radius of the hole, m (a 7.9 or 8 mm bullet)
+IMPACT_CRUSHED = (0.008, 0.015)  # E: radius of the milky crushed glass round it, m
+IMPACT_RAYS = (0.02, 0.12)      # E: length of the rays, m, most of them short
+IMPACT_RINGS = ((0.020, 0.028), (0.038, 0.055))  # E: radii of the ring cracks, m
+CRACK_WIDTH = 0.0005    # E: width of a crack seen in the light, m: 1.5 px at the eye in 1080p
+CRACK_TAPER = 0.2       # E: its width at its end, in fractions: it fades away
+CRUSHED_LAYERS = (1.0, 0.7, 0.45)  # translucent layers of crushed glass, in fractions of its
+                                   # radius: milky near the hole, fading outwards
+
+
+def build_cracked_glass(parts, quad, rng):
+    """A pane (corners a, b, c, d: top right, top left, bottom left, bottom right, body
+    axes) hit by bullets at IMPACTS: the glass stays whole; round each impact a hole
+    in milky crushed glass, hairline cracks running out in rays and in rings, laid on
+    the glass on the pilot's side (seen through it from outside)."""
+    a, b, c, d = (Vector(p) for p in quad)
+    width, tall = (b - a).length, (d - a).length
+    parts.face([a, b, c, d], "glass")
+    normal = (b - a).cross(d - a).normalized()
+
+    def at(p):
+        """A point of the pane (m across from its right edge, m down from its top),
+        kept 3 mm inside the frame."""
+        x = min(max(p.x, 0.003), width - 0.003)
+        y = min(max(p.y, 0.003), tall - 0.003)
+        return a.lerp(b, x / width).lerp(d.lerp(c, x / width), y / tall)
+
+    def on_glass(points, material):
+        # `normal` points forward, away from the pilot.
+        parts.face([at(p) - normal * 0.0004 for p in points], material)
+
+    def ribbon(points):
+        """A crack along `points`, narrowing to CRACK_TAPER."""
+        lengths = [0.0]
+        for p, q in zip(points, points[1:]):
+            lengths.append(lengths[-1] + (q - p).length)
+        total = max(lengths[-1], 1e-9)
+        half = [0.5 * CRACK_WIDTH * (1 - (1 - CRACK_TAPER) * t / total) for t in lengths]
+        for k, (p, q) in enumerate(zip(points, points[1:])):
+            if (q - p).length < 1e-6:
+                continue
+            across = Vector((-(q - p).y, (q - p).x)).normalized()
+            on_glass([p - across * half[k], q - across * half[k + 1],
+                      q + across * half[k + 1], p + across * half[k]], "glass_crack")
+
+    for fx, fy in IMPACTS:
+        h = Vector((fx * width, fy * tall))
+        n = 18
+        angles = [2 * math.pi * (k + rng.uniform(-0.3, 0.3)) / n for k in range(n)]
+        ray = [Vector((math.cos(t), math.sin(t))) for t in angles]
+        inner = [h + r * rng.uniform(*IMPACT_HOLE) for r in ray]
+        reach = [rng.uniform(*IMPACT_CRUSHED) for _ in ray]
+        outer = [h + r * d for r, d in zip(ray, reach)]
+        for f in CRUSHED_LAYERS:
+            layer = [h + r * max(d * f * rng.uniform(0.8, 1.1), (q - h).length * 1.2)
+                     for r, d, q in zip(ray, reach, inner)]
+            for k in range(n):
+                j = (k + 1) % n
+                on_glass([layer[k], layer[j], inner[j], inner[k]], "glass_crushed")
+        # Rays from the crushed glass, some to the frame.
+        rays = sorted(rng.sample(range(n), rng.randint(7, 10)))
+        for k in rays:
+            lo, hi = IMPACT_RAYS
+            length = lo + (hi - lo) * rng.random() ** 2
+            points = [outer[k]]
+            for step in range(1, 5):
+                p = outer[k] + ray[k] * (length * step / 4)
+                points.append(p + Vector((-ray[k].y, ray[k].x)) * (length * rng.uniform(-0.04, 0.04)))
+            ribbon(points)
+        # Rings between neighbouring rays.
+        for (lo, hi), chance in zip(IMPACT_RINGS, (0.7, 0.35)):
+            radius = rng.uniform(lo, hi)
+            for k, j in zip(rays, rays[1:] + rays[:1]):
+                if rng.random() < chance:
+                    t0, t1 = angles[k], angles[j] + (2 * math.pi if j < k else 0.0)
+                    ribbon([h + Vector((math.cos(t), math.sin(t))) * (radius * rng.uniform(0.95, 1.05))
+                            for t in (t0, 0.5 * (t0 + t1), t1)])
 
 
 # --- Fabric textures (pass 5) ------------------------------------------------------------
@@ -1861,6 +2024,10 @@ def make_materials(livery, colours):
         "fabric_doped": principled("toile vernie des roues", fabric, 0.65),
         "cowl": principled("capot, aluminium peint", metal, 0.45),
         "wood": principled("bois verni des mâts", (0.56, 0.40, 0.22), 0.4),
+        # E: spruce or ash torn open, pale and matte, unvarnished (the art director's review).
+        "wood_fresh": principled("bois frais des cassures", (0.88, 0.80, 0.62), 0.85),
+        # E: walnut torn open, unvarnished (laminated walnut, spad7-aspect.md § 8, C).
+        "propeller_wood_fresh": principled("noyer frais des cassures", (0.58, 0.42, 0.30), 0.85),
         "propeller_wood": principled("hélice, noyer verni", (0.36, 0.20, 0.10), 0.3),
         "metal": principled("acier", (0.35, 0.36, 0.37), 0.45, metallic=1.0),
         "steel": principled("acier bruni", (0.12, 0.12, 0.13), 0.4, metallic=1.0),
@@ -1872,6 +2039,8 @@ def make_materials(livery, colours):
         "leather": principled("cuir", (0.24, 0.13, 0.06), 0.55),
         "cockpit": principled("intérieur du poste", (0.10, 0.08, 0.06), 0.9),
         "glass": principled("verre", (0.02, 0.03, 0.03), 0.05),
+        "glass_crack": principled("fêlures du verre", (0.92, 0.94, 0.95), 0.15),
+        "glass_crushed": principled("verre feuilleté écrasé", (0.90, 0.92, 0.92), 0.5),
         "hit": principled("volume d'impact, masqué", (0.8, 0.1, 0.1), 0.9),
     }
     m["control"] = m["fuselage"] = m["surface"]
@@ -1887,6 +2056,11 @@ def make_materials(livery, colours):
     glass = m["glass"].node_tree.nodes["Principled BSDF"].inputs
     glass["Alpha"].default_value = 0.10
     m["glass"].blend_method = "BLEND"
+    # Cracks and crushed glass catch the light, but let the view through: bright on the
+    # dark gun, faint on the sky (art director, 2026-11-01).
+    for name, alpha in (("glass_crack", 0.55), ("glass_crushed", 0.35)):
+        m[name].node_tree.nodes["Principled BSDF"].inputs["Alpha"].default_value = alpha
+        m[name].blend_method = "BLEND"
     return m
 
 

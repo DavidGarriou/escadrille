@@ -2,7 +2,7 @@
 //!
 //! Reference scenes so far: `m0-sol` checks the capture chain, `maquette-spad7` the
 //! frames of the 3D models (ADR 0006), `avion-studio` and `contre_jour_toile` the SPAD
-//! as the game renders it, `degats-spad7` the damage its model can show,
+//! as the game renders it, `degats-spad7` and `degats-spad7-proche` the damage its model can show,
 //! `vol-essai-poursuite` and `vol-essai-pilote` the test flight.
 //! Outside captures, the game starts the test flight (`vol_essai`).
 
@@ -32,6 +32,7 @@ impl Plugin for WorldPlugin {
                     studio::spawn.run_if(capture_scene_is(studio::SCENE)),
                     studio::spawn_contre_jour.run_if(capture_scene_is(studio::SCENE_CONTRE_JOUR)),
                     degats::spawn.run_if(capture_scene_is(degats::SCENE)),
+                    degats::spawn_close.run_if(capture_scene_is(degats::SCENE_CLOSE)),
                     vol_essai::spawn.run_if(capture_scene_among(&[
                         vol_essai::SCENE_CHASE,
                         vol_essai::SCENE_PILOT,

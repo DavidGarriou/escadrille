@@ -16,6 +16,7 @@ pub const KNOWN_SCENES: &[&str] = &[
     super::studio::SCENE,
     super::studio::SCENE_CONTRE_JOUR,
     super::degats::SCENE,
+    super::degats::SCENE_CLOSE,
     super::vol_essai::SCENE_CHASE,
     super::vol_essai::SCENE_PILOT,
 ];

@@ -1,6 +1,6 @@
 # Plan — Dégâts dans le modèle 3D du SPAD VII (préparation du M4)
 
-- Statut : **validé** par le joueur le 2026-11-01 : périmètre complet du modèle 3D ; toile trouée par un masque au M4, sur une structure modélisée sous la toile.
+- Statut : **réalisé** le 2026-11-01 (voir « Réalisation »), après validation du joueur le même jour : périmètre complet du modèle 3D ; toile trouée par un masque au M4, sur une structure modélisée sous la toile.
 - Demande du joueur (2026-10-31) : « Liste tous les dégâts possibles et intègre-les tout de suite dans le modèle 3D. »
 - Catalogue : `docs/gdd/combat-degats.md` § 3 bis, 48 dégâts en huit familles.
 - **Périmètre.** Le modèle 3D est préparé pour que chaque dégât du catalogue puisse se voir. Au M4 viendront :
@@ -87,3 +87,23 @@ Aujourd'hui, toute la cellule sort en un seul maillage, `airframe`. Chaque face 
 - **Coût de rendu** : une centaine de nœuds au lieu d'une dizaine, plus la structure interne. À mesurer sur les captures. Si besoin, la structure ne se rend que derrière la toile endommagée (M4).
 - **Coutures** : des pièces coupées entre deux mâts laissent des jointures. Les mêmes sommets sont partagés au découpage, pour que rien ne se voie.
 - **Atlas de toile** : il garde ses régions par surface et par côté ; les pièces ne changent que le maillage.
+
+## Réalisation (2026-11-01)
+
+Les sept étapes sont faites. Écarts et ajouts par rapport au plan :
+- **Volumes `hit_`** : 47 boîtes fermées et convexes. Un composant en plusieurs morceaux a un nœud par morceau, numéroté (`hit_cable_aileron_l_1`, `_2`) : c'est le contrôle de convexité qui l'a imposé.
+- **Contrat** : il est calculé dans `tools/asset_check` (`damage_nodes`), pas dans `crates/data`, et ne s'applique qu'à un modèle dont `maquette.ron` déclare un volume `hit_`.
+  - La couverture de l'ancien `airframe` est assurée par construction : une face sans pièce va au fuselage. Le contrôle vérifie la présence de chaque pièce.
+- **Cassures** : elles ont été reprises après la revue du directeur artistique :
+  - section de la pièce intacte ;
+  - bois frais de l'essence de la pièce ;
+  - éclats tirés au hasard, avec le nom du nœud pour graine.
+- **Pare-brise** : verre feuilleté (ESTIMÉ, `spad7-aspect.md` § 17). Il reste en place sous une balle : deux impacts, du verre écrasé et des fêlures.
+- **Galeries** : deux scènes, `degats-spad7` (extérieur, avant droit) et `degats-spad7-proche` (œil du pilote). De l'extérieur, le pare-brise est toujours caché. Ces deux caméras sont figées : elles feront l'avant/après du M4.
+- **Coût de rendu** : 192 nœuds au lieu de 16. Sous lavapipe, pas d'écart mesurable (249 ms par image). La mesure sur la RX 7800 XT reste à faire.
+- **Laissé au M4** :
+  - toile déchirée, frangée ou brûlée, avec le masque de trous, gouvernes comprises : aujourd'hui, l'aileron garde sa toile et sa cocarde à travers le panneau dénudé de la galerie ;
+  - pose dynamique des câbles coupés ;
+  - nervures ajourées, à vérifier par l'historien ;
+  - fumée et feu ;
+  - restes mineurs de la dernière revue artistique : verre écrasé en paliers (une texture en dégradé radial les effacera), moignon de pale vu par la tranche dans la galerie, boucle des câbles coupés encore régulière.

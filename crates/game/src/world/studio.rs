@@ -17,7 +17,7 @@ use escadrille_data::aircraft::{Loading, load_aircraft};
 use escadrille_data::mockup::load_mockup;
 
 use crate::ASSETS_DIR;
-use crate::camera::outdoor_camera;
+use crate::camera::{PILOT_FOV_DEG, outdoor_camera};
 use crate::dev::capture::CaptureHold;
 use crate::flight::bridge::{model_transform, render_transform, to_bevy};
 
@@ -29,31 +29,45 @@ const AIRCRAFT: &str = "spad7";
 /// Heading of the aircraft, north.
 const HEADING_DEG: f64 = 0.0;
 
-/// Height of the camera above the grass: the eye of a man standing on it, m.
+/// Height of the eye of a man standing on the grass, m.
 const EYE_HEIGHT_M: f64 = 1.65;
 
-/// The sun's elevation: a summer afternoon over Flanders.
-const SUN_ELEVATION_DEG: f64 = 35.0;
-
-/// Where the camera stands and looks, and where the sun shines from.
+/// Where the camera is and looks, and where the sun shines from.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct View {
-    /// The camera's foot on the grass, from the centre of gravity (NED, m); its eye is
-    /// [`EYE_HEIGHT_M`] above it.
-    pub camera_from_cg: DVec3,
-    /// Point looked at, from the centre of gravity (NED, m).
-    pub target_from_cg: DVec3,
-    /// The sun's azimuth, from north towards east, degrees; it stands
-    /// [`SUN_ELEVATION_DEG`] high.
+    pub camera: Eye,
+    /// The sun's azimuth, from north towards east, and elevation, degrees.
     pub sun_azimuth_deg: f64,
+    pub sun_elevation_deg: f64,
 }
 
-/// `avion-studio`: ahead and to the left, looking at the middle of the wings' gap; the
-/// sun from the west-north-west, behind the camera's left shoulder.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum Eye {
+    /// On the grass, looking at a point of the aircraft.
+    Standing {
+        /// The camera's foot, from the centre of gravity (NED, m; its z is ignored).
+        from_cg: DVec3,
+        /// Height of the camera above the grass, m.
+        height_m: f64,
+        /// Point looked at, from the centre of gravity (NED, m).
+        target_from_cg: DVec3,
+    },
+    /// In the cockpit, at the pilot's eye (`pilot_eye_m` of `maquette.ron`), looking
+    /// ahead level with the ground, over the nose of the aircraft at rest.
+    Pilot,
+}
+
+/// `avion-studio`: ahead and to the left, at the eye of a man standing on the grass,
+/// looking at the middle of the wings' gap; the sun from the west-north-west, behind the
+/// camera's left shoulder, 35° high: a summer afternoon over Flanders.
 pub const STUDIO: View = View {
-    camera_from_cg: DVec3::new(6.4, -6.2, 0.0),
-    target_from_cg: DVec3::new(-0.4, 0.0, -0.3),
+    camera: Eye::Standing {
+        from_cg: DVec3::new(6.4, -6.2, 0.0),
+        height_m: EYE_HEIGHT_M,
+        target_from_cg: DVec3::new(-0.4, 0.0, -0.3),
+    },
     sun_azimuth_deg: -70.0,
+    sun_elevation_deg: 35.0,
 };
 
 /// Pitch of the aircraft resting on its wheels and tail skid (rad, nose up positive):
@@ -116,15 +130,31 @@ pub fn spawn_at_rest(
         meshes,
         materials,
         media,
-        sun_direction(view.sun_azimuth_deg, SUN_ELEVATION_DEG),
+        sun_direction(view.sun_azimuth_deg, view.sun_elevation_deg),
     );
     let at = |from_cg: DVec3| (to_bevy(position + from_cg)).as_vec3();
-    let eye = at(view.camera_from_cg) * Vec3::new(1.0, 0.0, 1.0) + Vec3::Y * EYE_HEIGHT_M as f32;
-    commands.spawn(outdoor_camera(
-        Transform::from_translation(eye).looking_at(at(view.target_from_cg), Vec3::Y),
-        40.0,
-        13.0,
-    ));
+    let camera = match view.camera {
+        Eye::Standing {
+            from_cg,
+            height_m,
+            target_from_cg,
+        } => {
+            let eye = at(from_cg) * Vec3::new(1.0, 0.0, 1.0) + Vec3::Y * height_m as f32;
+            Transform::from_translation(eye).looking_at(at(target_from_cg), Vec3::Y)
+        }
+        Eye::Pilot => {
+            let eye = attitude * (DVec3::from_array(mockup.pilot_eye_m) - cg);
+            // Level with the ground: the aircraft's heading, not its pitch.
+            let ahead = DQuat::from_rotation_z(HEADING_DEG.to_radians()) * DVec3::X;
+            Transform::from_translation(at(eye)).looking_at(at(eye + ahead), Vec3::Y)
+        }
+    };
+    // The cockpit view's field, as in flight.
+    let fov = match view.camera {
+        Eye::Standing { .. } => 40.0,
+        Eye::Pilot => PILOT_FOV_DEG,
+    };
+    commands.spawn(outdoor_camera(camera, fov, 13.0));
     Ok(model)
 }
 
