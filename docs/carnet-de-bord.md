@@ -2462,3 +2462,6 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - au repos, les charges équilibrent le poids ;
   - pas de gain d'énergie sur les rebonds, frottement fini à l'arrêt, symétrie, déterminisme.
 - **A** `just check` passe, `just test` aussi (337 tests). Aucun avion n'a encore de train : le jeu et les essais ne changent pas.
+- **A** Étape 2 : `Aircraft::advance` fait les deux sous-pas de l'ADR 0005, et le jeu l'appelle à 120 Hz. Le jeu calcule donc à 240 Hz, comme `fdm_lab`. `Aircraft::step` reste un pas RK4 simple : les outils, qui lui passent déjà 1/240 s, ne changent pas. Les tests des aides et le test d'équilibre du vol d'essai passent par `advance`.
+- **R** Coût mesuré sur le Ryzen 7 7800X3D : **1,0 ms par pas RK4**, 1,7 ms dans le conteneur. Soit 2 ms par pas de jeu, un quart de cœur pour un avion. À revoir au M4 avec plusieurs avions : l'ADR 0005 prévoit alors un pas plus long pour les avions lointains de l'IA.
+- **A** `just check` passe, `just test` aussi (338 tests). L'ADR 0008 attendra la mesure de convergence au sol, à l'étape 4.

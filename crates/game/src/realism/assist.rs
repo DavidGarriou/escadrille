@@ -477,7 +477,7 @@ mod tests {
             let m = Measured::of(&f.state, &ENVIRONMENT);
             let input = pilot(t, &f.start);
             let controls = memory.commands(assist, &input, &m, &f.table, dt);
-            f.state = f.aircraft.step(&f.state, &controls, &ENVIRONMENT, dt);
+            f.state = f.aircraft.advance(&f.state, &controls, &ENVIRONMENT, dt);
             let altitude = -f.state.position_ned.z;
             if altitude <= 0.0 {
                 trace.crashed = true;
@@ -575,7 +575,7 @@ mod tests {
                     c.yaw,
                 );
             }
-            f.state = f.aircraft.step(&f.state, &c, &ENVIRONMENT, dt);
+            f.state = f.aircraft.advance(&f.state, &c, &ENVIRONMENT, dt);
         }
     }
 

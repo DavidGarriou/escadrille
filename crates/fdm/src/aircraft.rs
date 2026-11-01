@@ -37,6 +37,10 @@ use crate::rigid_body::{
 /// Index of the downwash lag (rad) in [`RigidBodyState::aux`].
 pub const AUX_DOWNWASH: usize = 0;
 
+/// RK4 steps in one [`Aircraft::advance`] (ADR 0005): the game calls it at 120 Hz, the
+/// flight model integrates at 240 Hz, the step of the flight tests.
+pub const SUBSTEPS: u32 = 2;
+
 /// Below this airspeed (m/s), the downwash lag uses this speed (keeps l_t / V finite).
 const MIN_LAG_SPEED: f64 = 1.0;
 
@@ -477,7 +481,20 @@ impl Aircraft {
         self.evaluate(state, controls, env).loads
     }
 
-    /// Advances the aircraft by `dt` seconds (RK4, ADR 0005).
+    /// Advances the aircraft by one fixed step of the game, `dt` seconds, in [`SUBSTEPS`]
+    /// RK4 steps; the commands stay the same throughout.
+    pub fn advance(
+        &self,
+        state: &RigidBodyState,
+        controls: &PilotControls,
+        env: &dyn Environment,
+        dt: f64,
+    ) -> RigidBodyState {
+        let h = dt / f64::from(SUBSTEPS);
+        (0..SUBSTEPS).fold(*state, |s, _| self.step(&s, controls, env, h))
+    }
+
+    /// Advances the aircraft by `dt` seconds in one RK4 step (ADR 0005).
     pub fn step(
         &self,
         state: &RigidBodyState,

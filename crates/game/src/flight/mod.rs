@@ -1,9 +1,9 @@
 //! Flight: the flight model (`escadrille_fdm`) in the ECS (plan `m2-vol-essai.md`, step 2).
 //!
-//! - The simulation steps in `FixedUpdate` at [`STEP_HZ`] (RK4, ADR 0005), keeping the
-//!   previous and the current state ([`simulation`]). Before each step, the player's
-//!   aircraft takes the pilot's commands, which the assists (`crate::realism`) may then
-//!   move.
+//! - The simulation steps in `FixedUpdate` at [`STEP_HZ`], in two RK4 sub-steps (ADR 0005),
+//!   keeping the previous and the current state ([`simulation`]). Before each step, the
+//!   player's aircraft takes the pilot's commands, which the assists (`crate::realism`)
+//!   may then move.
 //! - In `Update`, the aircraft's transform is interpolated between them, relative to a
 //!   floating render origin, through the one frame conversion of ADR 0006 ([`bridge`]).
 //! - The 3D model's control surfaces and propeller follow the flight model

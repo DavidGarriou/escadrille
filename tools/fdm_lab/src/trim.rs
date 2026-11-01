@@ -451,7 +451,7 @@ pub(crate) mod tests {
         let start = s.initial_state();
         let mut state = start;
         for _ in 0..120 {
-            state = aircraft.step(&state, &s.commands(), &STILL_AIR, 1.0 / 120.0);
+            state = aircraft.advance(&state, &s.commands(), &STILL_AIR, 1.0 / 120.0);
         }
         let climbed = start.position_ned.z - state.position_ned.z;
         let slowed = start.velocity_body.length() - state.velocity_body.length();

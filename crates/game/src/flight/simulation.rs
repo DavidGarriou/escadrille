@@ -132,7 +132,7 @@ pub fn step(time: Res<Time<Fixed>>, mut aircraft: Query<&mut Simulated>) {
         }
         let state = sim
             .aircraft
-            .step(&sim.state, &sim.controls, &ENVIRONMENT, dt);
+            .advance(&sim.state, &sim.controls, &ENVIRONMENT, dt);
         sim.previous = sim.state;
         sim.state = state;
         if sim.touches_ground() {

@@ -992,3 +992,17 @@ fn the_disc_of_the_propeller_clears_the_ground_until_the_nose_goes_down() {
     };
     assert!(a.propeller_clearance(&nose_down, &SEA_LEVEL).unwrap() < clearance);
 }
+
+#[test]
+fn a_step_of_the_game_is_two_steps_of_the_flight_model() {
+    let a = biplane();
+    let start = flying(40.0, 0.06, 200.0);
+    let (h, half) = (1.0 / 120.0, 1.0 / 240.0);
+    let two = a.step(
+        &a.step(&start, &FULL, &SEA_LEVEL, half),
+        &FULL,
+        &SEA_LEVEL,
+        half,
+    );
+    assert_eq!(a.advance(&start, &FULL, &SEA_LEVEL, h), two);
+}
