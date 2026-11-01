@@ -1,6 +1,10 @@
 # Plan — Train d'atterrissage et sol : fin du M2
 
-- Statut : **à valider** par le joueur (voir « Décisions demandées au joueur »). Aucun code avant sa validation.
+- Statut : **validé** par le joueur le 2026-11-01, avec les options recommandées :
+  - `just run` démarre au sol, et la pause permet de choisir sol, finale ou en vol ;
+  - pré dessiné ;
+  - tenue de cap en Arcade et Pilote, envol automatique en Arcade ;
+  - accidents par seuils, avec une tolérance selon le préréglage.
 - Demande du joueur (2026-11-01) : « Oui, plan du train », pour finir le M2.
 - **Jalon** : dernier incrément du **M2 « Premier vol »** (`docs/roadmap.md`). Définition de « terminé » : le joueur vole dix minutes à la manette et trouve cela agréable ; décollage et atterrissage possibles en préréglage Pilote.
 - **Règles** : skills `simulation-vol`, `bevy`, `realisme`, `manette`, `rendu-visuel` ; ADR 0002, 0003, 0005, 0006.

@@ -5,7 +5,8 @@
 //! slipstream), engine, wings in the propeller's slipstream (reduced by the jet-width
 //! factor), the other lifting surfaces in the slipstream the wings leave (its swirl less
 //! the angular momentum they took from it, lagged wing downwash on the tail), parasitic
-//! drag and fuselage (whole slipstream behind the wings), then the sum.
+//! drag and fuselage (whole slipstream behind the wings), contact with the ground, then
+//! the sum.
 //!
 //! Wing downwash at the tail: ε = `factor` × C_L of the wings (Prandtl's lifting-line
 //! result ε ∝ C_L, so that it collapses with the lift at the stall), reaching the tail
@@ -24,6 +25,7 @@ use crate::aero::drag::DragItem;
 use crate::aero::surface::{ControlDeflections, StripFlow};
 use crate::aero::system::{LiftingSystem, SystemLoads};
 use crate::environment::Environment;
+use crate::ground::{GroundLoads, Undercarriage, disc_clearance};
 use crate::propulsion::engine::{EngineTorques, InlineEngine};
 use crate::propulsion::propeller::{
     Propeller, PropellerGeometry, PropellerLoads, Slipstream, WingWake,
@@ -99,6 +101,8 @@ pub struct Aircraft {
     /// Where the wings straighten the slipstream's swirl (with a propeller and wings).
     wing_wake: Option<WingWake>,
     travel: ControlTravel,
+    /// What touches the ground; without it, the ground is not felt.
+    undercarriage: Option<Undercarriage>,
 }
 
 /// Everything computed for one state, for telemetry, trim and tests.
@@ -120,6 +124,8 @@ pub struct Diagnostics {
     /// of wings). Undefined when the propeller's torque, hence the swirl, vanishes: it
     /// reads 1 there, which changes no load (the swirl the tail feels is K times it).
     pub swirl_left: Option<f64>,
+    /// Forces of the ground, and the points touching it.
+    pub ground: GroundLoads,
 }
 
 impl Aircraft {
@@ -180,7 +186,20 @@ impl Aircraft {
             downwash,
             wing_wake,
             travel,
+            undercarriage: None,
         })
+    }
+
+    /// The same aircraft, with what touches the ground.
+    pub fn with_undercarriage(self, undercarriage: Undercarriage) -> Self {
+        Self {
+            undercarriage: Some(undercarriage),
+            ..self
+        }
+    }
+
+    pub fn undercarriage(&self) -> Option<&Undercarriage> {
+        self.undercarriage.as_ref()
     }
 
     pub fn mass(&self) -> &MassProperties {
@@ -292,6 +311,11 @@ impl Aircraft {
         if let Some(p) = &propeller {
             wrench += p.wrench;
         }
+        let ground = self
+            .undercarriage
+            .as_ref()
+            .map_or_else(GroundLoads::default, |u| u.loads(state, env));
+        wrench += ground.wrench;
 
         let mut aux_rates = [0.0; AUX_STATES];
         if let Some(d) = &self.downwash {
@@ -326,7 +350,26 @@ impl Aircraft {
             shaft_speed,
             downwash,
             swirl_left: self.wing_wake.and(behind_wings).map(|s| s.swirl_left()),
+            ground,
         }
+    }
+
+    /// Height of the propeller's disc above the ground, m, negative when a blade strikes.
+    pub fn propeller_clearance(
+        &self,
+        state: &RigidBodyState,
+        env: &dyn Environment,
+    ) -> Option<f64> {
+        self.propulsion.as_ref().map(|p| {
+            let geometry = p.propeller.geometry();
+            disc_clearance(
+                state,
+                geometry.hub,
+                geometry.thrust_axis,
+                0.5 * geometry.diameter,
+                env,
+            )
+        })
     }
 
     /// The propeller's slipstream for these propeller loads, as it reaches the wings (they

@@ -10,5 +10,6 @@ pub mod aircraft;
 pub mod atmosphere;
 pub mod constants;
 pub mod environment;
+pub mod ground;
 pub mod propulsion;
 pub mod rigid_body;

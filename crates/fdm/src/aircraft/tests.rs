@@ -12,6 +12,7 @@ use crate::aero::surface::{
 };
 use crate::aero::system::MutualInduction;
 use crate::environment::StandardEnvironment;
+use crate::ground::{Skid, Spring, Undercarriage, Wheel};
 use crate::propulsion::engine::tests::engine;
 use crate::propulsion::propeller::tests::{anchors, table};
 use crate::propulsion::propeller::{Propeller, PropellerGeometry};
@@ -906,4 +907,88 @@ fn a_left_hand_propeller_mirrors_the_lateral_loads() {
         assert!((mr.y - ml.y).abs() < tol, "{mr} {ml}");
         assert!(mr.x.abs() > 10.0, "{mr}");
     }
+}
+
+/// Wheels and a skid of round numbers under the synthetic biplane.
+fn gear() -> Undercarriage {
+    let spring = Spring {
+        contact_stiffness: 250_000.0,
+        preload: 500.0,
+        stiffness: 75_000.0,
+        travel: 0.125,
+        stop_stiffness: 2_000_000.0,
+        damping: 4_500.0,
+    };
+    let wheel = |y: f64| Wheel {
+        axle: DVec3::new(0.6, y, 1.2),
+        radius: 0.3,
+        guide: DVec3::NEG_Z,
+        spring,
+        rolling: 0.07,
+        grip: 0.6,
+        cornering: 0.2,
+    };
+    let skid = Skid {
+        shoe: DVec3::new(-3.9, 0.0, 0.35),
+        spring,
+        friction: 0.5,
+    };
+    Undercarriage::new(vec![wheel(0.77), wheel(-0.77)], vec![skid], Vec::new()).unwrap()
+}
+
+#[test]
+fn in_the_air_the_undercarriage_changes_nothing() {
+    let (bare, geared) = (biplane(), biplane().with_undercarriage(gear()));
+    let start = flying(40.0, 0.06, 200.0);
+    assert_eq!(
+        bare.evaluate(&start, &FULL, &SEA_LEVEL),
+        geared.evaluate(&start, &FULL, &SEA_LEVEL)
+    );
+    let (mut s, mut t) = (start, start);
+    for _ in 0..1_200 {
+        s = bare.step(&s, &FULL, &SEA_LEVEL, 1.0 / 240.0);
+        t = geared.step(&t, &FULL, &SEA_LEVEL, 1.0 / 240.0);
+    }
+    assert_eq!(s, t);
+}
+
+#[test]
+fn on_the_ground_its_forces_add_to_the_aerodynamic_ones() {
+    let (bare, geared) = (biplane(), biplane().with_undercarriage(gear()));
+    let state = RigidBodyState {
+        position_ned: DVec3::new(0.0, 0.0, -1.47),
+        velocity_body: DVec3::new(10.0, 0.0, 0.0),
+        rotor_speed: 150.0,
+        ..Default::default()
+    };
+    let (air, all) = (
+        bare.evaluate(&state, &FULL, &SEA_LEVEL),
+        geared.evaluate(&state, &FULL, &SEA_LEVEL),
+    );
+    assert_eq!(all.ground.contacts.len(), 2, "{:?}", all.ground);
+    assert!(all.ground.wrench.force.z < 0.0, "{:?}", all.ground);
+    assert_eq!(
+        all.loads.wrench.force,
+        air.loads.wrench.force + all.ground.wrench.force
+    );
+    assert_eq!(all.lift_coefficients, air.lift_coefficients);
+}
+
+#[test]
+fn the_disc_of_the_propeller_clears_the_ground_until_the_nose_goes_down() {
+    let a = biplane();
+    let hub = a.propulsion().unwrap().propeller.geometry().hub;
+    let radius = 0.5 * a.propulsion().unwrap().propeller.geometry().diameter;
+    let height = hub.z + radius + 1.0;
+    let level = RigidBodyState {
+        position_ned: DVec3::new(0.0, 0.0, -height),
+        ..Default::default()
+    };
+    let clearance = a.propeller_clearance(&level, &SEA_LEVEL).unwrap();
+    assert!((clearance - 1.0).abs() < 1e-9, "{clearance}");
+    let nose_down = RigidBodyState {
+        attitude: DQuat::from_euler(EulerRot::ZYX, 0.0, -0.8, 0.0),
+        ..level
+    };
+    assert!(a.propeller_clearance(&nose_down, &SEA_LEVEL).unwrap() < clearance);
 }

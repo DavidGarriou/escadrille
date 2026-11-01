@@ -2440,3 +2440,25 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** `just check` passe (`advisories ok, bans ok, licenses ok, sources ok`) et `just test` aussi : 319 tests passés, 1 ignoré.
 - **R** Le plan `m2-train-sol.md` attend toujours la validation du joueur.
 - **D** Proposition au joueur : installer les deux outils, faire un vol court pour juger le centrage, puis passer au plan du train et du sol, qui clôt le M2. Aucun code avant la validation de ce plan.
+
+### Train et sol : plan validé, étape 1
+
+- **Q** Le joueur : « Oui, tout en A ».
+- **D** Plan `m2-train-sol.md` validé avec les quatre options recommandées :
+  - `just run` démarre au sol, et la pause permet de choisir sol, finale ou en vol ;
+  - pré dessiné ;
+  - tenue de cap en Arcade et Pilote, envol automatique en Arcade ;
+  - accidents par seuils, avec une tolérance selon le préréglage.
+- **A** Étape 0 : treizième passe de l'historien lancée en parallèle (train, frottements, technique de pilotage, terrains).
+- **A** Étape 1 : nouveau composant `crates/fdm/src/ground.rs`, sans Bevy, branché dans `Aircraft` par `with_undercarriage` :
+  - **roues** : sphère autour de l'axe, pneu en série avec le sandow précontraint, butée en fin de course (`Spring`) ; résistance au roulement ; force latérale qui croît avec l'angle de dérive jusqu'à l'adhérence ;
+  - **béquille** : ressort et frottement dans toutes les directions ;
+  - **points de structure** : ressort raide et frottement ;
+  - **frottement régularisé** sous 0,05 m/s, sans division par la vitesse ;
+  - `Diagnostics.ground` donne les charges et les compressions ; `Aircraft::propeller_clearance` donne la garde de l'hélice.
+- **⚠** Le premier test d'énergie échouait par ma faute : il oubliait l'énergie stockée dans les sandows, qui revient forcément pendant la détente. L'énergie se compare désormais aux instants où rien ne touche.
+- **R** 18 tests ajoutés, sur un avion de chiffres ronds, sans donnée historique. En particulier :
+  - en l'air, un avion avec train donne le même résultat au bit près que sans train, sur 5 s de vol ;
+  - au repos, les charges équilibrent le poids ;
+  - pas de gain d'énergie sur les rebonds, frottement fini à l'arrêt, symétrie, déterminisme.
+- **A** `just check` passe, `just test` aussi (337 tests). Aucun avion n'a encore de train : le jeu et les essais ne changent pas.
