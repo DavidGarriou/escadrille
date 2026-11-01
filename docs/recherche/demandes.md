@@ -27,6 +27,9 @@ Règles :
 | D13 | 1 | Libraires d'ouvrages anciens ; bibliothèques de la Défense | Klaeylé et Osché, *Guynemer : les avions d'un as* (1998) ; *Icare* n° 122 (1987) ; F. Blech, *Spa 3 : « Cigogne de Guynemer » (ailes basses)* (1986) | achat ; consultation pour Blech | à envoyer |
 | D14 | 1 | Musée de l'Armée (Paris), service des collections et photothèque | gros plan de S.254 aux Invalides (21e épisode du blog), autres photos de S.254 de 1917 ; dossier du dépôt au Musée de l'Air | photos de référence, légendes et dates | à envoyer |
 | D15 | 1 | University of Alabama in Huntsville, Archives and Special Collections | *Air Service Information Circulars* de McCook Field : n° 286 (essai du SPAD XIII, 1921) et toute pièce du dossier « D52.1 / Spad » | copie numérique | à envoyer |
+| D16 | 2 | Libraires ; bibliothèques | J. Calcine, *Atlas Aisne 1914-1918 : terrains d'aviation militaires*, 180 fiches de terrains | achat ou consultation, après vérification du contenu | à envoyer |
+| D17 | 1 | Service historique de la Défense, département Air (Vincennes) | instructions de 1916-1918 sur l'organisation des terrains et les signaux au sol ; journaux de marche des SPA 3 et 73 en Flandre (juillet-décembre 1917) | recherche d'inventaire, puis consultation | à envoyer |
+| D18 | 2 | Internet Archive (prêt numérique, compte du joueur) | J. M. Bruce, *War Planes of the First World War*, vol. 5 ; W. M. Lamberton, *Fighter Aircraft of the 1914-1918 War* ; F. Tallman, *Flying the Old Planes* ; E. Petit, *La Vie quotidienne dans l'aviation en France* | emprunt, relevé des passages par le joueur ou la session principale | à faire |
 
 ## D1 — Australian War Memorial : notice technique britannique du S.VII
 
@@ -322,6 +325,52 @@ Phrase à ajouter aux messages en français :
 
 > Je cherche aussi la position du centre de gravité (ou ses limites admises), le calage du plan fixe et le débattement de la gouverne de profondeur.
 
+## D16 — Atlas des terrains d'aviation de l'Aisne
+
+- **Ouvrage** : J. Calcine, *Atlas Aisne 1914-1918 : terrains d'aviation militaires*, plates-formes aéronautiques temporaires, principales et secondaires ; notice Mollat : https://www.mollat.com/livres/633589/jacques-calcine-atlas-aisne-1914-1918-terrains-d-aviation-militaires-plates-formes-aeronautiques-temporaires-principales-et-secondaires (vue en résumé le 2026-11-01). Titre exact, éditeur et date à vérifier.
+- **Ce qu'on cherche** : longueur et largeur de terrains français de 1917, surtout de chasse ; nature du sol ; emplacement des Bessonneau ; toute mention d'un repère au sol.
+- **Pourquoi** : aucune dimension d'un terrain d'escadrille française n'est sourcée (`spad7.md` § 6.6.5). Le pré du jeu, 800 × 300 m, reste `ESTIMÉ`.
+- **Avant d'acheter** : demander au libraire si les fiches donnent des dimensions.
+
+## D17 — Service historique de la Défense : terrains et signaux au sol
+
+- **Documents** : à repérer dans les inventaires du département Air :
+  - toute instruction de 1916-1918 sur le choix, l'organisation et le balisage des terrains d'escadrille ;
+  - les journaux de marche des SPA 3 et 73 pour juillet-décembre 1917 (déjà cités comme pistes au § 6.4 de `spad7.md`).
+- **Ce qu'on cherche** :
+  1. dimensions d'un terrain, à Saint-Pol-sur-Mer et à Bergues en particulier ;
+  2. signal de jour indiquant le vent : T de toile, cône, fumée, autre ;
+  3. T de fusées à la tombée de la nuit, consigne écrite ;
+  4. accidents d'atterrissage : capotages, béquilles cassées, état du sol.
+- **Pourquoi** : le T n'est attesté que de nuit (`spad7.md` § 6.6.5).
+- **Démarche** : **cote non trouvée**. FranceArchives n'a pas pu être lu : les pages s'affichent vides pour l'outil de l'historien. Commencer par les notices au § 6.6.8 de la fiche, puis demander en salle de lecture à Vincennes.
+
+## D18 — Ouvrages sous prêt numérique d'archive.org
+
+- **Documents** : identifiants `warplanesoffirst0000bruc`, `isbn_083068350`, `flyingoldplanes0000tall`, `bwb_P9-DLE-513`.
+- **Pourquoi** : ces livres sont lisibles seulement par emprunt, avec un compte personnel. L'historien n'en voit que de courts extraits ; il n'a pas cherché à contourner le refus.
+- **Ce qu'on cherche** :
+  - Bruce : chapitre SPAD 7 : train, roues, béquille, vitesse d'atterrissage ;
+  - Lamberton : fiche technique des SPAD ;
+  - Tallman : atterrissage de son S.VII, décrochage, plané (texte exact et attribution de S31) ;
+  - Petit : date et contexte du T de deux rectangles de toile blanche.
+
+## D1 à D5 — Compléments du 2026-11-01 : train et sol
+
+Enquête de la treizième passe (`spad7.md` § 6.6). Ajouter à ce que l'on cherche dans chaque demande :
+- **D1** et **D2** : train d'atterrissage du S.VII : nombre de tours et diamètre du sandow, tension de pose, roues et pneus, pression, sabot de béquille, sandow de béquille ;
+- **D3** : même chose pour le S.XI et le XIII ;
+- **D4** : plans du train et de la béquille, dimension des roues ;
+- **D5** : procès-verbaux d'essais du train (chute, charge de rupture), vitesse d'atterrissage notée au STAé, règles de résistance de 1916-1918.
+
+Phrase à ajouter aux messages en anglais :
+
+> I am also looking for the undercarriage details of this aircraft: number of turns and diameter of the rubber shock cord, wheel and tyre size, tyre pressure, and the tail skid shoe and its shock cord.
+
+Phrase à ajouter aux messages en français :
+
+> Je cherche aussi le détail du train d'atterrissage : nombre de tours et diamètre des sandows, dimensions des roues et des pneus, pression de gonflage, sabot et sandow de béquille.
+
 ## Journal
 
 | Date | Demande | Événement |
@@ -330,3 +379,4 @@ Phrase à ajouter aux messages en français :
 | 2026-10-26 | D4 (complément), D8 à D12 | Ajoutés par l'historien pour le modèle 3D (plan `m3-modele-spad7.md`, parties B1 et B2) ; rien n'est envoyé |
 | 2026-10-27 | D8 et D9 (compléments), D13, D14 | Ajoutés par l'historien pour la seconde couche de livrée de S.254 (`spad7-aspect.md` § 12.6) ; rien n'est envoyé |
 | 2026-10-31 | D15 ; D1 à D6 (compléments) | Ajoutés par l'historien pour l'enquête sur le centrage (`spad7.md` § 3.1) ; rien n'est envoyé |
+| 2026-11-01 | D16 à D18 ; D1 à D5 (compléments) | Ajoutés par l'historien pour le train et le sol (`spad7.md` § 6.6) ; rien n'est envoyé |

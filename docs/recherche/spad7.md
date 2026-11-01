@@ -1,8 +1,8 @@
 # SPAD S.VII C.1 — fiche de recherche
 
 - Identifiant : `spad7` (même nom que `assets/aircraft/spad7/`)
-- Dernière mise à jour : 2026-10-31
-- État : **en cours** (douzième passe). Sont désormais sourcés par des documents d'époque lus :
+- Dernière mise à jour : 2026-11-01
+- État : **en cours** (treizième passe). Sont désormais sourcés par des documents d'époque lus :
   - le profil « Spad » (B) ;
   - les polaires du RAF 15 (A pour ce profil) ;
   - la courbe de puissance et la loi d'altitude du Hispano de 180 hp (B pour un 8Ab) ;
@@ -35,6 +35,14 @@
     - XIII « lourd de la queue » en palier selon McCook (1921, résumé) : remarque d'équilibre, pas de stabilité ;
     - dièdre nul maintenu (C) ; plan fixe réglable et débattement de la profondeur : non trouvés ;
     - identifiants archive.org de quatre manuels de conception à télécharger ; demande D15 (circulaires de McCook Field).
+  - **treizième passe (2026-11-01), train, sol, décollage, atterrissage, terrain** (§ 6.6) :
+    - outil de lecture rétabli : archive.org, NTRS et plusieurs sites s'ouvrent enfin ;
+    - sandows, pneus et sabot du S.VII toujours **non trouvés** ; calcul complet d'un amortisseur d'époque pour un avion de 1 650 lb trouvé (C) ;
+    - roulement sur herbe : 0,06 retenu (C, mesures de 1919-1937) ; sabot : 0,4, déduit (C/D) ;
+    - toucher du S.VII : 85 à 95 km/h (C), aucune mesure directe ;
+    - décollage queue levée tôt, manche poussé (B pour la pratique) ; trois points simultané, norme enseignée dès mai 1918 (B) ;
+    - T au sol attesté en fusées la nuit, côté français (1916-1917) ; **aucun T de toile de jour avant 1919** ;
+    - dimensions d'un terrain d'escadrille française : **non trouvées**.
 - Fiches liées : [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (moteur et hélice), [`profil-spad7.md`](profil-spad7.md) (profil d'aile)
 - Contexte de jeu visé : escadrille SPA 3 (« Cigognes », Groupe de Combat 12), Flandres, été 1917
 
@@ -128,6 +136,17 @@ Méthode et accès :
 - **Web** : une vingtaine de requêtes en anglais, français, allemand et italien, toutes en **résumé**. Échec DNS de l'outil de lecture sur archive.org, ntrs.nasa.gov et babel.hathitrust.org (2026-10-31).
 - **Rien n'a été téléchargé.** Documents à télécharger au § 9.6 (lignes « 12e passe ») ; demande D15 dans `demandes.md`.
 - Session interrompue par la limite d'usage vers 15 h 30 UTC, puis reprise ; aucune recherche n'a été perdue, mais le temps restant n'a pas permis de requêtes en russe ni en tchèque.
+
+**Treizième passe (2026-11-01) : train, sol, technique, terrain.** Objet : étape 0 de `docs/plans/m2-train-sol.md`. Bilan au § 6.6.
+- **Changement d'accès.** L'outil de lecture ouvre désormais archive.org (texte OCR, recherche plein texte, recherche dans un document), ntrs.nasa.gov (PDF), gutenberg.org, thisdayinaviation.com, theaerodrome.com et histaero.ch. Échecs : § 9.5.
+- **Deux statuts nouveaux** :
+  - **[LU-WEB]** : page ouverte par l'outil de lecture, mais lue à travers le petit modèle de cet outil. Plus sûr que [RÉSUMÉ], car le texte est bien celui de la page ; moins sûr que [LU]. Les chiffres porteurs ont été redemandés en citation brute de l'OCR ; ils restent à relire sur l'image pour passer en [LU-IMG] ;
+  - **[EXTRAIT]** : courte phrase renvoyée par la recherche plein texte d'archive.org, page non ouverte.
+- **[LU-IMG]** s'applique ici aux PDF de NTRS affichés en image (S107, S109, S110) et à S120. **[LU]** : S3 et S4, textes complets conservés dans les résultats d'outil et recherchés mot à mot avec des expressions exactes.
+- **Limite de l'outil** : il tronque toute page à environ 918 000 caractères. La fin des très gros textes reste invisible (Jenkin, chap. XII).
+- **Ouvrages sous prêt** : la recherche dans le document est refusée (403) pour les livres en prêt numérique d'archive.org. Je n'ai pas cherché à contourner ce refus ; ils ne sont vus qu'en [EXTRAIT].
+- **Langues** : requêtes en français, anglais, allemand et italien. Rien de nouveau en italien sur le pilotage du SPAD : les lettres de Baracca (recueil `baracca_carriera_battaglie`, 200 000 caractères sur 249 000 vus en [LU-WEB]) ne parlent ni du décollage, ni de l'atterrissage du SPAD ; seul point utile, il se pose en panne dans un pré près de Cividale le 26 octobre 1917. Pas de requête en russe ni en tchèque.
+- **Rien n'a été téléchargé dans le dépôt.** Documents à faire rendre : § 6.6.8 ; demandes D16 à D18.
 
 ## 1. Identification et contexte
 
@@ -228,7 +247,7 @@ Quatrième passe : une description d'époque du S.VII (*Aerial Age*, reprise par
 | Fuselage | « exceptionnellement profond » ; fond arrondi sous les longerons inférieurs, comme les flancs et le dessus : section arrondie sur les quatre faces | — | S48 (1917) [LU-OCR] ; S49 (S.XI : quatre longerons, dessus et dessous arrondis par des couples et des lisses) [LU-OCR] | C (qualitatif) | Largeur et hauteur maximales, longueur du fuselage seul : **non trouvées** |
 | Capot et radiateur | capot avant en aluminium ; ouverture **circulaire** du radiateur, rappelant le capot d'un moteur rotatif ; bossages latéraux des carters d'arbres à cames ; perforations d'aération | — | S48 [LU-OCR] ; S49 (S.XI : radiateur à volets formant le nez) | C (qualitatif) | Diamètre et surface frontale du radiateur : **non trouvés** |
 | Positions du pilote, du moteur, du réservoir, de la mitrailleuse | moteur à l'avant derrière le radiateur ; mitrailleuse au-dessus du moteur ; réservoir principal sous le siège | — | S48 ; § 7 ; S13 [RÉSUMÉ] pour le réservoir ; S.XI : réservoir sous pression formant le siège (S49) | C (qualitatif) | **Aucune cote de position trouvée** |
-| Voie du train | 1,52 m | ft | S48 (1917) : 5 ft [LU-OCR] | C | XIII : 1,492 m (S15). Essieu coulissant dans des glissières, amortisseurs en sandow (S48) |
+| Voie du train | 1,52 m | ft | S48 (1917) : 5 ft [LU-OCR] ; environ 1,50 m (S115, 1917) [LU-WEB] | C | XIII : 1,492 m (S15). Essieu coulissant dans des glissières, amortisseurs en sandow (S48). Détail du train : § 6.6.1 |
 | Profil | section nommée **« Spad »** dans le NACA Report 93 (MIT, 1918) : épaisseur ≈ 5,4 %, cambrure ≈ 3,8 %, intrados creux | % de corde | `profil-spad7.md` § 2 [LU] | **B** | Type de SPAD mesuré non précisé. Polaires : calcul calé sur le RAF 15 de vraie grandeur (A pour ce profil, C pour le SPAD) |
 
 ### 2.2 Comparable : SPAD S.XIII C.1 (cotes publiées d'après un exemplaire américain)
@@ -587,7 +606,7 @@ Toutes les valeurs A de ce tableau viennent de la ligne « Spa. 7C1 / Hispano 8A
 Taux de montée moyens déduits (C) : 7,1 m/s de 0 à 2 000 m ; 4,8 m/s de 2 000 à 3 000 m ; 3,7 m/s de 3 000 à 4 000 m.
 
 ### 5.3 Vitesse de décrochage : seul indice
-Selon un fil de forum qui reprend un récit attribué à Frank Tallman, le décrochage moteur réduit d'un S.VII à moteur Wright-Hispano E de 180 ch se produit « vers 47 mph » (75,6 km/h, conversion C). Masse inconnue, fin des années 1950 ou années 1960 (S31 [RÉSUMÉ]). Confiance **D** : attribution incertaine, avion et moteur postérieurs.
+Selon un fil de forum qui reprend un récit attribué à Frank Tallman, le décrochage moteur réduit d'un S.VII à moteur Wright-Hispano E de 180 ch se produit « vers 47 mph » (75,6 km/h, conversion C). Masse inconnue, fin des années 1950 ou années 1960 (S31 [RÉSUMÉ]). Confiance **D** : attribution incertaine, avion et moteur postérieurs. Vitesse d'atterrissage, treizième passe : § 6.6.3.
 
 ### 5.4 Cibles proposées pour `essais.ron` (à valider par l'aérodynamicien)
 > **Huitième passe : pour le 150 ch, ce tableau est remplacé par le § 5.5.6** (confiance déclassée à 3 000 et 4 000 m, tolérances justifiées, plafond à vitesse ascensionnelle nulle). Pour le 180 ch, il reste valable avec les tolérances du § 5.5.6.
@@ -866,7 +885,7 @@ Corrections faites dans cette passe : page de la présentation de S46 (p. 201, e
 
 #### 5.7.4 Décollage du S.VII
 
-**Non trouvé** pour 1916-1918, ni pour le 150 ch ni pour le 180 ch : ni distance, ni durée de roulage, ni vitesse de décollage. S46, S47 et S48 n'ont pas de colonne de décollage.
+**Non trouvé** pour 1916-1918, ni pour le 150 ch ni pour le 180 ch : ni distance, ni durée de roulage, ni vitesse de décollage. S46, S47 et S48 n'ont pas de colonne de décollage. Treizième passe : toujours rien ; technique et comparables au § 6.6.4.
 
 **Seul chiffre vu** : un récit attribué à Frank Tallman, sur un S.VII à moteur Wright-Hispano E de 180 ch, dans les années 1960 (S31 [RÉSUMÉ]) :
 - la queue se lève presque aussitôt ;
@@ -988,6 +1007,7 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 - **T8 — Louis G. Meister, pilote d'essai en chef de McCook Field, rapport du 27 avril 1921** · États-Unis, pilote d'essai (regard technique, sans attachement) · 1921 · **SPAD XIII** (moteur à réducteur, rotation inverse du VII) · anglais · S15 [RÉSUMÉ].
   En vol : très stable, mais il faut beaucoup de pied à gauche, car le couple moteur est « très prononcé ». Avion lourd de la queue (la phrase est coupée dans le résumé). Le moteur est très sensible à la température en plané et refroidit vite : le pilote doit manœuvrer sans cesse les volets du radiateur. Au sol, deux versions coexistent dans le résumé : il roule facilement même par vent fort, sans tendance à tourner, **ou** il tend à embarder au décollage. Il se pose facilement, s'arrête court grâce à sa queue lourde et ne capote pas, même posé queue haute ou sur terrain bosselé.
   **Onzième passe** (S15, complément [RÉSUMÉ]) : les deux versions décrivent deux moments différents. Au roulage, aucune tendance à tourner, même par vent fort. Au décollage, l'avion part à droite dès l'ouverture des gaz ; un pied à gauche trop rapide le fait partir à gauche ; le remède est de pousser un peu le manche pour lever la queue tôt (§ 6.5.4). Précision du même document, **pas une source nouvelle**.
+  **Treizième passe** (S15 [LU-WEB], extraits du rapport lus sur la page) : confirmation des deux points ci-dessus, et deux compléments : on roule le manche en avant pour alléger la béquille ; la béquille, trop droite, a cassé deux fois au roulage sur sol inégal.
   Biais : avion d'après-guerre, autre sous-type.
 
 - **T9 — Frank Tallman, *Flying the Old Planes*, Doubleday, 1973** · États-Unis, pilote de cinéma et collectionneur · années 1950-1970 · **S.VII original à moteur Wright-Hispano E de 180 ch** (immatriculé N4727V, S31) · anglais · S31 [RÉSUMÉ].
@@ -1065,7 +1085,9 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 | Couple marqué, embardée au décollage | T8 (XIII, rotation inverse ; onzième passe : roulage neutre, départ à droite à l'ouverture des gaz) [RÉSUMÉ] ; complément de T9 (S.VII de 180 ch, aucune difficulté de direction selon un forum) [RÉSUMÉ] | **À confirmer** : aucun témoignage d'époque sur un S.VII (§ 6.5.4). Sens de rotation appuyé par une convention d'époque (§ 6.5.3) | M2 (sol) : à pleine puissance, l'avion part à gauche, contré au pied droit (déduit du sens de rotation, C). **Aucune attente en palier ni en montée** : rien n'est sourcé (§ 6.5.5) | C |
 | Visibilité latérale et vers l'arrière limitée, angle mort sous le moteur | T4 (a) Bordeaux [LU] ; S9 [RÉSUMÉ] (avant et vers le bas médiocres) | **À confirmer** | Pour la caméra cockpit (M2+), pas pour le modèle de vol | C |
 | Poste étroit, instruments mal disposés | T19 (rapport allemand, S.XI, 1918) [LU-OCR] : siège très étroit « comme sur tous les SPAD », compte-tours posé à plat et lu à l'envers | **À confirmer** pour le S.VII : un seul regard, sur un autre type | Pour le cockpit (M2+) : ne pas reproduire sans photographie d'un poste de S.VII | C |
-| Au sol : roule bien, capote peu, s'arrête court | T8 (XIII) [RÉSUMÉ] | **À confirmer** | M2 (sol) | C |
+| Au sol : roule bien, capote peu, s'arrête court | T8 (XIII) [LU-WEB] ; **treizième passe** : T20, T21 pour le capotage sur mauvais sol | **Partiellement confirmé** : sur pré lisse pour le XIII, l'inverse sur mauvais sol (§ 6.6.7) | M2 (sol) : attentes au § 6.6.7 | C |
+| **Touche vite, demande un long terrain lisse** (treizième passe) | T20 Biddle (EN, 1917-1918) [LU-WEB] ; T21 Nordhoff (EN, 1918) [LU] ; T24 *Deutsche Luftfahrer-Zeitschrift* (DE, 1917, déduction) [LU-WEB] ; T25 (EN, 1917) ; **contre** : T21 (e), « facile une fois le coup pris » | **Confirmé** comme réputation dans deux camps. Vitesse réelle du S.VII non mesurée (§ 6.6.3) | toucher entre 85 et 95 km/h (§ 6.6.7), sans tolérance serrée | C |
+| **Décollage : queue levée tôt, manche poussé** (treizième passe) | T21, T22 [LU] ; T8 (XIII) [LU-WEB] ; S108 [LU-WEB] ; T9 [RÉSUMÉ] | **Confirmé** pour la pratique ; une seule mention sur S.VII en vol moderne | § 6.6.7 | B pour la pratique, C pour le S.VII |
 
 ### 6.3 Réputation
 
@@ -1082,7 +1104,9 @@ Format : auteur · camp et rôle · date du témoignage · sous-version · langu
 | Hispano capricieux : surchauffe, fuites, mécaniciens indispensables | **Confirmé** | T5, T6 [LU] ; T8, T10 | Scènes de hangar, pannes en mission (à doser) |
 | Une seule mitrailleuse | **Fait** ; jugement partagé (Baracca : elle suffit, S26, à vérifier) | S5, S6 ; T14 | Débat au mess |
 | Moins maniable qu'un Nieuport | **Contesté** | § 6.2 | Préjugé de pilote venu du Nieuport |
-| « Tombe comme une pierre » à basse vitesse, se pose au moteur | **À confirmer** (rumeur probable) | T9 ; forums | Avertissement de moniteur ; peur de la recrue |
+| « Tombe comme une pierre » à basse vitesse, se pose au moteur | **À confirmer** (rumeur probable). Treizième passe : aucun texte d'époque ne parle d'un posé au moteur du SPAD ; Nordhoff évoque au contraire le sifflement des monoplaces qui se posent, et la pratique générale est moteur réduit puis coupé (§ 6.6.4) | T9 ; forums | Avertissement de moniteur ; peur de la recrue |
+| « Atterrissage à une vitesse terrible, le moindre écart est mortel » | **Exagéré** : ce sont des récits de mécaniciens, selon Nordhoff, pour qui ces machines sont faciles une fois le coup pris. Mais Biddle les juge dangereuses sur mauvais sol | T21, T20 [LU, LU-WEB] | Mess : bizutage de la recrue par les mécaniciens, réponse de l'ancien |
+| « Trois points », « au poil », « à la patte de mouche », « soi-soi », « cheval-de-bois », « taxi » | **Argot attesté** en 1917-1918 ; « trois points » y désigne un défaut | T23 [LU-WEB] | Carnet de vol, dialogues de terrain, notes du moniteur |
 | Guynemer réclame plus de puissance et un canon, d'où les SPAD XII et XIII | **Partiellement confirmé** : les lettres existent (T3, et S1 sur l'« avion magique") ; le lien de cause à effet est affirmé par des secondaires (S8, S18) | S1 [LU] ; S8, S18 | Contexte historique |
 | Udet épargné par Guynemer (mitrailleuse enrayée) | **Légende / contesté** : source unique et tardive | T12 | Récit de mess raconté comme on-dit, jamais comme un fait |
 | Le *Vieux-Charles* introuvable | **Rapporté** par Bordeaux : le numéro n'apparaît sur aucune liste allemande d'appareils abattus, et la tombe n'a pas été retrouvée | S1 [LU] | Uniquement avec sobriété ; personnages réels |
@@ -1218,6 +1242,277 @@ Conséquences attendues, inchangées (C, physique élémentaire) : à pleine pui
 | 2 | C. J. Biddle, *The Way of the Eagle* (1919) ; E. V. Rickenbacker, *Fighting the Flying Circus* (1919) ; J. N. Hall et C. B. Nordhoff, *The Lafayette Flying Corps* (1920) | Google Books `I70MAAAAYAAJ` (Biddle, plein texte selon un résumé) ; HathiTrust, notice 008643621 (Rickenbacker, plein texte selon un résumé) | recherche plein texte de « torque », « rudder », « foot » |
 | 3 | *Agenda de l'aviateur 1917-1918* (dir. M. Percheron), 228 p., éditeur à vérifier | Bibliothèques numériques de la Défense (notice vue en résumé, identifiant non relevé) ; extraits sur chezpeps.free.fr (P28) | préceptes de pilotage : couple, pied au décollage |
 
+### 6.6 Treizième passe (2026-11-01) : train, sol, décollage, atterrissage, terrain
+
+**Objet.** Étape 0 du plan `docs/plans/m2-train-sol.md`. Méthode, accès et statuts des sources : § 0 ; **[LU-WEB]** et **[EXTRAIT]** y sont définis. Le plan n'a servi ni de cible ni de repoussoir : ses chiffres sont seulement comparés à la fin.
+
+**Bilan.** Sur le S.VII lui-même, très peu de chiffres : voie, jambes, essieu coulissant, sandows et béquille simple, pas de course, pas de pneu, pas de vitesse d'atterrissage mesurée. En revanche, cette passe trouve ce qui manquait au modèle de contact : **un calcul complet d'amortisseur à sandows d'époque pour un avion de 1 650 lb** (S106), **des frottements mesurés sur gazon** (S104, S107, S108) et **des règles de résistance du train** (S106, S119). Tout cela vaut **C** pour le SPAD : méthode et ordre de grandeur, pas mesure du S.VII.
+
+#### 6.6.1 Train et béquille
+
+**Sur le S.VII (directement).**
+
+| Élément | Ce qui est dit | Source | Confiance |
+|---|---|---|---|
+| Voie | 5 ft (1,52 m) ; « environ 1,50 m » | S48 [LU-OCR] ; S115 [LU-WEB] | C (deux chiffres de presse, dont un sans doute estimé sur photo) |
+| Train | jambes haubanées dans les deux plans, « rien de bien nouveau », lignes nettes jusque dans la suspension de caoutchouc | S115 [LU-WEB] | C |
+| Béquille | **patin simple** (*Schleifsporn*), sans la complication de celui du Nieuport biplace | S115 [LU-WEB] | C : article de rédaction fondé sur des photos, sans avion capturé |
+| Roues, pneus, nombre de tours, diamètre et longueur du sandow, course, sabot, sandow de béquille | **non trouvés** | — | — |
+
+**Famille SPAD.**
+- S.XIII : **béquille fixe** ; Meister la juge **trop droite** : elle a cassé deux fois au roulage sur sol inégal (S15 [LU-WEB]). Deux pneumatiques, sandows, voie de 1,492 m.
+- S.XI : débattement de 125 mm ; dimension de roue « 700 × 7… » dans l'OCR du rapport allemand (S49, § 2.5.1).
+
+**Pratique d'époque, comparable en masse (S106, chap. V, art. 123, [LU-WEB] ; chaque nombre revérifié en citation brute de l'OCR).** Le manuel de l'Engineering Division (1920) calcule entièrement un amortisseur pour un avion de **1 650 lb (748 kg)**, soit presque la masse du S.VII :
+
+| Grandeur | Valeur imprimée | En SI (C) |
+|---|---|---|
+| Chute libre de calcul | 10 in | 254 mm, soit 2,23 m/s |
+| Énergie à absorber | 16 500 in·lb | 1,86 kJ |
+| Cordon | ½ in, 60 brins au total (2 × 30) | |
+| Longueur d'un amortisseur | 141,1 in, soit 13 boucles de 9,76 in + 14 in | 3,58 m par côté ; 119 mm par brin |
+| Montée possible de l'essieu | 5⅛ in | **130 mm** |
+| Allongement maximal | 109 % (conseil : **100 à 120 %**, souvent 110 %) | |
+| Charge au maximum | 186 lb par brin | 827 N ; 49,6 kN pour 60 brins |
+| Capacité totale | 33 500 in·lb | **3,8 kJ** (équivaut à une chute de 516 mm, 3,2 m/s) |
+| Facteur en bout de course | 186 × 60 / 1 650 = **6,75** | |
+| Tension initiale conseillée | **10 à 15 lb** par brin ; 30 à 50 lb si le nombre de brins est limité | 44 à 67 N ; 133 à 222 N par brin |
+| Spécification de l'État, charge à 100 % d'allongement | ⅜ in : 65-90 lb ; ½ in : 145-180 lb ; ⅝ in : 240-275 lb | par brin |
+
+Limite de lecture : la courbe charge-allongement (fig. 104, courbe A) n'est pas lue, et le texte se contredit de 10 % environ (l'énergie de 275 in·lb à 76 % et celle de 557 in·lb à 109 % supposent un peu plus que les 186 lb finales). Image à faire rendre (§ 6.6.8).
+
+**Autres repères de course et de cordon.**
+
+| Source | Date | Donnée | Statut |
+|---|---|---|---|
+| Judge (S104, p. 90-104) | 1916 | dispositifs élastiques : environ 4 in de course ; 16 yd de cordon par 1 000 lb, ou 9 yd d'un calibre plus fort (diamètres illisibles dans l'OCR) ; caoutchouc : 500 à 1 000 ft·lb/lb | [LU-WEB] |
+| Pagé (S122) | 1918 | essieu : 4 à 6 in avec l'amortisseur ordinaire | [EXTRAIT] |
+| Warner (S110, p. 6) | 1923 | course utile rarement au-dessus de **7 in** avec du caoutchouc | [LU-IMG] |
+| Pomilio (S105, p. 47-48) | 1919 | l'amortisseur reçoit 0,5 à 1 % de l'énergie cinétique du posé ; exemple : 32 ft de cordon à 150 % d'allongement absorbent 1 800 ft·lb | [LU-WEB] |
+| *The Aeroplane* (S124) | juin 1917 | environ 10 yd de cordon gainé de coton par amortisseur, biplan à Hispano-Suiza d'environ 2 500 lb (type non identifié dans l'extrait) | [LU-WEB], extrait |
+| Lecœuvre (S125) | 1925 | tension initiale portée vers 200 % sur avions lourds ; chiffre courant illisible | [LU-WEB], OCR douteux |
+
+**Rebond : à corriger dans le plan.** Le plan écrit que le caoutchouc rend presque toute l'énergie. Warner (S110, p. 3-4 [LU-IMG]) écrit le contraire pour le cordon : le **glissement des brins entre eux consomme une grande partie de la tendance au rebond**. Le mauvais amortisseur, selon lui, c'est le **pneu** : excellent ressort, très mauvais amortisseur, et un avion monté seulement sur de gros pneus mous rebondirait. Aucun chiffre d'hystérésis trouvé.
+
+**Pneus.**
+- S.VII et S.XIII : **dimensions et pression non trouvées**.
+- Roues Palmer de 1916 : 600 × 75, 700 × 75, 750 × 125, 800 × 150 mm (S104, tableau III, p. 17 [LU-WEB]). Standard monoplans et biplans : « environ 26 in sur 3 » (660 × 76 mm ; p. 104-105).
+- Warner (S110, p. 2) : pneus à basse pression pour céder au choc ; les premières roues ressemblaient à des roues de bicyclette.
+- Raideur : aucune mesure sur un pneu de 1917. Meilleure mesure trouvée : pneu standard 26 × 5, 50 lb/in², NACA 1937 (S107, tableau I [LU-IMG]) : 0,58, 0,76 et 0,94 in sous 640, 940 et 1 240 lb. Soit **290 kN/m en tangente** (C). Pomilio donne 900 ft·lb pour 0,25 ft d'écrasement : 210 ou 420 kN/m selon que le chiffre vaut pour deux roues ou une, ce qu'il ne précise pas (C).
+
+**Béquille, pratique d'époque.**
+- Charge : 4 à 10 % du poids en 1916 (Judge, S104, p. 94) ; 11 % dans l'exemple de S106, art. 163. **Pesées de six avions américains en 1921-1922 : 10 à 17 %** (S119 [LU-WEB], extraits ; calcul C).
+- Petit amortisseur de sandow, pratique courante (Pomilio, S105, p. 50) ; non attesté sur le S.VII.
+- Hickory ou frêne, bout garni d'une plaque ou d'une griffe ; le pivot lié au gouvernail existe aussi en 1919 (Camm, S123, chap. XI [LU-WEB]). Rien sur le SPAD.
+- Essais de McCook, 1922 : béquille exigée pour 36 in de chute (S119).
+
+**Exigences de résistance.**
+
+| Source | Exigence | Portée |
+|---|---|---|
+| Programme français d'après-guerre, traduit par l'Air Service (S119, vues 1154-1156 [LU-WEB]) | train, essieux et béquille : rupture à **5 fois au moins la charge statique** au sol plat ; sandows réglés pour ne pas dépasser leur limite sur une chute d'environ **0,5 m de jour, 1 m de nuit** (chiffres touchés par l'OCR) ; à extension maximale, la béquille doit encore tenir gouvernail et plan fixe au-dessus du sol | **Le plus proche d'une règle française trouvé**, mais postérieur à 1917 (fin 1919 environ) : C |
+| Judge (S104, p. 90) | tenir une chute verticale de toute la machine de **12 à 18 in** (2,4 à 3,0 m/s, C) ; le train est parfois volontairement moins solide, pour absorber le choc d'un mauvais posé | 1916, britannique |
+| S106, art. 111, 119, 124 | cas de charge : recul 0,5 de la charge verticale, poussée avant 0,2, travers 0,25 ; posé sur une roue : charges doublées ; essai cité : rupture à 3,0 (amortisseur), 4,5 (essieu), 8,0 (jambes) | 1920, américain ; tableau XX illisible |
+| BLV allemandes (S126, tableaux 2 et 3 [LU-WEB]) | facteurs de cellule pour monoplaces : 5,0 / 3,5 / 2,5 / 3,0 (cas A à D, 1916). **Pas de colonne pour le train** dans la partie lue | texte des BLV non lu |
+| STAé 1916-1918, Air Board | **non trouvé** | demandes D1, D5 |
+
+#### 6.6.2 Frottement sur l'herbe
+
+| Source | Date, pays | Valeur | Ce que c'est | Statut |
+|---|---|---|---|---|
+| Judge (S104, p. 92) | 1916, GB | **80 à 120 lb par tonne**, « sol herbeux, comme sur les aérodromes », soit **0,036 à 0,054** en tonne longue (C) | valeur de calcul | [LU-WEB], citation brute |
+| Wetmore (S107) | 1936-37, US | gazon ferme : **0,023 à 0,054** ; gazon assez mou, pneus haute pression : **0,064 à 0,077** ; palier lisse : +0,007 environ par rapport aux rouleaux | **mesure** remorquée, 5 à 30 mph, roues de 26 × 5 et 36 × 8 | [LU-IMG] |
+| Klemin (S108, p. 235) | 1920, US | avion Curtiss HA, béquille sur chariot : **0,06** (240 lb pour 4 018 lb) ; R-4-L : 0,086 (calcul C) | hors béquille | [LU-WEB] |
+| Stafford (S111) | 1930, GB | **0,05 à 0,08** | calcul de décollage | [LU-WEB] |
+| Pröll (S109, p. 11) | 1926, DE | **0,08**, dont 0,006 pour l'essieu et 0,074 pour le sol | exemple de calcul | [LU-IMG] |
+
+**Béquille : aucune mesure directe trouvée**, dans aucune langue. Seule voie : Klemin (S108, p. 232 et 235 [LU-WEB]), à partir d'essais de l'Air Mail à Roosevelt Field le 23 mai 1919, sur gazon sec bien tassé :
+
+| Avion | Masse d'essai | Toucher | Béquille traînante | Béquille sur chariot | Roulage mesuré |
+|---|---|---|---|---|---|
+| Curtiss HA | 4 018 lb | 56,5 mph | 440 lb ; coefficient 0,104 | 240 lb | 539 ft (164 m) |
+| Curtiss R-4-L | 4 200 lb | 52,0 mph | 500 lb ; coefficient 0,119 | 360 lb | 711 ft (217 m) |
+
+La béquille traînante coûte donc 140 à 200 lb. **Calcul C** : si elle porte 11 % du poids (S106), son coefficient vaut environ **0,3 à 0,5**. Il monte vers 0,5 à 1 si elle porte moins, ce que Klemin ne donne pas.
+
+Plafond des roues : 0,3 en moyenne, 0,40 au plus, sur neuf atterrissages à Farnborough (Scott-Hall, 1932, article sur les freins de roue, S111 [LU-WEB], d'après R&M 1246 ; sol et usage des freins non précisés dans l'extrait). Effet qualitatif : la béquille raccourcit le roulage à l'arrivée et allonge celui du départ (Pröll, S109, p. 2) ; un sabot trop efficace abîme le terrain et fatigue le fuselage (Klemin, p. 231).
+
+#### 6.6.3 Vitesse d'atterrissage
+
+**S.VII : aucune mesure trouvée.**
+
+| Indice | Valeur | Conditions | Confiance |
+|---|---|---|---|
+| S.XIII n° 17956, McCook, 1921 | **59 mph (95 km/h)** | 2 036 lb (924 kg) ; S15 [LU-WEB] ; repris à 60 mph par Mills (S121), non indépendant | C pour le VII |
+| Transposé au S.VII, 703 kg | **88 à 90 km/h** | même C_L max, charge alaire de 39,4 kg/m² contre 43,8 à 46,3 ; calcul C | C |
+| Tallman, décrochage moteur réduit | 47 mph (76 km/h) | § 5.3 | D |
+| Essais de Roosevelt Field, 23 mai 1919 (S108) | **52 et 56,5 mph (84 et 91 km/h)** | avions postaux à 40 et 41 kg/m² (calcul C), presque la charge alaire du S.VII : **comparable le plus direct**, mais autres ailes | C |
+| Nordhoff (T21), Nieuport biplace d'école | « soixante ou soixante-dix mph » (97 à 113 km/h) | 1917, impression d'élève | D |
+| Nordhoff (T21), « machines de chasse rapides » | décrochent sous 75 à 80 mph (120 à 129 km/h) | 1917, élève qui rapporte l'opinion de l'école : **exagéré**, peut-être une vitesse de plané | D |
+| *Aerial Age* (T25) | près de 100 mph pour les chasseurs étrangers | 1917, polémique américaine : **à ne pas retenir** | D |
+
+**Proposition** : toucher du S.VII à **85 à 95 km/h (C)**. Le haut de la fourchette pour un posé queue haute, le bas pour un trois points. Vitesse d'approche : **105 à 125 km/h (`ESTIMÉ`)**, entre la marge minimale d'un manuel britannique pour avions d'école (S112) et le chiffre de Nordhoff. Aucune source sur le S.VII.
+
+#### 6.6.4 Technique et témoignages
+
+**Témoignages nouveaux.** Format du § 6.1.
+
+- **T20 — Charles J. Biddle, *The Way of the Eagle*** · Américain, pilote de la N 73 puis SPA 73 (GC 12) en Flandre, puis dans l'aviation américaine · lettres de 1917-1918, publiées en 1919 · SPAD, type non précisé dans les passages · anglais · S114 [LU-WEB].
+  (a) 24 août 1917, Saint-Pol-sur-Mer (p. 61) : un petit monoplace de chasse rapide est difficile à poser sans capoter si l'on n'a pas un bon endroit.
+  (b) 15 octobre 1917, Bergues (p. 82) : la plupart des accidents viennent de la négligence à l'atterrissage.
+  (c) Fin 1917, date à vérifier (p. 118-119) : posé de nuit tombante, par grand vent, sur un SPAD neuf : il choisit un champ face au vent, à l'abri d'un bois ; il note qu'un fossé ou un trou suffit à retourner une machine.
+  (d) Lettre du 25 mai 1918 (p. 187) : un SPAD demande autant de vitesse à l'atterrissage que n'importe quel type. Moteur arrêté, sur sol de bataille, il tient l'avion au-dessus du sol aussi longtemps que possible pour perdre de la vitesse ; à la prise de contact l'appareil passe sur le dos.
+  Biais : lettres sincères, mais d'un pilote de Flandre, sur sol humide et troué. **C'est le témoin le plus proche du contexte du jeu.**
+
+- **T21 — Charles Nordhoff, *The Fledgling*** · Américain, élève en France en 1917, puis pilote de chasse en 1918 · anglais · S4 [LU], texte intégral recherché mot à mot.
+  (a) École, second semestre 1917 : on se met face au vent, plein gaz, **cloche poussée** ; l'avion roule, la queue se lève, on ramène le manche en ligne de vol ; à la vitesse de vol, un léger retrait suffit.
+  (b) Même lettre : le Nieuport d'école doit se poser à 60 ou 70 mph. Un peu plus loin : les avions rapides décrochent sur une aile sous 75 à 80 mph.
+  (c) Pour se poser, sur Blériot : manche en avant et moteur coupé, puis redresser au bon moment.
+  (d) Printemps 1918 : un monoplace moderne touche le sol trop vite pour tout autre terrain que le plus long et le plus lisse ; après une panne, le pilote sort souvent indemne d'une épave affreuse. Même lettre : le « sifflement creux » des monoplaces qui se posent (détail d'ambiance pour l'audio).
+  (e) 1918 : il raille les récits de mécaniciens (« atterrissage à une vitesse terrible ») : ces machines sont, dit-il, les plus faciles du monde à poser, **une fois le coup pris**.
+  Biais : textes retouchés pour la publication ; machines de 1918, sans doute SPAD, type non précisé ; le (e) est écrit devant des pilotes d'avions lents.
+
+- **T22 — James Norman Hall, *High Adventure*** · Américain, école française puis SPA 124, 1916-1917 · anglais · S3 [LU].
+  (a) Consigne au « Pingouin » : pleins gaz et queue en l'air tout de suite (*full gas and tail up at once*). Roulage d'école seulement.
+  (b) Les élèves apprennent à se poser sans moteur et, à la classe des spirales, à se poser à un point fixé depuis 800 à 1 000 m.
+  (c) En escadrille : son vieux SPAD lève la queue et prend sa vitesse (§ 6.1, T6).
+  (d) T au sol et cercle blanc : § 6.6.5.
+
+- **T23 — Argot des aviateurs français** · Gaston Esnault, *Le Poilu tel qu'il se parle*, 1919 · S113 [LU-WEB] ; Déchelette, *L'Argot des poilus*, 1918, S127 [EXTRAIT].
+  - **« Trois points »** (Miramas, mai 1918) : atterrissage **successif, au lieu d'être simultané**, des deux roues et de la béquille. Le terme désigne donc un défaut, et montre que **le contact simultané est la norme apprise en France dès mai 1918**. Le sens moderne vient plus tard.
+  - « Atterrir au poil » (Miramas, mai 1918), « à la patte de mouche », « soi-soi » : se poser parfaitement, sans choc.
+  - **« Cheval-de-bois »** : attesté par *La Guerre aérienne*, 15 février 1917, avec « être servi » (se faire jeter à terre par son appareil). Le sens de tête-à-queue au sol est implicite.
+  - « Taxi » : l'avion, chez les aviateurs de 1914-1918.
+  Matériau de premier choix pour le carnet de vol et le mess.
+
+- **T24 — « Der neue Spad-Kampf-Einsitzer », *Deutsche Luftfahrer-Zeitschrift*, n° 9/10, 1917** · Allemagne, revue spécialisée, article non signé, sans avion capturé, fondé sur des photographies · S.VII 150 ch · allemand · S115 [LU-WEB].
+  Les gouvernes sont assez petites, ce qui fait **conclure à une grande vitesse d'atterrissage**. C'est une déduction, pas une mesure. Vitesse annoncée : 200 km/h.
+  L'article donne aussi : envergure 7,8 m (7 m dans l'introduction), cordes de 1,42 et 1,30 m, écartement d'environ 1,10 m. **Non retenues** : estimations probables, journal.
+
+- **T25 — Presse américaine de 1917** · *Aerial Age Weekly*, vues 241 et 294 du volume 5 · S116 [LU-WEB], paraphrase de l'extrait.
+  Une commission, voyant des machines britanniques casser presque à chaque atterrissage aux essais de Governors Island, juge que les chasseurs étrangers ont un facteur de sécurité d'environ 3 et se posent près de 100 mph, et que le nouveau SPAD ne vaut guère mieux sur ces deux points. Biais : argument pour les avions américains. Utile pour la **réputation** seulement.
+
+- **T26 — « Avion », *The Way to Fly*, 1919** · manuel britannique pour débutants · S112 [LU-WEB].
+  Décollage : face au vent, tirer doucement à la vitesse minimale de vol. Plané : 2 à 3 mph au-dessus du minimum, pente d'environ 1/7. Arrondi à moins de 2 ft ; à 20 ft, l'avion tombe. Trois formes de posé : **roues d'abord** (la queue suit ; si le nez est trop bas, rebond), **trois points** (idéal), **queue d'abord**. Moteur : réduire au début du plané, couper une fois le posé assuré.
+
+- **Fait — Mort d'Alfred de Laage de Meux, 23 mai 1917, Ham** (S118 [LU-WEB]) : à l'essai d'un SPAD neuf, il prend de la vitesse puis monte en virage serré ; le moteur lâche, il perd sa vitesse et tombe en demi-vrille, faute d'une cinquantaine de mètres. À rapprocher d'Olivari (T16). Sobriété de rigueur : personnes réelles.
+
+**Synthèse.**
+
+| Phase | Ce qui est établi | Sur quel avion | Confiance |
+|---|---|---|---|
+| Roulage | manche poussé pour alléger la béquille | XIII (T8) ; Mills répète Meister | C |
+| Décollage | plein gaz, **manche en avant, queue levée tôt**, roulage en ligne de vol, léger retrait à la vitesse de vol | T21 (école), T22, T8 (XIII), Klemin (S108, p. 235-237 : lever la béquille dès que le souffle atteint l'empennage), T9 (S.VII), Pröll (S109, p. 5 : quitter le sol au plus tôt, accélérer ensuite près du sol) | **B** pour la pratique ; C pour le S.VII |
+| Après l'envol | rester bas pour prendre de la vitesse, puis monter | T21 (récit composite), T4 ; accidents d'Olivari et de Laage | C |
+| Approche | moteur réduit puis coupé | T21, T26, T22 | B pour la pratique générale ; **rien sur le S.VII** |
+| Posé | **le trois points simultané est la norme enseignée** dès mai 1918 en France (T23), en 1919 en Grande-Bretagne (T26), et le cas de référence de Klemin en 1920 (S108, p. 231 : assiette de décrochage, roues et béquille ensemble) | général | **B** |
+| Posé, S.VII | ni queue haute, ni trois points attesté **sur S.VII**. Le posé queue haute reste praticable sur XIII (T8) | XIII | C |
+
+**Le posé queue haute du plan** n'est donc pas la manœuvre type de 1917, mais il n'est pas un anachronisme : T8 l'admet, et T26 le décrit comme un posé courant, moins bon. Le plan note que le trois points se fait ailes décrochées : c'est exactement la description de Klemin.
+
+**Roulage court.** Sur le B.E.2c, 3° de plus à l'assiette au sol ont réduit de 35 % le roulage après le toucher (RAF, cité par S108, p. 232-233). L'effet va dans le sens de T8.
+
+#### 6.6.5 Terrains et T au sol
+
+**Dimensions d'un terrain d'escadrille française en 1917 : non trouvées.** Ni règlement, ni plan coté, ni dimension sûre.
+
+| Terrain | Dimensions | Source | Confiance |
+|---|---|---|---|
+| **Saint-Pol-sur-Mer** (SPA 3 à partir de mi-juillet 1917, Biddle à la SPA 73) | 400 × 400 m | forgottenairfields.com, résumé seulement, site inaccessible, époque du chiffre inconnue (S128) | **D** |
+| Aérodromes militaires britanniques en Angleterre | Town Moor 690 × 690 m ; Beverley 1 050 × 550 m ; Marske 910 × 820 m ; Bramham 1 330 × 730 m ; Coal Aston 1 650 × 550 m | wikis et notices, résumés (S128) ; écoles et grandes bases, pas des terrains de front | D |
+| Inventaire suisse du 4 décembre 1920 | Dübendorf 400 × 1 000 m ; terrains militaires secondaires 100 à 300 × 250 à 700 m | S120 [LU-IMG] ; autre pays, autre relief | C pour l'ordre de grandeur |
+| Pröll, 1926 | 200 m en tous sens suffisent pour **se poser** ; au décollage, ce sont les obstacles qui commandent | S109 [LU-IMG] | C |
+
+Qualitatif : Nordhoff réclame « le plus long et le plus lisse » pour un monoplace (T21) ; à Pau, l'école a de petits champs entre de hautes haies, et huit pistes annexes seraient créées en 1917-1918 (S128). Un terrain peut demander de rouler jusqu'à son extrémité pour s'envoler (Biddle, p. 150, S114).
+
+**Proposition** : garder **800 × 300 m en `ESTIMÉ`**. Rien ne l'infirme : c'est plus grand que 400 × 400, et dans l'ordre de grandeur suisse et britannique. Le roulage calculé de 88 m tient largement dedans. Aucune source ne permet de le resserrer.
+
+**Le T : attesté en France dès 1916-1917, mais comme signal de nuit, en fusées.**
+
+| Témoin | Lieu, date | Ce qui est décrit | Statut |
+|---|---|---|---|
+| Hall (S3, chap. I) | **école française** de B----, 1916-1917 | un pilote est encore en l'air à la tombée de la nuit ; on allume des fusées et on les dispose au sol **en un immense T, la barre transversale face au vent** | [LU], texte vérifié mot à mot |
+| Bewsher (S117, chap. VI) | **Coudekerque**, RNAS, Handley Page, 1917 (arrivée au printemps, C) | T d'ampoules électriques posé sur l'herbe, au milieu de l'aérodrome ; on roule jusqu'à son extrémité pour décoller | [LU-WEB] |
+
+Coudekerque est à quelques kilomètres de Saint-Pol-sur-Mer et de Bergues : le T lumineux existe donc **dans le secteur même du jeu, chez les Britanniques, la nuit**.
+
+**De jour : aucun T de toile trouvé avant 1919, de part et d'autre.**
+- *The Way to Fly* (1919) : le signal de vent de jour d'un aérodrome britannique est un cône d'étoffe en haut d'un mât (S112, p. 83).
+- École française : **grand cercle blanc** marquant le terrain de R---- (Hall, S3, chap. IV), boules rouges indiquant le côté de croisement (Nordhoff, S4). Vent jugé à la fumée (Nordhoff).
+- Le T de toile blanche existe plus tard, sans date établie : E. Petit (S127 [EXTRAIT], ouvrage couvrant 1900-1935) ; à vérifier.
+
+**Recommandation pour le plan (décision 2).** Le plan subordonne le T blanc à une attestation. Réponse : **pas de T de toile blanche de jour sur un terrain de front en 1917 (C)**. Un T de fusées à la tombée de la nuit, barre vers le vent, est attesté et utilisable plus tard pour une mission de crépuscule. Sur le pré de jour, rien : le pilote lit le vent à la fumée. Si l'on veut un repère, un cercle blanc n'est attesté que sur un terrain d'école.
+
+#### 6.6.6 Valeurs proposées pour le modèle de contact
+
+Toutes pour `aircraft.ron`, à marquer `E:` ou `C:` selon la colonne. Choix final à l'aérodynamicien.
+
+| Paramètre | Proposé | Fourchette | Justification | Niveau |
+|---|---|---|---|---|
+| Course de l'essieu | **125 mm** | 100 à 180 | S.XI (S49) ; 130 mm dans S106 ; 4 à 7 in ailleurs | C |
+| Précontrainte par roue | **1,7 kN** | 1,3 à 2,0 ; variante 4 à 6,7 | 30 brins × 10-15 lb (S106). Avec 30-50 lb par brin, l'essieu ne bouge pas au repos | C, nombre de brins `E:` |
+| Raideur du sandow par roue | **180 kN/m** | ± 25 % | 24,8 kN à 130 mm (S106). Loi légèrement progressive en réalité ; capacité 3,2 kJ à 125 mm pour les deux roues, contre 3,8 kJ dans S106 | C |
+| Butée de fin de course | raide, au-delà de 125 mm | | 6,75 fois le poids en bout de course dans S106 | C |
+| Raideur du pneu par roue | **220 kN/m** | 180 à 275 | S107 mis à l'échelle en p·√(D·d) : 700 × 75 à 50 lb/in² ; recoupe S105 | `E:` |
+| Pression du pneu | **345 kPa (50 lb/in²)** | 275 à 415 | **non trouvée** ; valeur du pneu standard de 1937 | `E:` (D) |
+| Écrasement limite, jante | **55 mm** | | environ 0,75 fois la section de 75 mm | `E:` (D) |
+| Amortissement | pneu faible ; **cordon nettement dissipatif** | | S110. **Non chiffré** | à régler sur les rebonds, `E:` |
+| Roulement, pré sec | **0,06** | 0,04 à 0,08 | S104, S107, S108, S111 ; paliers lisses compris | **C** (mesures A pour d'autres roues) |
+| Roulement, sol mou | 0,075 | 0,064 à 0,08 | S107, S109 ; pour plus tard | C |
+| Sabot de béquille sur pré | **0,4** | 0,3 à 0,5 | calcul sur S108 | C/D, `E:` |
+| Plafond de la force en travers | **0,35** | 0,3 à 0,4 | S111, frottement longitudinal mesuré, transposé au travers faute de mieux | D, `E:` |
+| Frottement d'arrachement | **non trouvé** | | pas de valeur à inventer : garder égal au frottement de glissement | `E:` |
+| Charge limite du train | **14 kN par roue, 28 kN sur les deux** | 5 fois la charge statique, jusqu'à 6,75 fois le poids | S119, S106. Posé sur une roue : la même roue doit encaisser le double (S106) | C, seuil `E:` |
+| Charge limite de la béquille | **7,4 kN** | | 5 fois 150 kg (S119) | C, seuil `E:` |
+| Vitesse verticale tolérée | **jusqu'à 2,2 m/s normal, 3 m/s dur, 3,2 m/s butée** | | S106, S104, S119 | C |
+
+**Contrôles faits ici (C).**
+- **Mise en mouvement** : 0,06 × 5,69 kN + 0,4 × 1,47 kN ≈ **0,93 kN**. Le ralenti (390 N) ne suffit pas : l'avion reste immobile, comme le prévoit le plan. Il démarre vers **770 tr/min** en loi n², à partir de 4,0 kN à 1 593 tr/min.
+- **Coefficient global au repos** : 0,13, contre 0,10 à 0,12 chez Klemin, cohérent avec une béquille plus chargée.
+- **Enfoncement au repos** : environ 19 mm par roue, dont 13 de pneu et 6 de sandow, avec les valeurs ci-dessus.
+- **Énergie** : le plan compte 1,5 kJ à 2 m/s et 3,3 kJ à 3 m/s. La règle de Pomilio donne 1,2 à 2,5 kJ à 95 km/h ; S106 calcule 1,9 kJ et prévoit 3,8 kJ. **Le plan est cohérent avec la pratique d'époque.**
+- **Écrasement du pneu** : à 3 m/s, ressort en série, l'effort dépasse largement ce que le pneu encaisse avant la jante (55 mm, environ 12 kN). Un posé dur doit mettre le pneu à fond avant la butée du sandow : prévoir la butée de jante.
+
+**Géométrie comparée à la pratique d'époque.** S106, tableau XXI, art. 125 [LU-WEB], chiffres de monoplaces américains et étrangers, axe d'hélice horizontal :
+
+| Grandeur | Pratique monoplace | Modèle du plan | Lecture |
+|---|---|---|---|
+| φ, angle au sol par la béquille et le bas de la roue | 13 à 14° | 14,4° | conforme |
+| α, verticale du contact de roue vers le centre de gravité | **15 à 18°**, plus fort pour les vitesses d'atterrissage élevées | **22°** | **au-delà** |
+| Voie / envergure | 0,17 à 0,21 | 0,194 | conforme |
+| Garde d'hélice minimale | 10 in (254 mm) | 270 mm | conforme |
+| Charge sur béquille | 10 à 17 % (S119), 4 à 10 % (S104) | **20,5 %** | **au-delà** |
+
+**Deux comparaisons indépendantes vont dans le même sens : le centre de gravité du modèle est plus en arrière des roues que la pratique d'époque**, de 11 à 20 cm par rapport à α de 15 à 18° (la charge de béquille tomberait alors vers 16 à 18 %, C). Ce n'est **pas une preuve** : aucune de ces mesures n'est un SPAD, la position des roues vient d'un dessin de presse, et Meister dit le XIII lourd de la queue. À verser au dossier du centrage (§ 3.1) ; aucune correction ne se justifie sans pesée.
+
+**Point fixe.** Pröll (S109, p. 9) donne 550 kg (5,4 kN) en moyenne de nombreux essais, sur un Daimler de 160 ch à Aspern ; ni la date ni le diamètre de l'hélice ne sont donnés. Ramenés à 150 ch par sa formule (14a), cela fait environ 5,2 kN à diamètre égal, à comparer aux 4,0 kN du modèle (C). L'écart s'explique peut-être par une hélice plus grande. Il n'impose rien, mais il suggère que le modèle n'est pas trop généreux au point fixe.
+
+#### 6.6.7 Attentes pour `essais.ron`
+
+| Trait | Sources | Concordance | Attente | Confiance |
+|---|---|---|---|---|
+| Queue levée tôt, manche poussé | T21, T22, T8, S108, T9 | **Confirmé** (pratique générale) | plein gaz, manche en avant : la queue se lève dans la première moitié du roulage, sans capoter. Aucun seuil chiffré | B pour le geste, C pour le S.VII |
+| Le manche poussé allège la béquille | T8 (XIII) ; un seul témoin | **À confirmer** | au roulage lent, la charge sur la béquille baisse quand on pousse le manche | C |
+| S'arrête court | T8 ; S108, S109 pour le mécanisme | à confirmer pour le VII | distance d'arrêt : trois points plus court que queue haute, à vitesse de toucher comparable | C |
+| Ne capote pas sur pré lisse, capote sur mauvais sol | T8 (XIII, sur pré) ; T20 (a) et (d), T21 (d) (SPAD, mauvais sol) | **Confirmé** : témoins indépendants, les deux moitiés du trait ne se contredisent pas | pré lisse : pas de capotage à un posé normal, queue haute comprise. Sol mou ou fossés : pour plus tard | C |
+| Touche vite pour son époque | T20 (d), T21 (d), T24, T25 ; contre : T21 (e) | **Confirmé comme réputation** ; vitesse réelle 85 à 95 km/h (C) | toucher entre 85 et 95 km/h. **Aucune tolérance serrée** | C |
+| Rebond | T26 ; S110 | général | un posé dur rebondit, mais le rebond s'amortit en deux ou trois contacts sans jamais gagner d'énergie | C |
+| Plané médiocre | T9 ; pratique générale 1/7 (T26) | à confirmer | la finale du plan (150 m, 1 500 m) suppose 1/10 : à vérifier avec moteur réduit | C |
+
+#### 6.6.8 Documents à télécharger ou à demander
+
+| Priorité | Document | Adresse | Ce qu'on y cherche |
+|---|---|---|---|
+| 1 | S106 : images des p. 169-176 | `ost-design-structuralanalys00unit`, images ou PDF | courbe A de la fig. 104 (charge-allongement du cordon de ½ in) ; tableau XX |
+| 1 | Air Service Information Circular, recueil 1922 : vues 1148-1158 | `AirServiceInformationCircular1922` | programme français : texte exact, chiffres de chute, titre et date, facteur du train |
+| 1 | Jenkin, *Report on Materials of Construction*, 1920, chap. XII (p. 141) | `reportonmaterial00jenkrich`, texte `_djvu.txt` : au-delà de la limite de lecture de mon outil | essais du cordon : charge, allongement, hystérésis, vieillissement |
+| 1 | E-Médiathèque du Musée de l'Air, filtres « Terrain d'aviation » (3 948), « Béquille de queue » (448), « Atterrissage » (143) | https://mediatheque.museeairespace.fr/fr/docList/ | photos de 1917 : T ou repère au sol de jour, terrain et haies, sabot, pneus du S.VII |
+| 1 | FranceArchives : « Terrains d'aviation », « [Aviation : Escadrille des Cigognes] », et photographies de 1917 (terrain de Chaudun, escadrille 65 ; terrain de la F 204 à Montdidier) | https://francearchives.gouv.fr/facomponent/1468a6e60bb92226c372368795d492f4bd143898 ; …/c0a2274cba701b56155259d66b8afd83bd159061 ; …/a78b4019c2976c065afed077bf9d617950f80837 ; …/ee0b1702c96ecb806953d33e8b946ee39370156f | notices vides à la lecture : intitulé, cote, service |
+| 2 | NACA TM 200-300 et rapports sur le posé ; Stafford, exemples du numéro suivant | NTRS ; *Flight*, mars 1930 | sabot de béquille mesuré |
+| 2 | Boccaccio, « Essais statiques des avions », *L'Aéronautique*, 1920, vol. II, p. 190 environ | `ayeronautique2` | règle française de résistance, train compris |
+| rappel | S38 (notice du XIII) ; D1, D2, D4 ; S49 image ; P1 | § 9.6, `demandes.md` | sandows, pneus, sabot |
+| 2 | ouvrages sous prêt d'archive.org : `warplanesoffirst0000bruc`, `isbn_083068350`, `flyingoldplanes0000tall`, `bwb_P9-DLE-513` | emprunt par le joueur (D18) ; ma recherche dans ces livres est refusée (403) | chapitre SPAD de Bruce, données de Lamberton, atterrissage selon Tallman, date du T de toile |
+
 ## 7. Armement
 - **Une** mitrailleuse Vickers de calibre .303 (7,7 mm), au-dessus du moteur, synchronisée pour tirer à travers le champ de l'hélice (S5, S6 [RÉSUMÉ]). Synchronisation **Birkigt** d'après une source spécialisée non identifiée dans le résumé : à vérifier.
 - Une deuxième mitrailleuse a été envisagée puis abandonnée, car elle dégradait les performances (S6 [RÉSUMÉ]). Un appareil britannique, doté d'une Lewis supplémentaire sur le plan supérieur, a été essayé à Martlesham Heath en mai 1917 : perte de performances jugée trop forte (S5 [RÉSUMÉ]).
@@ -1292,6 +1587,31 @@ Conséquences attendues, inchangées (C, physique élémentaire) : à pleine pui
 **Lues en douzième passe (2026-10-31)**. Texte OCR d'archive.org déjà téléchargé, relu comme des données.
 - **S101** — F. S. Barnwell (Captain, R.F.C.), « The Modern Aeroplane », *Flight*, 16 mai 1918, p. 538 environ (suite de la p. 514 ; page lue dans le sommaire du numéro). `Flight_International_Magazine_1918-05-16-pdf`. **[LU-OCR]**. Passage utilisé : stabilité longitudinale, position du centre de gravité de 0,33 à 0,38 de la corde moyenne, plan fixe symétrique. Secondaire d'époque (concepteur de la British & Colonial Aeroplane Co.) ; règle générale, aucun type d'avion cité.
 - **S89 (complément)** — passage sur l'avion « lourd du nez » ou « lourd de la queue » à plan fixe fixe ou réglable, *Flight*, 6 février 1919, p. 178-179 environ **[LU-OCR]**.
+
+**Lues en treizième passe (2026-11-01)**, toutes consultées ce jour. Items d'archive.org à l'adresse `https://archive.org/details/<identifiant>` ; pages d'après les titres courants de l'OCR, à une page près ; « vue » désigne le numéro de page du scan.
+- **S104** — A. W. Judge, *The Design of Aeroplanes*, Whittaker, Londres et New York, 1916 selon la notice. `designaeroplane00judggoog`. **[LU-WEB]** : p. 16-18 (roues Palmer) ; chap. VII, « Principles of Undercarriage Design », p. 90-105. Citations brutes demandées pour p. 92, 94, 104-105. Secondaire d'époque (manuel de conception).
+- **S105** — O. Pomilio, *Airplane Design and Construction*, McGraw-Hill, New York, 1919. `airplanedesigna00pomigoog`. **[LU-WEB]** : chap. IV, p. 44-50. Secondaire d'époque. Pomilio est un constructeur italien installé aux États-Unis.
+- **S106** — Structure and Aerodynamics Branch, Airplane Section, Engineering Division, *Structural Analysis and Design of Airplanes*, 1920. `ost-design-structuralanalys00unit`. **[LU-WEB]** : art. 111, 119, 122-125 et 162-163. Art. 123 vérifié en citation brute. Tableau XX illisible. Primaire américaine (manuel officiel), parle d'avions américains et étrangers.
+- **S107** — J. W. Wetmore, « The Rolling Friction of Several Airplane Wheels and Tires and the Effect of Rolling Friction on Take-Off », NACA Report n° 583, 1937. NTRS 19930091658, https://ntrs.nasa.gov/citations/19930091658. **[LU-IMG]**, tableau I lu sur image réduite. Primaire (mesure).
+- **S108** — A. Klemin, « Landing Run and Get-Away for Standard Airplanes », *Journal of the Society of Automotive Engineers*, vol. 6, n° 4, avril 1920, p. 231-236. `sim_society-of-automotive-engineers_1920-04_6_4`. **[LU-WEB]**. Secondaire d'époque, qui rapporte des essais de l'Air Mail (23 mai 1919) et de la Royal Aircraft Factory.
+- **S109** — A. Pröll, « Take-off Distance for Airplanes », NACA TM n° 381, septembre 1926, traduction de « Die Startstrecke bei Flugzeugen », *Zeitschrift für Flugtechnik und Motorluftschiffahrt*, 14 août 1926, p. 316-322. NTRS 19930090663. **[LU-IMG]**, p. 1-11. Secondaire.
+- **S110** — E. P. Warner, « Absorbing Landing Shocks », NACA TM n° 226, août 1923, repris du *Christian Science Monitor*. NTRS 19930084651. **[LU-IMG]**. Secondaire.
+- **S111** — Trois textes sur le frottement : R. S. Stafford, « An Analytical Method for Estimating the Take Off Run and Landing Run of an Aeroplane », *The Aircraft Engineer*, supplément à *Flight*, 28 février 1930, `sim_flight-international_1930-02-28_22_9` **[LU-WEB]** ; S. Scott-Hall, « Wheel Brakes and Undercarriages », *Journal of the Royal Aeronautical Society*, vol. 36, n° 257, mai 1932, p. 388, `sim_aeronautical-journal_1932-05_36_257` **[LU-WEB]**, qui cite E. T. Jones, R&M 1246 ; F. Michael, « Experiments with Airplane Brakes », NACA TM n° 636, 1931, NTRS 19930094780 **[LU-IMG]**, p. 1-5, sur le faible poids porté par la queue.
+- **S112** — « Avion », *The Way to Fly: An Introduction to Flight for Beginners*, C. Arthur Pearson, Londres, 1919. `in.ernet.dli.2015.209918`. **[LU-WEB]**, chap. V, VII, IX. Secondaire d'époque (manuel pour débutants).
+- **S113** — G. Esnault, *Le Poilu tel qu'il se parle*, 1919, éditeur à vérifier. `lepoilutelquilse00esnauoft`. **[LU-WEB]** : « trois points », p. 532 ; « poil », p. 426 ; « patte de mouche », p. 392 ; « taxi », p. 513 ; « être servi » à l'entrée *balancer*, p. 56 environ ; *souasoua*. Primaire pour l'usage (dictionnaire d'argot daté et localisé).
+- **S114** — C. J. Biddle, *The Way of the Eagle*, Charles Scribner's Sons, New York, 1919 (ancienne piste P7). `wayofeagle00biddrich`. **[LU-WEB]**, p. 1-190 environ. Primaire (lettres).
+- **S115** — « Der neue Spad-Kampf-Einsitzer », *Deutsche Luftfahrer-Zeitschrift*, vol. 21, n° 9/10, 1917, p. 20-21 de la pagination du numéro, sommaire daté de mai 1917. `deutscheluftfahrerzeitschrift21.1917`. **[LU-WEB]** ; l'outil a paraphrasé le texte. Article non signé, sans examen d'avion capturé.
+- **S116** — *Aerial Age Weekly*, vol. 5, 1917, vues 241 et 294 (date du numéro non relevée) ; autres vues : 157, 190-191, 482-483 ; original de S48 vue 603. `aerialage5191unse`. **[LU-WEB]**, paraphrase des extraits. Contrairement à ce que note le § 9.6, ce volume est sur archive.org.
+- **S117** — P. Bewsher, *« Green Balls »: The Adventures of a Night-Bomber*, 1919, éditeur à vérifier. Project Gutenberg n° 37392, https://gutenberg.org/cache/epub/37392/pg37392.txt ; `greenballsadvent00bewsrich`, p. 149, 152, 153, 184. **[LU-WEB]**. Primaire (mémoires ; observateur de bombardier RNAS).
+- **S118** — J. N. Hall et C. B. Nordhoff (dir.), *The Lafayette Flying Corps*, vol. 1, Houghton Mifflin, 1920, p. 38-39, 51, 83-84 (ancienne piste P15, en partie). `lafayetteflyingc01hall`. **[LU-WEB]**, sur 200 000 caractères seulement.
+- **S119** — United States Air Service, *Air Service Information Circular*, recueil 1922. `AirServiceInformationCircular1922`. **[LU-WEB]**, paraphrase des extraits de la recherche dans le document : pesées de six avions (vues 41, 73, 317, 542, 1066) ; essais de béquille (vues 793, 849, 1111) ; « French program for new airplanes » (vues 1148, 1154, 1156, 1164). Titre exact et date de ce dernier rapport : **à vérifier**. Primaire.
+- **S120** — « Inventory of Swiss Aerodromes 1920 », transcription de l'annexe d'une lettre de l'Office fédéral de l'air du 4 décembre 1920, D. Ruhier, histaero.ch, 25 janvier 2021, https://histaero.ch/PDF/Flugplaetze_1_e.pdf. **[LU-IMG]**.
+- **S121** — M. Mills, « Facts about the Famous Spad 13 », *Aeronautics*, juin 1931, p. 19. `sim_flying_1931-06_8_6`. **[LU-WEB]**. Reprend les chiffres et les remarques de McCook : **non indépendant de S15**.
+- **S123** — S. Camm, *Aeroplane Construction*, 1919. Project Gutenberg n° 73566. **[LU-WEB]**, chap. X et XI. Secondaire d'époque.
+- **S124** — *The Aeroplane*, vol. 12, janvier-juin 1917, vue 1066. `aeroplaneinterna1219unse`. **[LU-WEB]**, extrait ; avion non identifié.
+- **S125** — R. Lecœuvre, « Les matières premières de la construction aéronautique au Salon », *L'Aéronautique*, 1925, sections sur les amortisseurs. `ayeronautique7`. **[LU-WEB]**, OCR douteux.
+- **S126** — A. van Gries, *Flugzeugstatik*, 1921, tableaux 2 et 3 (BLV de 1916 et 1918). `flugzeugstatik00griegoog`. **[LU-WEB]**. Seuls les 100 000 premiers caractères et la tranche 400 000-500 000 ont été parcourus : le chapitre sur le train, s'il existe, n'a pas été vu.
+- **S1, S3, S4, S15 (compléments)** — S3 et S4 relus mot à mot [LU] ; S15 lu sur https://www.thisdayinaviation.com/tag/louis-bechereau/ [LU-WEB].
 
 ### 9.2 Vues seulement en résumé de recherche [RÉSUMÉ] (pages non ouvertes ; consultées le 2026-10-20)
 - **S5** — Wikipedia (en), « SPAD S.VII », https://en.wikipedia.org/wiki/SPAD_S.VII (wiki : piste).
@@ -1385,6 +1705,11 @@ Conséquences attendues, inchangées (C, physique élémentaire) : à pleine pui
   - catalogue de documents publics de l'University of North Texas, https://mocat.library.unt.edu/catalog/323-ch816 : circulaire n° 286 du 1er octobre 1921, « Performance test of Spad 13 equipped with 220 H. P. Wright engine », Flight Test Branch performance test report 60, marquée « Official Use. Not Available » selon le résumé ; et https://mocat.library.unt.edu/catalog/307-ch492 : « Structural weight analysis of airplanes », circulaire de 3 p. du 8 mai 1920 (contenu non vu).
 - **S103** — Notices archive.org de manuels de conception, vues en résumé : O. Pomilio, *Airplane Design and Construction*, McGraw-Hill, New York, 1919 (`airplanedesigna00pomigoog`, exemplaire de l'University of Wisconsin numérisé par Google, 425 p. ; `airplanedesignco00pomirich`, exemplaire de l'University of California) ; A. W. Judge, *The Design of Aeroplanes*, Whittaker, Londres et New York, 1916 selon la notice (`designaeroplane00judggoog`) ; F. S. Barnwell, avec W. H. Sayers, *Aeroplane Design*, R. M. McBride, New York, 1917 (`aeroplanedesign00barnrich`) ; Engineering Division (Airplane Section, Structure and Aerodynamics Branch), *Structural Analysis and Design of Airplanes* (`ost-design-structuralanalys00unit`, date non relevée). **Aucun résumé ne montre de SPAD dans ces ouvrages.**
 
+**Treizième passe (2026-11-01 ; extraits et résumés, pages non ouvertes)**
+- **S122** — V. W. Pagé, *The A-B-C of Aviation*, 1918. `abcaviationacom00paggoog`. **[EXTRAIT]** : 4 à 6 in de mouvement d'essieu.
+- **S127** — Extraits d'argot et d'histoire sociale : *L'Argot des poilus*, 1918, `largotdespoilusd00dcuoft` (« atterrir soi-soi ») ; E. Petit, *La Vie quotidienne dans l'aviation en France au début du XXe siècle (1900-1935)*, `bwb_P9-DLE-513` (définition du trois points ; T de deux rectangles de toile blanche, époque non établie). **[EXTRAIT]**, auteur et date à vérifier.
+- **S128** — Terrains, vus en résumé : forgottenairfields.com, Saint-Pol-sur-Mer (https://forgottenairfields.com/airfield-stpol-du-mer-1061.html) ; archives.passchendaele.be (arrivée à Saint-Pol à la mi-juillet 1917) ; Wikipedia en anglais, Beverley, Coal Aston et Marske Aerodrome ; historicbramham.org.uk ; sitelines.newcastle.gov.uk (Town Moor) ; note d'Eolys sur les pistes annexes de Pau ; notice Mollat de J. Calcine, *Atlas Aisne 1914-1918*. **Pistes uniquement.**
+
 ### 9.3 Pistes bibliographiques [PISTE] (non consultées ; éditions à vérifier)
 - **P1** — J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8, Albatros Productions, 1988 (fiche de catalogue de libraire).
 - **P2** — T. Gronczewski et S. M. Fleischer, *Spad VII C.1*, Aviatik Vintage Aircraft n° 1, 2004 (14 pages de plans selon une revue).
@@ -1430,6 +1755,8 @@ Ajoutées en onzième passe (couple de l'hélice) :
 albindenis.free.fr ; en.wikipedia.org ; fr.wikipedia.org ; it.wikisource.org ; catalog.hathitrust.org ; gallica.bnf.fr (403 selon le coordinateur) ; www.gutenberg.org (direct) ; projekt-gutenberg.org ; www.theaerodrome.com ; flyingmachines.ru ; www.avionslegendaires.net ; historynet.com ; www.flightglobal.com (archives de *Flight*) ; www.thisdayinaviation.com ; www.hydroretro.net ; digital.library.unt.edu ; bibliotheques-numeriques.defense.gouv.fr ; m-selig.ae.illinois.edu ; aergistal.github.io ; web.archive.org ; www.google.com. Seuls github.com, raw.githubusercontent.com et, par intermittence, api.github.com répondent.
 
 **Cas particulier** : archive.org et ntrs.nasa.gov répondent au `curl` du conteneur (coordinateur, 2026-10-20), mais **pas** à l'outil de lecture de l'historien (DNS en échec). Ils ne sont exploitables que par téléchargement préalable (§ 9.6).
+
+**Treizième passe (2026-11-01)** : l'outil de lecture **ouvre** archive.org, ntrs.nasa.gov, gutenberg.org, raw.githubusercontent.com, thisdayinaviation.com, theaerodrome.com, histaero.ch et museeairespace.fr. Échecs : albindenis.free.fr (erreur de l'outil) ; francearchives.gouv.fr (pages vides ; le moteur de recherche en voit pourtant les notices) ; bibliotheques-numeriques.defense.gouv.fr (connexion coupée) ; gallica.bnf.fr, greatwarforum.org et nationalmuseum.af.mil (403) ; forgottenairfields.com (certificat expiré) ; mediatheque.museeairespace.fr (compteur et filtres visibles, pas la liste). Recherche dans les livres en prêt numérique d'archive.org : 403, non contournée.
 
 **Douzième passe (2026-10-31)** : échec DNS de l'outil de lecture pour archive.org, ntrs.nasa.gov et babel.hathitrust.org.
 
@@ -1487,6 +1814,7 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 | 2 (12e passe) | Engineering Division, *Structural Analysis and Design of Airplanes*, texte OCR | `ost-design-structuralanalys00unit` | **fait le 2026-10-31 : le SPAD n'y est cité que pour la structure de sa cellule** |
 | 2 (12e passe) | NACA TR 467 (rayons de giration mesurés), déjà proposé par l'aérodynamicien | NTRS (identifiant à relever) | inertie ; vérifier s'il donne aussi le centrage des avions mesurés |
 | 2 (12e passe) | Recherche « Spad » sur NTRS par l'API (`https://ntrs.nasa.gov/api/citations/search?q=spad`), à faire par la session principale | NTRS | **fait le 2026-10-31 : deux résultats de 1915 à 1935, ni S.VII ni XIII** |
+| 1 (13e passe) | Images de S106 (fig. 104, tableau XX), recueil des circulaires de 1922 (programme français), Jenkin chap. XII, E-Médiathèque du Musée de l'Air, notices de FranceArchives | adresses au § 6.6.8 | courbe du cordon, règle française, photos de terrains de 1917 |
 
 ## 10. Journal des décisions
 - **2026-10-20 — Sous-version pour la SPA 3, été 1917.** S5, S8 et S16 font du 8Ab de 180 ch le moteur des S.VII neufs à partir du printemps 1917 (« avril 1917 » pour S16). Guynemer juge le 150 ch insuffisant dès décembre 1916 (S1). Aucun état des appareils de la SPA 3 n'a été trouvé. **Retenu : S.VII 180 ch (8Ab), confiance C**, en sachant que la SPA 3 alignait sans doute encore des 150 ch et quelques SPAD XIII à partir de fin juillet 1917 (S18, S1). Ce choix sera à revoir dès que l'historique d'Albin Denis ou les journaux de marche seront accessibles.
@@ -1637,3 +1965,20 @@ Pour chaque document d'archive.org, récupérer le texte OCR à l'adresse `https
 - **2026-10-31 — Réputation de stabilité (§ 6.2) : inchangée, « à confirmer ».** Aucun témoignage direct nouveau sur le S.VII. Le trait reste un essai non bloquant ; il ne peut pas, seul, servir à fixer le centrage.
 - **2026-10-31 — Dièdre : nul maintenu (C)**, sur trois documents de la famille, dont S47 pour le S.VII. Plan fixe réglable et débattement de la profondeur : non trouvés ; ±25° reste `E:`.
 - **2026-10-31 — Documents** : quatre manuels de conception à télécharger (identifiants archive.org au § 9.6) ; demande D15 (circulaires de McCook Field à l'University of Alabama in Huntsville) ; compléments « centrage » ajoutés aux demandes D1 à D6 (`demandes.md`).
+
+**Treizième passe (2026-11-01 ; train, sol, technique, terrain)**
+- **2026-11-01 — Sandows : rien sur le S.VII ; loi d'effort prise dans S106, C.** S106 calcule un avion de 748 kg, à 6 % du S.VII. Retenu : 30 brins de ½ in par roue, 1,7 kN de précontrainte, 180 kN/m, 125 mm de course. Le nombre de brins est celui de S106, pas celui du SPAD : il faut le marquer `E:`. Écarté : la tension initiale de 30 à 50 lb, que S106 réserve aux cas où les brins manquent ; à garder en variante, car elle ferait que l'essieu ne bouge pas au repos.
+- **2026-11-01 — Course : 125 mm.** S.XI (125 mm, famille), S106 (130 mm), Judge (environ 100 mm), Warner (180 mm au plus). La mesure du S.XI est préférée : même constructeur.
+- **2026-11-01 — Rebond : le plan est à nuancer.** Il suppose un caoutchouc qui rend presque toute l'énergie. Warner (S110) attribue au glissement des brins une forte dissipation, et le rebond au pneu. Aucun chiffre : la valeur reste `E:`, mais il ne faut pas supposer le cordon presque sans pertes.
+- **2026-11-01 — Roulement sur herbe : 0,06.** Fourchette : Judge 0,036 à 0,054 (valeur de calcul d'époque), Wetmore 0,023 à 0,054 sur gazon ferme et 0,064 à 0,077 sur gazon mou (mesure, pneus de 1937), Klemin 0,06 et 0,086 (1919), Stafford 0,05 à 0,08, Pröll 0,08. Retenu 0,06 : Klemin, seule valeur de sa date, et milieu de la fourchette ; roues étroites et paliers lisses de 1917 interdisent le bas de Wetmore.
+- **2026-11-01 — Sabot : 0,4, déduit, jamais mesuré.** Aucune mesure directe dans aucune langue. Calcul sur Klemin, avec 11 % du poids sur la béquille : 0,3 à 0,5. Confiance C/D, `E:`. Note : la fourchette dépend entièrement de la charge supposée.
+- **2026-11-01 — Pneu : dimensions et pression non trouvées ; 700 × 75 possible, non retenu.** Judge et S49 rendent 700 × 75 plausible, mais rien ne le prouve sur S.VII, et le dessin de 1917 donne 0,61 m. Le choix du rayon reste à l'aérodynamicien (D). Raideur `E:` de 220 kN/m : mesure de 1937 mise à l'échelle.
+- **2026-11-01 — Vitesse d'atterrissage : 85 à 95 km/h, C.** Trois indices concordent : XIII à 95 km/h, transposé à 88-90 km/h ; Curtiss à 84-91 km/h à la même charge alaire. Écartés : Nordhoff (120 à 129 km/h, opinion d'élève) et *Aerial Age* (100 mph, polémique).
+- **2026-11-01 — Technique : aucun témoignage direct d'atterrissage sur S.VII.** La pratique générale est tranchée : queue levée tôt au décollage (B) ; trois points simultané, norme enseignée (B). Le posé queue haute du plan reste admissible sur la foi de T8 et T26, sans être la manœuvre type.
+- **2026-11-01 — « Trois points » : sens d'époque inverse du sens moderne.** Esnault (mai 1918) définit le terme comme un contact **successif**. Je ne le lis pas comme une preuve que le contact simultané était pratiqué sur S.VII : c'est une norme d'école, à Miramas.
+- **2026-11-01 — T au sol : pas de T de toile de jour en 1917.** Attesté : T de fusées (Hall, école française, 1916-1917) ; T d'ampoules (Bewsher, Coudekerque, 1917). Non attesté : T de toile de jour avant 1919. Absence de preuve seulement : les photos de l'E-Médiathèque peuvent corriger ce point.
+- **2026-11-01 — Terrain : 800 × 300 m maintenu en `ESTIMÉ`.** Les dimensions d'un terrain d'escadrille restent non trouvées. Saint-Pol à 400 × 400 m n'est qu'un chiffre de site, de date inconnue : non retenu.
+- **2026-11-01 — Cotes de S115 non retenues** : cordes de 1,42 et 1,30 m, écartement de 1,10 m. Article fondé sur des photos, envergure donnée à 7 et à 7,8 m. Elles rejoignent seulement la liste des indices (§ 2.5.2) : 1,42 m rappelle les 1,40 m de S48 ; deux cordes différentes ne sont attestées nulle part ailleurs sur le S.VII.
+- **2026-11-01 — Géométrie : signalée, pas corrigée.** α de 22° contre 15 à 18° et 20,5 % sur la béquille contre 10 à 17 % : deux comparaisons, même sens, mais ni l'une ni l'autre sur un SPAD. Aucune valeur de centrage n'est proposée. À verser au dossier du § 3.1 et à l'aérodynamicien.
+- **2026-11-01 — Limites de charge : 5 fois la charge statique, à titre de seuil de jeu.** Seule règle française trouvée, après guerre, traduite, avec OCR incertain : C, et seuil `E:`. L'accident ne doit pas s'appuyer sur plus de précision que cela.
+- **2026-11-01 — Documents** : § 6.6.8 ; demandes D16 à D18 et compléments « train » (`demandes.md`).
