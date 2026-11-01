@@ -2552,5 +2552,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **commentaires** du sabot justifiés par la physique, et non par le résultat cherché.
 - **D** Adhérence latérale des roues gardée à 0,6, contre le 0,35 proposé par la fiche (confiance D) : c'est un frottement longitudinal transposé, et il interdit de basculer sur une aile, ce qui demande plus de 0,53.
 - **⚠** Le « 152 m » d'envol donné plus haut était **faux** : le temps était celui de l'envol, mais la distance et la vitesse étaient lues 0,5 s plus tard. Corrigé dans `fdm_lab`.
-- **R** Campagne après correction : les charges retombent sur les mesures de la revue, 12,3 kN à 2 m/s, 19,7 kN à 3 m/s, 28,2 kN à 4 m/s. Avec 24 kN, 3 m/s survit et 4 m/s casse. Arrêt comparable aux 164 et 217 m de Roosevelt Field (S108) ; « s'arrête court » reste qualitatif.
+- **R** Campagne après correction : les charges retombent sur les mesures de la revue, 12,5 kN à 2 m/s, 20,0 kN à 3 m/s, 28,4 kN à 4 m/s. Avec 24 kN, 3 m/s survit et 4 m/s casse. Arrêt comparable aux 164 et 217 m de Roosevelt Field (S108) ; « s'arrête court » reste qualitatif.
 - **A** `just test` passe (377 tests).
+- **R** Relecture ciblée de l'aérodynamicien : correctif bloquant bien recopié. `stop_stiffness` reste hors du passage à la verticale, car elle sert aussi à la jante.
+- **⚠** Le cheval de bois partait moteur au ralenti : le souffle arrivait trop tard sur le gouvernail, et l'aile ne touchait jamais, alors que le commentaire de `grip` s'appuie sur ce contact. **A** L'essai part à pleine puissance, et son test exige maintenant que le saumon touche.
+- **R** Une seconde de pied gauche à 75 km/h, queue haute, plein gaz : 180° de cap, 17° d'inclinaison, 12,7 kN sur un saumon. Le même pied à 60 km/h sur trois points n'écarte le cap que de 3°.

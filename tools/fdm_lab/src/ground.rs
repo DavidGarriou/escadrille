@@ -599,7 +599,12 @@ fn tail_up(aircraft: &Aircraft, rest: &Rest, speed: f64) -> RigidBodyState {
 /// A second of full left rudder, rolling at `speed` tail up at full throttle, then the feet
 /// off: the ground loop. Throttle closed, the tail would fall and the skid hold it.
 pub fn ground_loop(aircraft: &Aircraft, rest: &Rest, speed: f64) -> Rough {
-    let start = tail_up(aircraft, rest, speed);
+    // The engine already at full power: at idle, the slipstream would come too late.
+    let (rpm, _) = run_up(aircraft, rest);
+    let start = RigidBodyState {
+        rotor_speed: rpm * 2.0 * PI / 60.0,
+        ..tail_up(aircraft, rest, speed)
+    };
     rough(run(aircraft, start, 10.0, |s| {
         Some(PilotControls {
             yaw: if s.time < 1.0 { -1.0 } else { 0.0 },
@@ -942,6 +947,8 @@ mod tests {
         let g = ground_loop(&a, &r, 75.0 / 3.6);
         assert!(g.run.finite);
         assert!(g.heading > 60.0 * DEG, "{}", g.heading.to_degrees());
+        assert!(g.bank > 10.0 * DEG, "{}", g.bank.to_degrees());
+        assert!(g.hard_point > 0.0, "a wing tip touches: {}", g.hard_point);
     }
 
     #[test]

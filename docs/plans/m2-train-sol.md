@@ -191,6 +191,7 @@ Les étapes 0 à 7 sont faites, ADR 0008 au statut Proposé. Écarts et ajouts p
   - envol en 11,7 s, 143 m, 96 km/h ; 15 m à 330 m ;
   - arrêt de 82 km/h en 180 m ;
   - posés : 12 kN par roue à 2 m/s, 20 kN à 3 m/s, 28 kN à 4 m/s, limite à 24 kN.
+  - cheval de bois : une seconde de pied à 75 km/h, queue haute, plein gaz, 180° de cap et un saumon au sol.
 - **Reste ouvert** :
   - valider l'ADR 0008 ;
   - relire l'image de S49 pour l'axe de la course ;
