@@ -220,6 +220,16 @@ pub fn check_aircraft_model(assets: &Path, id: &str, path: &Path) -> Result<Repo
     check_model(&data, &bytes, &licences, &relative, &accepted)
 }
 
+/// Whether a node's mesh counts in the aircraft's dimensions: not the propeller (its
+/// blades, hub and disc turn, `prop` and `prop_*`), nor the hidden hit volumes and
+/// damaged variants (`hit_*`, `dmg_*`, M4 plan).
+fn in_dimensions(name: &str) -> bool {
+    !(name == "prop"
+        || ["prop_", "hit_", "dmg_"]
+            .iter()
+            .any(|p| name.starts_with(p)))
+}
+
 /// Checks a model (binary glTF) against its aircraft's data; `licences` is the text of
 /// `assets/LICENCES.md`, `relative` the model's path as the register would list it,
 /// `accepted` the deviations of its `maquette.ron`.
@@ -291,9 +301,9 @@ pub fn check_model(
     }
 
     for node in nodes.iter().filter(|n| {
-        n.name
-            .as_deref()
-            .is_some_and(|s| s == "cam_pilot_eye" || s.starts_with("gun_"))
+        n.name.as_deref().is_some_and(|s| {
+            s == "cam_pilot_eye" || s.starts_with("gun_") && s.ends_with("_muzzle")
+        })
     }) {
         let name = node.name.clone().unwrap_or_default();
         let ahead = angle_deg(direction(node, DVec3::NEG_Z), DVec3::X);
@@ -319,7 +329,7 @@ pub fn check_model(
         Some(d) => {
             let solid: Vec<DVec3> = nodes
                 .iter()
-                .filter(|n| !matches!(n.name.as_deref(), Some("prop" | "prop_blur")))
+                .filter(|n| n.name.as_deref().is_none_or(in_dimensions))
                 .flat_map(|n| n.vertices.iter().copied())
                 .collect();
             let (min, max) = solid.iter().fold(

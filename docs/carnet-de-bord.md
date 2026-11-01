@@ -2324,3 +2324,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - masquage dans le jeu ;
   - galerie `degats-spad7`.
 - **D** Le joueur valide le périmètre complet du modèle 3D, avec la structure modélisée sous la toile ; au M4, les trous viendront d'un masque dans le shader. La logique des dégâts et leurs effets en vol restent au M4.
+- **A** Étape 1 du plan, la cellule découpée en pièces nommées (`art/spad7/build.py`) :
+  - chaque face reçoit une étiquette de pièce, comme sa région de toile ; des règles la résolvent selon sa position (panneau entre mâts, côté) ;
+  - un nœud par pièce, avec son origine au centre de sa boîte : 12 panneaux d'aile coupés aux mâts, plan fixe par côté, dérive, fuselage avant et arrière, chaque mât de cellule et de cabane, tubes, train (jambes, roues, essieu, béquille), mitrailleuse, pare-brise, échappements, biellettes ;
+  - un nœud par câble (`wire_<famille>_<l|r>_<n>`, 28 câbles), et des pales d'hélice séparées sous `prop`.
+
+  Les pièces partagent les sommets de leurs coutures. Le studio capturé et regardé est identique à avant.
+- **A** `tools/asset_check` :
+  - les dimensions ignorent les pièces de l'hélice et les futurs nœuds masqués (`prop_*`, `hit_*`, `dmg_*`) ;
+  - le contrôle des bouches de canon ne vise plus que les nœuds `gun_*_muzzle`, la pièce `gun_1` étant la mitrailleuse elle-même.

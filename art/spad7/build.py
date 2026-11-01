@@ -49,6 +49,7 @@ SKID_SECTION = (0.05, 0.025)               # E: tail skid, an ash leaf
 EXHAUST_STUB = 0.05                        # E: diameter of the exhaust stubs and collector
 RIM_DIAMETER = 0.05                        # E: padded rim of the cockpit
 COCKPIT_FLOOR = -0.30                      # E: z of the floor of the cockpit tub
+FUSELAGE_SPLIT_X = -1.50                   # E: the rear fuselage breaks off behind the cockpit's rear rim (x −1.35, T7), the M4 plan's part `fuselage_rear`
 COWL_END_X = -0.74                         # C: the cowl's top ends at the front edge of the cockpit opening (x −0.74, table T7)
 PITCH_RATIO = 0.81                         # C: Éclair type 6, 2.40 × 1.95 m (aircraft.ron)
 GUN_JACKET = (0.11, 1.05)                  # E: Vickers cooling jacket diameter and length, m
@@ -131,6 +132,51 @@ def painted(surface):
         CURRENT[0] = previous
 
 
+PART_NAMES = ["fuselage"]   # damageable parts of the airframe, or rules (M4 plan, step 1)
+CURRENT_PART = [0]          # index in PART_NAMES of the part being built
+
+
+@contextmanager
+def part(name):
+    """Faces built inside belong to the damageable part `name`, a node of its own
+    (docs/plans/m4-degats-modele-3d.md): a name, `{lr}` standing for the side, or a rule
+    that resolve_part() turns into a name from where the face is."""
+    if name not in PART_NAMES:
+        PART_NAMES.append(name)
+    previous = CURRENT_PART[0]
+    CURRENT_PART[0] = PART_NAMES.index(name)
+    try:
+        yield
+    finally:
+        CURRENT_PART[0] = previous
+
+
+SPLIT = {}   # stations of the parts' cuts, set by main(): span of the struts, fuselage
+
+
+def resolve_part(rule, c):
+    """The part of a face from its rule and its centre `c` (body axes)."""
+    lr = "l" if c.y < 0 else "r"
+    y = abs(c.y)
+    inner, outer, spar_mid = SPLIT["inner"], SPLIT["outer"], SPLIT["spar_mid"]
+    if rule == "fuselage":
+        return "fuselage_front" if c.x > SPLIT["fuselage"] else "fuselage_rear"
+    if rule in ("surface:upper_wing", "surface:lower_wing"):
+        plane = rule.split(":")[1].split("_")[0]
+        panel = "root" if y < inner else "mid" if y < outer else "tip"
+        return f"wing_{plane}_{lr}_{panel}"
+    if rule == "surface:tailplane":
+        return f"tailplane_{lr}"
+    if rule == "surface:fin":
+        return "fin"
+    if rule == "strut":
+        io = "inner" if abs(y - inner) < abs(y - outer) else "outer"
+        return f"strut_{lr}_{io}_{'front' if c.x > spar_mid else 'rear'}"
+    if rule == "cabane":
+        return f"cabane_{lr}_{'front' if c.x > spar_mid else 'rear'}"
+    return rule.replace("{lr}", lr)
+
+
 class Builder:
     """Accumulates faces in body axes, then writes them into an object's mesh, in the
     object's local axes."""
@@ -138,14 +184,25 @@ class Builder:
     def __init__(self):
         self.bm = bmesh.new()
         self.material_index = {}
-        self.tag = self.bm.faces.layers.int.new("painted")
+        # Face layers, looked up by name: adding one invalidates the others' references.
+        self.bm.faces.layers.int.new("painted")
+        self.bm.faces.layers.int.new("part")
         self.prepared = False
+
+    @property
+    def tag(self):
+        return self.bm.faces.layers.int["painted"]
+
+    @property
+    def part_tag(self):
+        return self.bm.faces.layers.int["part"]
 
     def face(self, points, material):
         verts = [self.bm.verts.new(blender_point(p)) for p in points]
         f = self.bm.faces.new(verts)
         f.material_index = self.material(material)
         f[self.tag] = CURRENT[0]
+        f[self.part_tag] = CURRENT_PART[0]
         return f
 
     def material(self, name):
@@ -164,11 +221,13 @@ class Builder:
                 f = self.bm.faces.new((a[i], a[j], b[j], b[i]))
                 f.material_index = index
                 f[self.tag] = CURRENT[0]
+                f[self.part_tag] = CURRENT_PART[0]
         for cap, row in ((cap_start, rows[0]), (cap_end, rows[-1])):
             if cap:
                 f = self.bm.faces.new(row)
                 f.material_index = index
                 f[self.tag] = CURRENT[0]
+                f[self.part_tag] = CURRENT_PART[0]
 
     def delete_faces(self, inside):
         """Removes the faces whose centre (body axes) `inside` accepts: openings."""
@@ -196,20 +255,51 @@ class Builder:
 
     def write(self, obj, materials, atlas=None, smooth=math.radians(35)):
         self.prepare()
+        self.map_atlas(atlas)
+        self.to_object(self.bm, obj, materials, smooth)
+        self.bm.free()
+
+    def map_atlas(self, atlas):
+        """The painted faces' coordinates in the fabric's atlas."""
         if atlas is not None and any(f[self.tag] for f in self.bm.faces):
             uv = self.bm.loops.layers.uv.verify()
             for f, region in self.painted_faces():
                 for loop in f.loops:
                     loop[uv].uv = atlas.uv(region, body_vector(loop.vert.co))
-        self.bm.faces.layers.int.remove(self.tag)
-        self.bm.transform(obj.matrix_world.inverted())
-        self.bm.to_mesh(obj.data)
-        self.bm.free()
+
+    def to_object(self, bm, obj, materials, smooth):
+        for name in ("painted", "part"):
+            bm.faces.layers.int.remove(bm.faces.layers.int[name])
+        bm.transform(obj.matrix_world.inverted())
+        bm.to_mesh(obj.data)
         for name, _ in sorted(self.material_index.items(), key=lambda kv: kv[1]):
             obj.data.materials.append(materials[name])
         for poly in obj.data.polygons:
             poly.use_smooth = True
         smooth_by_angle(obj.data, smooth)
+
+    def write_parts(self, parent, materials, atlas=None, smooth=math.radians(35)):
+        """One object per damageable part (resolve_part), under `parent`, its origin at
+        the centre of its bounds; the parts share their seams' vertices, so that nothing
+        shows between them. Returns the objects by name."""
+        self.prepare()
+        self.map_atlas(atlas)
+        names = [resolve_part(PART_NAMES[f[self.part_tag]], body_vector(f.calc_center_median()))
+                 for f in self.bm.faces]
+        objects = {}
+        for name in sorted(set(names)):
+            bm = self.bm.copy()
+            bm.faces.ensure_lookup_table()
+            doomed = [f for f, n in zip(bm.faces, names) if n != name]
+            bmesh.ops.delete(bm, geom=doomed, context="FACES")
+            corners = [v.co for v in bm.verts]
+            centre = sum(corners, Vector()) / len(corners)
+            obj = new_object(name, parent, Matrix.Translation(centre))
+            self.to_object(bm, obj, materials, smooth)
+            bm.free()
+            objects[name] = obj
+        self.bm.free()
+        return objects
 
 
 def smooth_by_angle(mesh, angle):
@@ -631,8 +721,9 @@ def build_struts(data, parts):
     # Steel tube between the intermediate struts, at mid-gap (S48).
     x0, x1, z = feature(data, "steel_tube")[0]
     y = min(y for _, y in mock["struts"])
-    for side in (1, -1):
-        round_bar(parts, (x0, side * y, z), (x1, side * y, z), 0.03, "metal")
+    with part("strut_tube_{lr}"):
+        for side in (1, -1):
+            round_bar(parts, (x0, side * y, z), (x1, side * y, z), 0.03, "metal")
 
 
 def fuselage_at(keys, x):
@@ -667,35 +758,42 @@ def build_gear(data, parts, keys):
     cx, cy, cz = mock["wheels"]["centre"]
     radius, width = 0.5 * mock["wheels"]["diameter"], mock["wheels"]["width"]
     for side in (1, -1):
-        centre = Vector((cx, side * cy, cz))
-        # Tyre: a torus; wheel cover: two shallow cones.
-        n, m = 32, 10
-        tube = 0.5 * width
-        rings = []
-        for i in range(n + 1):
-            a = 2 * math.pi * i / n
-            radial = Vector((math.cos(a), 0, math.sin(a)))
-            rings.append([centre + radial * (radius - tube + tube * math.cos(2 * math.pi * j / m))
-                          + Vector((0, side * tube * math.sin(2 * math.pi * j / m), 0)) for j in range(m)])
-        parts.loft(rings[:-1] + [rings[0]], "rubber")
-        for face in (1, -1):
-            hub = centre + Vector((0, side * face * 0.6 * width, 0))
-            rim = [centre + Vector((math.cos(2 * math.pi * i / n) * (radius - 1.6 * tube), side * face * 0.35 * width,
-                                    math.sin(2 * math.pi * i / n) * (radius - 1.6 * tube))) for i in range(n)]
-            for i in range(n):
-                parts.face([hub, rim[i], rim[(i + 1) % n]], "fabric_doped")
+        with part("wheel_{lr}"):
+            build_wheel(parts, Vector((cx, side * cy, cz)), radius, width, side)
         # Legs (drawing): a streamlined front leg from the lower longeron, a rear leg from
         # the belly, both to the axle.
-        fx, fy, fz, ax, ay, az, chord = feature(data, "gear_front_leg")[0]
-        streamlined_strut(parts, (fx, side * fy, fz), (ax, side * ay, az), chord, LEG_THICK, "wood")
-        rx, ry, rz, bx, by, bz = feature(data, "gear_rear_leg")[0]
-        streamlined_strut(parts, (rx, side * ry, rz), (bx, side * by, bz), REAR_LEG_CHORD, LEG_THICK, "wood")
+        with part("gear_{lr}"):
+            fx, fy, fz, ax, ay, az, chord = feature(data, "gear_front_leg")[0]
+            streamlined_strut(parts, (fx, side * fy, fz), (ax, side * ay, az), chord, LEG_THICK, "wood")
+            rx, ry, rz, bx, by, bz = feature(data, "gear_rear_leg")[0]
+            streamlined_strut(parts, (rx, side * ry, rz), (bx, side * by, bz), REAR_LEG_CHORD, LEG_THICK, "wood")
     # Axle and its fairing between the wheels.
-    streamlined_strut(parts, (cx, cy - width, cz), (cx, -(cy - width), cz), 0.12, 0.05, "fabric_doped")
+    with part("axle"):
+        streamlined_strut(parts, (cx, cy - width, cz), (cx, -(cy - width), cz), 0.12, 0.05, "fabric_doped")
     # Tail skid, an ash leaf from its foot on the fuselage to its shoe.
-    sx, sy, sz = mock["skid"]
-    fx, fz = feature(data, "skid_foot")[0]
-    streamlined_strut(parts, (fx, 0.0, fz), (sx, sy, sz), *SKID_SECTION, "wood")
+    with part("skid"):
+        sx, sy, sz = mock["skid"]
+        fx, fz = feature(data, "skid_foot")[0]
+        streamlined_strut(parts, (fx, 0.0, fz), (sx, sy, sz), *SKID_SECTION, "wood")
+
+
+def build_wheel(parts, centre, radius, width, side):
+    """Tyre: a torus; wheel cover: two shallow cones."""
+    n, m = 32, 10
+    tube = 0.5 * width
+    rings = []
+    for i in range(n + 1):
+        a = 2 * math.pi * i / n
+        radial = Vector((math.cos(a), 0, math.sin(a)))
+        rings.append([centre + radial * (radius - tube + tube * math.cos(2 * math.pi * j / m))
+                      + Vector((0, side * tube * math.sin(2 * math.pi * j / m), 0)) for j in range(m)])
+    parts.loft(rings[:-1] + [rings[0]], "rubber")
+    for face in (1, -1):
+        hub = centre + Vector((0, side * face * 0.6 * width, 0))
+        rim = [centre + Vector((math.cos(2 * math.pi * i / n) * (radius - 1.6 * tube), side * face * 0.35 * width,
+                                math.sin(2 * math.pi * i / n) * (radius - 1.6 * tube))) for i in range(n)]
+        for i in range(n):
+            parts.face([hub, rim[i], rim[(i + 1) % n]], "fabric_doped")
 
 
 def tube(parts, points, diameter, material, n=12, scales=None):
@@ -789,9 +887,11 @@ def build_propeller(data, root):
                 loop.append(centre + c_dir * (0.5 * chord * math.cos(a))
                             + n_dir * (0.5 * thick * math.sin(a)))
             rings.append(loop)
-        parts.loft(rings, "propeller_wood", cap_start=True, cap_end=True)
+        with part(f"prop_blade_{1 if blade > 0 else 2}"):
+            parts.loft(rings, "propeller_wood", cap_start=True, cap_end=True)
     # Hub boss.
-    round_bar(parts, hub - axis * 0.12, hub + axis * 0.06, 0.20, "propeller_wood")
+    with part("prop_hub"):
+        round_bar(parts, hub - axis * 0.12, hub + axis * 0.06, 0.20, "propeller_wood")
     return node, parts
 
 
@@ -895,17 +995,13 @@ def build_gun(data, parts, keys):
             box(parts, (x, 0.0, 0.5 * (top + bottom)), (0.025, 0.06, top - bottom), "steel")
 
 
-def wire_builder(wires, name):
-    if name not in wires:
-        wires[name] = Builder()
-    return wires[name]
-
-
 def build_wires(data, wires):
     """Rigging (S48): flying wires from the fuselage at the lower roots to the tops of the
     outer struts, landing wires from the cabane to their feet, both crossing at the
     intermediate struts; incidence wires across each pair of struts; cabane cross-bracing;
-    the tailplane braced to the fin and the sternpost. Nodes `wire_*` (pipeline-assets)."""
+    the tailplane braced to the fin and the sternpost. One node `wire_<kind>_<l|r>_<n>`
+    per wire, so that a cut one can go (pipeline-assets; M4 plan, step 1). Returns each
+    node's diameter, for the game's wire shader (glTF extras)."""
     flying, landing, incidence, tandem = feature(data, "wires")[0]
     upper = next(s for s in data["surfaces"] if s["name"] == "upper_wing")
     lower = next(s for s in data["surfaces"] if s["name"] == "lower_wing")
@@ -918,34 +1014,39 @@ def build_wires(data, wires):
     cab_y, _ = feature(data, "cabane")[0]
     up = lambda x, y: wing_surface_z(data, "upper_wing", x, y, upper=False)
     low = lambda x, y: wing_surface_z(data, "lower_wing", x, y, upper=True)
-    w = 6
+    diameters = {}
+
+    def wire(kind, side, points, diameter):
+        lr = "l" if side < 0 else "r"
+        n = 1 + sum(1 for name in wires if name.startswith(f"wire_{kind}_{lr}_"))
+        name = f"wire_{kind}_{lr}_{n}"
+        wires[name] = Builder()
+        tube(wires[name], points, diameter, "wire", n=6)
+        diameters[name] = diameter
+
     for side in (1, -1):
         for x in spars:
             for dx in (-0.5 * tandem, 0.5 * tandem):
-                tube(wire_builder(wires, "wire_flying"),
-                     [(x + dx, side * root_y, low(x, root_y)), (x + dx, side * outer, up(x, outer))], flying, "wire", n=w)
-            tube(wire_builder(wires, "wire_landing"),
-                 [(x, side * cab_y, up(x, cab_y)), (x, side * outer, low(x, outer))], landing, "wire", n=w)
+                wire("flying", side, [(x + dx, side * root_y, low(x, root_y)),
+                                      (x + dx, side * outer, up(x, outer))], flying)
+            wire("landing", side, [(x, side * cab_y, up(x, cab_y)), (x, side * outer, low(x, outer))],
+                 landing)
         for y in (inner, outer):
             (xf, xr) = spars
             for a, b in (((xf, up(xf, y)), (xr, low(xr, y))), ((xf, low(xf, y)), (xr, up(xr, y)))):
-                tube(wire_builder(wires, "wire_incidence"),
-                     [(a[0], side * y, a[1]), (b[0], side * y, b[1])], incidence, "wire", n=w)
+                wire("incidence", side, [(a[0], side * y, a[1]), (b[0], side * y, b[1])], incidence)
     # Cabane: a cross in the plane of each pair of cabane struts, and between them.
     z_foot = feature(data, "cabane")[0][1] + 0.05
     xf, xr = spars
     for side in (1, -1):
         for a, b in (((xf, up(xf, cab_y)), (xr, z_foot)), ((xf, z_foot), (xr, up(xr, cab_y)))):
-            tube(wire_builder(wires, "wire_cabane"),
-                 [(a[0], side * cab_y, a[1]), (b[0], side * cab_y, b[1])], incidence, "wire", n=w)
+            wire("cabane", side, [(a[0], side * cab_y, a[1]), (b[0], side * cab_y, b[1])], incidence)
     # Tailplane bracing to the fin above and the sternpost below.
     x, y, z_top, z_bottom = feature(data, "tail_bracing")[0]
     for side in (1, -1):
         for z in (z_top, z_bottom):
-            tube(wire_builder(wires, "wire_tail"), [(x, side * y, -0.70), (x, 0.0, z)], landing, "wire", n=w)
-    # The diameter of each node's wires, for the game's wire shader (glTF extras).
-    return {"wire_flying": flying, "wire_landing": landing, "wire_incidence": incidence,
-            "wire_cabane": incidence, "wire_tail": landing}
+            wire("tail", side, [(x, side * y, -0.70), (x, 0.0, z)], landing)
+    return diameters
 
 
 def build_linkage(data, parts):
@@ -1402,31 +1503,46 @@ def main(argv):
     global RIBS
     RIBS = tuple(feature(data, "ribs")[0])
 
+    # Cuts of the damageable parts: the wings at their struts, the fuselage behind the
+    # cockpit (docs/plans/m4-degats-modele-3d.md).
+    upper = next(s for s in data["surfaces"] if s["name"] == "upper_wing")
+    chord = upper["panels"][0]["chord_root"]
+    le_x = upper["panels"][0]["root"][0] + 0.25 * chord
+    spars = [le_x - f * chord for f in feature(data, "strut_spars")[0]]
+    struts = [y for _, y in data["mockup"]["struts"]]
+    SPLIT.update(inner=min(struts), outer=max(struts), spar_mid=0.5 * sum(spars),
+                 fuselage=FUSELAGE_SPLIT_X)
+
     parts = Builder()
     keys = build_fuselage(data, parts)
     build_cockpit(data, parts, keys)
     build_nose(data, parts, keys)
-    build_exhausts(data, parts, keys)
+    with part("exhaust_{lr}"):
+        build_exhausts(data, parts, keys)
     outlines = data["mockup"].get("outlines", {})
     for surface in data["surfaces"]:
         KINDS[surface["name"]] = surface["kind"]
-        with painted(surface["name"]):
+        with painted(surface["name"]), part("surface:" + surface["name"]):
             if surface["name"] in outlines:
                 build_outline_surface(surface, outlines[surface["name"]], data, parts, controls)
             else:
                 build_surface(surface, data, parts, controls)
-    build_struts(data, parts)
-    build_cabane(data, parts, keys)
+    with part("strut"):
+        build_struts(data, parts)
+    with part("cabane"):
+        build_cabane(data, parts, keys)
     build_gear(data, parts, keys)
-    build_gun(data, parts, keys)
-    build_linkage(data, parts)
-    build_windscreen(data, parts, keys)
+    with part("gun_1"):
+        build_gun(data, parts, keys)
+    with part("linkage_{lr}"):
+        build_linkage(data, parts)
+    with part("windscreen"):
+        build_windscreen(data, parts, keys)
     atlas = Atlas([parts, *controls.values()])
     colour, normal = paint_fabric(atlas, data, livery, colours, controls)
     texture_fabric(materials["surface"], blender_image("toile_couleur", colour, "sRGB"),
                    blender_image("toile_normales", normal, "Non-Color"), transmission_depth(data))
-    airframe = new_object("airframe", body)
-    parts.write(airframe, materials, atlas)
+    parts.write_parts(body, materials, atlas)
     wires = {}
     diameters = build_wires(data, wires)
     for name, builder in sorted(wires.items()):
@@ -1437,8 +1553,10 @@ def main(argv):
     for name, builder in controls.items():
         builder.write(control_objects[name], materials, atlas)
 
+    # The blades and the hub, each its own node under `prop`, which the game turns: a
+    # blade can break (M4 plan).
     prop, blades = build_propeller(data, root)
-    blades.write(prop, materials)
+    blades.write_parts(prop, materials)
     p = data["propeller"]
     blur = new_object("prop_blur", root, node_matrix(p["hub"], p["axis"], (0, 0, -1)))
     disc = Builder()
