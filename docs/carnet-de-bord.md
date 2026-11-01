@@ -2300,3 +2300,27 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - préparer dès le M3 le découpage du modèle 3D en pièces endommageables.
 
   Aucun code avant un plan du M4 validé.
+
+## 2026-11-01
+
+### Dégâts dans le modèle 3D
+
+- **Q** Le joueur : « Liste tous les dégâts possibles et intègre-les tout de suite dans le modèle 3D. »
+- **A** Catalogue complet : **48 dégâts** en huit familles, dans `docs/gdd/combat-degats.md` § 3 bis. Pour chacun : l'effet en vol, ce qui se voit, et ce que le modèle 3D doit prévoir. Les familles :
+  - cellule et toile ;
+  - commandes ;
+  - moteur et hélice ;
+  - carburant et feu ;
+  - pilote ;
+  - armement ;
+  - train ;
+  - instruments.
+- **A** Plan `docs/plans/m4-degats-modele-3d.md` :
+  - cellule découpée en pièces nommées ;
+  - structure sous la toile ;
+  - volumes `hit_`, points `fx_` ;
+  - variantes `dmg_` ;
+  - contrat et contrôle ;
+  - masquage dans le jeu ;
+  - galerie `degats-spad7`.
+- **D** Le joueur valide le périmètre complet du modèle 3D, avec la structure modélisée sous la toile ; au M4, les trous viendront d'un masque dans le shader. La logique des dégâts et leurs effets en vol restent au M4.
