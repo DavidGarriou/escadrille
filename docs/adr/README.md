@@ -11,4 +11,4 @@ Une décision structurante = un fichier `NNNN-titre-court.md`, créé avec `/adr
 | 0005 | [Intégration numérique du modèle de vol : RK4 à pas fixe, en f64](0005-integration-numerique.md) | Accepté |
 | 0006 | [Repères et conversions : Blender → glTF → Bevy → modèle de vol](0006-reperes-et-conversions.md) | Accepté |
 | 0007 | [Scripts Blender (Python) pour les sources de contenu dans `art/`](0007-scripts-blender.md) | Accepté |
-| 0008 | [Contact au sol : efforts de pénalité dans le RK4, à 240 Hz](0008-contact-au-sol.md) | Proposé |
+| 0008 | [Contact au sol : efforts de pénalité dans le RK4, à 240 Hz](0008-contact-au-sol.md) | Accepté |

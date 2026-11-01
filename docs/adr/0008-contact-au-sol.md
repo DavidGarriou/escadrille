@@ -1,6 +1,6 @@
 # 0008 — Contact au sol : efforts de pénalité dans le RK4, à 240 Hz
 
-- Statut : Proposé
+- Statut : Accepté (validé par le joueur le 2026-11-01)
 - Date : 2026-11-01
 
 ## Contexte

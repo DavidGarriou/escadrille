@@ -2557,3 +2557,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Relecture ciblée de l'aérodynamicien : correctif bloquant bien recopié. `stop_stiffness` reste hors du passage à la verticale, car elle sert aussi à la jante.
 - **⚠** Le cheval de bois partait moteur au ralenti : le souffle arrivait trop tard sur le gouvernail, et l'aile ne touchait jamais, alors que le commentaire de `grip` s'appuie sur ce contact. **A** L'essai part à pleine puissance, et son test exige maintenant que le saumon touche.
 - **R** Une seconde de pied gauche à 75 km/h, queue haute, plein gaz : 180° de cap, 17° d'inclinaison, 12,7 kN sur un saumon. Le même pied à 60 km/h sur trois points n'écarte le cap que de 3°.
+
+### ADR 0008 validé
+
+- **Q** Le joueur : « Oui, valider ».
+- **D** ADR 0008 (contact au sol : efforts de pénalité dans le RK4, à 240 Hz) accepté.
+- **A** Statut mis à jour dans l'ADR, son index et le plan `m2-train-sol.md`.
+- **R** Reste à faire pour clore le M2 : le vol de dix minutes à la manette, dont les retours iront dans `docs/gdd/retours.md`.

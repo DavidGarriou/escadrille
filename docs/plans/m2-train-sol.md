@@ -179,7 +179,7 @@ Une fois l'incrément fini, en préréglage Pilote d'abord :
 
 ## Réalisation (2026-11-01)
 
-Les étapes 0 à 7 sont faites, ADR 0008 au statut Proposé. Écarts et ajouts par rapport au plan :
+Les étapes 0 à 7 sont faites, ADR 0008 accepté par le joueur le 2026-11-01. Écarts et ajouts par rapport au plan :
 
 - **Ressort de roue** : il dépend de l'assiette. La glissière du SPAD fait 46° avec la verticale en ligne de vol et 61° queue basse (revue de l'aérodynamicien, point bloquant).
 - **Béquille** : elle frotte comme une roue, avec une force latérale bien plus raide. Isotrope, elle laissait l'avion partir seul en cheval de bois à 40 km/h, contre le témoignage de Meister.
@@ -193,7 +193,6 @@ Les étapes 0 à 7 sont faites, ADR 0008 au statut Proposé. Écarts et ajouts p
   - posés : 12 kN par roue à 2 m/s, 20 kN à 3 m/s, 28 kN à 4 m/s, limite à 24 kN.
   - cheval de bois : une seconde de pied à 75 km/h, queue haute, plein gaz, 180° de cap et un saumon au sol.
 - **Reste ouvert** :
-  - valider l'ADR 0008 ;
   - relire l'image de S49 pour l'axe de la course ;
   - frottement dans la glissière à la place du visqueux ;
   - message de posé dur à 14 kN ;
