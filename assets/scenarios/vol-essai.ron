@@ -7,6 +7,7 @@ Scenario(
     aircraft: "spad7",
     fuel_fraction: 1.0,      // C: full tanks, the loading of the flight tests
     heading: Deg(90.0),      // C: east, the player's choice (2026-10-28)
+    start: Flight(
     altitude: M(1000.0),     // C: the player's choice (2026-10-28)
     speed: Kmh(160.0),       // C: the player's choice (2026-10-28)
     equilibrium: (
@@ -19,5 +20,6 @@ Scenario(
         throttle: 0.544743846,
         rotor_speed: RadS(154.655060302),
         downwash: Rad(0.043962871),
+    ),
     ),
 )

@@ -16,6 +16,8 @@ use crate::input::{Action, Controls, InputSet};
 /// Chase view: distance behind and height above the aircraft, m.
 pub const CHASE_DISTANCE_M: f32 = 10.0;
 pub const CHASE_HEIGHT_M: f32 = 2.5;
+/// The chase camera stays this high above the ground, m.
+pub const CHASE_LOWEST_M: f32 = 1.0;
 /// Time constant of the chase camera following the aircraft's direction, s.
 pub const CHASE_LAG_S: f32 = 0.3;
 /// Vertical fields of view, degrees.
@@ -156,10 +158,11 @@ fn follow_player(
                     );
                 let direction = look * lagged;
                 let target = aircraft.translation;
-                *transform = Transform::from_translation(
-                    target - direction * CHASE_DISTANCE_M + Vec3::Y * CHASE_HEIGHT_M,
-                )
-                .looking_at(target + Vec3::Y * 0.5, Vec3::Y);
+                let mut place = target - direction * CHASE_DISTANCE_M + Vec3::Y * CHASE_HEIGHT_M;
+                // The render origin stays on the ground, at height 0.
+                place.y = place.y.max(CHASE_LOWEST_M);
+                *transform =
+                    Transform::from_translation(place).looking_at(target + Vec3::Y * 0.5, Vec3::Y);
                 CHASE_FOV_DEG
             }
             View::Pilot => {

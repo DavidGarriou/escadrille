@@ -249,6 +249,9 @@ Aircraft(
             (name: "dérive", position_m: (-4.757, 0.0, -1.40), mirrored: false),           // C: top of the fin above
             (name: "plan fixe", position_m: (-4.26, 1.405, -0.70), mirrored: true),        // C: tip of the tailplane above
         ],
+        wheel_limit_n: 20000.0,                                                // E: about 7 static loads on a wheel: a sink of 3 m/s is at the limit, 4 m/s breaks the leg
+        skid_limit_n: 8000.0,                                                  // E: about 5 static loads on the skid
+        hard_point_limit_n: 5000.0,                                            // E: a wing tip scrapes under half a tonne and breaks beyond
     )),
 
     travel: (aileron: Deg(20.0), elevator: Deg(25.0), rudder: Deg(30.0)),      // E: usual period throws, no SPAD source (the XIII manual, S38, still to be found)

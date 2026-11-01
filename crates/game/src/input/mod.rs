@@ -8,11 +8,12 @@
 //! - L1 / R1: elevator neutral, nose down / up, 1 % a press;
 //! - right stick: free look; R3: look ahead again;
 //! - west (Y): change view; north (X): telemetry; Select: start again; Start: pause;
+//! - d-pad ← / →: next start: on the field, on final, in flight (`crate::flight`);
 //! - Home: next realism preset (`crate::realism`).
 //!
 //! Keyboard, for development (physical keys, labels of an AZERTY keyboard): arrows for
 //! the stick, Q / D for the rudder, Page up / down for the throttle, Home / End for the
-//! neutral, V view, T telemetry, R start again, P pause, I preset.
+//! neutral, V view, T telemetry, R start again, N next start, P pause, I preset.
 //!
 //! The profile is written here for now; RON profiles and remapping come later.
 
@@ -50,6 +51,7 @@ pub enum Action {
     Telemetry,
     Pause,
     NextPreset,
+    NextStart,
 }
 
 /// The continuous state of the pilot's controls, between frames.
@@ -190,6 +192,8 @@ fn read_controls(
         (GamepadButton::North, KeyCode::KeyT, Action::Telemetry),
         (GamepadButton::Start, KeyCode::KeyP, Action::Pause),
         (GamepadButton::Mode, KeyCode::KeyI, Action::NextPreset),
+        (GamepadButton::DPadRight, KeyCode::KeyN, Action::NextStart),
+        (GamepadButton::DPadLeft, KeyCode::KeyN, Action::NextStart),
     ] {
         if just(button) || key_just(k) {
             out.actions.write(action);

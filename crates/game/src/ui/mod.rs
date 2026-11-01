@@ -6,7 +6,9 @@
 use bevy::prelude::*;
 use bevy_egui::{EguiContexts, EguiPrimaryContextPass, egui};
 use escadrille_fdm::constants::{G0, RHO0};
+use escadrille_fdm::ground::ContactPoint;
 
+use crate::flight::Starts;
 use crate::flight::simulation::{ENVIRONMENT, Player, RESTART_AFTER_S, Simulated};
 use crate::input::{Action, Controls, InputSet};
 use crate::realism::Preset;
@@ -24,6 +26,8 @@ pub struct Overlays {
     pub since_start: f32,
     /// Real time since the preset changed, s.
     pub since_preset: f32,
+    /// Real time since the chosen start changed, s.
+    pub since_start_choice: f32,
 }
 
 impl Default for Overlays {
@@ -32,6 +36,7 @@ impl Default for Overlays {
             telemetry: true,
             since_start: 0.0,
             since_preset: PRESET_S,
+            since_start_choice: PRESET_S,
         }
     }
 }
@@ -61,10 +66,12 @@ fn toggles(
 ) {
     overlays.since_start += real.delta_secs();
     overlays.since_preset += real.delta_secs();
+    overlays.since_start_choice += real.delta_secs();
     for action in actions.read() {
         match action {
             Action::Telemetry => overlays.telemetry = !overlays.telemetry,
             Action::NextPreset => overlays.since_preset = 0.0,
+            Action::NextStart => overlays.since_start_choice = 0.0,
             Action::Pause if time.is_paused() => time.unpause(),
             Action::Pause => time.pause(),
             _ => {}
@@ -83,6 +90,8 @@ pub struct Telemetry {
     pub alpha_deg: f64,
     pub beta_deg: f64,
     pub load_factor: f64,
+    /// On the wheels and skid, kg each.
+    pub wheels_kg: Option<(f64, f64)>,
 }
 
 impl Telemetry {
@@ -92,6 +101,14 @@ impl Telemetry {
         let air = d.air_velocity;
         let speed = air.length();
         let mass = sim.aircraft.mass().mass();
+        let on = |wanted: fn(ContactPoint) -> bool| {
+            let contacts = d.ground.contacts.iter();
+            contacts
+                .filter(|c| wanted(c.point))
+                .map(|c| c.load)
+                .sum::<f64>()
+                / G0
+        };
         Self {
             true_kmh: speed * 3.6,
             indicated_kmh: speed * (d.density / RHO0).sqrt() * 3.6,
@@ -101,6 +118,12 @@ impl Telemetry {
             alpha_deg: air.z.atan2(air.x).to_degrees(),
             beta_deg: (air.y / speed.max(1e-6)).asin().to_degrees(),
             load_factor: -d.loads.wrench.force.z / (mass * G0),
+            wheels_kg: d.ground.on_undercarriage().then(|| {
+                (
+                    on(|p| matches!(p, ContactPoint::Wheel(_))),
+                    on(|p| matches!(p, ContactPoint::Skid(_))),
+                )
+            }),
         }
     }
 }
@@ -110,6 +133,7 @@ fn overlays(
     overlays: Res<Overlays>,
     controls: Res<Controls>,
     preset: Res<Preset>,
+    starts: Res<Starts>,
     time: Res<Time<Virtual>>,
     player: Query<&Simulated, With<Player>>,
 ) -> Result {
@@ -141,6 +165,12 @@ fn overlays(
                     row("Incidence", format!("{:+5.1}°", t.alpha_deg));
                     row("Dérapage", format!("{:+5.1}°", t.beta_deg));
                     row("Facteur de charge", format!("{:+5.2}", t.load_factor));
+                    if let Some((wheels, skid)) = t.wheels_kg {
+                        row(
+                            "Au sol",
+                            format!("roues {wheels:.0} kg, béquille {skid:.0} kg"),
+                        );
+                    }
                     // The commands the flight model receives, assists included.
                     row(
                         "Gouvernes",
@@ -154,14 +184,22 @@ fn overlays(
                 });
             });
     }
-    if let Some(t) = sim.crashed {
+    if let Some(crash) = sim.crashed {
         centred(
             ctx,
-            "ecrase",
+            "accident",
             &format!(
-                "Écrasé. Nouveau départ dans {:.0} s.",
-                (RESTART_AFTER_S - t).max(0.0).ceil()
+                "{} Nouveau départ dans {:.0} s.",
+                crash.cause.text(),
+                (RESTART_AFTER_S - crash.seconds).max(0.0).ceil()
             ),
+        );
+    } else if overlays.since_start_choice < PRESET_S {
+        let label = starts.current().map_or("—", |s| s.label);
+        centred(
+            ctx,
+            "depart",
+            &format!("Prochain départ : {label} (Select pour y aller)"),
         );
     } else if time.is_paused() {
         centred(ctx, "pause", "Pause");
@@ -209,6 +247,7 @@ const HELP: &[(&str, &str)] = &[
     ("Y", "vue : poursuite ou pilote"),
     ("X", "télémétrie"),
     ("Home", "aides : Arcade, Pilote, Vétéran, As"),
+    ("Croix ← / →", "prochain départ : au sol, en finale, en vol"),
     ("Select", "nouveau départ"),
     ("Start", "pause (affiche ces commandes)"),
 ];

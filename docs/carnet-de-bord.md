@@ -2488,3 +2488,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** ADR 0008 (contact par efforts de pénalité dans le RK4, à 240 Hz), au statut **Proposé** ; `modele-aero.md` et `format-avion.md` à jour.
 - **R** Convergence : diviser le pas par deux change l'envol et le posé de moins de 1 % (test). Dérive à l'arrêt : 0,7 cm/s, soit 40 cm par minute, gardée pour l'instant.
 - **A** `just check` passe, `just test` aussi (350 tests). Revue de l'aérodynamicien lancée sur le contact, les valeurs `E:` et les essais.
+- **R** Treizième passe de l'historien (`spad7.md` § 6.6, `demandes.md` D16 à D18). archive.org et la NTRS s'ouvrent enfin.
+  - **Comparable majeur** : *Structural Analysis and Design of Airplanes* (1920) calcule un amortisseur complet pour 748 kg : 130 mm de course, 60 brins de ½ in, 3,8 kJ, 6,75 fois le poids en butée (C).
+  - **Roulement sur herbe** : 0,06 (C). **Sabot** : 0,4 (C/D, `E:`). **Limites** : 14 kN par roue d'après un programme français, jusqu'à 6,75 fois le poids.
+  - **Technique** : queue levée tôt, manche poussé (B pour la pratique, C pour le S.VII) ; posé trois points, norme enseignée, et queue haute admissible (T8, T26).
+  - **Vitesse d'atterrissage** du S.VII : 85 à 95 km/h (C), sans mesure directe.
+  - **T** : en fusées à la nuit (Hall) et en ampoules (RNAS) ; de jour, aucun T de toile avant 1919. **Le pré reste sans T.**
+  - **Géométrie** : α de 22° et 20,5 % sur la béquille, contre 15 à 18° et 10 à 17 % dans la pratique d'époque. Le centre de gravité du modèle serait de 11 à 20 cm trop en arrière des roues. Ce n'est pas une preuve : aucune de ces mesures n'est un SPAD. Versé au dossier du centrage, sans correction.
+- **A** Étape 5, dans le jeu :
+  - **format des scénarios** : `start: Flight(...)` ou `Ground(...)`, et une position ;
+  - **`terrain.ron` et `finale.ron`** : états calculés par `fdm_lab`, tenus par des tests comme `vol-essai.ron` ; plané de finale à −7,9°, soit 1/7, la pente que l'historien attend ;
+  - **`just run` démarre au sol** ; la croix ← / → choisit le prochain départ, Select y va ;
+  - **accidents** : hélice, structure ou train au-delà de leur limite (`Accident`), à la place de l'ancien arrêt au premier contact ;
+  - **animation** : roues qui roulent, essieu qui remonte sa glissière ;
+  - **caméra** gardée au-dessus du sol, **télémétrie** de la charge sur les roues et la béquille.
+- **⚠** En relisant : `LandingTolerance` n'était créée que dans les applications de test. Le vrai jeu aurait planté au lancement, sans qu'aucun test le voie. Corrigé.
+- **A** `just check` passe, `just test` aussi (358 tests). Les valeurs de l'historien entreront dans `aircraft.ron` après la revue de l'aérodynamicien : elles viennent d'un amortisseur vertical, alors que la glissière du SPAD penche de 46°.

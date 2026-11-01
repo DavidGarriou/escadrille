@@ -389,6 +389,7 @@ pub(crate) mod tests {
     use std::path::PathBuf;
 
     use escadrille_data::aircraft::{Loading, load_aircraft};
+    use escadrille_data::scenario::StartSpec;
     use escadrille_fdm::environment::{NO_GROUND, StandardEnvironment};
 
     use super::*;
@@ -423,11 +424,19 @@ pub(crate) mod tests {
             })
             .unwrap()
             .aircraft;
-        let e = s.equilibrium;
+        let StartSpec::Flight {
+            altitude,
+            speed,
+            equilibrium: e,
+            ..
+        } = s.start
+        else {
+            panic!("vol-essai starts in flight");
+        };
         let trim = solve_robust(
             &aircraft,
             &STILL_AIR,
-            Flight::guess(s.altitude.si(), s.speed.si(), e.throttle),
+            Flight::guess(altitude.si(), speed.si(), e.throttle),
             LEVEL_AT_SPEED,
         )
         .unwrap();

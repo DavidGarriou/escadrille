@@ -14,8 +14,9 @@ use escadrille_fdm::ground::{Contact, ContactPoint};
 use escadrille_fdm::rigid_body::RigidBodyState;
 use glam::{DQuat, DVec3, EulerRot};
 
-use crate::performance::{PerformanceError, stall_speed};
+use crate::performance::{PerformanceError, best_climb, glide, stall_speed};
 use crate::qualitative::{Observed, TracePoint};
+use crate::trim::Trim;
 
 /// Level ground at sea level, in still air: the wheels stand on it.
 pub const FIELD: StandardEnvironment = StandardEnvironment {
@@ -640,6 +641,23 @@ pub fn nose_over(aircraft: &Aircraft, rest: &Rest, speed: f64) -> Rough {
     }))
 }
 
+/// Speed of the final approach, m/s (E:: about 1.5 times the stall, the plan's start).
+pub const FINAL_SPEED: f64 = 125.0 / 3.6;
+/// Height of the final approach's start, m (E:, plan `m2-train-sol.md`, decision 1).
+pub const FINAL_HEIGHT: f64 = 150.0;
+
+/// The stick of the best climb at sea level: where the elevator's neutral starts on the
+/// field, for a released stick neither to pin the aircraft down nor to pull it up.
+pub fn climb_elevator(aircraft: &Aircraft) -> Result<f64, String> {
+    let climb = best_climb(aircraft, &free_air(), 0.0).map_err(error)?;
+    Ok(climb.trim.commands(aircraft).pitch)
+}
+
+/// The glide of the final approach, throttle closed.
+pub fn final_glide(aircraft: &Aircraft) -> Result<Trim, String> {
+    glide(aircraft, &free_air(), FINAL_HEIGHT, FINAL_SPEED).map_err(error)
+}
+
 /// `essais.ron`: the take-off, with and without the rudder, in French.
 pub fn observed_take_off(aircraft: &Aircraft) -> Result<Observed, String> {
     let r = rest(aircraft)?;
@@ -706,6 +724,7 @@ mod tests {
     use std::path::PathBuf;
 
     use escadrille_data::aircraft::{Loading, load_aircraft};
+    use escadrille_data::scenario::{StartSpec, load_scenario};
 
     fn spad() -> Aircraft {
         let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
@@ -727,6 +746,74 @@ mod tests {
         assert!((0.15..0.25).contains(&(r.skid_load / weight)), "{r:?}");
         assert!((12.0..16.0).contains(&r.pitch.to_degrees()), "{r:?}");
         assert!(r.creep < 0.02, "{r:?}");
+    }
+
+    /// `assets/scenarios/terrain.ron` is the flight model's own rest: when the model
+    /// changes, this fails and prints the values to copy into the file.
+    #[test]
+    fn the_field_start_is_the_aircraft_at_rest() {
+        let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let s = load_scenario(&assets, "terrain").unwrap();
+        let StartSpec::Ground(file) = s.start else {
+            panic!("terrain starts on the ground");
+        };
+        let a = spad();
+        let r = rest(&a).unwrap();
+        let elevator = climb_elevator(&a).unwrap();
+        let height = -r.state.position_ned.z;
+        let held = (height - file.height.si()).abs() < 1e-3
+            && (r.pitch - file.pitch.si()).abs() < 2e-4
+            && (r.state.rotor_speed - file.rotor_speed.si()).abs() < 0.1
+            && (elevator - file.elevator).abs() < 1e-3;
+        assert!(
+            held,
+            "the flight model's rest moved; for terrain.ron:\n\
+             height: M({height:.4}), pitch: Rad({:.5}), rotor_speed: RadS({:.2}), \
+             elevator: {elevator:.3}",
+            r.pitch, r.state.rotor_speed
+        );
+    }
+
+    /// `assets/scenarios/finale.ron` is the flight model's own glide, as above.
+    #[test]
+    fn the_final_approach_starts_in_equilibrium() {
+        let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let s = load_scenario(&assets, "finale").unwrap();
+        let StartSpec::Flight {
+            flight_path,
+            equilibrium: e,
+            ..
+        } = s.start
+        else {
+            panic!("finale starts in flight");
+        };
+        let a = spad();
+        let trim = final_glide(&a).unwrap();
+        let (f, c) = (trim.flight, trim.commands(&a));
+        let held = (f.alpha - e.alpha.si()).abs() < 1e-5
+            && (f.beta - e.beta.si()).abs() < 1e-5
+            && (f.flight_path - flight_path.unwrap().si()).abs() < 1e-5
+            && (c.roll - e.roll).abs() < 1e-4
+            && (c.pitch - e.pitch).abs() < 1e-4
+            && (c.yaw - e.yaw).abs() < 1e-4
+            && (f.rotor_speed - e.rotor_speed.si()).abs() < 0.01
+            && (f.downwash - e.downwash.si()).abs() < 1e-5;
+        assert!(
+            held,
+            "the flight model's glide moved; for finale.ron:\n\
+             flight_path: Some(Rad({:.9})),\n\
+             alpha: Rad({:.9}), beta: Rad({:.9}), roll: {:.9}, pitch: {:.9}, yaw: {:.9}, \
+             throttle: {:.9}, rotor_speed: RadS({:.9}), downwash: Rad({:.9})",
+            f.flight_path,
+            f.alpha,
+            f.beta,
+            c.roll,
+            c.pitch,
+            c.yaw,
+            c.throttle,
+            f.rotor_speed,
+            f.downwash
+        );
     }
 
     #[test]

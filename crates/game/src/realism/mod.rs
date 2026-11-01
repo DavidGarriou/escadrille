@@ -203,7 +203,7 @@ mod tests {
     use escadrille_data::scenario::load_scenario;
 
     use super::*;
-    use crate::flight::simulation::{step, take_input};
+    use crate::flight::simulation::{LandingTolerance, step, take_input};
     use crate::flight::{STEP_HZ, TEST_FLIGHT};
 
     #[test]
@@ -238,6 +238,7 @@ mod tests {
             )))
             .insert_resource(preset.settings())
             .init_resource::<StartCommands>()
+            .init_resource::<LandingTolerance>()
             .configure_sets(
                 FixedUpdate,
                 (FlightSet::Command, RealismSet::Assist, FlightSet::Step).chain(),
@@ -276,7 +277,6 @@ mod tests {
                     previous: start,
                     state: start,
                     controls: scenario.commands(),
-                    extremities: Vec::new(),
                     crashed: None,
                 },
             ))

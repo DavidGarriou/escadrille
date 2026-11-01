@@ -1,20 +1,17 @@
 //! The flight model's step and the aircraft's place in the rendered world.
 
-use std::path::Path;
 use std::sync::Arc;
 
 use bevy::math::{DQuat, DVec3};
 use bevy::prelude::*;
-use escadrille_data::aircraft::AircraftData;
-use escadrille_data::mockup::load_mockup;
-use escadrille_data::model::Contract;
 use escadrille_fdm::aircraft::{Aircraft, PilotControls};
 use escadrille_fdm::environment::StandardEnvironment;
+use escadrille_fdm::ground::ContactPoint;
 use escadrille_fdm::rigid_body::RigidBodyState;
 
 use super::bridge::{render_transform, to_bevy};
-use super::{PilotInput, RestartFlight, StartCommands};
-use crate::ASSETS_DIR;
+use super::{PilotInput, RestartFlight, StartCommands, Starts};
+use crate::input::Action;
 
 /// Still air over flat ground at sea level: the plain of the test flight.
 pub const ENVIRONMENT: StandardEnvironment = StandardEnvironment {
@@ -22,7 +19,7 @@ pub const ENVIRONMENT: StandardEnvironment = StandardEnvironment {
     ground_altitude: 0.0,
 };
 
-/// Seconds between touching the ground and the new start.
+/// Seconds between an accident and the new start.
 pub const RESTART_AFTER_S: f32 = 3.0;
 
 /// Step of the floating origin's grid, m: the render origin stays on the ground, on a
@@ -35,6 +32,50 @@ pub const ORIGIN_GRID_M: f64 = 2000.0;
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Player;
 
+/// What ended the flight (plan `m2-train-sol.md`, decision 4). The real damage comes with
+/// the M4: for now, the flight starts again.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Accident {
+    /// A blade struck the ground.
+    Propeller,
+    /// A wing tip, the nose or the tail hit it too hard.
+    Airframe,
+    /// A leg or the skid gave way.
+    Undercarriage,
+    /// The simulation left the finite numbers.
+    Broken,
+}
+
+impl Accident {
+    /// What the player reads.
+    pub fn text(self) -> &'static str {
+        match self {
+            Self::Propeller => "Hélice brisée au sol.",
+            Self::Airframe => "Cellule brisée au sol.",
+            Self::Undercarriage => "Train brisé.",
+            Self::Broken => "Vol interrompu.",
+        }
+    }
+}
+
+/// An accident, and the seconds since.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Crash {
+    pub cause: Accident,
+    pub seconds: f32,
+}
+
+/// How much more than its limits a part takes before it gives way (a game rule, set by
+/// the realism preset: `crate::realism`).
+#[derive(Resource, Debug, Clone, Copy, PartialEq)]
+pub struct LandingTolerance(pub f64);
+
+impl Default for LandingTolerance {
+    fn default() -> Self {
+        Self(1.0)
+    }
+}
+
 /// An aircraft flown by the flight model.
 #[derive(Component, Debug, Clone)]
 pub struct Simulated {
@@ -45,25 +86,31 @@ pub struct Simulated {
     pub state: RigidBodyState,
     /// The commands of the next step, then of the last one.
     pub controls: PilotControls,
-    /// Body axes from the centre of gravity: the points that touch the ground first.
-    pub extremities: Vec<DVec3>,
-    /// Seconds since the aircraft touched the ground, while it waits for the restart.
-    pub crashed: Option<f32>,
+    /// The accident that stopped the flight, while it waits for the restart.
+    pub crashed: Option<Crash>,
 }
 
 impl Simulated {
-    /// Whether a point of the airframe is under the ground, or the state is broken.
-    pub fn touches_ground(&self) -> bool {
+    /// What this state breaks, if anything.
+    pub fn accident(&self, tolerance: f64) -> Option<Accident> {
         let s = &self.state;
         let finite = s.position_ned.is_finite()
             && s.attitude.is_finite()
             && s.velocity_body.is_finite()
             && s.angular_velocity_body.is_finite();
-        !finite
-            || self
-                .extremities
-                .iter()
-                .any(|p| (s.position_ned + s.attitude * *p).z > -ENVIRONMENT.ground_altitude)
+        if !finite {
+            return Some(Accident::Broken);
+        }
+        let clearance = self.aircraft.propeller_clearance(s, &ENVIRONMENT);
+        if clearance.is_some_and(|c| c < 0.0) {
+            return Some(Accident::Propeller);
+        }
+        let gear = self.aircraft.undercarriage()?;
+        let point = gear.overloaded(&gear.loads(s, &ENVIRONMENT), tolerance)?;
+        Some(match point {
+            ContactPoint::HardPoint(_) => Accident::Airframe,
+            ContactPoint::Wheel(_) | ContactPoint::Skid(_) => Accident::Undercarriage,
+        })
     }
 
     /// Back to the scenario's start.
@@ -86,36 +133,6 @@ impl RenderOrigin {
     }
 }
 
-/// The points of an aircraft that touch the ground first, body axes from its centre of
-/// gravity: wheels and tail skid (from its 3D model's file, until the undercarriage is
-/// modelled), the tips of its lifting surfaces, the rim of its propeller's disc.
-pub fn extremities(data: &AircraftData, contract: &Contract, cg: DVec3) -> Result<Vec<DVec3>> {
-    let mut points = Vec::new();
-    if let Some(mockup) = load_mockup(Path::new(ASSETS_DIR), &data.file.id)? {
-        let w = mockup.wheels;
-        let bottom = DVec3::from_array(w.centre_m) + DVec3::Z * (0.5 * w.diameter.si());
-        points.extend([bottom, bottom * DVec3::new(1.0, -1.0, 1.0)]);
-        points.push(DVec3::from_array(mockup.skid_m));
-    }
-    for surface in &data.file.surfaces {
-        for panel in &surface.panels {
-            let tip = DVec3::from_array(panel.tip_m);
-            points.push(tip);
-            if surface.mirrored {
-                points.push(tip * DVec3::new(1.0, -1.0, 1.0));
-            }
-        }
-    }
-    let p = contract.propeller;
-    let u = p.axis.any_orthonormal_vector();
-    let v = p.axis.cross(u);
-    points.extend((0..8).map(|k| {
-        let a = std::f64::consts::TAU * f64::from(k) / 8.0;
-        p.hub + (u * a.cos() + v * a.sin()) * p.radius
-    }));
-    Ok(points.into_iter().map(|p| p - cg).collect())
-}
-
 /// The player's aircraft takes the pilot's commands for the next step.
 pub fn take_input(input: Res<PilotInput>, mut aircraft: Query<&mut Simulated, With<Player>>) {
     for mut sim in &mut aircraft {
@@ -123,8 +140,12 @@ pub fn take_input(input: Res<PilotInput>, mut aircraft: Query<&mut Simulated, Wi
     }
 }
 
-/// One step of the flight model for each aircraft not on the ground, with its commands.
-pub fn step(time: Res<Time<Fixed>>, mut aircraft: Query<&mut Simulated>) {
+/// One step of the flight model for each aircraft still in one piece, with its commands.
+pub fn step(
+    time: Res<Time<Fixed>>,
+    tolerance: Res<LandingTolerance>,
+    mut aircraft: Query<&mut Simulated>,
+) {
     let dt = time.delta_secs_f64();
     for mut sim in &mut aircraft {
         if sim.crashed.is_some() {
@@ -135,26 +156,44 @@ pub fn step(time: Res<Time<Fixed>>, mut aircraft: Query<&mut Simulated>) {
             .advance(&sim.state, &sim.controls, &ENVIRONMENT, dt);
         sim.previous = sim.state;
         sim.state = state;
-        if sim.touches_ground() {
+        if let Some(cause) = sim.accident(tolerance.0) {
             sim.state = sim.previous;
-            sim.crashed = Some(0.0);
+            sim.crashed = Some(Crash {
+                cause,
+                seconds: 0.0,
+            });
         }
     }
 }
 
-/// After [`RESTART_AFTER_S`] on the ground, or when asked, back to the start.
+/// The next of the starts, on the player's demand: Select then takes it.
+pub fn choose_start(mut actions: MessageReader<Action>, mut starts: ResMut<Starts>) {
+    for action in actions.read() {
+        if *action == Action::NextStart && !starts.list.is_empty() {
+            starts.chosen = (starts.chosen + 1) % starts.list.len();
+        }
+    }
+}
+
+/// After [`RESTART_AFTER_S`] since an accident, or when asked, back to the chosen start.
 pub fn restart(
     time: Res<Time>,
     mut asked: MessageReader<RestartFlight>,
+    starts: Res<Starts>,
     mut start: ResMut<StartCommands>,
     mut aircraft: Query<&mut Simulated>,
 ) {
     let now = asked.read().count() > 0;
     for mut sim in &mut aircraft {
-        if let Some(t) = sim.crashed.as_mut() {
-            *t += time.delta_secs();
+        if let Some(crash) = sim.crashed.as_mut() {
+            crash.seconds += time.delta_secs();
         }
-        if now || sim.crashed.is_some_and(|t| t >= RESTART_AFTER_S) {
+        let due = sim.crashed.is_some_and(|c| c.seconds >= RESTART_AFTER_S);
+        if now || due {
+            if let Some(chosen) = starts.current() {
+                sim.start = chosen.state;
+                start.0 = chosen.controls;
+            }
             sim.restart();
             start.set_changed();
         }
@@ -189,15 +228,16 @@ pub fn place(
 
 #[cfg(test)]
 mod tests {
+    use std::path::Path;
     use std::time::Duration;
 
     use bevy::time::TimeUpdateStrategy;
     use escadrille_data::aircraft::{Loading, load_aircraft};
-    use escadrille_data::model::contract;
     use escadrille_data::scenario::load_scenario;
 
     use super::*;
-    use crate::flight::{STEP_HZ, TEST_FLIGHT};
+    use crate::ASSETS_DIR;
+    use crate::flight::{FlightStart, ON_THE_FIELD, STEP_HZ, TEST_FLIGHT};
 
     /// An app with the flight's systems and none of the rendering, its time advanced by
     /// one fixed step per update.
@@ -210,24 +250,29 @@ mod tests {
             )))
             .init_resource::<PilotInput>()
             .init_resource::<StartCommands>()
+            .init_resource::<Starts>()
+            .init_resource::<LandingTolerance>()
             .init_resource::<RenderOrigin>()
             .add_message::<RestartFlight>()
+            .add_message::<Action>()
             .add_systems(FixedUpdate, (take_input, step).chain())
-            .add_systems(Update, (restart, place).chain());
+            .add_systems(Update, (choose_start, restart, place).chain());
         app
     }
 
     fn spad(app: &mut App) -> Entity {
+        spad_at(app, TEST_FLIGHT)
+    }
+
+    fn spad_at(app: &mut App, name: &str) -> Entity {
         let assets = Path::new(ASSETS_DIR);
-        let scenario = load_scenario(assets, TEST_FLIGHT).unwrap();
+        let scenario = load_scenario(assets, name).unwrap();
         let data = load_aircraft(assets, &scenario.aircraft).unwrap();
         let built = data
             .build(&Loading {
                 fuel_fraction: scenario.fuel_fraction,
             })
             .unwrap();
-        let cg = built.summary.cg_from_datum;
-        let extremities = extremities(&data, &contract(&data).unwrap(), cg).unwrap();
         let start = scenario.initial_state();
         app.insert_resource(PilotInput::holding(scenario.commands()));
         app.world_mut()
@@ -239,7 +284,6 @@ mod tests {
                     previous: start,
                     state: start,
                     controls: scenario.commands(),
-                    extremities,
                     crashed: None,
                 },
                 Transform::default(),
@@ -317,6 +361,83 @@ mod tests {
             "{}",
             sim.state.position_ned
         );
+    }
+
+    #[test]
+    fn on_the_field_it_stands_still_and_rolls_when_the_throttle_opens() {
+        let mut app = app();
+        let spad = spad_at(&mut app, ON_THE_FIELD);
+        for _ in 0..3 * 120 {
+            app.update();
+        }
+        let sim = app.world().get::<Simulated>(spad).unwrap();
+        assert!(sim.crashed.is_none(), "{:?}", sim.crashed);
+        let moved = sim.state.position_ned - sim.start.position_ned;
+        assert!(moved.length() < 0.05, "{moved}");
+        app.insert_resource(PilotInput::holding(PilotControls {
+            throttle: 1.0,
+            pitch: -0.5,
+            ..default()
+        }));
+        for _ in 0..5 * 120 {
+            app.update();
+        }
+        let sim = app.world().get::<Simulated>(spad).unwrap();
+        assert!(sim.crashed.is_none(), "{:?}", sim.crashed);
+        let moved = sim.state.position_ned - sim.start.position_ned;
+        assert!(moved.y > 5.0, "it rolled east: {moved}");
+    }
+
+    #[test]
+    fn a_drop_onto_the_field_breaks_the_undercarriage_or_the_aeroplane() {
+        let mut app = app();
+        let spad = spad_at(&mut app, ON_THE_FIELD);
+        {
+            let mut sim = app.world_mut().get_mut::<Simulated>(spad).unwrap();
+            sim.state.position_ned.z -= 3.0;
+            sim.state.velocity_body = sim.state.attitude.inverse() * DVec3::Z * 8.0;
+            sim.previous = sim.state;
+        }
+        for _ in 0..120 {
+            app.update();
+        }
+        let sim = app.world().get::<Simulated>(spad).unwrap();
+        let cause = sim.crashed.expect("8 m/s is more than it takes").cause;
+        assert_ne!(cause, Accident::Broken);
+    }
+
+    #[test]
+    fn the_player_chooses_the_next_start() {
+        let mut app = app();
+        let spad = spad(&mut app);
+        let elsewhere = RigidBodyState {
+            position_ned: DVec3::new(0.0, -700.0, -150.0),
+            ..RigidBodyState::default()
+        };
+        app.insert_resource(Starts {
+            list: vec![
+                FlightStart {
+                    label: "ici",
+                    state: app.world().get::<Simulated>(spad).unwrap().start,
+                    controls: PilotControls::default(),
+                },
+                FlightStart {
+                    label: "ailleurs",
+                    state: elsewhere,
+                    controls: PilotControls {
+                        throttle: 0.3,
+                        ..default()
+                    },
+                },
+            ],
+            chosen: 0,
+        });
+        app.world_mut().write_message(Action::NextStart);
+        app.world_mut().write_message(RestartFlight);
+        app.update();
+        let sim = app.world().get::<Simulated>(spad).unwrap();
+        assert_eq!(sim.start, elsewhere);
+        assert_eq!(app.world().resource::<StartCommands>().0.throttle, 0.3);
     }
 
     #[test]

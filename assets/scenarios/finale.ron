@@ -1,0 +1,26 @@
+// Final approach (plan docs/plans/m2-train-sol.md, decision 1): the SPAD gliding towards
+// the meadow, throttle closed, to practise landings without taking off first. The glide
+// is the flight model's own; the test `the_final_approach_starts_in_equilibrium` of
+// fdm_lab fails when the flight model no longer holds it, with the values to copy.
+Scenario(
+    aircraft: "spad7",
+    fuel_fraction: 1.0,                  // C: full tanks, the loading of the flight tests
+    heading: Deg(90.0),                  // C: east, along the meadow
+    position_m: (0.0, -1380.0),          // C: 1 080 m of glide from 150 m, to touch 100 m into the meadow, whose west end is at −400 m
+    start: Flight(
+        altitude: M(150.0),              // E: the plan's height
+        speed: Kmh(125.0),               // E: about 1.5 times the stall
+        flight_path: Some(Rad(-0.138065918)), // C: fdm_lab, glide at idle
+        equilibrium: (
+            //! C: fdm_lab, glide at idle (still air, full tanks)
+            alpha: Rad(0.049724530),
+            beta: Rad(0.001569130),
+            roll: 0.000076027,
+            pitch: -0.088013280,
+            yaw: -0.002666436,
+            throttle: 0.000000000,
+            rotor_speed: RadS(72.320251555),
+            downwash: Rad(0.066928958),
+        ),
+    ),
+)

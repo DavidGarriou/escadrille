@@ -1,15 +1,18 @@
 //! The 3D model's moving parts follow the flight model: each control surface turns about
 //! its hinge by its deflection (the node's local +X, model contract), the propeller about
 //! its axis at the shaft's speed; above [`BLUR_RPM`] its blades give way to the blurred
-//! disc, which the eye sees instead.
+//! disc, which the eye sees instead. The wheels roll, and with the axle they rise along
+//! their guide as the rubber cord gives.
 
 use bevy::ecs::system::SystemParam;
-use bevy::math::Quat;
+use bevy::math::{DVec3, Quat};
 use bevy::prelude::*;
 use bevy::world_serialization::WorldInstanceReady;
 use escadrille_data::aircraft::Control;
+use escadrille_fdm::ground::ContactPoint;
 
-use super::simulation::Simulated;
+use super::bridge::{GLTF_TO_BEVY, to_bevy};
+use super::simulation::{ENVIRONMENT, Simulated};
 use crate::dev::capture::CaptureHold;
 
 /// Shaft speed above which the blades are drawn as their blurred disc, rpm.
@@ -23,6 +26,22 @@ pub const DISC_ALPHA: f32 = 0.18;
 #[derive(Component, Debug, Clone, Default)]
 pub struct ModelNodes {
     pub controls: Vec<(String, Control)>,
+    /// A wheel's radius (m) and the guide of its axle (body axes).
+    pub wheels: Option<(f64, DVec3)>,
+}
+
+/// A wheel of the model, or its axle (no wheel of its own: it follows both).
+#[derive(Component, Debug, Clone, Copy)]
+pub struct AxleNode {
+    aircraft: Entity,
+    /// Which wheel of the undercarriage.
+    wheel: Option<usize>,
+    radius: f32,
+    /// The guide, in the frame of the model's nodes.
+    guide: Vec3,
+    rest: Vec3,
+    rest_rotation: Quat,
+    angle: f32,
 }
 
 #[derive(Component, Debug, Clone, Copy)]
@@ -71,6 +90,24 @@ pub fn prepare_model(
             continue;
         };
         let rest = transform.rotation;
+        // The undercarriage lists the right wheel first.
+        let wheel = match name.as_str() {
+            "wheel_r" => Some(Some(0)),
+            "wheel_l" => Some(Some(1)),
+            "axle" => Some(None),
+            _ => None,
+        };
+        if let (Some(wheel), Some((radius, guide))) = (wheel, model.wheels) {
+            commands.entity(entity).insert(AxleNode {
+                aircraft,
+                wheel,
+                radius: radius as f32,
+                guide: GLTF_TO_BEVY.inverse() * to_bevy(guide).as_vec3(),
+                rest: transform.translation,
+                rest_rotation: rest,
+                angle: 0.0,
+            });
+        }
         if let Some((_, control)) = model.controls.iter().find(|(n, _)| n == name.as_str()) {
             commands.entity(entity).insert(ControlSurface {
                 aircraft,
@@ -130,6 +167,42 @@ pub fn move_controls(
             Control::Rudder => d.rudder,
         };
         transform.rotation = surface.rest * Quat::from_rotation_x(angle as f32);
+    }
+}
+
+/// The wheels and the axle where the rubber cord puts them, the wheels rolling on the
+/// ground. The axle takes the mean of its two wheels.
+pub fn move_undercarriage(
+    time: Res<Time>,
+    aircraft: Query<&Simulated>,
+    mut nodes: Query<(&mut AxleNode, &mut Transform)>,
+) {
+    for (mut node, mut transform) in &mut nodes {
+        let Ok(sim) = aircraft.get(node.aircraft) else {
+            continue;
+        };
+        let Some(gear) = sim.aircraft.undercarriage() else {
+            continue;
+        };
+        let loads = gear.loads(&sim.state, &ENVIRONMENT);
+        let mut travel = [0.0, 0.0];
+        let mut rolling = [0.0, 0.0];
+        for c in &loads.contacts {
+            if let ContactPoint::Wheel(i @ (0 | 1)) = c.point {
+                travel[i] = c.cord_travel;
+                rolling[i] = c.rolling_speed;
+            }
+        }
+        let rise = node
+            .wheel
+            .map_or(0.5 * (travel[0] + travel[1]), |i| travel[i]);
+        transform.translation = node.rest + node.guide * rise as f32;
+        if let Some(i) = node.wheel {
+            let radius = node.radius;
+            node.angle += rolling[i] as f32 / radius * time.delta_secs();
+            node.angle %= std::f32::consts::TAU;
+            transform.rotation = node.rest_rotation * Quat::from_rotation_x(node.angle);
+        }
     }
 }
 

@@ -423,3 +423,44 @@ fn the_propeller_s_disc_reaches_lowest_towards_the_ground() {
         "{clearance} {expected}"
     );
 }
+
+#[test]
+fn a_part_gives_way_beyond_its_limit_times_the_tolerance() {
+    let contact = |point, load| Contact {
+        point,
+        load,
+        compression: 0.1,
+        cord_travel: 0.0,
+        rolling_speed: 0.0,
+    };
+    let loads = GroundLoads {
+        wrench: Wrench::default(),
+        contacts: vec![
+            contact(ContactPoint::Wheel(0), 12_000.0),
+            contact(ContactPoint::HardPoint(1), 4_000.0),
+        ],
+    };
+    assert_eq!(
+        gear().overloaded(&loads, 1.0),
+        None,
+        "no limits, nothing breaks"
+    );
+    let limited = gear().with_limits(ContactLimits {
+        wheel: 10_000.0,
+        skid: 5_000.0,
+        hard_point: 5_000.0,
+    });
+    assert_eq!(
+        limited.overloaded(&loads, 1.0),
+        Some(ContactPoint::Wheel(0))
+    );
+    assert_eq!(limited.overloaded(&loads, 1.3), None);
+    let scraping = GroundLoads {
+        contacts: vec![contact(ContactPoint::HardPoint(1), 6_000.0)],
+        ..loads
+    };
+    assert_eq!(
+        limited.overloaded(&scraping, 1.0),
+        Some(ContactPoint::HardPoint(1))
+    );
+}

@@ -20,7 +20,9 @@ use escadrille_fdm::aero::surface::{
 };
 use escadrille_fdm::aero::system::{LiftingSystem, MutualInduction};
 use escadrille_fdm::aircraft::{Aircraft, ControlTravel, Downwash, Propulsion};
-use escadrille_fdm::ground::{GroundError, HardPoint, Rubbing, Skid, Spring, Undercarriage, Wheel};
+use escadrille_fdm::ground::{
+    ContactLimits, GroundError, HardPoint, Rubbing, Skid, Spring, Undercarriage, Wheel,
+};
 use escadrille_fdm::propulsion::engine::{AltitudeLaw, EngineError, EnginePoint, InlineEngine};
 use escadrille_fdm::propulsion::propeller::{Propeller, PropellerGeometry};
 use escadrille_fdm::rigid_body::{Inertia, MassProperties, Rotor};
@@ -367,6 +369,10 @@ pub struct UndercarriageSpec {
     pub hard_point_damping_n_s_per_m: f64,
     pub hard_point_friction: f64,
     pub hard_points: Vec<HardPointSpec>,
+    /// Loads at which a wheel's leg, the skid and a part of the airframe give way.
+    pub wheel_limit_n: f64,
+    pub skid_limit_n: f64,
+    pub hard_point_limit_n: f64,
 }
 
 impl UndercarriageSpec {
@@ -408,6 +414,13 @@ impl UndercarriageSpec {
             vec![skid],
             hard_points,
         )
+        .map(|u| {
+            u.with_limits(ContactLimits {
+                wheel: self.wheel_limit_n,
+                skid: self.skid_limit_n,
+                hard_point: self.hard_point_limit_n,
+            })
+        })
     }
 }
 

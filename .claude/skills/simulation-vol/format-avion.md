@@ -140,6 +140,9 @@ Aircraft(
         hard_points: [                                    // ce qui ne devrait pas toucher : saumons, capot, dérive…
             (name: "saumon", position_m: (0.0, 0.0, 0.0), mirrored: true), // C:
         ],
+        wheel_limit_n: 0.0,                               // E: charge où une jambe cède
+        skid_limit_n: 0.0,                                // E: où la béquille cède
+        hard_point_limit_n: 0.0,                          // E: où un point de structure cède
     )),
 )
 ```

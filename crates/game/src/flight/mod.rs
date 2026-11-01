@@ -22,6 +22,7 @@ use escadrille_data::aircraft::{Loading, load_aircraft};
 use escadrille_data::model::contract;
 use escadrille_data::scenario::load_scenario;
 use escadrille_fdm::aircraft::PilotControls;
+use escadrille_fdm::rigid_body::RigidBodyState;
 
 use crate::ASSETS_DIR;
 use crate::dev::capture::CaptureHold;
@@ -31,8 +32,18 @@ use simulation::{Player, Simulated};
 /// Rate of the simulation, Hz: the step of ADR 0005.
 pub const STEP_HZ: f64 = 120.0;
 
-/// The scenario `just run` flies (plan `m2-vol-essai.md`).
+/// The test flight's scenario, in the air (plan `m2-vol-essai.md`).
 pub const TEST_FLIGHT: &str = "vol-essai";
+/// The scenario `just run` flies: on the field (plan `m2-train-sol.md`, decision 1).
+pub const ON_THE_FIELD: &str = "terrain";
+/// The final approach, to practise landings.
+pub const FINAL_APPROACH: &str = "finale";
+/// The starts the player chooses from, with their names.
+pub const STARTS: [(&str, &str); 3] = [
+    (ON_THE_FIELD, "au sol"),
+    (FINAL_APPROACH, "en finale"),
+    (TEST_FLIGHT, "en vol"),
+];
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub enum FlightSet {
@@ -72,6 +83,27 @@ pub struct RestartFlight;
 #[derive(Resource, Debug, Clone, Copy, PartialEq, Default)]
 pub struct StartCommands(pub PilotControls);
 
+/// One of the starts of [`STARTS`].
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct FlightStart {
+    pub label: &'static str,
+    pub state: RigidBodyState,
+    pub controls: PilotControls,
+}
+
+/// The starts the player chooses from, and the chosen one: the next start takes it.
+#[derive(Resource, Debug, Clone, PartialEq, Default)]
+pub struct Starts {
+    pub list: Vec<FlightStart>,
+    pub chosen: usize,
+}
+
+impl Starts {
+    pub fn current(&self) -> Option<&FlightStart> {
+        self.list.get(self.chosen)
+    }
+}
+
 /// Identifier of an aircraft's type (directory under `assets/aircraft`).
 #[derive(Component, Debug, Clone, PartialEq, Eq)]
 pub struct AircraftId(pub String);
@@ -83,6 +115,8 @@ impl Plugin for FlightPlugin {
         app.insert_resource(Time::<Fixed>::from_hz(STEP_HZ))
             .init_resource::<PilotInput>()
             .init_resource::<StartCommands>()
+            .init_resource::<Starts>()
+            .init_resource::<simulation::LandingTolerance>()
             .init_resource::<simulation::RenderOrigin>()
             .add_message::<RestartFlight>()
             .configure_sets(FixedUpdate, (FlightSet::Command, FlightSet::Step).chain())
@@ -96,10 +130,12 @@ impl Plugin for FlightPlugin {
             .add_systems(
                 Update,
                 (
+                    simulation::choose_start,
                     simulation::restart,
                     simulation::place,
                     animation::move_controls,
                     animation::turn_propeller,
+                    animation::move_undercarriage,
                 )
                     .chain()
                     .in_set(FlightSet::Place),
@@ -107,9 +143,9 @@ impl Plugin for FlightPlugin {
     }
 }
 
-/// Spawns the player's aircraft of a scenario, its model under it, and sets the pilot's
-/// commands to those holding its start. Returns the aircraft's entity and its centre of
-/// gravity from the datum (body axes, m).
+/// Spawns the player's aircraft of a scenario, its model under it, sets the pilot's
+/// commands to those holding its start, and offers the other [`STARTS`]. Returns the
+/// aircraft's entity and its centre of gravity from the datum (body axes, m).
 pub fn spawn_scenario(
     name: &str,
     commands: &mut Commands,
@@ -124,10 +160,23 @@ pub fn spawn_scenario(
     })?;
     let cg = built.summary.cg_from_datum;
     let contract = contract(&data)?;
-    let extremities = simulation::extremities(&data, &contract, cg)?;
     let start = scenario.initial_state();
     commands.insert_resource(PilotInput::holding(scenario.commands()));
     commands.insert_resource(StartCommands(scenario.commands()));
+    let mut list = Vec::new();
+    for (file, label) in STARTS {
+        let other = load_scenario(assets, file)?;
+        list.push(FlightStart {
+            label,
+            state: other.initial_state(),
+            controls: other.commands(),
+        });
+    }
+    let chosen = STARTS
+        .iter()
+        .position(|(file, _)| *file == name)
+        .unwrap_or(0);
+    commands.insert_resource(Starts { list, chosen });
 
     hold.0 += 1;
     let model = asset_server.load(
@@ -138,6 +187,11 @@ pub fn spawn_scenario(
         .iter()
         .map(|h| (h.node.clone(), h.control))
         .collect();
+    let wheels = built
+        .aircraft
+        .undercarriage()
+        .and_then(|gear| gear.wheels().first())
+        .map(|wheel| (wheel.radius, wheel.guide));
     let entity = commands
         .spawn((
             Name::new(data.file.name.clone()),
@@ -149,7 +203,6 @@ pub fn spawn_scenario(
                 previous: start,
                 state: start,
                 controls: scenario.commands(),
-                extremities,
                 crashed: None,
             },
             Transform::default(),
@@ -161,7 +214,7 @@ pub fn spawn_scenario(
                     Name::new("Model"),
                     WorldAssetRoot(model),
                     model_transform(cg),
-                    animation::ModelNodes { controls },
+                    animation::ModelNodes { controls, wheels },
                 ))
                 .observe(animation::prepare_model);
         })

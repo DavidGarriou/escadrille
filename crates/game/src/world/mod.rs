@@ -23,7 +23,7 @@ pub struct WorldPlugin;
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ClearColor(scenes::SKY_COLOR))
-            .add_systems(OnEnter(AppState::Vol), vol_essai::spawn)
+            .add_systems(OnEnter(AppState::Vol), vol_essai::spawn_on_the_field)
             .add_systems(
                 OnEnter(AppState::Capture),
                 (

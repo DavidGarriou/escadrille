@@ -173,6 +173,14 @@ pub struct HardPoint {
     pub friction: f64,
 }
 
+/// Loads beyond which a part gives way, N.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct ContactLimits {
+    pub wheel: f64,
+    pub skid: f64,
+    pub hard_point: f64,
+}
+
 /// Why an undercarriage was rejected.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GroundError {
@@ -228,6 +236,8 @@ pub struct Undercarriage {
     wheels: Vec<Wheel>,
     skids: Vec<Skid>,
     hard_points: Vec<HardPoint>,
+    /// Without limits, nothing gives way.
+    limits: Option<ContactLimits>,
     /// Distance from the centre of gravity beyond which no point reaches, m.
     reach: f64,
 }
@@ -305,8 +315,34 @@ impl Undercarriage {
             wheels,
             skids,
             hard_points,
+            limits: None,
             reach,
         })
+    }
+
+    /// The same undercarriage, with the loads at which its parts give way.
+    pub fn with_limits(self, limits: ContactLimits) -> Self {
+        Self {
+            limits: Some(limits),
+            ..self
+        }
+    }
+
+    /// The first point loaded beyond its limit times `tolerance`.
+    pub fn overloaded(&self, loads: &GroundLoads, tolerance: f64) -> Option<ContactPoint> {
+        let limits = self.limits?;
+        loads
+            .contacts
+            .iter()
+            .map(|c| (c.point, c.load))
+            .find_map(|(point, load)| {
+                let limit = match point {
+                    ContactPoint::Wheel(_) => limits.wheel,
+                    ContactPoint::Skid(_) => limits.skid,
+                    ContactPoint::HardPoint(_) => limits.hard_point,
+                };
+                (load > limit * tolerance).then_some(point)
+            })
     }
 
     pub fn wheels(&self) -> &[Wheel] {
