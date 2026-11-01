@@ -117,6 +117,7 @@ Aircraft(
             guide: (0.0, 0.0, -1.0),                      // C: direction de montée de l'essieu sous la charge, normalisée au chargement ; elle doit monter
             spring: (                                     // pneu en série avec le sandow
                 contact_stiffness_n_per_m: 0.0,           // E: pneu
+                contact_travel: Mm(0.0),                  // E: écrasement du pneu avant la jante
                 preload_n: 0.0,                           // E: charge à partir de laquelle le sandow cède
                 stiffness_n_per_m: 0.0,                   // E: sandow
                 travel: Mm(0.0),                          // S: / E: course de l'essieu

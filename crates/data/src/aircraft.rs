@@ -296,6 +296,8 @@ pub struct DimensionsSpec {
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub struct SpringSpec {
     pub contact_stiffness_n_per_m: f64,
+    /// How far the tyre or shoe gives before its stop.
+    pub contact_travel: Length,
     pub preload_n: f64,
     pub stiffness_n_per_m: f64,
     pub travel: Length,
@@ -311,6 +313,7 @@ impl SpringSpec {
         let square = cosine * cosine;
         Spring {
             contact_stiffness: self.contact_stiffness_n_per_m,
+            contact_travel: self.contact_travel.si(),
             preload: self.preload_n / cosine,
             stiffness: self.stiffness_n_per_m / square,
             travel: self.travel.si() * cosine,

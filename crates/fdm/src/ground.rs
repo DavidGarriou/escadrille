@@ -41,41 +41,75 @@ fn saturate(ratio: f64) -> f64 {
 }
 
 /// What touches the ground (a tyre, a shoe) in series with rubber cord. The cord is wound
-/// with a preload: it gives only beyond that load, up to the end of its travel, where a
-/// stop takes over.
+/// with a preload: it gives only beyond that load, up to the end of its travel. Each ends
+/// on a stop: the tyre on its rim, the axle at the end of its slides.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Spring {
     /// Stiffness of what touches the ground, N/m.
     pub contact_stiffness: f64,
+    /// How far it gives before its stop, m.
+    pub contact_travel: f64,
     /// Load at which the cord starts to give, N.
     pub preload: f64,
     /// Stiffness of the cord, N/m.
     pub stiffness: f64,
     /// Travel of the cord, m.
     pub travel: f64,
-    /// Stiffness of the stop at the end of the travel, N/m.
+    /// Stiffness of the stops, N/m.
     pub stop_stiffness: f64,
-    /// Damping of the compression, N·s/m. Rubber gives most of its energy back.
+    /// Damping of the compression, N·s/m.
     pub damping: f64,
 }
 
 impl Spring {
-    /// Load and travel of the cord (N, m) at a total compression (m), damping excluded.
+    /// Load at which the contact reaches its stop, N.
+    fn contact_stop(&self) -> f64 {
+        self.contact_stiffness * self.contact_travel
+    }
+
+    /// Load at which the cord reaches its stop, N.
+    fn cord_stop(&self) -> f64 {
+        self.preload + self.stiffness * self.travel
+    }
+
+    /// Travel of the cord under a load, m.
+    fn cord_travel(&self, load: f64) -> f64 {
+        if load <= self.preload {
+            0.0
+        } else if load <= self.cord_stop() {
+            (load - self.preload) / self.stiffness
+        } else {
+            self.travel + (load - self.cord_stop()) / self.stop_stiffness
+        }
+    }
+
+    /// Total compression under a load, m.
+    fn compression(&self, load: f64) -> f64 {
+        let contact = if load <= self.contact_stop() {
+            load / self.contact_stiffness
+        } else {
+            self.contact_travel + (load - self.contact_stop()) / self.stop_stiffness
+        };
+        contact + self.cord_travel(load)
+    }
+
+    /// Load and travel of the cord (N, m) at a total compression (m), damping excluded:
+    /// the inverse of [`Self::compression`], straight between its knees.
     pub fn load(&self, compression: f64) -> (f64, f64) {
-        let contact = 1.0 / self.contact_stiffness;
-        let cord = 1.0 / self.stiffness;
-        if compression <= self.preload * contact {
-            return (compression / contact, 0.0);
+        let mut knees = [self.preload, self.contact_stop(), self.cord_stop()];
+        knees.sort_by(f64::total_cmp);
+        let (mut low, mut at) = (0.0, 0.0);
+        for knee in knees {
+            let next = self.compression(knee);
+            if compression <= next && next > at {
+                let load = low + (compression - at) / (next - at) * (knee - low);
+                return (load, self.cord_travel(load));
+            }
+            (low, at) = (knee, next);
         }
-        let stop_load = self.preload + self.stiffness * self.travel;
-        let stop_compression = stop_load * contact + self.travel;
-        if compression <= stop_compression {
-            let load = (compression + self.preload * cord) / (contact + cord);
-            return (load, (load - self.preload) * cord);
-        }
-        let stop = 1.0 / self.stop_stiffness;
-        let load = stop_load + (compression - stop_compression) / (contact + stop);
-        (load, self.travel + (load - stop_load) * stop)
+        // Past them all: the two stops in series.
+        let load = low + (compression - at) * 0.5 * self.stop_stiffness;
+        (load, self.cord_travel(load))
     }
 
     /// Normal force on the ground from the spring's load at a compression and a sink rate
@@ -88,6 +122,7 @@ impl Spring {
     fn is_valid(&self) -> bool {
         [
             self.contact_stiffness,
+            self.contact_travel,
             self.stiffness,
             self.travel,
             self.stop_stiffness,

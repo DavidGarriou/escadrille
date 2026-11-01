@@ -108,7 +108,7 @@ Implémentation : `crates/fdm/src/propulsion/engine.rs`.
 
 Composant `escadrille_fdm::ground`, ADR 0008. Effort de pénalité par point de contact, intégré par le RK4 du vol, sans contrainte ni impulsion.
 
-- **Roue** : sphère autour de l'axe. Pneu en série avec le sandow précontraint, butée en fin de course ; amortissement qui entre sur 2 cm de compression ; le sol ne fait que pousser.
+- **Roue** : sphère autour de l'axe. Pneu en série avec le sandow précontraint, chacun avec sa butée (la jante, le bout des glissières) ; amortissement qui entre sur 2 cm de compression ; le sol ne fait que pousser.
 - **Glissière inclinée** d'un angle θ sur la verticale : une charge N tire le sandow de N cos θ, et une montée x le déplace de x / cos θ. Vu du sol, raideurs et amortissement valent k / cos² θ, et la course S cos θ.
 - **Frottement** (`Rubbing`) : résistance le long ; en travers, μ N sat(tan α / tan α₀), sat(r) = r / √(1 + r²). Sous 0,02 m/s, il s'annule linéairement : aucune division par la vitesse, et une dérive lente à l'arrêt.
 - **Stabilité de route** : les roues sont devant le centre de gravité (déstabilisantes), la béquille loin derrière. L'avion va droit si C_béquille · b > C_roues · a, C étant la pente de la force latérale. Un sabot étroit trace un sillon et résiste de côté plus que dans l'axe : c'est lui qui tient l'avion droit à basse vitesse, queue basse. Queue haute, seuls le gouvernail et le pied le tiennent.

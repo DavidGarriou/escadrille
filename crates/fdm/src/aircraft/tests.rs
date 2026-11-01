@@ -913,6 +913,7 @@ fn a_left_hand_propeller_mirrors_the_lateral_loads() {
 fn gear() -> Undercarriage {
     let spring = Spring {
         contact_stiffness: 250_000.0,
+        contact_travel: 0.08,
         preload: 500.0,
         stiffness: 75_000.0,
         travel: 0.125,

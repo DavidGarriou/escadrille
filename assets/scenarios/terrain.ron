@@ -8,8 +8,8 @@ Scenario(
     heading: Deg(90.0),                  // C: east, as the test flight
     position_m: (0.0, -340.0),           // E: 60 m from the west end of a meadow of 800 m across the origin (plan, decision 2)
     start: Ground((
-        height: M(1.2811),               // C: fdm_lab, rest on the undercarriage
-        pitch: Rad(0.25992),             // C: fdm_lab, rest on the undercarriage
+        height: M(1.2871),               // C: fdm_lab, rest on the undercarriage
+        pitch: Rad(0.26181),             // C: fdm_lab, rest on the undercarriage
         rotor_speed: RadS(52.02),        // C: fdm_lab, idle at a standstill
         elevator: -0.071,                // C: fdm_lab, stick of the best climb at sea level
     )),

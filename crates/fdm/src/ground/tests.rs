@@ -17,6 +17,7 @@ const FLAT: StandardEnvironment = StandardEnvironment {
 
 const WHEEL_SPRING: Spring = Spring {
     contact_stiffness: 250_000.0,
+    contact_travel: 0.08,
     preload: 500.0,
     stiffness: 75_000.0,
     travel: 0.125,
@@ -26,6 +27,7 @@ const WHEEL_SPRING: Spring = Spring {
 
 const SKID_SPRING: Spring = Spring {
     contact_stiffness: 100_000.0,
+    contact_travel: 0.1,
     preload: 300.0,
     stiffness: 20_000.0,
     travel: 0.10,
@@ -128,13 +130,45 @@ fn a_spring_is_continuous_and_stiffens_at_its_stop() {
         (last_load, last_travel) = (load, travel);
     }
     assert_eq!(s.load(0.5 * s.preload / s.contact_stiffness).1, 0.0);
-    // At the end of the travel: the cord's load, tyre and cord in series.
+    // At the end of the cord's travel, tyre and cord in series, before the rim's load.
     let stop_load = s.preload + s.stiffness * s.travel;
+    assert!(stop_load < s.contact_stiffness * s.contact_travel);
     let (load, travel) = s.load(stop_load / s.contact_stiffness + s.travel);
     assert!((load - stop_load).abs() < 1e-6, "stop load {load}");
     assert!((travel - s.travel).abs() < 1e-9, "stop travel {travel}");
     let beyond = s.load(stop_load / s.contact_stiffness + s.travel + 0.01).0 - load;
     assert!(beyond > 2.0 * 0.01 * s.stiffness, "stop slope {beyond}");
+}
+
+#[test]
+fn a_tyre_on_its_rim_stiffens_before_the_cord_ends() {
+    // A soft tyre that bottoms long before the cord's stop.
+    let s = Spring {
+        contact_travel: 0.02,
+        ..WHEEL_SPRING
+    };
+    let rim = s.contact_stiffness * s.contact_travel;
+    let at_rim = s.contact_travel + (rim - s.preload) / s.stiffness;
+    assert!((s.load(at_rim).0 - rim).abs() < 1e-6);
+    let (before, after) = (
+        s.load(at_rim).0 - s.load(at_rim - 0.001).0,
+        s.load(at_rim + 0.001).0 - s.load(at_rim).0,
+    );
+    assert!(
+        after > before,
+        "the cord alone is stiffer: {before} {after}"
+    );
+    assert!(after < 1.05 * s.stiffness * 0.001, "{after}");
+}
+
+#[test]
+fn a_spring_without_preload_starts_from_the_contact() {
+    let s = Spring {
+        preload: 0.0,
+        ..WHEEL_SPRING
+    };
+    let series = 1.0 / (1.0 / s.contact_stiffness + 1.0 / s.stiffness);
+    assert!((s.load(0.01).0 - series * 0.01).abs() < 1e-6);
 }
 
 #[test]

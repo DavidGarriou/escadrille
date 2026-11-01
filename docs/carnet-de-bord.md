@@ -2536,3 +2536,7 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Nouvelle scène `terrain-roues`, vue de l'avant et du côté, qui montre le contact au sol.
 - **R** Captures **regardées** : le sol se lit depuis le poste, les roues reposent sur l'herbe, le pré a la teinte de la plaine sous la brume. L'herbe est éclaircie ensuite pour que le pré ressorte depuis la finale.
 - **⚠** Le voile du disque d'hélice a un bord net sur le terrain : relevé par la revue, sans lien avec le pré. Noté pour plus tard.
+- **A** Valeurs de la treizième passe dans `aircraft.ron` : pneu de 220 kN/m, jante à 55 mm, roulement 0,06, sabot 0,4, course de 125 mm, limite de béquille 7,4 kN. `Spring` gagne la butée de jante : à 3 m/s, le pneu va à fond avant le sandow.
+- **D** Le sandow de S106 est calculé pour un axe vertical. Je garde ses **charges vues de la roue** (1,7 kN de précontrainte, 24,8 kN en butée), ramenées le long des glissières du SPAD, inclinées de 46° : 1,17 kN et 127 kN/m. Copier la raideur du cordon telle quelle aurait donné 35 kN en butée, loin au-delà de toute limite.
+- **D** Limite de 20 kN par roue, entre les 14 kN de la règle française et les 24,8 kN de S106 : 14 kN casseraient le train dès 2,3 m/s, un posé seulement ferme selon les mêmes sources.
+- **R** Résultats (`fdm_lab sol`) : au repos, 6 mm d'essieu, le chiffre de l'historien ; 5 kN par roue à 0,5 m/s, 11,5 kN à 2 m/s, 18 kN à 3 m/s, 25 kN à 4 m/s, essieu presque en butée. Arrêt de 84 km/h en 184 m.
