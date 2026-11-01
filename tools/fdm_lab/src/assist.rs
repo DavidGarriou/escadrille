@@ -24,9 +24,11 @@
 
 use escadrille_data::assist::STALL_MARGIN;
 use escadrille_fdm::aero::surface::ControlDeflections;
-use escadrille_fdm::aircraft::Aircraft;
+use escadrille_fdm::aircraft::{Aircraft, PilotControls};
 use escadrille_fdm::constants::{G0, RHO0};
 use escadrille_fdm::environment::Environment;
+use escadrille_fdm::rigid_body::RigidBodyState;
+use glam::DVec3;
 use nalgebra::{DMatrix, DVector, Matrix3, Vector3};
 
 use crate::modes::{LATERAL, LONGITUDINAL, Linear, STATES, derivative, linearise_secant};
@@ -35,6 +37,13 @@ use crate::trim::{Flight, LEVEL_AT_SPEED, PATH_AT_SPEED, Trim, solve_robust};
 
 /// Equivalent airspeeds of the rows, km/h: from just above the stall (85 km/h at idle) to
 /// a steep dive.
+/// Natural frequency (rad/s) and damping of the heading hold on the ground (E:: what a
+/// pilot's feet do on the rudder bar, no faster than the rudder's ramp on the gamepad).
+pub const GROUND_YAW_RESPONSE: (f64, f64) = (1.5, 1.0);
+/// Rolling speed at which the rudder is measured, m/s, full throttle: the start of a
+/// take-off, the moment the heading hold has most to do.
+const GROUND_ROLL_SPEED: f64 = 15.0;
+
 pub const SPEEDS_KMH: [f64; 10] = [
     90.0, 100.0, 110.0, 120.0, 140.0, 160.0, 180.0, 200.0, 230.0, 260.0,
 ];
@@ -106,6 +115,9 @@ impl Row {
 #[derive(Debug, Clone, PartialEq)]
 pub struct AssistGains {
     pub stall_alpha: f64,
+    /// Heading hold on the ground: per radian of heading, per rad/s of yaw rate and per
+    /// rad·s of the heading's integral, × Pa.
+    pub ground_yaw: [f64; 3],
     /// Speeds and throttles of the stall sweeps, for the file.
     pub stall_note: String,
     pub rows: Vec<Row>,
@@ -541,8 +553,55 @@ pub fn assist_gains(aircraft: &Aircraft, env: &dyn Environment) -> Result<Assist
     Ok(AssistGains {
         stall_alpha,
         stall_note: notes.join(", "),
+        ground_yaw: ground_yaw(aircraft, env),
         rows,
     })
+}
+
+/// Heading hold on the ground, from the rudder's yawing moment in the slipstream at the
+/// start of a take-off, over the dynamic pressure at the rudder: free stream plus T / A
+/// (momentum theory). The ground's own moments are left out: the hold has the yaw inertia
+/// alone to answer, and the skid only helps it.
+fn ground_yaw(aircraft: &Aircraft, env: &dyn Environment) -> [f64; 3] {
+    const STEP: f64 = 1.0 / 240.0;
+    const DEFLECTION: f64 = 0.3;
+    let full = PilotControls {
+        throttle: 1.0,
+        ..PilotControls::default()
+    };
+    let mut state = RigidBodyState {
+        velocity_body: DVec3::X * GROUND_ROLL_SPEED,
+        rotor_speed: 150.0,
+        ..RigidBodyState::default()
+    };
+    // The engine settles at this speed, the airframe held.
+    for _ in 0..(8.0 / STEP) as u32 {
+        let next = aircraft.step(&state, &full, env, STEP);
+        state.rotor_speed = next.rotor_speed;
+        state.aux = next.aux;
+    }
+    let yawing = |yaw: f64| {
+        let commands = PilotControls { yaw, ..full };
+        aircraft.evaluate(&state, &commands, env)
+    };
+    let (right, left) = (yawing(DEFLECTION), yawing(-DEFLECTION));
+    let moment = (right.loads.wrench.moment.z - left.loads.wrench.moment.z) / (2.0 * DEFLECTION);
+    let geometry = aircraft
+        .propulsion()
+        .map_or(1.0, |p| p.propeller.geometry().diameter);
+    let disc = std::f64::consts::FRAC_PI_4 * geometry * geometry;
+    let thrust = right.propeller.as_ref().map_or(0.0, |p| p.thrust);
+    let pressure = 0.5 * right.density * GROUND_ROLL_SPEED * GROUND_ROLL_SPEED + thrust / disc;
+    let inertia = aircraft.mass().airframe_inertia().z_axis.z;
+    let (omega, zeta) = GROUND_YAW_RESPONSE;
+    let per_pressure = inertia * pressure / moment;
+    // The integral meets the propeller's steady torque, as a pilot's foot held down.
+    let heading = omega * omega * per_pressure;
+    [
+        heading,
+        2.0 * zeta * omega * per_pressure,
+        INTEGRAL_FRACTION * omega * heading,
+    ]
 }
 
 /// A number with six significant figures.
@@ -559,11 +618,16 @@ pub fn to_ron(id: &str, gains: &AssistGains) -> String {
     let mut text = format!(
         "//! C: computed by `fdm_lab assist {id}` from the linearised flight model (plan docs/plans/m2-aides-pilotage.md, step 1, and tools/fdm_lab/src/assist.rs): do not edit, run the command again when the model changes (a test of fdm_lab checks the file)\n\
          //! C: each row at its equivalent airspeed, trimmed at sea level as its comment says; gains multiplied by the row's dynamic pressure, Pa (schema: crates/data/src/assist.rs)\n\
-         (\n    aircraft: \"{id}\",\n    stall_alpha: Rad({}), // C: incidence of the lowest steady speed: {}\n    rows: [\n",
+         (\n    aircraft: \"{id}\",\n    stall_alpha: Rad({}), // C: incidence of the lowest steady speed: {}\n",
         number(gains.stall_alpha),
         gains.stall_note,
     );
     let list = |v: &[f64]| v.iter().map(|x| number(*x)).collect::<Vec<_>>().join(", ");
+    text.push_str(&format!(
+        "    ground_yaw: ({}), // C: heading hold, the rudder's moment in the slipstream at {:.0} km/h, full throttle\n    rows: [\n",
+        list(&gains.ground_yaw),
+        GROUND_ROLL_SPEED * 3.6,
+    ));
     for r in &gains.rows {
         text.push_str(&format!(
             "        // {}\n        (speed: Kmh({}), load_per_alpha: {}, zero_load_alpha: Rad({}), elevator_at_zero_load: {}, elevator_per_alpha: {}, elevator_per_pitch_rate: {}, rudder_per_roll_rate: {}, rudder_per_aileron: {}, aileron_per_roll_rate: {}, roll: ({}), pitch: ({}), yaw: ({})),\n",

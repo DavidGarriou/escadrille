@@ -62,6 +62,10 @@ pub struct AssistFile {
     /// Incidence of the airframe's maximum lift in steady flight, the lower of idle and
     /// full throttle.
     pub stall_alpha: Angle,
+    /// Heading hold on the ground: rudder command per radian of heading, per rad/s of yaw
+    /// rate and per rad·s of the heading's integral, × Pa of the dynamic pressure at the
+    /// rudder, slipstream included.
+    pub ground_yaw: [f64; 3],
     /// From the lowest speed to the highest.
     pub rows: Vec<AssistRow>,
 }
@@ -96,9 +100,11 @@ pub fn load_assist_gains(assets: &Path, id: &str) -> Result<Option<AssistFile>, 
         .windows(2)
         .all(|w| w[0].speed.si() < w[1].speed.si());
     let alpha = file.stall_alpha.si();
+    let ground = file.ground_yaw.iter().all(|k| k.is_finite() && *k > 0.0);
     if file.aircraft != id
         || file.rows.len() < 2
         || !finite
+        || !ground
         || !increasing
         || !(0.0..0.6).contains(&alpha)
         || file.rows.iter().any(|r| r.load_per_alpha <= 0.0)
@@ -107,7 +113,8 @@ pub fn load_assist_gains(assets: &Path, id: &str) -> Result<Option<AssistFile>, 
             origin: path.display().to_string(),
             message: format!(
                 "assist gains of {id}: at least two rows of finite values, speeds \
-                 increasing, positive load per incidence, stall incidence from 0 to 0.6 rad"
+                 increasing, positive load per incidence and ground gains, stall incidence \
+                 from 0 to 0.6 rad"
             ),
         });
     }

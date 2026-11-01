@@ -15,18 +15,23 @@
 //!   a load factor (y, from 0 to [`INSTRUCTOR_LOAD`] around level flight), the aileron
 //!   and the elevator give them, within the guard's limit; coordinated. It also keeps
 //!   the climb within what the speed allows ([`CLIMB_LIMIT`]).
+//! - **On the ground** (plan `m2-train-sol.md`, step 6), none of that holds: the aeroplane
+//!   stands past the guard's incidence, and sideslip means nothing at rest. They give
+//!   way to the **heading hold**, on the rudder alone; the pilot's rudder adds to it and
+//!   moves the heading held. With the throttle open, the instructor raises the tail and
+//!   flies the aeroplane off.
 
 use std::f64::consts::{PI, TAU};
 
 use bevy::math::{DVec3, EulerRot};
 use escadrille_data::assist::AssistFile;
 pub use escadrille_data::assist::STALL_MARGIN;
-use escadrille_fdm::aircraft::PilotControls;
+use escadrille_fdm::aircraft::{Aircraft, PilotControls};
 use escadrille_fdm::constants::{G0, RHO0};
 use escadrille_fdm::environment::Environment;
 use escadrille_fdm::rigid_body::RigidBodyState;
 
-use super::FlightAssist;
+use super::{FlightAssist, RealismSettings};
 use crate::flight::PilotInput;
 
 /// Largest bank the instructor gives, rad (plan `m2-aides-pilotage.md`).
@@ -57,6 +62,22 @@ const PEDAL_PRESSED: f64 = 0.05;
 /// Below this share of the lowest row's dynamic pressure, the gains stop growing: in a
 /// tail slide they would ask for full travel at the slightest error anyway.
 const LOWEST_PRESSURE_SHARE: f64 = 0.5;
+/// How long after the last contact the aeroplane still counts as on the ground, s: a
+/// bounce does not hand it back to the flight assists.
+pub const BOUNCE_S: f64 = 0.5;
+/// Lowest dynamic pressure at the rudder the heading hold divides by, Pa: at rest, engine
+/// at idle, it would ask for full travel at the slightest error.
+const LOWEST_RUDDER_PRESSURE: f64 = 100.0;
+/// Throttle from which the instructor takes the aeroplane off.
+pub const TAKE_OFF_THROTTLE: f64 = 0.5;
+/// Attitude on the wheels, tail up, and of the first climb, rad (as `fdm_lab sol`).
+const TAIL_UP_PITCH: f64 = 2.0 * PI / 180.0;
+const CLIMB_PITCH: f64 = 7.0 * PI / 180.0;
+/// The tail counts as up this close to its attitude, rad.
+const TAIL_UP_MARGIN: f64 = 2.0 * PI / 180.0;
+/// Load factor at the stall's incidence at which the instructor pulls: 1.2 times the
+/// stall speed.
+const ROTATION_LOAD: f64 = 1.44;
 
 /// What the assists read of the flight.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -74,6 +95,7 @@ pub struct Measured {
     pub flight_path: f64,
     /// Roll, pitch and yaw rates (p, q, r), rad/s.
     pub rates: DVec3,
+    pub heading: f64,
 }
 
 impl Measured {
@@ -82,7 +104,7 @@ impl Measured {
         let air = state.velocity_body - wind;
         let airspeed = air.length().max(1e-3);
         let density = env.atmosphere(state.position_ned).density;
-        let (_, pitch, bank) = state.attitude.to_euler(EulerRot::ZYX);
+        let (heading, pitch, bank) = state.attitude.to_euler(EulerRot::ZYX);
         let ground = state.attitude * state.velocity_body;
         Self {
             airspeed,
@@ -95,6 +117,7 @@ impl Measured {
                 .clamp(-1.0, 1.0)
                 .asin(),
             rates: state.angular_velocity_body,
+            heading,
         }
     }
 
@@ -175,6 +198,9 @@ impl Gains {
 #[derive(Debug, Clone, PartialEq)]
 pub struct AssistTable {
     pub stall_alpha: f64,
+    /// Rudder per radian of heading, per rad/s of yaw rate and per rad·s of the heading's
+    /// integral on the ground, × Pa.
+    pub ground_yaw: [f64; 3],
     rows: Vec<(f64, Gains)>,
 }
 
@@ -204,6 +230,7 @@ impl From<&AssistFile> for AssistTable {
             .collect();
         Self {
             stall_alpha: file.stall_alpha.si(),
+            ground_yaw: file.ground_yaw,
             rows,
         }
     }
@@ -238,6 +265,37 @@ fn wrap(angle: f64) -> f64 {
     (angle + PI).rem_euclid(TAU) - PI
 }
 
+/// What the assists read near the ground.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Ground {
+    /// A wheel or the skid carries something.
+    pub touching: bool,
+    /// Dynamic pressure at the rudder, Pa: free stream plus the slipstream's T / A.
+    pub rudder_pressure: f64,
+}
+
+impl Ground {
+    /// None away from the ground, where nothing here is worth a look at the propeller.
+    pub fn of(aircraft: &Aircraft, state: &RigidBodyState, env: &dyn Environment) -> Option<Self> {
+        let gear = aircraft.undercarriage()?;
+        let touching = gear.loads(state, env).on_undercarriage();
+        if !touching {
+            return None;
+        }
+        let d = aircraft.evaluate(state, &PilotControls::default(), env);
+        let diameter = aircraft
+            .propulsion()
+            .map_or(1.0, |p| p.propeller.geometry().diameter);
+        let disc = PI * 0.25 * diameter * diameter;
+        let thrust = d.propeller.map_or(0.0, |p| p.thrust).max(0.0);
+        let speed = d.air_velocity.length();
+        Some(Self {
+            touching,
+            rudder_pressure: 0.5 * d.density * speed * speed + thrust / disc,
+        })
+    }
+}
+
 /// The assists' memory between steps: the integrals of their errors.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct AssistState {
@@ -251,9 +309,105 @@ pub struct AssistState {
     /// Integral of the incidence's error, rad·s: the instructor's, or the stall guard's
     /// while it holds.
     incidence: f64,
+    /// Seconds since a wheel or the skid last touched; none in flight.
+    since_contact: Option<f64>,
+    /// The last dynamic pressure at the rudder on the ground, Pa.
+    rudder_pressure: f64,
+    /// The heading held on the ground.
+    heading: Option<f64>,
+    /// Integral of its error, rad·s: the foot held down against the propeller's torque.
+    heading_integral: f64,
+    /// The instructor's take-off has raised the tail.
+    tail_up: bool,
 }
 
 impl AssistState {
+    /// The commands of the next step, in the air or on the ground.
+    pub fn next_commands(
+        &mut self,
+        settings: &RealismSettings,
+        input: &PilotInput,
+        m: &Measured,
+        ground: Option<Ground>,
+        table: &AssistTable,
+        dt: f64,
+    ) -> PilotControls {
+        self.since_contact = match ground {
+            Some(g) => {
+                self.rudder_pressure = g.rudder_pressure;
+                Some(0.0)
+            }
+            None => self.since_contact.map(|t| t + dt),
+        };
+        if self.since_contact.is_some_and(|t| t < BOUNCE_S) {
+            return self.on_the_ground(settings, input, m, table, dt);
+        }
+        (self.heading, self.heading_integral) = (None, 0.0);
+        self.tail_up = false;
+        self.commands(settings.flight_assist, input, m, table, dt)
+    }
+
+    /// On the wheels: the flight assists give way to the heading hold and, for the
+    /// instructor, to the take-off. Their integrals start again from nothing.
+    fn on_the_ground(
+        &mut self,
+        settings: &RealismSettings,
+        input: &PilotInput,
+        m: &Measured,
+        table: &AssistTable,
+        dt: f64,
+    ) -> PilotControls {
+        (self.sideslip, self.bank, self.incidence) = (0.0, 0.0, 0.0);
+        self.bank_target = None;
+        let pilot = input.controls;
+        let mut out = pilot;
+        if settings.ground_steering {
+            out.yaw = self.hold_heading(pilot.yaw, m, table, dt);
+        }
+        if settings.flight_assist == FlightAssist::Instructor && pilot.throttle >= TAKE_OFF_THROTTLE
+        {
+            let g = table.at(m.dynamic_pressure);
+            out.roll = self.bank(0.0, 0.0, m, &g, dt);
+            out.pitch = self.take_off(m, &g, table.stall_alpha);
+        } else {
+            self.tail_up = false;
+        }
+        out
+    }
+
+    /// The pilot's rudder, plus the one holding the heading he last left it at.
+    fn hold_heading(&mut self, pilot: f64, m: &Measured, table: &AssistTable, dt: f64) -> f64 {
+        let pressed = pilot.abs() > PEDAL_PRESSED;
+        if pressed {
+            self.heading = Some(m.heading);
+        }
+        let held = *self.heading.get_or_insert(m.heading);
+        let pressure = self.rudder_pressure.max(LOWEST_RUDDER_PRESSURE);
+        let [k_heading, k_rate, k_integral] = table.ground_yaw.map(|k| k / pressure);
+        let error = wrap(m.heading - held);
+        let free = pilot - k_heading * error - k_rate * m.rates.z;
+        if !pressed {
+            self.heading_integral = integrate(self.heading_integral, error, free, k_integral, dt);
+        }
+        (free - k_integral * self.heading_integral).clamp(-1.0, 1.0)
+    }
+
+    /// Stick forward until the tail is up, then the attitude that rolls on the wheels and,
+    /// from 1.2 times the stall speed, the one that climbs away.
+    fn take_off(&mut self, m: &Measured, g: &Gains, stall_alpha: f64) -> f64 {
+        self.tail_up |= m.pitch < TAIL_UP_PITCH + TAIL_UP_MARGIN;
+        if !self.tail_up {
+            return -1.0;
+        }
+        let pitch = if g.load_at(stall_alpha) >= ROTATION_LOAD {
+            CLIMB_PITCH
+        } else {
+            TAIL_UP_PITCH
+        };
+        let [k_pitch, k_rate, _] = g.pitch;
+        (-k_pitch * (m.pitch - pitch) - k_rate * m.rates.y).clamp(-1.0, 1.0)
+    }
+
     /// The commands of the next step: the pilot's, through the assist.
     pub fn commands(
         &mut self,
@@ -410,9 +564,10 @@ mod tests {
     use escadrille_fdm::aircraft::Aircraft;
 
     use super::*;
+
     use crate::ASSETS_DIR;
-    use crate::flight::STEP_HZ;
     use crate::flight::simulation::ENVIRONMENT;
+    use crate::flight::{ON_THE_FIELD, STEP_HZ};
     use crate::realism::Preset;
 
     struct Flight {
@@ -728,6 +883,150 @@ mod tests {
             "{} {}",
             veteran.max_abs_beta,
             ace.max_abs_beta
+        );
+    }
+
+    /// Largest error from the start's heading while a wheel or the skid touches, rad.
+    type Swing = f64;
+
+    /// Rolls from the field's start with the pilot's input given by `pilot` (time, state):
+    /// what the pilot gave and the flight model received at each step, the last state and
+    /// the swing on the ground.
+    fn roll(
+        preset: Preset,
+        seconds: f64,
+        pilot: impl Fn(f64, &Measured) -> PilotControls,
+    ) -> (
+        Vec<PilotControls>,
+        Vec<PilotControls>,
+        RigidBodyState,
+        Swing,
+    ) {
+        let assets = Path::new(ASSETS_DIR);
+        let s = load_scenario(assets, ON_THE_FIELD).unwrap();
+        let aircraft = load_aircraft(assets, &s.aircraft)
+            .unwrap()
+            .build(&Loading {
+                fuel_fraction: s.fuel_fraction,
+            })
+            .unwrap()
+            .aircraft;
+        let table = AssistTable::from(&load_assist_gains(assets, &s.aircraft).unwrap().unwrap());
+        let settings = preset.settings();
+        let mut memory = AssistState::default();
+        let mut state = s.initial_state();
+        let dt = 1.0 / STEP_HZ;
+        let (mut given, mut received) = (Vec::new(), Vec::new());
+        let start = Measured::of(&state, &ENVIRONMENT).heading;
+        let mut swing: Swing = 0.0;
+        for k in 0..(seconds * STEP_HZ) as usize {
+            let m = Measured::of(&state, &ENVIRONMENT);
+            let controls = pilot(k as f64 * dt, &m);
+            let input = PilotInput::holding(controls);
+            let ground = Ground::of(&aircraft, &state, &ENVIRONMENT);
+            if ground.is_some() {
+                swing = swing.max(wrap(m.heading - start).abs());
+            }
+            let c = memory.next_commands(&settings, &input, &m, ground, &table, dt);
+            state = aircraft.advance(&state, &c, &ENVIRONMENT, dt);
+            given.push(controls);
+            received.push(c);
+        }
+        (given, received, state, swing)
+    }
+
+    fn full_throttle(_: f64, _: &Measured) -> PilotControls {
+        PilotControls {
+            throttle: 1.0,
+            ..PilotControls::default()
+        }
+    }
+
+    /// Stick pushed while the tail is down, held off the wheels at flying speed.
+    fn pilot_take_off(_: f64, m: &Measured) -> PilotControls {
+        PilotControls {
+            throttle: 1.0,
+            pitch: if m.airspeed > 26.0 {
+                0.1
+            } else if m.pitch > 0.05 {
+                -1.0
+            } else {
+                -0.2
+            },
+            ..PilotControls::default()
+        }
+    }
+
+    #[test]
+    fn at_rest_the_stall_guard_leaves_the_stick_alone() {
+        let stick_back = |_: f64, _: &Measured| PilotControls {
+            pitch: 0.4,
+            ..PilotControls::default()
+        };
+        let (given, received, ..) = roll(Preset::Pilot, 2.0, stick_back);
+        let last = received.len() - 1;
+        assert_eq!(received[last].pitch, given[last].pitch);
+    }
+
+    #[test]
+    fn the_ace_gets_no_help_on_the_ground() {
+        let (given, received, ..) = roll(Preset::Ace, 4.0, pilot_take_off);
+        assert_eq!(given, received);
+    }
+
+    #[test]
+    fn the_veteran_keeps_his_own_feet_on_the_ground() {
+        let (given, received, ..) = roll(Preset::Veteran, 4.0, pilot_take_off);
+        assert!(
+            given.iter().zip(&received).all(|(g, r)| g.yaw == r.yaw),
+            "the rudder is the pilot's"
+        );
+    }
+
+    #[test]
+    fn the_pilot_preset_holds_the_heading_on_the_take_off_roll() {
+        let (.., state, swing) = roll(Preset::Pilot, 16.0, pilot_take_off);
+        assert!(
+            -state.position_ned.z > 5.0,
+            "it flies: {}",
+            state.position_ned
+        );
+        assert!(swing < 0.175, "{}°", swing.to_degrees());
+    }
+
+    #[test]
+    fn without_it_the_same_take_off_goes_round() {
+        let (.., swing) = roll(Preset::Ace, 16.0, pilot_take_off);
+        assert!(swing > 0.5, "{}°", swing.to_degrees());
+    }
+
+    #[test]
+    fn the_instructor_flies_off_on_the_throttle_alone() {
+        let (.., state, swing) = roll(Preset::Arcade, 20.0, full_throttle);
+        let m = Measured::of(&state, &ENVIRONMENT);
+        assert!(
+            -state.position_ned.z > 2.0,
+            "it flies: {}",
+            state.position_ned
+        );
+        assert!(swing < 0.175, "{}°", swing.to_degrees());
+        assert!(m.bank.abs() < 0.2, "{}", m.bank);
+    }
+
+    #[test]
+    fn the_pilot_s_rudder_moves_the_heading_held() {
+        let turning = |t: f64, _: &Measured| PilotControls {
+            throttle: 0.5,
+            pitch: if t < 6.0 { -1.0 } else { 0.0 },
+            yaw: if t < 6.0 { 1.0 } else { 0.0 },
+            ..PilotControls::default()
+        };
+        let (.., state, _) = roll(Preset::Pilot, 13.0, turning);
+        let m = Measured::of(&state, &ENVIRONMENT);
+        assert!(
+            wrap(m.heading - PI / 2.0) > 0.08,
+            "it turned right, and stayed there: {}",
+            m.heading
         );
     }
 

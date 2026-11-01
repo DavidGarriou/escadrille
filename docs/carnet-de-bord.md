@@ -2504,3 +2504,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **caméra** gardée au-dessus du sol, **télémétrie** de la charge sur les roues et la béquille.
 - **⚠** En relisant : `LandingTolerance` n'était créée que dans les applications de test. Le vrai jeu aurait planté au lancement, sans qu'aucun test le voie. Corrigé.
 - **A** `just check` passe, `just test` aussi (358 tests). Les valeurs de l'historien entreront dans `aircraft.ron` après la revue de l'aérodynamicien : elles viennent d'un amortisseur vertical, alors que la glissière du SPAD penche de 46°.
+- **A** Étape 6, aides au sol (`crates/game/src/realism/`) :
+  - au contact, et 0,5 s après pour les rebonds, la garde et la coordination se coupent ;
+  - **tenue de cap** en Arcade et Pilote, par le seul gouvernail : le palonnier du joueur s'y ajoute et déplace le cap tenu. Ses gains (`ground_yaw`) viennent de `fdm_lab assist`, du moment du gouvernail dans le souffle, sur la pression à la dérive (q + T/A) ;
+  - **envol en Arcade** : gaz au-delà de 50 %, l'instructeur lève la queue, puis tire à 1,2 V_s ;
+  - **`landing_rule`** dans `RealismSettings`, marqué non physique : Arcade × 2, Pilote × 1,3, Vétéran et As × 1 (`E:`, à régler à l'essai du joueur).
+- **⚠** La première tenue de cap, purement proportionnelle, laissait dériver l'avion de 12° à gauche contre le couple permanent de l'hélice. Un terme intégral, le pied qu'un pilote garde appuyé, ramène l'écart à 7°.
+- **R** Tests de fumée par préréglage, sans toucher au palonnier :
+  - **Pilote** : décolle, écart de cap au plus 7° ;
+  - **Arcade** : décolle aux seuls gaz, écart au plus 7° ;
+  - **As** : même roulage sans aide, l'avion part en cheval de bois (plus de 29°) ;
+  - **Vétéran** et **As** : le palonnier reste au joueur, et la garde n'intervient pas à l'arrêt.

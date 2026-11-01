@@ -3,6 +3,7 @@
 (
     aircraft: "spad7",
     stall_alpha: Rad(0.210000), // C: incidence of the lowest steady speed: idle 13.8° at 82 km/h, full throttle 12.0° at 76 km/h
+    ground_yaw: (1593.82, 2125.09, 597.681), // C: heading hold, the rudder's moment in the slipstream at 54 km/h, full throttle
     rows: [
         // level flight, throttle 0.27; incidence loop at 4.00 rad/s, closed-loop damping 0.84
         (speed: Kmh(90.0000), load_per_alpha: 0.0103027, zero_load_alpha: Rad(-0.0988369), elevator_at_zero_load: -0.213988, elevator_per_alpha: 0.770229, elevator_per_pitch_rate: 0.381121, rudder_per_roll_rate: 0.666882, rudder_per_aileron: 0.0774992, aileron_per_roll_rate: 1.32024, roll: (1571.57, 0.0, 1919.82), pitch: (455.033, 170.179, 899.900), yaw: (-3247.70, 1480.67, -2092.93)),

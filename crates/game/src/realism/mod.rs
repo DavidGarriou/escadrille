@@ -13,10 +13,10 @@ use bevy::prelude::*;
 use escadrille_data::assist::load_assist_gains;
 
 use crate::ASSETS_DIR;
-use crate::flight::simulation::{ENVIRONMENT, Player, Simulated};
+use crate::flight::simulation::{ENVIRONMENT, LandingTolerance, Player, Simulated};
 use crate::flight::{AircraftId, FlightSet, PilotInput, StartCommands};
 use crate::input::{Action, InputSet};
-use assist::{AssistState, AssistTable, Measured};
+use assist::{AssistState, AssistTable, Ground, Measured};
 
 /// The flight assist: it moves the commands as a pilot would, from what a pilot reads
 /// and feels. Physical at every setting: the aeroplane stays the same.
@@ -33,12 +33,36 @@ pub enum FlightAssist {
     Off,
 }
 
+/// How much the undercarriage and the airframe forgive (`docs/vision.md`, « Atterrissage »).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LandingRule {
+    Forgiving,
+    Normal,
+    Real,
+}
+
+impl LandingRule {
+    /// What it multiplies the parts' limits by (E:, to be tuned at the player's test).
+    pub fn tolerance(self) -> f64 {
+        match self {
+            Self::Forgiving => 2.0,
+            Self::Normal => 1.3,
+            Self::Real => 1.0,
+        }
+    }
+}
+
 /// Realism settings. Every field is read by exactly one system. Fields marked
-/// NON-PHYSICAL change the simulation away from reality (none yet).
+/// NON-PHYSICAL change the simulation away from reality.
 #[derive(Resource, Debug, Clone, Copy, PartialEq, Eq)]
 pub struct RealismSettings {
     /// Read by the assists' system ([`assist_commands`]).
     pub flight_assist: FlightAssist,
+    /// On the ground, the rudder holds the heading. Read by the assists' system.
+    pub ground_steering: bool,
+    /// NON-PHYSICAL: a game rule on what breaks, not on how the aeroplane flies. Read by
+    /// [`apply_landing_rule`].
+    pub landing_rule: LandingRule,
 }
 
 /// The presets of `docs/vision.md`, « Assistance de pilotage ».
@@ -57,13 +81,25 @@ pub enum Preset {
 
 impl Preset {
     pub fn settings(self) -> RealismSettings {
-        let flight_assist = match self {
-            Self::Arcade => FlightAssist::Instructor,
-            Self::Pilot => FlightAssist::Coordinated { stall_guard: true },
-            Self::Veteran => FlightAssist::Coordinated { stall_guard: false },
-            Self::Ace => FlightAssist::Off,
+        let (flight_assist, ground_steering, landing_rule) = match self {
+            Self::Arcade => (FlightAssist::Instructor, true, LandingRule::Forgiving),
+            Self::Pilot => (
+                FlightAssist::Coordinated { stall_guard: true },
+                true,
+                LandingRule::Normal,
+            ),
+            Self::Veteran => (
+                FlightAssist::Coordinated { stall_guard: false },
+                false,
+                LandingRule::Real,
+            ),
+            Self::Ace => (FlightAssist::Off, false, LandingRule::Real),
         };
-        RealismSettings { flight_assist }
+        RealismSettings {
+            flight_assist,
+            ground_steering,
+            landing_rule,
+        }
     }
 
     pub fn next(self) -> Self {
@@ -89,9 +125,10 @@ impl Preset {
     pub fn summary(self) -> &'static str {
         match self {
             Self::Arcade => {
-                "instructeur virtuel : le manche demande inclinaison et facteur de charge"
+                "instructeur virtuel : le manche demande inclinaison et facteur de charge ; \
+                 au sol, gaz à fond et il décolle"
             }
-            Self::Pilot => "palonnier automatique et garde anti-décrochage",
+            Self::Pilot => "palonnier automatique, garde anti-décrochage, cap tenu au sol",
             Self::Veteran => "palonnier automatique",
             Self::Ace => "aucune aide",
         }
@@ -129,8 +166,19 @@ impl Plugin for RealismPlugin {
                     .chain()
                     .in_set(RealismSet::Assist),
             )
-            .add_systems(Update, change_preset.after(InputSet));
+            .add_systems(
+                Update,
+                (
+                    change_preset.after(InputSet),
+                    apply_landing_rule.run_if(resource_changed::<RealismSettings>),
+                ),
+            );
     }
+}
+
+/// What breaks on landing, as the settings say.
+fn apply_landing_rule(settings: Res<RealismSettings>, mut tolerance: ResMut<LandingTolerance>) {
+    tolerance.0 = settings.landing_rule.tolerance();
 }
 
 /// The next preset, on the player's demand.
@@ -188,7 +236,8 @@ fn assist_commands(
         };
         if sim.crashed.is_none() {
             let measured = Measured::of(&sim.state, &ENVIRONMENT);
-            sim.controls = state.commands(settings.flight_assist, &input, &measured, table, dt);
+            let ground = Ground::of(&sim.aircraft, &sim.state, &ENVIRONMENT);
+            sim.controls = state.next_commands(&settings, &input, &measured, ground, table, dt);
         }
     }
 }
@@ -225,6 +274,15 @@ mod tests {
                 FlightAssist::Instructor,
             ]
         );
+    }
+
+    #[test]
+    fn the_real_presets_forgive_nothing_on_landing() {
+        let tolerance = |p: Preset| p.settings().landing_rule.tolerance();
+        assert_eq!(tolerance(Preset::Ace), 1.0);
+        assert_eq!(tolerance(Preset::Veteran), 1.0);
+        assert!(tolerance(Preset::Pilot) > 1.0);
+        assert!(tolerance(Preset::Arcade) > tolerance(Preset::Pilot));
     }
 
     /// The flight's fixed-step systems with the assists between them, the SPAD of the
