@@ -51,6 +51,22 @@ pub struct RealismSettings {
 pub enum Preset { Arcade, Pilot, Veteran, Ace, Custom }
 ```
 
+## Au sol (plan `m2-train-sol.md`, en place depuis le 2026-11-01)
+
+Les aides de vol ne valent pas au sol : à l'arrêt, l'avion est au-delà de l'incidence limite, et le dérapage n'y a pas de sens.
+
+| Préréglage | Au sol | Décollage | Atterrissage |
+|---|---|---|---|
+| Arcade | tenue de cap | gaz au-delà de 50 % : l'instructeur lève la queue et tire à 1,2 V_s | instructeur jusqu'au toucher, sans arrondi automatique ; limites × 2 |
+| Pilote | tenue de cap | au joueur | garde jusqu'au toucher ; limites × 1,3 |
+| Vétéran | rien | au joueur | coordination jusqu'au toucher ; limites réelles |
+| As | rien | au joueur | rien ; limites réelles |
+
+- **Tenue de cap** : le gouvernail seul, régulateur proportionnel, dérivé et intégral sur le cap ; les gains viennent de `fdm_lab assist` (`ground_yaw`), rapportés à la pression à la dérive, q + T/A. Le palonnier du joueur s'y ajoute et déplace le cap tenu.
+- **Garde au sol** : elle reste active **tant que la vitesse peut porter l'avion**, et se coupe en dessous. La couper au contact renvoyait en l'air, queue basse, un avion dont le pilote tirait le manche au toucher.
+- **Rebonds** : l'avion compte comme au sol 0,5 s après le dernier contact.
+- **`landing_rule`** est non physique : il change ce qui casse, pas le vol.
+
 ## Instructeur virtuel
 
 - **Commande d'attitude** (défaut en Arcade) : stick X = inclinaison voulue (stick relâché → ailes à plat) ; stick Y = taux de tangage ou facteur de charge voulu. Coordination automatique (β → 0) ; limitation de l'incidence sous α_décrochage moins une marge ; gestion des gaz automatique.

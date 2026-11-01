@@ -70,6 +70,7 @@ Choix du joueur pour le premier incrément du M2 (plan `m2-vol-essai.md`) :
 | Stick droit | regard libre ; R3 regarde devant |
 | Y (ouest) | vue : poursuite ou pilote |
 | X (nord) | télémétrie |
+| Croix ← / → | prochain départ : au sol, en finale, en vol ; Select y va |
 | Select | nouveau départ |
 | Start | pause, avec l'aide des commandes |
 | Home | aides au pilotage : Arcade, Pilote, Vétéran, As (skill `realisme`) ; Pilote au lancement |
@@ -78,7 +79,7 @@ Choix du joueur pour le premier incrément du M2 (plan `m2-vol-essai.md`) :
 - **Clavier de secours** (touches physiques, étiquettes AZERTY) :
   - flèches pour le manche, Q / D pour le palonnier ;
   - Page préc. / suiv. pour les gaz, Origine / Fin pour le neutre ;
-  - V : vue ; C : regarder devant ; T : télémétrie ; R : nouveau départ ; P : pause ; I : aides.
+  - V : vue ; C : regarder devant ; T : télémétrie ; R : nouveau départ ; N : prochain départ ; P : pause ; I : aides ; G : gizmos de forces.
 - **Manche et instructeur** : la couche d'actions transmet aussi la position du manche seule, avant le neutre. L'instructeur virtuel la lit comme un souhait : X donne l'inclinaison, Y le facteur de charge.
 - Le profil est écrit en code pour l'instant ; le RON et le remappage viendront ensuite.
 

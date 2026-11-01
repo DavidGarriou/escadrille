@@ -18,6 +18,7 @@ Chacune est un fichier `assets/scenes/<nom>.ron` (caméra, heure, météo, grain
 | `maquette-spad7` | repères du modèle 3D (ADR 0006) : axes du modèle de vol en gizmos, hélice et sens de rotation ; construite en code |
 | `avion-studio` | le SPAD au repos sur l'herbe, trois quarts avant à hauteur d'homme, soleil d'après-midi, atmosphère, ombres, TAA : modèle, matériaux et textures tels que le jeu les rend ; construite en code |
 | `vol-essai-poursuite`, `vol-essai-pilote` | le vol d'essai après une demi-minute sans toucher aux commandes : vue de poursuite, vue du pilote ; construites en code |
+| `terrain-repos`, `terrain-pilote`, `terrain-roulage`, `terrain-roues`, `terrain-finale` | le SPAD sur le pré : à l'arrêt, depuis le poste queue basse, au roulage (`--frames 1800`), le contact des roues, et le pré vu depuis la finale ; l'herbe doit se lire comme un repère de vitesse et de hauteur |
 | `aube_terrain` | soleil rasant, brume basse, avions alignés sur l'herbe, ombres longues |
 | `cumulus_midi` | champ de cumulus à 2 000 m, soleil haut, ombres des nuages au sol |
 | `contre_jour_toile` | avion à contre-jour : toile translucide, nervures visibles ; construite en code (SPAD vu d'en dessous, soleil 9° derrière lui) |

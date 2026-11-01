@@ -4,7 +4,8 @@
 //! frames of the 3D models (ADR 0006), `avion-studio` and `contre_jour_toile` the SPAD
 //! as the game renders it, `degats-spad7` and `degats-spad7-proche` the damage its model can show,
 //! `vol-essai-poursuite` and `vol-essai-pilote` the test flight, `terrain-repos`,
-//! `terrain-pilote`, `terrain-roulage` and `terrain-finale` the SPAD on and over the field.
+//! `terrain-pilote`, `terrain-roulage`, `terrain-roues` and `terrain-finale` the SPAD on and
+//! over the field.
 //! Outside captures, the game starts the test flight, on the field (`vol_essai`).
 
 pub mod degats;
@@ -44,6 +45,7 @@ impl Plugin for WorldPlugin {
                     vol_essai::spawn_on_the_field.run_if(capture_scene_among(&[
                         vol_essai::SCENE_FIELD,
                         vol_essai::SCENE_FIELD_PILOT,
+                        vol_essai::SCENE_WHEELS,
                     ])),
                     vol_essai::spawn_rolling.run_if(capture_scene_is(vol_essai::SCENE_ROLL)),
                     vol_essai::spawn_on_final.run_if(capture_scene_is(vol_essai::SCENE_FINAL)),
@@ -61,6 +63,8 @@ impl Plugin for WorldPlugin {
                     meadow::place_meadow
                         .after(FlightSet::Place)
                         .run_if(resource_changed::<RenderOrigin>),
+                    meadow::fade_tufts.after(FlightSet::Place),
+                    vol_essai::look_at_the_wheels.run_if(capture_scene_is(vol_essai::SCENE_WHEELS)),
                 ),
             )
             .add_systems(OnEnter(AppState::LaboManette), scenes::spawn_ui_camera);

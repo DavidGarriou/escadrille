@@ -16,7 +16,7 @@ use escadrille_fdm::aircraft::PilotControls;
 use super::meadow::spawn_meadow;
 use super::plain::spawn_plain;
 use crate::ASSETS_DIR;
-use crate::camera::{PilotEye, View, spawn_flight_camera};
+use crate::camera::{FlightCamera, PilotEye, View, spawn_flight_camera};
 use crate::dev::capture::CaptureHold;
 use crate::flight::bridge::to_bevy;
 use crate::flight::{
@@ -32,6 +32,10 @@ pub const SCENE_FIELD_PILOT: &str = "terrain-pilote";
 pub const SCENE_ROLL: &str = "terrain-roulage";
 /// The meadow as the pilot sees it from the start of the final approach.
 pub const SCENE_FINAL: &str = "terrain-finale";
+/// The chase view from ahead and to the side: the wheels and the skid on the ground.
+pub const SCENE_WHEELS: &str = "terrain-roues";
+/// Chase camera's yaw of that scene, rad: ahead of the left wing.
+const WHEELS_YAW: f32 = 2.2;
 
 /// What a flight's scenes share: the plain and its assets.
 #[derive(SystemParam)]
@@ -97,6 +101,13 @@ fn spawn_flight(name: &str, scene: &mut Scene) -> Result {
         .insert(PilotEye(to_bevy(eye - cg).as_vec3()));
     spawn_flight_camera(commands);
     Ok(())
+}
+
+/// The chase camera of the scene of the wheels.
+pub fn look_at_the_wheels(mut cameras: Query<&mut FlightCamera>) {
+    for mut camera in &mut cameras {
+        camera.yaw = WHEELS_YAW;
+    }
 }
 
 /// The capture of the pilot's view.

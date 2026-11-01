@@ -2527,3 +2527,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Couper la garde au contact était une erreur. Un manche tiré au toucher, à 103 km/h, cabrait l'avion à 28° : il redécollait queue basse, décrochait et tombait sur un saumon. Un joueur fera ce geste. **D** La garde reste active au sol tant que la vitesse peut porter l'avion, et se coupe en dessous. Plan corrigé.
 - **R** Même garde, manche tenu à fond : l'avion remonte à 7,7 m à 10° d'incidence, s'essouffle et retombe à 5 m/s, train brisé. C'est le « ballon », une vraie faute de pilotage : gardé tel quel.
 - **R** Posé scripté correct, sans palonnier : arrondi sur le taux de descente depuis 12 m, toucher à 103 km/h et 0,5 m/s, 123 m après le début du pré ; la vitesse tombe sur les roues, puis le manche revient avec la queue ; arrêt 276 m plus loin, cap à 1°, rien de cassé.
+- **R** Revue du directeur artistique sur le pré : **à retravailler**. Un seul point bloquant, et il est de jouabilité : depuis le poste, le sol n'apporte aucun repère. Vu de 2 m, un pixel couvre 12 cm de sol à 15 m et 5 m à 100 m, or la force du bruit était dans les 16 à 42 cm. Autre point : `AlphaMode::Blend` fait échapper le pré à la brume de l'atmosphère, d'où sa teinte chaude et son halo depuis la finale.
+- **A** Corrections selon la revue (`meadow.rs`) :
+  - taches de 6 × 2 m à 0,6 × 0,2 m, étirées d'est en ouest : elles résistent au raccourci et dessinent des lignes de fuite ;
+  - grandes taches de 18 et 6 m dans la texture du pré, hors de la tuile de 40 m, dont la période se serait vue d'en haut ;
+  - pré en `Mask`, donc dans la brume, avec un contour net ; touffes gardées en `Blend`, qui s'effacent entre 300 et 600 m de l'avion ;
+  - tuile à 2 cm par texel, plus sombre que claire.
+- **A** Nouvelle scène `terrain-roues`, vue de l'avant et du côté, qui montre le contact au sol.
+- **R** Captures **regardées** : le sol se lit depuis le poste, les roues reposent sur l'herbe, le pré a la teinte de la plaine sous la brume. L'herbe est éclaircie ensuite pour que le pré ressorte depuis la finale.
+- **⚠** Le voile du disque d'hélice a un bord net sur le terrain : relevé par la revue, sans lien avec le pré. Noté pour plus tard.

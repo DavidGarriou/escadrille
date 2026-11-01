@@ -44,7 +44,7 @@ pub enum View {
 #[derive(Component, Debug, Clone, Copy, PartialEq, Default)]
 pub struct FlightCamera {
     /// Free look, rad: yaw to the right, pitch up.
-    yaw: f32,
+    pub yaw: f32,
     pitch: f32,
     /// Direction the chase camera looks along, following the aircraft's with a lag.
     chase: Option<Vec3>,
