@@ -32,3 +32,11 @@ Version : aides au pilotage après la revue de l'aérodynamicien (plan `docs/pla
 |---|---|---|
 | Vol avec les aides | « c'est beaucoup mieux » | Détail par préréglage à recueillir au prochain essai (liste du plan, « Ton essai ») |
 | Visée de la Vickers | « les deux mires de la mitrailleuse ne sont pas alignés au regard du pilote. le réticule proche est au-dessus du réticule de bout de canon » | Corrigé le 2026-10-29 : les viseurs sont construits sur la ligne de visée qui passe par l'œil, parallèle à l'âme du canon ; l'œil est levé de 5 cm, au-dessus de la culasse ; le pare-brise est rehaussé pour que la visée passe dans le verre |
+
+## M2 — Train et sol, vol de dix minutes (2026-11-04)
+
+Version : plan `docs/plans/m2-train-sol.md` réalisé, `just run` au sol (commit `9e1fac3`).
+
+| Point essayé | Ressenti du joueur | Suite |
+|---|---|---|
+| Vol de dix minutes à la manette, critère de fin du M2 | « Considère que le vol de 10 mn s'est bien passé » | Critère tenu sur décision du joueur ; M2 clos. Pas de retour détaillé : décollage, posé, aides au sol, centrage et préréglages restent sans avis chiffré |

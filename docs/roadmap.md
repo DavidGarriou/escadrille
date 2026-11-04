@@ -20,13 +20,14 @@ DdT : `just check` et `just test` verts ; le labo manette affiche toutes les com
 DdT : essais quantitatifs de confiance A et B dans leurs tolérances ; tests de robustesse verts ; revue `aerodynamicien` sans point bloquant.
 **Amendement du 2026-10-20 (décision du joueur)** : faute d'accès aux sources primaires, le M1 est validé avec des cibles de **confiance C**, étiquetées comme telles dans `essais.ron` et le rapport d'essais ; la confiance sera relevée plus tard (revalidation à prévoir). Premier avion validé : **SPAD VII 150 ch** (Hispano-Suiza 8Aa), le 180 ch ensuite.
 
-## M2 — Premier vol (en cours ; plans : `docs/plans/m2-vol-essai.md`, `m2-aides-pilotage.md`, `m2-train-sol.md`)
+## M2 — Premier vol ✅ (clos le 2026-11-04 ; plans : `docs/plans/m2-vol-essai.md`, `m2-aides-pilotage.md`, `m2-train-sol.md`)
 - Pont FDM ↔ ECS, pas fixe, interpolation, origine flottante.
 - Terrain simple, ciel et atmosphère de base, caméras cockpit, poursuite et regard libre.
 - Pilotage à la manette, télémétrie egui, gizmos de forces.
 - Décollage et atterrissage sur herbe.
 
 DdT : le joueur vole dix minutes à la manette et trouve cela agréable ; décollage et atterrissage possibles en préréglage Pilote.
+**Clôture (2026-11-04)** : le joueur tient le vol de dix minutes pour réussi, sans retour détaillé (`docs/gdd/retours.md`). Le décollage et l'atterrissage en Pilote sont aussi couverts par des tests scriptés. Le M1 reste ouvert sur son seul essai du joueur : la lecture du rapport d'essais.
 
 ## M3 — Beauté, première passe
 - Nuages volumétriques (on peut les traverser), atmosphère, cycle jour/nuit.

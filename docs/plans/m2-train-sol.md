@@ -1,6 +1,6 @@
 # Plan — Train d'atterrissage et sol : fin du M2
 
-- Statut : **validé** par le joueur le 2026-11-01, avec les options recommandées :
+- Statut : **réalisé** ; M2 clos le 2026-11-04 sur l'essai du joueur. **Validé** par le joueur le 2026-11-01, avec les options recommandées :
   - `just run` démarre au sol, et la pause permet de choisir sol, finale ou en vol ;
   - pré dessiné ;
   - tenue de cap en Arcade et Pilote, envol automatique en Arcade ;

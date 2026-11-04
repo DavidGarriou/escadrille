@@ -2576,3 +2576,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur : « c'est fait ». **R** Push vérifié : `origin/main-tcd0yw` est sur `b367ed8`.
 - **⚠** L'agent SSH de la session (`/run/user/1000/ssh-agent.socket`, le seul de la machine) reste vide : le push du joueur est passé par un autre chemin. Tant que la clé n'y est pas chargée, chaque entrée du carnet attend un push du joueur. Commande proposée : `SSH_AUTH_SOCK=/run/user/1000/ssh-agent.socket ssh-add ~/.ssh/id_ed25519_fixe`.
 - **Q** Le joueur : « c'est fait ». **R** La clé est dans l'agent de la session : Claude a poussé `7d7ac2c` lui-même. L'incident est clos jusqu'au prochain redémarrage de la machine.
+
+### Clôture du M2
+
+- **Q** Le joueur : « Considère que le vol de 10mn s'est bien passé ».
+- **D** Le critère de fin du M2 est tenu sur décision du joueur : **M2 clos le 2026-11-04**. Le décollage et l'atterrissage en Pilote sont aussi couverts par des tests scriptés.
+- **A** Mis à jour : `docs/gdd/retours.md`, la feuille de route, le statut du plan `m2-train-sol.md` et la ligne « Jalon en cours » de `CLAUDE.md`.
+- **⚠** Aucun retour détaillé : le décollage, le posé, les aides au sol, le centrage du 2026-10-31 et l'avis par préréglage restent sans retour du joueur.
+- **⚠** Le M1 reste ouvert sur son seul essai du joueur, la lecture du rapport d'essais.
+- **D** À demander au joueur : le prochain jalon.
