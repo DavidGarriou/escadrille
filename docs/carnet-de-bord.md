@@ -2585,3 +2585,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Aucun retour détaillé : le décollage, le posé, les aides au sol, le centrage du 2026-10-31 et l'avis par préréglage restent sans retour du joueur.
 - **⚠** Le M1 reste ouvert sur son seul essai du joueur, la lecture du rapport d'essais.
 - **D** À demander au joueur : le prochain jalon.
+- **Q** Le joueur : « le décollage et le posés se sont bien déroulés ». **A** Ajouté à `docs/gdd/retours.md`. Restent sans retour : les aides au sol par préréglage et le centrage du 2026-10-31.

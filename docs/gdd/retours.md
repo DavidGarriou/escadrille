@@ -40,3 +40,4 @@ Version : plan `docs/plans/m2-train-sol.md` réalisé, `just run` au sol (commit
 | Point essayé | Ressenti du joueur | Suite |
 |---|---|---|
 | Vol de dix minutes à la manette, critère de fin du M2 | « Considère que le vol de 10 mn s'est bien passé » | Critère tenu sur décision du joueur ; M2 clos. Pas de retour détaillé : décollage, posé, aides au sol, centrage et préréglages restent sans avis chiffré |
+| Décollage et posés | « le décollage et le posés se sont bien déroulés » | Rien à corriger. Restent sans avis : les aides au sol par préréglage, le centrage du 2026-10-31 |
