@@ -2564,3 +2564,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** ADR 0008 (contact au sol : efforts de pénalité dans le RK4, à 240 Hz) accepté.
 - **A** Statut mis à jour dans l'ADR, son index et le plan `m2-train-sol.md`.
 - **R** Reste à faire pour clore le M2 : le vol de dix minutes à la manette, dont les retours iront dans `docs/gdd/retours.md`.
+
+## 2026-11-04
+
+### Conversation sur l'application mobile
+
+- **Q** Le joueur : « je voudrais avoir cette conversation disponible dans mon application mobile claude ».
+- **A** Remote Control activé pour cette session, intitulée « Simulation WWI » : elle se suit et se pilote depuis l'application mobile Claude et claude.ai/code.
+- **R** Le lien ne tient que tant que l'application de bureau tourne et que la machine reste allumée et éveillée. Rien n'a changé dans le code.
+- **⚠** Push impossible : l'agent SSH n'a de nouveau aucune clé chargée (`Permission denied (publickey)`). Cette entrée est commitée en local, comme le 2026-11-01 ; le joueur charge sa clé, puis pousse.
