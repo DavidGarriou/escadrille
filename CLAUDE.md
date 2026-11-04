@@ -151,4 +151,4 @@ Fedora Linux (Wayland), manette 8BitDo SN30 Pro USB (filaire, câble USB-A, sans
 
 ## Jalon en cours
 
-**M3 — Beauté, première passe** (voir `docs/roadmap.md` et `docs/plans/m3-beaute.md`, à valider). M0 clos le 2026-10-20, M2 le 2026-11-04. Le M1 reste ouvert sur son seul essai du joueur, la lecture du rapport d'essais. Mettre à jour cette ligne à chaque changement de jalon.
+**M3 — Beauté, première passe** (voir `docs/roadmap.md` et `docs/plans/m3-beaute.md`). M0 clos le 2026-10-20, M2 le 2026-11-04. Le M1 reste ouvert sur son seul essai du joueur, la lecture du rapport d'essais. Mettre à jour cette ligne à chaque changement de jalon.

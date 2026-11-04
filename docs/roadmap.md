@@ -29,7 +29,7 @@ DdT : essais quantitatifs de confiance A et B dans leurs tolérances ; tests de 
 DdT : le joueur vole dix minutes à la manette et trouve cela agréable ; décollage et atterrissage possibles en préréglage Pilote.
 **Clôture (2026-11-04)** : le joueur tient le vol de dix minutes pour réussi, sans retour détaillé (`docs/gdd/retours.md`). Le décollage et l'atterrissage en Pilote sont aussi couverts par des tests scriptés. Le M1 reste ouvert sur son seul essai du joueur : la lecture du rapport d'essais.
 
-## M3 — Beauté, première passe (en cours ; plan à valider : `docs/plans/m3-beaute.md`)
+## M3 — Beauté, première passe (en cours ; plan : `docs/plans/m3-beaute.md`)
 - Nuages volumétriques (on peut les traverser), atmosphère, cycle jour/nuit.
 - Terrain réel des Flandres avec LOD, occupation du sol 1917, zone du front.
 - Modèle PBR du premier avion : toile translucide, hélice floue, câbles anticrénelés.

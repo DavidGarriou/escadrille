@@ -2605,3 +2605,9 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Les MNT nationaux (RGE ALTI, Licence Ouverte 2.0 ; DHMV II, licence flamande) demandent une attribution, mais ne figurent pas mot pour mot dans la liste de licences de `CLAUDE.md` : ils demandent l'accord du joueur. OpenStreetMap est exclu (ODbL, et paysage moderne).
 - **D** Cinq décisions demandées au joueur : ordre des incréments, technique des nuages, données de relief, méthode pour l'occupation du sol de 1917, étendue.
 - **A** Feuille de route et ligne « Jalon en cours » de `CLAUDE.md` : M3 en cours.
+
+### M3 : plan validé
+
+- **Q** Le joueur : « Oui, tout en A ».
+- **D** Plan `m3-beaute.md` validé avec les cinq options recommandées. Les licences RGE ALTI (Licence Ouverte 2.0) et DHMV II (licence flamande de réutilisation) sont acceptées par le joueur. Les fichiers se téléchargeront avec son accord, fichier par fichier, et seront inscrits dans `assets/LICENCES.md`.
+- **A** Historien lancé en parallèle : terrains de la SPA 3 dans les Flandres en 1917, tracé du front, cartes de 1917 et leurs droits, licences et fichiers exacts des deux MNT.

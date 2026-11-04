@@ -1,6 +1,11 @@
 # Plan — M3, beauté, première passe
 
-- Statut : **à valider** par le joueur (voir « Décisions demandées au joueur »). Aucun code avant sa validation.
+- Statut : **validé** par le joueur le 2026-11-04, avec les options recommandées :
+  - nuages d'abord, puis heure du jour, relief, paysage de 1917, finition du SPAD ;
+  - nuages par une marche de rayons maison en WGSL ;
+  - relief des MNT nationaux à 5 m, RGE ALTI (Licence Ouverte 2.0) et DHMV II (licence flamande), **licences acceptées** par le joueur ;
+  - paysage procédural guidé par des couches numérisées depuis des sources libres de droits ;
+  - relief sur 80 × 80 km, détail d'abord sur 30 km autour d'Ypres et du terrain de la SPA 3.
 - Demande du joueur (2026-11-04) : « on continue avec le M3 ».
 - **Jalon** (`docs/roadmap.md`) :
   - nuages volumétriques, qu'on peut traverser ;
