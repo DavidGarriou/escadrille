@@ -2575,3 +2575,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Push impossible : l'agent SSH n'a de nouveau aucune clé chargée (`Permission denied (publickey)`). Cette entrée est commitée en local, comme le 2026-11-01 ; le joueur charge sa clé, puis pousse.
 - **Q** Le joueur : « c'est fait ». **R** Push vérifié : `origin/main-tcd0yw` est sur `b367ed8`.
 - **⚠** L'agent SSH de la session (`/run/user/1000/ssh-agent.socket`, le seul de la machine) reste vide : le push du joueur est passé par un autre chemin. Tant que la clé n'y est pas chargée, chaque entrée du carnet attend un push du joueur. Commande proposée : `SSH_AUTH_SOCK=/run/user/1000/ssh-agent.socket ssh-add ~/.ssh/id_ed25519_fixe`.
+- **Q** Le joueur : « c'est fait ». **R** La clé est dans l'agent de la session : Claude a poussé `7d7ac2c` lui-même. L'incident est clos jusqu'au prochain redémarrage de la machine.
