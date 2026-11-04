@@ -2586,3 +2586,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Le M1 reste ouvert sur son seul essai du joueur, la lecture du rapport d'essais.
 - **D** À demander au joueur : le prochain jalon.
 - **Q** Le joueur : « le décollage et le posés se sont bien déroulés ». **A** Ajouté à `docs/gdd/retours.md`. Restent sans retour : les aides au sol par préréglage et le centrage du 2026-10-31.
+- **Q** Le joueur : « quels jalons sont ouverts ? ». **R** Clos : M0 et M2. Ouvert : M1, dont il ne reste que la lecture du rapport d'essais par le joueur. Non commencés comme jalons, mais déjà avancés : M3 (modèle PBR du SPAD presque fini, poste de pilotage absent), M4 (modèle 3D prêt pour les dégâts) et M5 (aides au pilotage et tolérance d'atterrissage). M6 et M7 sont intacts.
