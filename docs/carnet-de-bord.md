@@ -2587,3 +2587,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** À demander au joueur : le prochain jalon.
 - **Q** Le joueur : « le décollage et le posés se sont bien déroulés ». **A** Ajouté à `docs/gdd/retours.md`. Restent sans retour : les aides au sol par préréglage et le centrage du 2026-10-31.
 - **Q** Le joueur : « quels jalons sont ouverts ? ». **R** Clos : M0 et M2. Ouvert : M1, dont il ne reste que la lecture du rapport d'essais par le joueur. Non commencés comme jalons, mais déjà avancés : M3 (modèle PBR du SPAD presque fini, poste de pilotage absent), M4 (modèle 3D prêt pour les dégâts) et M5 (aides au pilotage et tolérance d'atterrissage). M6 et M7 sont intacts.
+
+### M3 : plan
+
+- **Q** Le joueur : « on continue avec le M3 ».
+- **A** Plan `docs/plans/m3-beaute.md`, en sept incréments :
+  - scènes en données, mesure GPU et réglages de qualité ;
+  - nuages volumétriques, avec parité CPU/GPU ;
+  - heure du jour ;
+  - relief réel et `tools/terrain_bake` ;
+  - paysage de 1917 et front ;
+  - finition du SPAD (bois, métal, seconde livrée, poste de pilotage) ;
+  - budget et revue finale.
+
+  Aucun code avant la validation du joueur.
+- **R** Vérifié dans les sources de Bevy 0.20 : l'atmosphère physique et la perspective aérienne existent, mais aucun rendu de nuages. Les volumes de brouillard (`FogVolume`) sont des boîtes pensées pour un brouillard local. `RenderDiagnosticsPlugin` donne les temps GPU par passe.
+- **⚠** Les MNT nationaux (RGE ALTI, Licence Ouverte 2.0 ; DHMV II, licence flamande) demandent une attribution, mais ne figurent pas mot pour mot dans la liste de licences de `CLAUDE.md` : ils demandent l'accord du joueur. OpenStreetMap est exclu (ODbL, et paysage moderne).
+- **D** Cinq décisions demandées au joueur : ordre des incréments, technique des nuages, données de relief, méthode pour l'occupation du sol de 1917, étendue.
+- **A** Feuille de route et ligne « Jalon en cours » de `CLAUDE.md` : M3 en cours.
