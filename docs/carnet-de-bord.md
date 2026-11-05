@@ -2637,3 +2637,9 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Mis à jour : skills `bevy` (§ 7) et `rendu-visuel`, plan `m3-beaute.md`. `just check` et `just test` passent (380 tests).
 - **⚠** La recherche de l'historien lancée le 2026-11-04 n'a laissé aucune fiche dans `docs/recherche/`. Les terrains de la SPA 3, le tracé du front, les cartes de 1917 et les fichiers des MNT restent à chercher avant les incréments 3 et 4.
 - **⚠** Push impossible : l'agent SSH de la session est de nouveau vide (`Permission denied (publickey)`), comme le 2026-11-04. Le travail est commité en local (`7f438bd`). Le joueur charge sa clé avec `SSH_AUTH_SOCK=/run/user/1000/ssh-agent.socket ssh-add ~/.ssh/id_ed25519_fixe`, puis Claude pousse.
+
+### Retour à la conversation « Simulation WWI »
+
+- **Q** Le joueur : « je veux repasse sur la conversation "Simulation WWI" ».
+- **R** Je ne peux pas ouvrir cette session : seules celles qu'elle a lancées le peuvent. Le joueur l'ouvre depuis la barre latérale. Elle partage le dossier et la branche `main-tcd0yw` : elle verra les commits du jour et l'entrée ci-dessus. Remote Control n'y est plus actif.
+- **⚠** Push toujours impossible : l'agent SSH de la session reste vide. `7f438bd`, `7f54307` et cette entrée attendent en local.
