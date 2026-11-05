@@ -2643,3 +2643,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur : « je veux repasse sur la conversation "Simulation WWI" ».
 - **R** Je ne peux pas ouvrir cette session : seules celles qu'elle a lancées le peuvent. Le joueur l'ouvre depuis la barre latérale. Elle partage le dossier et la branche `main-tcd0yw` : elle verra les commits du jour et l'entrée ci-dessus. Remote Control n'y est plus actif.
 - **⚠** Push toujours impossible : l'agent SSH de la session reste vide. `7f438bd`, `7f54307` et cette entrée attendent en local.
+
+### Reprise dans la conversation « Simulation WWI »
+
+- **Q** Le joueur : « reprend le travail sur main-tcd0yw ».
+- **R** État trouvé : l'incrément 0 du M3 est fait et commité (`7f438bd`) par l'autre conversation, avec deux entrées de carnet. Trois commits attendent en local : l'agent SSH est vide depuis le redémarrage de la machine.
+- **A** Historien relancé sur la recherche interrompue du 2026-11-04, avec la consigne d'écrire sa fiche question par question.
+- **A** Suite : incrément 1 du M3, les nuages volumétriques.
