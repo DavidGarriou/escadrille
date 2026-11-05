@@ -1,0 +1,7 @@
+Scene(
+    description: "Au roulage, plein gaz, le manche poussé : la queue se lève, l'herbe défile.",
+    scenario: "terrain",
+    camera: Chase(yaw: Deg(0.0), pitch: Deg(0.0)),
+    controls: Some((roll: 0.0, pitch: -0.5, yaw: 0.0, throttle: 1.0)),
+    frames: Some(420),
+)

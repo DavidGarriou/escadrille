@@ -1,41 +1,44 @@
 //! Reference scenes, rendered by the capture mode and reviewed by Claude.
 //!
-//! Each scene is built in code, by a system run when the capture asks for it
-//! ([`capture_scene_is`]). `assets/scenes/<scene>.ron` will describe them once their
-//! common shape is known (camera, time of day, weather, aircraft).
+//! The scenes of a flight are files, `assets/scenes/<scene>.ron` (`escadrille_data::scene`),
+//! built by one system ([`super::vol_essai::spawn_scene_file`]). Those that set the
+//! aircraft up by hand are built in code, each by its system, run when the capture asks
+//! for it ([`capture_scene_is`]).
+
+use std::path::Path;
 
 use bevy::light::light_consts;
 use bevy::prelude::*;
+use escadrille_data::scene::scene_names;
 
+use crate::ASSETS_DIR;
 use crate::dev::capture::CaptureRequest;
 
-/// Names accepted by `--capture`.
-pub const KNOWN_SCENES: &[&str] = &[
+/// The scenes built in code.
+pub const CODE_SCENES: &[&str] = &[
     "m0-sol",
     super::maquette::SCENE,
     super::studio::SCENE,
     super::studio::SCENE_CONTRE_JOUR,
     super::degats::SCENE,
     super::degats::SCENE_CLOSE,
-    super::vol_essai::SCENE_CHASE,
-    super::vol_essai::SCENE_PILOT,
-    super::vol_essai::SCENE_FIELD,
-    super::vol_essai::SCENE_FIELD_PILOT,
-    super::vol_essai::SCENE_ROLL,
-    super::vol_essai::SCENE_FINAL,
-    super::vol_essai::SCENE_WHEELS,
 ];
+
+/// Names accepted by `--capture`: the scenes built in code, then the files.
+pub fn known_scenes() -> Vec<String> {
+    let mut names: Vec<String> = CODE_SCENES.iter().map(|s| (*s).to_owned()).collect();
+    names.extend(scene_names(Path::new(ASSETS_DIR)));
+    names
+}
+
+/// Run condition: the capture asks for a scene of `assets/scenes`.
+pub fn capture_from_file(request: Option<Res<CaptureRequest>>) -> bool {
+    request.is_some_and(|r| !CODE_SCENES.contains(&r.scene.as_str()))
+}
 
 /// Run condition: the capture asks for scene `name`.
 pub fn capture_scene_is(name: &'static str) -> impl Fn(Option<Res<CaptureRequest>>) -> bool {
     move |request| request.is_some_and(|r| r.scene == name)
-}
-
-/// Run condition: the capture asks for one of `names`.
-pub fn capture_scene_among(
-    names: &'static [&'static str],
-) -> impl Fn(Option<Res<CaptureRequest>>) -> bool {
-    move |request| request.is_some_and(|r| names.contains(&r.scene.as_str()))
 }
 
 /// Plain overcast-blue sky, until the atmosphere arrives (M3).

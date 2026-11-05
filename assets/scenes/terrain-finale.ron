@@ -1,0 +1,5 @@
+Scene(
+    description: "Le pré vu depuis le poste au début de la finale, à 150 m : il doit se repérer au-dessus du viseur, dans la brume.",
+    scenario: "finale",
+    camera: Pilot(yaw: Deg(0.0), pitch: Deg(0.0)),
+)

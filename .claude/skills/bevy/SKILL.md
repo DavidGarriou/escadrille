@@ -80,11 +80,15 @@ codegen-units = 1
 
 ## 7. Mode capture (vérification visuelle par Claude)
 
-`cargo run -p escadrille --release -- --capture <scène> [--frames 240] [--size 2560x1440] [--out target/captures/<scène>.png]`
+`just capture <scène> [--frames N] [--size 2560x1440] [--quality haut] [--out target/captures/<scène>.png]` (code : `crates/game/src/dev/capture.rs`)
 
-- La scène est décrite dans `assets/scenes/<scène>.ron` : caméra (position, cible, focale), date et heure, météo, graine, avions et leur état, préréglage de qualité.
-- Déroulé : chargement complet des assets → N images pour stabiliser (TAA, exposition automatique, accumulation temporelle des nuages) → capture avec l'API de capture d'écran de la version épinglée → écriture à côté d'un `.json` (temps CPU et GPU par passe, si disponibles) → sortie de l'application.
-- Temps de simulation figé ou déterministe ; UI et debug masqués sauf demande.
+- **Scènes d'un vol** : fichiers `assets/scenes/<scène>.ron` (`escadrille_data::scene`) : description, scénario de départ (`assets/scenarios`), caméra (`Chase` ou `Pilot`, lacet et tangage), commandes tenues, soleil, nombre d'images. Les scènes qui posent l'avion à la main (`m0-sol`, `maquette-spad7`, `avion-studio`, `contre_jour_toile`, `degats-spad7`, `degats-spad7-proche`) restent construites en code (`world::scenes::CODE_SCENES`). Le format grandit avec le M3 : date et heure, météo, graine.
+- **Rendu hors écran** : les caméras rendent dans une image à la taille demandée (1440p par défaut, la définition du budget), jamais dans la fenêtre, que le compositeur rogne à la zone utile de l'écran.
+- **Temps déterministe** : l'horloge du jeu attend la fin du chargement, puis chaque image avance de 1/60 s (deux pas du modèle de vol). `--frames` compte donc du temps de jeu : 120 images, 2 s. Deux captures de la même scène ne diffèrent que de quelques pixels.
+- Déroulé : chargement complet des assets → N images pour stabiliser (TAA, accumulation temporelle des nuages) → `Screenshot::image` → `.json` à côté → sortie de l'application.
+- **Le `.json`** : définition, images, `mean_frame_ms` (temps réel, moyenne de la seconde moitié des images), `quality`, adaptateur, `gpu_passes_ms` (temps GPU de chaque passe, mesuré par `RenderDiagnosticsPlugin`, ajouté en mode capture seulement) et `gpu_frame_ms` (somme des passes de premier niveau ; le travail non chronométré n'y est pas).
+- La recette garde la capture précédente en `<scène>.avant.png` et `.avant.json`.
+- UI et debug masqués sauf demande.
 - Code de sortie non nul si un asset manque ou si un shader échoue : une capture doit être fiable pour la revue.
 
 ## 8. Débogage

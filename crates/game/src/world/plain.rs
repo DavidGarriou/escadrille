@@ -46,6 +46,13 @@ const FIELD_COLOURS: [([f32; 3], f32); 6] = [
 const MAX_RUN: f32 = 4.0;
 const HEDGE_COLOUR: [f32; 3] = [0.17, 0.23, 0.11];
 
+/// Where the sun shines from: azimuth from north towards east, elevation, degrees.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Sun {
+    pub azimuth_deg: f64,
+    pub elevation_deg: f64,
+}
+
 /// The plain: ground, atmosphere and sun.
 pub fn spawn_plain(
     commands: &mut Commands,
@@ -53,6 +60,7 @@ pub fn spawn_plain(
     materials: &mut Assets<StandardMaterial>,
     images: &mut Assets<Image>,
     media: &mut Assets<ScatteringMedium>,
+    sun: Sun,
 ) {
     let fields = images.add(fields_texture(TEXTURE_SIZE, BLOCKS, 1917));
     commands.spawn((
@@ -68,7 +76,7 @@ pub fn spawn_plain(
     commands.spawn(Atmosphere::earth(
         media.add(ScatteringMedium::earth(256, 256)),
     ));
-    let (az, el) = (SUN_AZIMUTH_DEG.to_radians(), SUN_ELEVATION_DEG.to_radians());
+    let (az, el) = (sun.azimuth_deg.to_radians(), sun.elevation_deg.to_radians());
     let towards_sun = DVec3::new(el.cos() * az.cos(), el.cos() * az.sin(), -el.sin());
     commands.spawn((
         Name::new("Sun"),

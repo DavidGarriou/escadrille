@@ -40,13 +40,18 @@ struct Cli {
     #[arg(long, value_name = "SCENE")]
     capture: Option<String>,
 
-    /// Frames rendered before the capture, to let the image settle.
-    #[arg(long, default_value_t = 120, requires = "capture")]
-    frames: u32,
+    /// Frames rendered before the capture, to let the image settle (default: the scene's,
+    /// or 120).
+    #[arg(long, requires = "capture")]
+    frames: Option<u32>,
 
-    /// Capture size, as WIDTHxHEIGHT.
-    #[arg(long, default_value = "1920x1080", value_parser = parse_size, requires = "capture")]
+    /// Capture size, as WIDTHxHEIGHT: 1440p, the definition of the performance budget.
+    #[arg(long, default_value = "2560x1440", value_parser = parse_size, requires = "capture")]
     size: (u32, u32),
+
+    /// Rendering quality: bas, moyen, haut (the reference) or ultra.
+    #[arg(long, value_enum, default_value_t = render::quality::Quality::High)]
+    quality: render::quality::Quality,
 
     /// Output PNG path (default: target/captures/<SCENE>.png).
     #[arg(long, requires = "capture")]
@@ -73,11 +78,8 @@ fn main() -> AppExit {
         (None, false) => AppState::Vol,
     };
 
-    let resolution = capture
-        .as_ref()
-        .map_or(WindowResolution::new(1600, 900), |c| {
-            WindowResolution::new(c.size.0, c.size.1)
-        });
+    // Captures render into an image of their own size (`dev::capture`), not into the window.
+    let resolution = WindowResolution::new(1600, 900);
 
     let mut app = App::new();
     app.add_plugins(
@@ -115,8 +117,11 @@ fn main() -> AppExit {
         dev::DevPlugin,
     ));
 
+    app.insert_resource(cli.quality);
     if let Some(request) = capture {
-        app.insert_resource(request);
+        // The GPU time of each pass, for the capture's report.
+        app.add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin)
+            .insert_resource(request);
     }
 
     app.run()

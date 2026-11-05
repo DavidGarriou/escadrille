@@ -1,0 +1,5 @@
+Scene(
+    description: "Le SPAD à l'arrêt sur le pré, moteur au ralenti, vu de la poursuite : assiette trois points, ombre, herbe qui doit se lire comme un repère.",
+    scenario: "terrain",
+    camera: Chase(yaw: Deg(0.0), pitch: Deg(0.0)),
+)

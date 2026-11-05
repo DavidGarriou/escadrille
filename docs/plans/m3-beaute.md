@@ -47,6 +47,13 @@ Chacun laisse le jeu lançable, avec tests, `just check`, `just test`, captures 
 - **Réglages de qualité** : ressource `QualitySettings` (bas, moyen, haut, ultra), lue par chaque fonction coûteuse.
 - **Captures en 1440p** sur la RX 7800 XT, la définition du critère.
 
+**Fait le 2026-11-05** :
+- **scènes** : les sept scènes d'un vol sont des fichiers (scénario, caméra, soleil, commandes tenues, nombre d'images). Les six scènes qui posent l'avion à la main (`m0-sol`, `maquette-spad7`, `avion-studio`, `contre_jour_toile`, `degats-spad7` et `-proche`) restent en code : leur montage n'est pas un scénario ;
+- **captures** : rendu hors écran à la taille exacte demandée, car le compositeur ramenait la fenêtre à 2560 × 1366. Le temps est déterministe : l'horloge attend le chargement, puis avance de 1/60 s par image ; avant, une scène en vol dépendait de la vitesse du GPU ;
+- **mesure GPU** : `RenderDiagnosticsPlugin`, en mode capture seulement ; temps par passe dans le `.json` ;
+- **qualité** : ressource `Quality`, `--quality bas|moyen|haut|ultra`. Elle ne règle encore que la carte d'ombres ;
+- **mesure de départ en 1440p, « haut »** : 1,1 à 3,3 ms de GPU selon la scène. Les deux passes de la sonde d'environnement (`lightprobe_irradiance_map`, `lightprobe_radiance_map`), recalculées à chaque image, coûtent déjà 0,7 ms : c'est une piste pour l'étape 6.
+
 ### 1. Nuages volumétriques
 
 - **Densité** : fonction `cloud_density(position, temps)` écrite **deux fois**, en WGSL et en Rust, avec un test de parité :

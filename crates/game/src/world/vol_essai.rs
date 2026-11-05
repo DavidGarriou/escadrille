@@ -1,7 +1,7 @@
 //! The test flight (plans `m2-vol-essai.md`, `m2-train-sol.md`): `just run` starts it, the
-//! SPAD at rest on the field, over the plain. Two reference scenes capture its level
-//! flight after a few seconds, hands off: `vol-essai-poursuite` (chase view) and
-//! `vol-essai-pilote` (pilot's view).
+//! SPAD at rest on the field, over the plain. The reference scenes of a flight
+//! (`assets/scenes`) start from one of its scenarios, with their own camera, sun and
+//! commands.
 
 use std::path::Path;
 
@@ -11,31 +11,16 @@ use bevy::math::DVec3;
 use bevy::prelude::*;
 use escadrille_data::mockup::load_mockup;
 use escadrille_data::scenario::load_scenario;
+use escadrille_data::scene::{CameraSpec, load_scene};
 use escadrille_fdm::aircraft::PilotControls;
 
 use super::meadow::spawn_meadow;
-use super::plain::spawn_plain;
+use super::plain::{SUN_AZIMUTH_DEG, SUN_ELEVATION_DEG, Sun, spawn_plain};
 use crate::ASSETS_DIR;
-use crate::camera::{FlightCamera, PilotEye, View, spawn_flight_camera};
-use crate::dev::capture::CaptureHold;
+use crate::camera::{PilotEye, View, spawn_flight_camera};
+use crate::dev::capture::{CaptureHold, CaptureRequest};
 use crate::flight::bridge::to_bevy;
-use crate::flight::{
-    FINAL_APPROACH, ON_THE_FIELD, PilotInput, StartCommands, TEST_FLIGHT, spawn_scenario,
-};
-
-pub const SCENE_CHASE: &str = "vol-essai-poursuite";
-pub const SCENE_PILOT: &str = "vol-essai-pilote";
-/// At rest on the field, from the chase view and from the pilot's seat.
-pub const SCENE_FIELD: &str = "terrain-repos";
-pub const SCENE_FIELD_PILOT: &str = "terrain-pilote";
-/// Rolling, throttle open: long enough a capture (`--frames`) shows the tail coming up.
-pub const SCENE_ROLL: &str = "terrain-roulage";
-/// The meadow as the pilot sees it from the start of the final approach.
-pub const SCENE_FINAL: &str = "terrain-finale";
-/// The chase view from ahead and to the side: the wheels and the skid on the ground.
-pub const SCENE_WHEELS: &str = "terrain-roues";
-/// Chase camera's yaw of that scene, rad: ahead of the left wing.
-const WHEELS_YAW: f32 = 2.2;
+use crate::flight::{ON_THE_FIELD, PilotInput, StartCommands, spawn_scenario};
 
 /// What a flight's scenes share: the plain and its assets.
 #[derive(SystemParam)]
@@ -49,35 +34,45 @@ pub struct Scene<'w, 's> {
     hold: ResMut<'w, CaptureHold>,
 }
 
-/// `just run`, and the scenes on the field: the SPAD at rest.
+/// The afternoon sun of the test flight.
+const AFTERNOON: Sun = Sun {
+    azimuth_deg: SUN_AZIMUTH_DEG,
+    elevation_deg: SUN_ELEVATION_DEG,
+};
+
+/// `just run`: the SPAD at rest on the field.
 pub fn spawn_on_the_field(mut scene: Scene) -> Result {
-    spawn_flight(ON_THE_FIELD, &mut scene)
+    spawn_flight(ON_THE_FIELD, &mut scene, AFTERNOON, (0.0, 0.0))
 }
 
-/// The scenes in flight.
-pub fn spawn(mut scene: Scene) -> Result {
-    spawn_flight(TEST_FLIGHT, &mut scene)
-}
-
-/// The scene of the final approach.
-pub fn spawn_on_final(mut scene: Scene) -> Result {
-    spawn_flight(FINAL_APPROACH, &mut scene)
-}
-
-/// The rolling scene: on the field, throttle open and the stick pushed.
-pub fn spawn_rolling(mut scene: Scene) -> Result {
-    spawn_flight(ON_THE_FIELD, &mut scene)?;
-    let held = PilotControls {
-        throttle: 1.0,
-        pitch: -0.5,
-        ..PilotControls::default()
+/// A scene of `assets/scenes`: its scenario, sun, camera and held commands.
+pub fn spawn_scene_file(mut scene: Scene, request: Res<CaptureRequest>) -> Result {
+    let file = load_scene(Path::new(ASSETS_DIR), &request.scene)?;
+    let sun = file.sun.map_or(AFTERNOON, |s| Sun {
+        azimuth_deg: s.azimuth.si().to_degrees(),
+        elevation_deg: s.elevation.si().to_degrees(),
+    });
+    let (view, yaw, pitch) = match file.camera {
+        CameraSpec::Chase { yaw, pitch } => (View::Chase, yaw, pitch),
+        CameraSpec::Pilot { yaw, pitch } => (View::Pilot, yaw, pitch),
     };
-    scene.commands.insert_resource(StartCommands(held));
-    scene.commands.insert_resource(PilotInput::holding(held));
+    let look = (yaw.si() as f32, pitch.si() as f32);
+    spawn_flight(&file.scenario, &mut scene, sun, look)?;
+    scene.commands.insert_resource(view);
+    if let Some(c) = file.controls {
+        let held = PilotControls {
+            roll: c.roll,
+            pitch: c.pitch,
+            yaw: c.yaw,
+            throttle: c.throttle,
+        };
+        scene.commands.insert_resource(StartCommands(held));
+        scene.commands.insert_resource(PilotInput::holding(held));
+    }
     Ok(())
 }
 
-fn spawn_flight(name: &str, scene: &mut Scene) -> Result {
+fn spawn_flight(name: &str, scene: &mut Scene, sun: Sun, look: (f32, f32)) -> Result {
     let Scene {
         commands,
         asset_server,
@@ -87,7 +82,7 @@ fn spawn_flight(name: &str, scene: &mut Scene) -> Result {
         media,
         hold,
     } = scene;
-    spawn_plain(commands, meshes, materials, images, media);
+    spawn_plain(commands, meshes, materials, images, media, sun);
     spawn_meadow(commands, meshes, materials, images);
     let (aircraft, cg) = spawn_scenario(name, commands, asset_server, hold)?;
     // The pilot's eye of the 3D model's file (its node cam_pilot_eye).
@@ -99,18 +94,6 @@ fn spawn_flight(name: &str, scene: &mut Scene) -> Result {
     commands
         .entity(aircraft)
         .insert(PilotEye(to_bevy(eye - cg).as_vec3()));
-    spawn_flight_camera(commands);
+    spawn_flight_camera(commands, look);
     Ok(())
-}
-
-/// The chase camera of the scene of the wheels.
-pub fn look_at_the_wheels(mut cameras: Query<&mut FlightCamera>) {
-    for mut camera in &mut cameras {
-        camera.yaw = WHEELS_YAW;
-    }
-}
-
-/// The capture of the pilot's view.
-pub fn pilot_view(mut view: ResMut<View>) {
-    *view = View::Pilot;
 }

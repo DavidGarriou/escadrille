@@ -11,14 +11,14 @@ Référence détaillée : `nuages-volumetriques.md` (la fonctionnalité visuelle
 
 ## Scènes de référence
 
-Chacune est un fichier `assets/scenes/<nom>.ron` (caméra, heure, météo, graine) utilisé par `/capture`.
+Les scènes d'un vol sont des fichiers `assets/scenes/<nom>.ron` (scénario, caméra, soleil, commandes, nombre d'images ; l'heure, la météo et la graine viendront avec le M3). Celles qui posent l'avion à la main sont construites en code. Format et mode capture : skill `bevy` §7.
 
 | Scène | Ce qu'elle vérifie |
 |---|---|
 | `maquette-spad7` | repères du modèle 3D (ADR 0006) : axes du modèle de vol en gizmos, hélice et sens de rotation ; construite en code |
 | `avion-studio` | le SPAD au repos sur l'herbe, trois quarts avant à hauteur d'homme, soleil d'après-midi, atmosphère, ombres, TAA : modèle, matériaux et textures tels que le jeu les rend ; construite en code |
-| `vol-essai-poursuite`, `vol-essai-pilote` | le vol d'essai après une demi-minute sans toucher aux commandes : vue de poursuite, vue du pilote ; construites en code |
-| `terrain-repos`, `terrain-pilote`, `terrain-roulage`, `terrain-roues`, `terrain-finale` | le SPAD sur le pré : à l'arrêt, depuis le poste queue basse, au roulage (`--frames 1800`), le contact des roues, et le pré vu depuis la finale ; l'herbe doit se lire comme un repère de vitesse et de hauteur |
+| `vol-essai-poursuite`, `vol-essai-pilote` | le vol d'essai deux secondes après le départ, sans toucher aux commandes : vue de poursuite, vue du pilote |
+| `terrain-repos`, `terrain-pilote`, `terrain-roulage`, `terrain-roues`, `terrain-finale` | le SPAD sur le pré : à l'arrêt, depuis le poste queue basse, au roulage (7 s plein gaz, queue levée), le contact des roues, et le pré vu depuis la finale ; l'herbe doit se lire comme un repère de vitesse et de hauteur |
 | `aube_terrain` | soleil rasant, brume basse, avions alignés sur l'herbe, ombres longues |
 | `cumulus_midi` | champ de cumulus à 2 000 m, soleil haut, ombres des nuages au sol |
 | `contre_jour_toile` | avion à contre-jour : toile translucide, nervures visibles ; construite en code (SPAD vu d'en dessous, soleil 9° derrière lui) |
@@ -92,7 +92,7 @@ Flou de mouvement discret ; profondeur de champ dans le cockpit ; reflets d'obje
 ## Performances
 
 - Cible : 60 images/s minimum en 1440p, qualité « haut », sur le GPU de référence : **AMD Radeon RX 7800 XT 16 Go** (RDNA 3, Vulkan via Mesa RADV ; voir `docs/vision.md`). Mémoire vidéo ≤ 12 Go en « haut ». Mesurer sur ce pilote : RADV et le pilote propriétaire n'ont pas les mêmes performances. Budgets indicatifs à ajuster : nuages ≤ 3 ms, terrain ≤ 3 ms, ombres ≤ 2 ms, post-traitement ≤ 1,5 ms.
-- Préréglages de qualité (`QualitySettings`) : bas, moyen, haut, ultra ; chaque fonctionnalité coûteuse a un réglage.
+- Préréglages de qualité : ressource `Quality` (`render/quality.rs`), `--quality bas|moyen|haut|ultra` ; chaque fonctionnalité coûteuse y lit son réglage (pour l'instant, la carte d'ombres du soleil).
 - Mesurer avec Tracy et RenderDoc ; le `.json` de `/capture` sert de suivi de régression.
 
 ## Avant de déclarer fini

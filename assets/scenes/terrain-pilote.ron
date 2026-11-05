@@ -1,0 +1,5 @@
+Scene(
+    description: "Depuis le poste, queue basse : le capot et la Vickers bouchent l'avant, l'herbe se lit sur les côtés.",
+    scenario: "terrain",
+    camera: Pilot(yaw: Deg(0.0), pitch: Deg(0.0)),
+)

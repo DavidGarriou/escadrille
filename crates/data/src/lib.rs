@@ -16,6 +16,7 @@ pub mod model;
 pub mod origin;
 pub mod propeller;
 pub mod scenario;
+pub mod scene;
 pub mod units;
 
 use std::path::{Path, PathBuf};

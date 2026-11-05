@@ -2611,3 +2611,28 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur : « Oui, tout en A ».
 - **D** Plan `m3-beaute.md` validé avec les cinq options recommandées. Les licences RGE ALTI (Licence Ouverte 2.0) et DHMV II (licence flamande de réutilisation) sont acceptées par le joueur. Les fichiers se téléchargeront avec son accord, fichier par fichier, et seront inscrits dans `assets/LICENCES.md`.
 - **A** Historien lancé en parallèle : terrains de la SPA 3 dans les Flandres en 1917, tracé du front, cartes de 1917 et leurs droits, licences et fichiers exacts des deux MNT.
+
+## 2026-11-05
+
+### M3, incrément 0 : scènes en données et mesure
+
+- **Q** Le joueur : « Continuez le travail en cours sur main-tcd0yw : examinez les modifications non commitées, dites-moi dans quel état elles sont et terminez ce qui a été commencé ».
+- **R** État trouvé : l'incrément 0 du plan `m3-beaute.md`, entamé sans entrée au carnet :
+  - format `assets/scenes/<nom>.ron` et sept scènes de vol ;
+  - ressource `Quality` ;
+  - temps GPU par passe dans le `.json` ;
+  - captures en 2560 × 1440 par défaut.
+
+  Le code compilait, et `just check` comme `just test` passaient. Restaient à faire le rapport JSON, assemblé en retirant puis en remettant son accolade finale, la documentation et les captures.
+- **⚠** Les captures sortaient en **2560 × 1366** : le compositeur ramène la fenêtre à la zone utile de l'écran. **A** Les caméras rendent désormais dans une image hors écran, à la taille exacte demandée (`Screenshot::image`, vérifié dans les sources de Bevy 0.20 et l'exemple `headless_renderer`).
+- **⚠** Le temps simulé d'une capture suivait l'horloge réelle : les 1 800 images de `terrain-roulage` valaient 5,2 s de roulage en 1080p, et 6,3 s en 1440p. Une scène en vol dépendait donc de la vitesse du GPU. **A** L'horloge reste en pause pendant le chargement, puis avance de 1/60 s par image ; la durée réelle se mesure à part. **R** Deux captures de la même scène diffèrent de 9 pixels sur 3,7 millions.
+- **D** `terrain-roulage` passe à 420 images, soit 7 s : la queue est levée et l'avion roule encore. À 300 images, elle est basse ; à 540, l'avion a décollé.
+- **D** Les six scènes qui posent l'avion à la main restent construites en code ; seules les scènes d'un vol sont des fichiers.
+- **A** La recette `just capture` garde la capture précédente en `<scène>.avant.png` et `.avant.json`, comme le décrivait déjà le skill `capture`.
+- **R** Les treize scènes ont été recapturées et **regardées**, puis comparées à celles du 1er novembre :
+  - scènes en code : identiques, avec un écart moyen de 0,2 à 0,6 niveau sur 255 ;
+  - vol d'essai : même composition, deux secondes plus tard ;
+  - terrain : herbe un peu plus claire, éclaircie après les captures du 1er novembre.
+- **R** Coût en 1440p, qualité « haut » : de 1,1 à 3,3 ms de GPU. La sonde d'environnement de l'atmosphère, recalculée à chaque image, coûte déjà 0,7 ms.
+- **A** Mis à jour : skills `bevy` (§ 7) et `rendu-visuel`, plan `m3-beaute.md`. `just check` et `just test` passent (380 tests).
+- **⚠** La recherche de l'historien lancée le 2026-11-04 n'a laissé aucune fiche dans `docs/recherche/`. Les terrains de la SPA 3, le tracé du front, les cartes de 1917 et les fichiers des MNT restent à chercher avant les incréments 3 et 4.

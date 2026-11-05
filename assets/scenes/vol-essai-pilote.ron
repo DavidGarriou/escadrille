@@ -1,0 +1,5 @@
+Scene(
+    description: "Le vol d'essai depuis l'œil du pilote : capot, Vickers, viseurs, pare-brise, plan supérieur, câbles.",
+    scenario: "vol-essai",
+    camera: Pilot(yaw: Deg(0.0), pitch: Deg(0.0)),
+)

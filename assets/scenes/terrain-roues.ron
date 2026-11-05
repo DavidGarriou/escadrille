@@ -1,0 +1,5 @@
+Scene(
+    description: "Vue de l'avant et du côté : le contact des roues et de la béquille sur l'herbe.",
+    scenario: "terrain",
+    camera: Chase(yaw: Rad(2.2), pitch: Deg(0.0)),
+)

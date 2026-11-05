@@ -45,7 +45,7 @@ pub enum View {
 pub struct FlightCamera {
     /// Free look, rad: yaw to the right, pitch up.
     pub yaw: f32,
-    pitch: f32,
+    pub pitch: f32,
     /// Direction the chase camera looks along, following the aircraft's with a lag.
     chase: Option<Vec3>,
 }
@@ -96,11 +96,16 @@ pub fn outdoor_camera(transform: Transform, fov_deg: f32, ev100: f32) -> impl Bu
     )
 }
 
-/// The flight camera, behind the start until the aircraft is placed.
-pub fn spawn_flight_camera(commands: &mut Commands) {
+/// The flight camera, behind the start until the aircraft is placed, turned by `look`
+/// (yaw to the right and pitch up, rad).
+pub fn spawn_flight_camera(commands: &mut Commands, look: (f32, f32)) {
     commands.spawn((
         Name::new("Flight camera"),
-        FlightCamera::default(),
+        FlightCamera {
+            yaw: look.0,
+            pitch: look.1,
+            ..FlightCamera::default()
+        },
         outdoor_camera(Transform::default(), CHASE_FOV_DEG, DAYLIGHT_EV100),
     ));
 }

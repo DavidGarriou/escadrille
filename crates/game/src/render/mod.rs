@@ -3,6 +3,7 @@
 pub mod damage;
 pub mod fabric;
 pub mod mipmaps;
+pub mod quality;
 pub mod wires;
 
 use bevy::prelude::*;
@@ -12,7 +13,9 @@ pub struct RenderingPlugin;
 impl Plugin for RenderingPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(MaterialPlugin::<wires::WireMaterial>::default())
+            .init_resource::<quality::Quality>()
             .add_observer(damage::hide_damage_nodes)
+            .add_systems(PreStartup, quality::apply_quality)
             .add_systems(
                 Update,
                 (

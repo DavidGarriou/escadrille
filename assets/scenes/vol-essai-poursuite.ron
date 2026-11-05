@@ -1,0 +1,5 @@
+Scene(
+    description: "Le vol d'essai après quelques secondes sans toucher aux commandes, vu de la poursuite : l'avion en palier au-dessus de la plaine.",
+    scenario: "vol-essai",
+    camera: Chase(yaw: Deg(0.0), pitch: Deg(0.0)),
+)
