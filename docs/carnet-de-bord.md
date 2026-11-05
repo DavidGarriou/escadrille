@@ -2636,3 +2636,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Coût en 1440p, qualité « haut » : de 1,1 à 3,3 ms de GPU. La sonde d'environnement de l'atmosphère, recalculée à chaque image, coûte déjà 0,7 ms.
 - **A** Mis à jour : skills `bevy` (§ 7) et `rendu-visuel`, plan `m3-beaute.md`. `just check` et `just test` passent (380 tests).
 - **⚠** La recherche de l'historien lancée le 2026-11-04 n'a laissé aucune fiche dans `docs/recherche/`. Les terrains de la SPA 3, le tracé du front, les cartes de 1917 et les fichiers des MNT restent à chercher avant les incréments 3 et 4.
+- **⚠** Push impossible : l'agent SSH de la session est de nouveau vide (`Permission denied (publickey)`), comme le 2026-11-04. Le travail est commité en local (`7f438bd`). Le joueur charge sa clé avec `SSH_AUTH_SOCK=/run/user/1000/ssh-agent.socket ssh-add ~/.ssh/id_ed25519_fixe`, puis Claude pousse.
