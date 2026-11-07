@@ -188,6 +188,23 @@ fn a_summer_afternoon_has_scattered_cumulus() {
 }
 
 #[test]
+fn the_envelope_tells_its_top_and_clouds_lie_within_it() {
+    let layer = CloudLayer::default();
+    let uniforms = layer.uniforms(0.0, DVec3::ZERO);
+    for altitude in [1_250.0, 1_500.0, 1_900.0] {
+        for p in positions(5_000, 30_000.0, altitude) {
+            let coarse = textures().coarse(&uniforms, p);
+            assert!((0.0..=layer.thickness[2] as f32).contains(&coarse.above));
+            // No cloud outside an envelope: a march strides only there.
+            assert!(coarse.above > 0.0 || coarse.density == 0.0);
+            // Above the top of its envelope, nothing.
+            let over = textures().coarse(&uniforms, p + Vec3::Y * (coarse.above + 1.0));
+            assert!(coarse.above == 0.0 || over.density == 0.0);
+        }
+    }
+}
+
+#[test]
 fn the_wind_carries_the_clouds() {
     let layer = CloudLayer {
         wind: DVec3::new(12.0, 3.0, -5.0),

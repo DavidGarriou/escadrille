@@ -72,8 +72,9 @@ impl CloudTextures {
         }
     }
 
-    /// Density of the clouds before the detail noise, and the height fraction in the
-    /// layer of the type of cloud there: the cheap first look of a ray march.
+    /// Density of the clouds before the detail noise, the height fraction in the layer of
+    /// the type of cloud there, and the distance up to the top of the cloud's envelope:
+    /// the cheap first look of a ray march.
     pub fn coarse(&self, uniforms: &CloudUniforms, position: Vec3) -> Coarse {
         let u = uniforms;
         let weather = self
@@ -94,6 +95,7 @@ impl CloudTextures {
         Coarse {
             density: ((envelope - eaten) / (1.0 - eaten)).max(0.0),
             height,
+            above: (cover - height) * thickness,
         }
     }
 
@@ -118,17 +120,20 @@ impl CloudTextures {
     }
 }
 
-/// Density before the detail noise, and height fraction in the layer.
+/// Density before the detail noise, height fraction in the layer, and distance up to the
+/// top of the envelope, m: zero outside every envelope, where a march may stride.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Coarse {
     pub density: f32,
     pub height: f32,
+    pub above: f32,
 }
 
 impl Coarse {
     const CLEAR: Self = Self {
         density: 0.0,
         height: 0.0,
+        above: 0.0,
     };
 }
 

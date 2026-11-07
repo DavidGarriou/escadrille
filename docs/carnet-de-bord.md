@@ -2775,3 +2775,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   5. **Champ trop régulier.** Les dômes ont tous la même taille. Piste : des tailles et des épaisseurs par cellule.
   6. **Liserés jaunes** sur quelques sommets lointains : c'est la limite de la frange mince, à revoir après le point 1.
 - **D** Prochaine itération recommandée : refaire le terme de diffusion multiple en octaves, avec un premier pas fin vers le soleil et le ciel atténué vers le haut, plus la gigue sur l'enjambée et le recadrage du contre-jour. Ensuite viendront les ombres au sol.
+
+### M3, incrément 1 : modelé et contre-jour des nuages
+
+- **Q** Le joueur : « Oui, enchaîner ».
+- **A** Diffusion multiple en deux parts (`escadrille_weather::scattering`, et le shader en jumeau) : une part rapide près de la face éclairée, 1,8·e^−τ, puis la traîne de diffusion, 2,1/(1 + 0,055τ).
+  - **⚠** La première version réglait la réflexion à τ = 50 et le contraste des bourgeons, mais assombrissait de 30 à 48 % les bases des nuages minces.
+  - **A** Les constantes viennent donc d'un balayage, par un script qui reproduit l'intégration du test : sommet et base à τ = 50 à 8 % près, bases de τ = 5 à 100 à 20 % près, bourgeon de 50 m dans son ombre 2 fois plus sombre.
+  - Nouveau test de contraste. La lumière ambiante suit la même décroissance (niveau 2,3, recalé par son test).
+- **A** Pour l'éclairage :
+  - **soleil** : le premier pas vers lui passe de 40 à 8 m, et les deux premiers portent sur la densité détaillée ;
+  - **ciel** : il est atténué par la profondeur jusqu'au sommet de l'enveloppe. La densité grossière renvoie désormais cette distance, en Rust comme en WGSL, et un test la vérifie.
+- **A** Pour les stries :
+  - la marche n'enjambe plus que l'air hors de toute enveloppe ;
+  - la gigue s'étale sur toute l'enjambée.
+
+  **R** Les stries ont disparu, jusqu'à l'horizon.
+- **A** Contre-jour recadré : soleil à 9°, avion à 2 000 m dans une couche de 1 500 à 2 400 m, caméra relevée de 5°. La graine 3 collait une tour à l'avion ; la graine 20, choisie avec la référence Rust, met les tours entre 1 et 3 km. **R** Soleil dans le cadre, bords clairs et chauds, faces à l'ombre.
+- **R** Coût : 0,9 ms (`cumulus_midi`) et 1,5 ms (`cumulus_contre_jour`) de GPU en 1440p. `just check` et `just test` passent (418 tests). Troisième revue du directeur artistique en cours.

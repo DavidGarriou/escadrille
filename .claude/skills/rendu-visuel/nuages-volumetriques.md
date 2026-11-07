@@ -23,8 +23,9 @@ Dans un simulateur de 14-18, les nuages sont à la fois le décor principal et u
 
 **En place** (2026-11-07) : le modèle de `escadrille_weather::scattering`, jumeau des fonctions du shader `render.wesl`, dont les tests vérifient l'énergie :
 - **diffusion simple** : phase de Henyey-Greenstein à deux lobes × e^−τ vers le soleil ;
-- **diffusion multiple, par approximation de diffusion** : 2,8 / (4π (1 + 0,08 τ)). Elle est étalonnée pour qu'une couche τ = 50, soleil à 58°, renvoie par le dessus et transmette par la base ce que donne la théorie à deux flux (Bohren 1987), à 5 % près. Les octaves de Wrenninge, en e^−τ/2ⁿ, éteignaient la base des cumulus, qui prenait alors la couleur du ciel ;
-- **ciel et sol**, chacun sur sa demi-sphère, atténués par diffusion. Le sol a un albédo de 0,18 (`ESTIMÉ`, champs) et reçoit le soleil hors des ombres des nuages ;
+- **diffusion multiple, en deux parts** : une part rapide près de la face éclairée, 1,8·e^−τ, qui donne les creux entre les bourgeons ; puis la traîne de diffusion, 2,1/(1 + 0,055τ), qui garde la lumière des bases ; le tout divisé par 4π. Les constantes viennent d'un balayage contre la théorie à deux flux (Bohren 1987) : à τ = 50, sommet à +8 % et base à −2 % ; un bourgeon de 50 m dans son ombre est 2 fois plus sombre. Deux impasses : les octaves de Wrenninge en e^−τ/2ⁿ éteignaient les bases, la diffusion seule ne laissait aucun modelé ;
+- **marche vers le soleil** : premier pas de 8 m, puis ×2,3 ; les deux premiers pas portent sur la densité détaillée, pour que les bourgeons s'ombrent entre eux ;
+- **ciel et sol**, chacun sur sa demi-sphère, atténués par la même décroissance : le ciel par la profondeur jusqu'au sommet de l'enveloppe, le sol par celle jusqu'à la base. Le sol a un albédo de 0,18 (`ESTIMÉ`, champs) et reçoit le soleil hors des ombres des nuages ;
 - **limite** : le modèle est local. Une frange mince au soleil renvoie autant que le sommet d'un nuage épais.
 
 Repères visés, d'après le directeur artistique : un cumulus au soleil est l'objet le plus lumineux du ciel, 2 à 4 fois plus que le ciel voisin ; sa base et ses creux sont 3 à 5 fois plus sombres que ses sommets ; son bord passe du clair à l'opaque en une dizaine de mètres (d'où le gain de 4 sur la densité finale).
@@ -38,6 +39,8 @@ Principes de départ :
 - Couleurs cohérentes avec l'atmosphère (lever et coucher du soleil, perspective aérienne sur les nuages lointains).
 
 ## Performances
+
+- **Marche en place** : pas proportionnels à la distance (2 %). Elle enjambe trois pas à la fois l'air situé hors de toute enveloppe, avec une gigue étalée sur toute l'enjambée ; elle recule à l'entrée d'un nuage. Sans cela, des stries apparaissaient sur les dômes, et jusqu'à l'horizon.
 
 - Raymarching à résolution réduite (quart de résolution, par exemple) avec reprojection temporelle et reconstruction ; pas adaptatifs (grands pas dans le vide, petits dans la densité).
 - Bruit bleu pour décaler les échantillons, accumulé par la reprojection.

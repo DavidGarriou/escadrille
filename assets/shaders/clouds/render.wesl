@@ -11,12 +11,12 @@
 // energy against two-stream theory; the functions and constants below are its twins, to
 // be changed together.
 // - Sunlight, dimmed by the atmosphere (transmittance table), scattered once (two-lobe
-//   Henyey-Greenstein phase, e^−τ towards the sun) and many times (diffusion, falling as
-//   1 / (1 + k τ)). The optical depth towards the sun comes from a short march on the
+//   Henyey-Greenstein phase, e^−τ towards the sun) and many times (a fast part near the
+//   lit surface, e^−τ, and the slow fall of diffusion deep in the cloud, 1 / (1 + k τ)). The optical depth towards the sun comes from a short march on the
 //   coarse density.
-// - The sky above and the ground below, each from its half of the sphere, dimmed by
-//   diffusion through the cloud on its side: towards the sun stands for towards the open
-//   sky; down to the base of the layer, at the density of the sample, for the ground. The
+// - The sky above and the ground below, each from its half of the sphere, dimmed through
+//   the cloud on its side: up to the top of the envelope, and down to the base of the
+//   layer, at the density of the sample. The
 //   ground is the albedo of fields lit by the sun, outside the clouds' shadows, and by the
 //   sky.
 // Each step is integrated exactly over its length (Hillaire 2016). Steps grow with the
@@ -63,13 +63,18 @@ const FORWARD_G: f32 = 0.8;
 const BACKWARD_G: f32 = -0.3;
 const FORWARD_WEIGHT: f32 = 0.7;
 // Multiple scattering, ambient light, ground: `escadrille_weather::scattering`.
-const DIFFUSE_LEVEL: f32 = 2.8;
-const DIFFUSE_FALL: f32 = 0.08;
-const AMBIENT_LEVEL: f32 = 1.8;
+const SURFACE_LEVEL: f32 = 1.8;
+const SURFACE_DEPTH: f32 = 1.0;
+const DIFFUSE_LEVEL: f32 = 2.1;
+const DIFFUSE_FALL: f32 = 0.055;
+const AMBIENT_LEVEL: f32 = 2.3;
 const GROUND_ALBEDO: f32 = 0.18;
-// Length of the first step towards the sun, m; each next one is longer by LIGHT_GROWTH.
-const LIGHT_STEP: f32 = 40.0;
-const LIGHT_GROWTH: f32 = 1.6;
+// Length of the first step towards the sun, m, a few texels of the detail noise so that
+// the buds shade one another; each next one is longer by LIGHT_GROWTH (6 steps: 900 m).
+// The first DETAILED_LIGHT_STEPS look at the full density, the others at the coarse one.
+const LIGHT_STEP: f32 = 8.0;
+const LIGHT_GROWTH: f32 = 2.3;
+const DETAILED_LIGHT_STEPS: u32 = 2u;
 // Each step of the march is this share of the distance from the eye, between the
 // shortest step and MAX_STEP.
 const STEP_SHARE: f32 = 0.02;
@@ -78,7 +83,10 @@ const MAX_STEP: f32 = 500.0;
 // MAX_LOOKS times along a ray, empty or not. On meeting a cloud after a stride it steps
 // back and goes on at its plain step: otherwise it enters the clouds at distances
 // quantised by the stride, which the jitter of the first step does not cover, and the
-// shells of equal distance show as stripes.
+// shells of equal distance show as stripes. It strides only outside every envelope of
+// cloud, where nothing can be missed, and the jitter spreads the first look over a whole
+// stride: else each row of the screen shares the same grid of looks, and a top barely
+// grazed shows on one row and not on the next.
 const EMPTY_STRIDE: f32 = 3.0;
 const MAX_LOOKS: u32 = 384u;
 // Transmittance under which a ray stops: the rest cannot be seen.
@@ -95,17 +103,23 @@ fn phase(cos_theta: f32) -> f32 {
     return backward * (1.0 - FORWARD_WEIGHT) + forward * FORWARD_WEIGHT;
 }
 
-fn diffused(depth: f32) -> f32 {
-    return 1.0 / (1.0 + DIFFUSE_FALL * depth);
+fn multiple(depth: f32) -> f32 {
+    let surface = SURFACE_LEVEL * exp(-depth / SURFACE_DEPTH);
+    let diffusion = DIFFUSE_LEVEL / (1.0 + DIFFUSE_FALL * depth);
+    return (surface + diffusion) / (4.0 * PI);
 }
 
 // `sun_scattering` of the reference, the phase already computed for the ray.
 fn sun_scattering(depth_to_sun: f32, single_phase: f32) -> f32 {
-    return single_phase * exp(-depth_to_sun) + DIFFUSE_LEVEL * diffused(depth_to_sun) / (4.0 * PI);
+    return single_phase * exp(-depth_to_sun) + multiple(depth_to_sun);
+}
+
+fn ambient_share(depth: f32) -> f32 {
+    return multiple(depth) / multiple(0.0);
 }
 
 fn ambient_scattering(sky: vec3<f32>, ground: vec3<f32>, depth_up: f32, depth_down: f32) -> vec3<f32> {
-    return 0.5 * AMBIENT_LEVEL * (sky * diffused(depth_up) + ground * diffused(depth_down));
+    return 0.5 * AMBIENT_LEVEL * (sky * ambient_share(depth_up) + ground * ambient_share(depth_down));
 }
 
 // Interleaved gradient noise (Jimenez, "Next Generation Post Processing in Call of Duty:
@@ -115,14 +129,23 @@ fn jitter(pixel: vec2<f32>, frame: u32) -> f32 {
     return fract(52.9829189 * fract(dot(p, vec2<f32>(0.06711056, 0.00583715))));
 }
 
-// Optical depth of the clouds from a point towards the sun, on the coarse density.
+// Optical depth of the clouds from a point towards the sun: the full density on the first
+// steps, so that the buds of the detail shade one another, the coarse one beyond.
 fn optical_depth_to_sun(position: vec3<f32>, to_sun: vec3<f32>) -> f32 {
     var depth = 0.0;
     var travelled = 0.0;
     var step = LIGHT_STEP;
     for (var i = 0u; i < cloud_pass.light_steps; i++) {
         let at = position + to_sun * (travelled + 0.5 * step);
-        depth += cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, at).x * step;
+        var density = 0.0;
+        if i < DETAILED_LIGHT_STEPS {
+            density = cloud_density(
+                clouds, shape_noise, detail_noise, weather_map, cloud_sampler, at,
+            );
+        } else {
+            density = cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, at).x;
+        }
+        depth += density * step;
         travelled += step;
         step *= LIGHT_GROWTH;
     }
@@ -200,8 +223,8 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     var light = vec3<f32>(0.0);
     var weighted_distance = 0.0;
     var weights = 0.0;
-    // The first look is shifted within its step by the jitter, the others follow it.
-    var t = near + clamp(near * STEP_SHARE, cloud_pass.min_step, MAX_STEP)
+    // The first look is shifted within a stride by the jitter, the others follow it.
+    var t = near + clamp(near * STEP_SHARE, cloud_pass.min_step, MAX_STEP) * EMPTY_STRIDE
         * jitter(in.position.xy, cloud_pass.frame);
     var steps = 0u;
     var strided = false;
@@ -213,8 +236,14 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
             break;
         }
         let position = eye + direction * at;
-        if cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, position).x <= 0.0 {
-            if plain_steps > 0u {
+        let coarse = cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, position);
+        if coarse.x <= 0.0 {
+            if coarse.z > 0.0 {
+                // Inside an envelope the shape may come back at the next look: plain
+                // steps, and no step back on meeting it.
+                strided = false;
+                t += step;
+            } else if plain_steps > 0u {
                 plain_steps--;
                 t += step;
             } else {
@@ -244,10 +273,13 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
         let r = length(atmosphere_position);
         let up = atmosphere_position / r;
         let sun_through_air = sun * sample_transmittance_lut(r, dot(to_sun, up));
+        // Cloud on each side: towards the sun; up to the top of the envelope, for the sky;
+        // down to the base of the layer, for the ground; at the density of the sample.
         let depth_to_sun = optical_depth_to_sun(position, to_sun);
+        let depth_up = extinction * coarse.z;
         let depth_down = extinction * (position.y - bottom);
         let scattered = sun_through_air * sun_scattering(depth_to_sun, single_phase)
-            + ambient_scattering(sky, ground, depth_to_sun, depth_down);
+            + ambient_scattering(sky, ground, depth_up, depth_down);
 
         // Scattering coefficient = extinction (the albedo of cloud droplets is about 1).
         let source = extinction * scattered;

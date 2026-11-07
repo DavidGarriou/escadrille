@@ -21,7 +21,7 @@ Les scènes d'un vol sont des fichiers `assets/scenes/<nom>.ron` (scénario, cam
 | `terrain-repos`, `terrain-pilote`, `terrain-roulage`, `terrain-roues`, `terrain-finale` | le SPAD sur le pré : à l'arrêt, depuis le poste queue basse, au roulage (7 s plein gaz, queue levée), le contact des roues, et le pré vu depuis la finale ; l'herbe doit se lire comme un repère de vitesse et de hauteur |
 | `aube_terrain` | soleil rasant, brume basse, avions alignés sur l'herbe, ombres longues |
 | `cumulus_midi` | le SPAD à 2 000 m (scénario `vol-2000`) au-dessus d'un champ de cumulus de beau temps (base 1 000 m, 700 m d'épaisseur, graine 3), soleil haut derrière la caméra : dômes blancs, bases grises, rangées qui rapetissent vers l'horizon ; plus tard, les ombres des nuages au sol |
-| `cumulus_contre_jour` | le même champ face au soleil bas de l'après-midi (22° au sud) : faces à l'ombre, liseré des bords |
+| `cumulus_contre_jour` | des tours de cumulus à 1 à 3 km, face au soleil à 9° au sud, vues de la poursuite dans la couche (base 1 500 m, 900 m d'épaisseur, graine 20) : soleil dans le cadre, bords clairs, faces à l'ombre |
 | `contre_jour_toile` | avion à contre-jour : toile translucide, nervures visibles ; construite en code (SPAD vu d'en dessous, soleil 9° derrière lui) |
 | `no_mans_land` | rase-mottes au-dessus des tranchées et des cratères inondés |
 | `combat_couchant` | combat au soleil couchant : traçantes, fumée, reflets |

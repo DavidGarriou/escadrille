@@ -70,15 +70,16 @@ fn cloud_profile(height: f32, cloud_type: f32) -> f32 {
     return cloud_blend_types(rise * (vec3<f32>(1.0) - fall), cloud_type);
 }
 
-// Density before the detail noise (x) and height fraction in the layer (y): the cheap
-// first look of a ray march.
+// Density before the detail noise (x), height fraction in the layer (y), and distance up
+// to the top of the cloud's envelope, m (z; zero outside every envelope): the cheap first
+// look of a ray march.
 fn cloud_coarse(
     u: CloudUniforms,
     shape: texture_3d<f32>,
     weather: texture_2d<f32>,
     repeat_linear: sampler,
     position: vec3<f32>,
-) -> vec2<f32> {
+) -> vec3<f32> {
     let w = textureSampleLevel(
         weather, repeat_linear, position.xz * u.weather_inverse_scale + u.weather_offset, 0.0,
     ).rg;
@@ -87,14 +88,14 @@ fn cloud_coarse(
     let thickness = cloud_blend_types(u.thickness, cloud_type);
     let height = (position.y + u.altitude_offset - u.base_altitude) / thickness;
     if height <= 0.0 || height >= cover {
-        return vec2<f32>(0.0);
+        return vec3<f32>(0.0);
     }
     let s = textureSampleLevel(
         shape, repeat_linear, position * u.shape_inverse_scale + u.shape_offset, 0.0,
     ).r;
     let envelope = cover * cloud_profile(height / cover, cloud_type);
     let eaten = (1.0 - s) * u.shape_erosion;
-    return vec2<f32>(max((envelope - eaten) / (1.0 - eaten), 0.0), height);
+    return vec3<f32>(max((envelope - eaten) / (1.0 - eaten), 0.0), height, (cover - height) * thickness);
 }
 
 // Density of the clouds, 0 to 1: the share of the full extinction.
