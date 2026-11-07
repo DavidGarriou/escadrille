@@ -87,7 +87,7 @@ Flou de mouvement discret ; profondeur de champ dans le cockpit ; reflets d'obje
 - Dans `assets/shaders/`, modules nommés `escadrille::<domaine>::<module>` et importés.
 - Structures partagées Rust ↔ WGSL dérivées de `ShaderType` ; unités documentées (mètres monde, radiance).
 - Rechargement à chaud en dev (feature de surveillance des fichiers de Bevy).
-- Tout ce qui agit sur le gameplay a une implémentation Rust de référence et un **test de parité** (échantillons comparés entre CPU et GPU).
+- Tout ce qui agit sur le gameplay a une implémentation Rust de référence et un **test de parité** (échantillons comparés entre CPU et GPU). Modèle : `crates/game/src/render/clouds.rs`. Le test obtient un GPU par `bevy::render::renderer::initialize_renderer`, sans application Bevy, puis lance le module WGSL dans une passe de calcul et relit le résultat.
 
 ## Performances
 

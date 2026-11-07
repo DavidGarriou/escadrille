@@ -73,6 +73,7 @@ Chacun laisse le jeu lançable, avec tests, `just check`, `just test`, captures 
 **En cours depuis le 2026-11-07** :
 - **densité de référence** : crate `escadrille_weather`, sans Bevy (le FDM en est le modèle), car la densité sert aussi au jeu et aux outils. Bruits périodiques générés en Rust, carte météo, profils, couverture et vent, 25 tests ;
 - **schéma retenu** : celui de *Nubis* (2017). La carte météo place chaque nuage et fixe sa hauteur ; le bruit de forme érode son enveloppe. Couper le bruit de forme par la couverture (Schneider 2015) dessinait, vu de dessus, une grille de nuages identiques tous les 4 km.
+- **jumeau WGSL et parité** : `assets/shaders/clouds/density.wesl` ; le test le lance sur le GPU sur 65 536 points (écart au pire de 3,5·10⁻³, en moyenne de 2,5·10⁻⁵ sur la RX 7800 XT).
 
 ### 2. Heure du jour
 

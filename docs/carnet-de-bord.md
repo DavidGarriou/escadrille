@@ -2696,3 +2696,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** `crates/weather/` (`escadrille_weather`) entre dans l'arborescence de `CLAUDE.md`, avec l'accord du joueur. Le fichier `nuages-volumetriques.md` du skill `rendu-visuel` indique où se trouve la densité de référence et pourquoi le schéma de *Nubis* a été retenu.
 - **?** Reste au joueur : la lecture retenue pour la date du jeu (`flandres-1917.md` § 1.2).
 - **A** Suite : la densité en WGSL et le test de parité sur le GPU.
+
+### M3, incrément 1 : densité en WGSL et test de parité
+
+- **Q** Le joueur : « Oui, continuer ».
+- **A** `assets/shaders/clouds/density.wesl` : la densité en WGSL, jumelle ligne à ligne de la référence Rust. Le module est en WGSL pur, sans import ; textures et échantillonneur y sont des paramètres de fonction, si bien que chaque passe les lie où elle veut.
+- **A** `crates/game/src/render/clouds.rs` :
+  - `GpuCloudUniforms`, les uniformes au format WGSL (96 octets, vérifiés par un test) ;
+  - `GridTexture`, qui fait des grilles des textures de Bevy, échantillonnées en linéaire avec répétition ;
+  - le **test de parité** : il obtient un GPU par `initialize_renderer` de Bevy, sans dépendance nouvelle, lance le module dans une passe de calcul sur 65 536 points et compare avec la référence.
+- **R** Sur la RX 7800 XT, 18 % des points tombent dans un nuage. L'écart est au pire de 3,5·10⁻³ et en moyenne de 2,5·10⁻⁵, à cause de l'arrondi des poids du filtrage matériel. Seuils du test : 10⁻² au pire, 2·10⁻⁴ en moyenne.
+- **A** Mis à jour : skill `rendu-visuel` (parité, et `nuages-volumetriques.md`), plan `m3-beaute.md`. `just check` et `just test` passent (408 tests).
+- **A** Suite : la passe de rendu (marche de rayons en quart de résolution, éclairage, composition avec la profondeur), l'ADR 0009 et la scène `cumulus_midi`.

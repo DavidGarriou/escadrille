@@ -1,5 +1,6 @@
 //! Rendering: how the game's assets are prepared for the GPU (skill `rendu-visuel`).
 
+pub mod clouds;
 pub mod damage;
 pub mod fabric;
 pub mod mipmaps;
