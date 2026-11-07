@@ -57,6 +57,13 @@ Principes de départ :
 - Composition avec la profondeur de la scène (avions devant et dans les nuages).
 - Réglages de qualité : nombre de pas, résolution, détail.
 
+## Ombres des nuages
+
+**En place (2026-11-07)** : une carte de transmittance vue du soleil (`shadow.wesl`, R8, 1 024² sur 24 km, soit 23 m par texel), posée sur le soleil comme texture de lumière (`DirectionalLightTexture`, feature `pbr_light_textures` ; voir ADR 0004). Bevy la projette le long du soleil sur tout ce que la lumière éclaire : sol et avion. Le soleil est recentré chaque image sur la caméra, son échelle étant la demi-portée de la carte ; ses cascades d'ombre n'utilisent que sa rotation. La carte est répétée : hors de la portée, une texture de lumière non répétée éteindrait le soleil, et la répétition se perd dans la brume.
+- **Une valeur par rayon de soleil** : sans précaution, un avion au soleil au-dessus d'un nuage prendrait l'ombre que ce nuage jette au sol. Autour de la ligne de soleil de l'avion joueur (30 m, puis un fondu sur autant), la carte ne compte que les nuages au-dessus de lui. Le sol de cette ligne est dans l'ombre de l'avion. Les avions de l'IA (M4) poseront la même question.
+- **Coût** : 0,12 à 0,14 ms en 1440p ; 24 pas sur la densité grossière par texel, à chaque image.
+- **À suivre** : la même carte, en profondeur optique, pour l'ombre lointaine d'un nuage sur son voisin, que la marche vers le soleil (2,9 km) ne voit pas sous un soleil bas.
+
 ## Dans le nuage
 
 - Caméra dans le volume : brouillard volumétrique local, perte de repères, gouttelettes sur le pare-brise en option, turbulence (le FDM lit la densité via le trait `Environment`).

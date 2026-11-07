@@ -9,8 +9,9 @@ repository.workspace = true
 publish.workspace = true
 
 [dependencies]
-# Textures of diffuse transmission, for the translucent fabric (ADR 0004, features).
-bevy = { workspace = true, features = ["pbr_transmission_textures"] }
+# Textures of diffuse transmission, for the translucent fabric; light textures, for the
+# shadows of the clouds (ADR 0004, features).
+bevy = { workspace = true, features = ["pbr_transmission_textures", "pbr_light_textures"] }
 escadrille_data.workspace = true
 escadrille_fdm.workspace = true
 escadrille_weather.workspace = true

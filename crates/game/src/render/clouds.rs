@@ -20,7 +20,7 @@ use bevy::asset::RenderAssetUsages;
 use bevy::camera::visibility::NoFrustumCulling;
 use bevy::diagnostic::FrameCount;
 use bevy::image::{Image, ImageAddressMode, ImageFilterMode, ImageSampler, ImageSamplerDescriptor};
-use bevy::light::{NotShadowCaster, NotShadowReceiver};
+use bevy::light::{DirectionalLightTexture, NotShadowCaster, NotShadowReceiver};
 use bevy::math::{DVec3, Vec2, Vec3};
 use bevy::mesh::{Indices, MeshVertexBufferLayoutRef, PrimitiveTopology};
 use bevy::pbr::{MaterialPipeline, MaterialPipelineKey};
@@ -33,11 +33,11 @@ use bevy::shader::ShaderRef;
 use escadrille_weather::clouds::{CloudLayer, CloudTextures, CloudUniforms};
 use escadrille_weather::grid::{Plane, Volume};
 
-pub use pass::GpuCloudPass;
+pub use pass::{GpuCloudPass, GpuCloudShadow};
 
 use super::quality::Quality;
 use crate::flight::bridge::to_bevy;
-use crate::flight::simulation::RenderOrigin;
+use crate::flight::simulation::{Player, RenderOrigin};
 
 /// Longest distance a ray marches, m: the clouds of a layer at 1 500 m seen from 2 000 m
 /// reach the horizon at about 50 km (`escadrille_weather`'s flat world).
@@ -50,6 +50,23 @@ const TARGET_FORMAT: TextureFormat = TextureFormat::Rgba16Float;
 /// Format of the cloud distances: where the march stopped (the scene, or the longest
 /// distance) and the mean distance of the clouds, m.
 const DISTANCE_FORMAT: TextureFormat = TextureFormat::Rg32Float;
+
+/// The shadow of the clouds: a map of the sunlight's transmittance through them, seen from
+/// the sun, laid on the sun as its light texture (`DirectionalLightTexture`), which veils
+/// its light on the ground and the aircraft. Side, texels, and span, m: 23 m a texel,
+/// sharper than the penumbra of a cloud 1 km up (9 m for the sun's half degree) is not
+/// needed from the air. Beyond the span the map repeats, in the haze.
+const SHADOW_SIZE: u32 = 1024;
+const SHADOW_SPAN_M: f32 = 24_000.0;
+/// Looks along each ray of the shadow map, through the layer towards the sun.
+const SHADOW_STEPS: u32 = 24;
+/// Around the aircraft's line towards the sun, the map holds only the clouds above it: a
+/// ray holds one value for all its heights, and an aircraft in the sun above a cloud would
+/// otherwise take the shadow the cloud casts on the ground. The ground of that line lies in
+/// the aircraft's own shadow. Radius of the line, m; the map turns back to the full column
+/// over as much again.
+const SHADOW_FOCUS_RADIUS_M: f32 = 30.0;
+const SHADOW_FORMAT: TextureFormat = TextureFormat::R8Unorm;
 
 /// The shader of the composite, under `assets/`.
 const COMPOSITE_SHADER: &str = "shaders/clouds/composite.wesl";
@@ -81,6 +98,8 @@ pub struct CloudImages {
 pub struct CloudTarget {
     pub color: Handle<Image>,
     pub distance: Handle<Image>,
+    /// The shadow map, laid on the sun.
+    pub shadow: Handle<Image>,
     pub divisor: u32,
     veil: Entity,
 }
@@ -161,6 +180,7 @@ pub struct CloudFrame {
     pub uniforms: GpuCloudUniforms,
     pub pass: GpuCloudPass,
     pub origin: DVec3,
+    pub shadow: GpuCloudShadow,
 }
 
 pub struct CloudsPlugin;
@@ -175,7 +195,8 @@ impl Plugin for CloudsPlugin {
                         .chain()
                         .run_if(resource_exists::<Clouds>),
                     clear_sky.run_if(not(resource_exists::<Clouds>)),
-                ),
+                )
+                    .before(TransformSystems::Propagate),
             );
         pass::build(app);
     }
@@ -201,6 +222,12 @@ fn spawn_veil(
     };
     let color = images.add(image(TARGET_FORMAT));
     let distance = images.add(image(DISTANCE_FORMAT));
+    let shadow = images.add(Image::new_target_texture(
+        SHADOW_SIZE,
+        SHADOW_SIZE,
+        SHADOW_FORMAT,
+        None,
+    ));
     let divisor = quality.cloud_divisor();
     let veil = commands
         .spawn((
@@ -220,6 +247,7 @@ fn spawn_veil(
     commands.insert_resource(CloudTarget {
         color,
         distance,
+        shadow,
         divisor,
         veil,
     });
@@ -279,16 +307,60 @@ fn generate_images(
     });
 }
 
+/// The player's aircraft, neither the sun nor the camera.
+type PlayerOnly = (With<Player>, Without<DirectionalLight>, Without<Camera3d>);
+
+/// The sun, which carries the shadow map, and whether it carries it already.
+type Suns<'w, 's> = Query<
+    'w,
+    's,
+    (Entity, &'static mut Transform, Has<DirectionalLightTexture>),
+    With<DirectionalLight>,
+>;
+
 /// The uniforms of this frame: the clouds carried by the wind for the game's time, around
-/// the render origin.
+/// the render origin. The sun carries the shadow map, centred on the camera, its side the
+/// map's span (a light texture spans the light's local −1 to 1).
+#[expect(
+    clippy::too_many_arguments,
+    reason = "the clouds, their clocks, and the three bodies the shadow map follows"
+)]
 fn update_frame(
     clouds: Res<Clouds>,
+    target: Res<CloudTarget>,
     time: Res<Time>,
     origin: Option<Res<RenderOrigin>>,
     frames: Res<FrameCount>,
     quality: Res<Quality>,
+    cameras: Query<&Transform, (With<Camera3d>, Without<DirectionalLight>)>,
+    player: Query<&Transform, PlayerOnly>,
+    mut suns: Suns,
     mut commands: Commands,
 ) {
+    let eye = cameras.iter().next().map_or(Vec3::ZERO, |t| t.translation);
+    let focus = player.iter().next().map_or(eye, |t| t.translation);
+    let mut shadow = GpuCloudShadow::default();
+    if let Some((sun, mut transform, textured)) = suns.iter_mut().next() {
+        let half = 0.5 * SHADOW_SPAN_M;
+        transform.translation = eye;
+        transform.scale = Vec3::new(half, half, 1.0);
+        if !textured {
+            commands.entity(sun).insert(DirectionalLightTexture {
+                image: target.shadow.clone(),
+                tiled: true,
+            });
+        }
+        shadow = GpuCloudShadow {
+            center: eye,
+            half_span: half,
+            right: transform.rotation * Vec3::X,
+            steps: SHADOW_STEPS,
+            up: transform.rotation * Vec3::Y,
+            focus_radius: SHADOW_FOCUS_RADIUS_M,
+            to_sun: transform.rotation * Vec3::Z,
+            focus,
+        };
+    }
     let origin = origin.map_or(DVec3::ZERO, |o| to_bevy(o.0));
     let uniforms = clouds.layer.uniforms(time.elapsed_secs_f64(), origin);
     let (steps, light_steps) = quality.cloud_steps();
@@ -303,16 +375,22 @@ fn update_frame(
             max_distance: MAX_DISTANCE_M,
         },
         origin,
+        shadow,
     });
 }
 
 fn clear_sky(
     frame: Option<Res<CloudFrame>>,
     target: Option<Res<CloudTarget>>,
+    mut suns: Query<(Entity, &mut Transform), With<DirectionalLightTexture>>,
     mut commands: Commands,
 ) {
     if frame.is_some() {
         commands.remove_resource::<CloudFrame>();
+    }
+    for (sun, mut transform) in &mut suns {
+        transform.scale = Vec3::ONE;
+        commands.entity(sun).remove::<DirectionalLightTexture>();
     }
     if let Some(target) = target {
         commands.entity(target.veil).despawn();

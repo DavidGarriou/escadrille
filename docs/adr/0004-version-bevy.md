@@ -51,5 +51,6 @@ Le workspace prend les features par défaut de Bevy (`2d`, `3d`, `ui`, `audio`).
 | Feature | Depuis | Pourquoi |
 |---|---|---|
 | `pbr_transmission_textures` | 2026-10-27 | Toile translucide à contre-jour (plan `m3-modele-spad7.md`, B5 et B6) : la transmission diffuse varie sur la toile, plus faible sous les rubans, presque nulle sur les nervures et les longerons. |
+| `pbr_light_textures` | 2026-11-07 | Ombres des nuages (plan `m3-beaute.md`, incrément 1 ; ADR 0009) : une texture de transmittance vue du soleil, posée sur le soleil (`DirectionalLightTexture`), voile sa lumière sur le sol et l'avion. Elle passe par les décalques regroupés (`pbr_clustered_decals`), que la feature active aussi. |
 
 Le plan B6 prévoit aussi `pbr_anisotropy_texture`, `pbr_clustered_decals` et `ktx2` (déjà dans les features par défaut, avec `zstd_rust`), à ajouter à ce tableau quand ils serviront.

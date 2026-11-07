@@ -11,6 +11,10 @@
 //! system, does not matter: a transparent material blends the clouds after it
 //! ([`super::CloudComposite`]).
 //!
+//! A third pass, before the opaque objects, writes the shadow map of the clouds: for each
+//! texel, the sunlight's transmittance through the layer along its ray towards the sun.
+//! The sun carries it as its light texture, so the ground and the aircraft see it.
+//!
 //! The march's group 0 rebuilds the layout of `render_sky` (bindings 0 to 13 of
 //! `bevy_pbr::atmosphere::bindings`, then the depth), so that the shader can import the
 //! atmosphere's functions: every resource it binds is public, only Bevy's own bind group
@@ -58,9 +62,10 @@ use super::{
     repeat_linear,
 };
 
-/// The shaders of the march and of the temporal pass, under `assets/`.
+/// The shaders of the march, of the temporal pass and of the shadow map, under `assets/`.
 const MARCH_SHADER: &str = "shaders/clouds/render.wesl";
 const TEMPORAL_SHADER: &str = "shaders/clouds/temporal.wesl";
+const SHADOW_SHADER: &str = "shaders/clouds/shadow.wesl";
 
 /// Weight of the current frame in the temporal blend: about ten frames averaged, which
 /// smooths the jitter of the steps.
@@ -94,15 +99,34 @@ struct GpuCloudTemporal {
     max_distance: f32,
 }
 
+/// The shadow shader's `CloudShadow`: where the map lies, seen from the sun. A texel at
+/// `uv` stands for the ray towards the sun from `center + right x + up y`, with
+/// `x = (1 − 2 u) half_span` and `y = (2 v − 1) half_span`: Bevy's mapping of a light
+/// texture (`pbr_lighting.wesl`).
+#[derive(ShaderType, Debug, Clone, Copy, PartialEq, Default)]
+pub struct GpuCloudShadow {
+    pub center: Vec3,
+    pub half_span: f32,
+    pub right: Vec3,
+    pub steps: u32,
+    pub up: Vec3,
+    pub focus_radius: f32,
+    pub to_sun: Vec3,
+    /// The aircraft, whose line towards the sun keeps only the clouds above it.
+    pub focus: Vec3,
+}
+
 /// What the main world says of the clouds this frame, in the render world.
 #[derive(Resource, Debug, Clone)]
 struct ExtractedClouds {
     uniforms: GpuCloudUniforms,
     pass: GpuCloudPass,
+    shadow: GpuCloudShadow,
     origin: DVec3,
     images: CloudImages,
     color: Handle<Image>,
     distance: Handle<Image>,
+    shadow_map: Handle<Image>,
 }
 
 pub fn build(app: &mut App) {
@@ -124,10 +148,13 @@ pub fn build(app: &mut App) {
         )
         .add_systems(
             Core3d,
-            (march_clouds, resolve_clouds)
-                .chain()
-                .after(main_opaque_pass_3d)
-                .before(main_transparent_pass_3d),
+            (
+                shadow_clouds.before(main_opaque_pass_3d),
+                (march_clouds, resolve_clouds)
+                    .chain()
+                    .after(main_opaque_pass_3d)
+                    .before(main_transparent_pass_3d),
+            ),
         );
 }
 
@@ -137,10 +164,12 @@ struct CloudPipelines {
     atmosphere: BindGroupLayoutDescriptor,
     clouds: BindGroupLayoutDescriptor,
     temporal: BindGroupLayoutDescriptor,
+    shadow: BindGroupLayoutDescriptor,
     noise_sampler: Sampler,
     history_sampler: Sampler,
     march: CachedRenderPipelineId,
     resolve: CachedRenderPipelineId,
+    shadow_map: CachedRenderPipelineId,
 }
 
 fn init_pipelines(
@@ -200,6 +229,13 @@ fn init_pipelines(
             ),
         ),
     );
+    let shadow = BindGroupLayoutDescriptor::new(
+        "clouds_shadow_layout",
+        &BindGroupLayoutEntries::single(
+            ShaderStages::FRAGMENT,
+            uniform_buffer::<GpuCloudShadow>(false),
+        ),
+    );
     let noise_sampler = render_device.create_sampler(&repeat_linear().as_wgpu());
     let history_sampler = render_device.create_sampler(&SamplerDescriptor {
         label: Some("clouds_history_sampler"),
@@ -241,14 +277,31 @@ fn init_pipelines(
         }),
         ..default()
     });
+    let shadow_map = pipeline_cache.queue_render_pipeline(RenderPipelineDescriptor {
+        label: Some("clouds_shadow_pipeline".into()),
+        layout: vec![shadow.clone(), clouds.clone()],
+        vertex: fullscreen_shader.to_vertex_state(),
+        fragment: Some(FragmentState {
+            shader: asset_server.load(SHADOW_SHADER),
+            targets: vec![Some(ColorTargetState {
+                format: TextureFormat::R8Unorm,
+                blend: None,
+                write_mask: ColorWrites::ALL,
+            })],
+            ..default()
+        }),
+        ..default()
+    });
     commands.insert_resource(CloudPipelines {
         atmosphere,
         clouds,
         temporal,
+        shadow,
         noise_sampler,
         history_sampler,
         march,
         resolve,
+        shadow_map,
     });
 }
 
@@ -265,21 +318,26 @@ fn extract_clouds(
         (Some(frame), Some(images), Some(target)) => commands.insert_resource(ExtractedClouds {
             uniforms: frame.uniforms,
             pass: frame.pass,
+            shadow: frame.shadow,
             origin: frame.origin,
             images: images.clone(),
             color: target.color.clone(),
             distance: target.distance.clone(),
+            shadow_map: target.shadow.clone(),
         }),
         _ if current.is_some() => commands.remove_resource::<ExtractedClouds>(),
         _ => {}
     }
 }
 
-/// The uniform buffers of the march's group 1.
+/// The uniform buffers of the march's group 1 and of the shadow map, and the shadow
+/// map's bind groups.
 #[derive(Resource, Default)]
 struct CloudBuffers {
     uniforms: UniformBuffer<GpuCloudUniforms>,
     pass: UniformBuffer<GpuCloudPass>,
+    shadow: UniformBuffer<GpuCloudShadow>,
+    shadow_groups: Option<(BindGroup, BindGroup)>,
 }
 
 fn write_buffers(
@@ -291,11 +349,18 @@ fn write_buffers(
     let Some(clouds) = clouds else {
         return;
     };
-    let CloudBuffers { uniforms, pass } = buffers.as_mut();
+    let CloudBuffers {
+        uniforms,
+        pass,
+        shadow,
+        ..
+    } = buffers.as_mut();
     uniforms.set(clouds.uniforms);
     pass.set(clouds.pass);
+    shadow.set(clouds.shadow);
     uniforms.write_buffer(&render_device, &render_queue);
     pass.write_buffer(&render_device, &render_queue);
+    shadow.write_buffer(&render_device, &render_queue);
 }
 
 /// A texture and its view.
@@ -427,7 +492,7 @@ fn prepare_bind_groups(
         &ViewDepthStencilTexture,
     )>,
     clouds: Option<Res<ExtractedClouds>>,
-    buffers: Res<CloudBuffers>,
+    mut buffers: ResMut<CloudBuffers>,
     pipelines: Option<Res<CloudPipelines>>,
     images: Res<RenderAssets<GpuImage>>,
     render_device: Res<RenderDevice>,
@@ -460,6 +525,7 @@ fn prepare_bind_groups(
         Some(lights_binding),
         Some(uniforms_binding),
         Some(pass_binding),
+        Some(shadow_binding),
     ) = (
         atmospheres.binding(),
         settings.binding(),
@@ -468,6 +534,7 @@ fn prepare_bind_groups(
         lights.view_gpu_lights.binding(),
         buffers.uniforms.binding(),
         buffers.pass.binding(),
+        buffers.shadow.binding(),
     )
     else {
         return;
@@ -484,6 +551,12 @@ fn prepare_bind_groups(
             &pipelines.noise_sampler,
         )),
     );
+    let shadow_group = render_device.create_bind_group(
+        "clouds_shadow_bind_group",
+        &pipeline_cache.get_bind_group_layout(&pipelines.shadow),
+        &BindGroupEntries::single(shadow_binding),
+    );
+    buffers.shadow_groups = Some((shadow_group, cloud_group.clone()));
     for (entity, atmosphere, textures, depth) in &views {
         let Some(cloud_view) = state.0.get_mut(&entity) else {
             continue;
@@ -671,4 +744,44 @@ fn resolve_clouds(
             depth_or_array_layers: 1,
         },
     );
+}
+
+/// The shadow map of the clouds, into the image the sun carries, before the opaque objects
+/// are lit by it.
+fn shadow_clouds(
+    clouds: Option<Res<ExtractedClouds>>,
+    pipelines: Option<Res<CloudPipelines>>,
+    pipeline_cache: Res<PipelineCache>,
+    images: Res<RenderAssets<GpuImage>>,
+    buffers: Res<CloudBuffers>,
+    mut ctx: RenderContext,
+) {
+    let (Some(clouds), Some(pipelines)) = (clouds, pipelines) else {
+        return;
+    };
+    let (Some(pipeline), Some((shadow_group, cloud_group)), Some(map)) = (
+        pipeline_cache.get_render_pipeline(pipelines.shadow_map),
+        buffers.shadow_groups.as_ref(),
+        images.get(&clouds.shadow_map),
+    ) else {
+        return;
+    };
+    let diagnostics = ctx.diagnostic_recorder();
+    let diagnostics = diagnostics.as_deref();
+    let mut pass = ctx
+        .command_encoder()
+        .begin_render_pass(&RenderPassDescriptor {
+            label: Some("clouds_shadow"),
+            color_attachments: &[attachment(&map.texture_view)],
+            depth_stencil_attachment: None,
+            timestamp_writes: None,
+            occlusion_query_set: None,
+            multiview_mask: None,
+        });
+    let span = diagnostics.pass_span(&mut pass, "clouds_shadow");
+    pass.set_pipeline(pipeline);
+    pass.set_bind_group(0, shadow_group, &[]);
+    pass.set_bind_group(1, cloud_group, &[]);
+    pass.draw(0..3, 0..1);
+    span.end(&mut pass);
 }

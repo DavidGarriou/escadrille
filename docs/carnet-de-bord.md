@@ -2847,3 +2847,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Images regardées : `cumulus_midi` et `cumulus_contre_jour` à peu près identiques à la pleine résolution, bords de l'avion propres. Deux images consécutives diffèrent de 0,04 % (3 pixels sur 1,28 million de plus de 4 %) : pas de scintillement.
 - **R** Coût en 1440p : marche 0,3 à 0,44 ms, temporel 0,02 ms, contre 0,9 à 1,6 ms en pleine résolution.
 - **A** Deux tests nouveaux (diviseur par qualité, taille arrondie). `just check` et `just test` passent (421 tests).
+
+### M3, incrément 1 : ombres des nuages
+
+- **Q** Le joueur : « Oui, les ombres ».
+- **D** Bevy 0.20 a des textures de lumière : `DirectionalLightTexture`, posé sur le soleil, voile sa lumière par une image projetée le long de sa direction. Elles passent par les décalques regroupés. J'active la feature `pbr_light_textures` et je l'inscris au tableau des features de l'ADR 0004, qui prévoit ces ajouts. Ses cascades d'ombre n'utilisent que la rotation du soleil : la translation et l'échelle peuvent servir à cadrer la carte.
+- **A** Une passe avant les objets opaques (`shadow.wesl`) écrit une carte de transmittance vue du soleil : R8, 1 024² sur 24 km, 24 pas sur la densité grossière par texel, T = e^−τ. Le soleil, recentré chaque image sur la caméra, la porte en mode répété. Non répétée, la texture éteindrait le soleil hors de la carte ; répétée, la répétition se perd dans la brume.
+- **⚠** Bevy ne lit qu'une valeur par rayon de soleil : un avion au soleil au-dessus d'un nuage aurait pris l'ombre que ce nuage jette au sol. **A** Autour de la ligne de soleil de l'avion joueur (30 m, puis un fondu sur autant), la carte ne compte que les nuages au-dessus de lui ; le sol de cette ligne est dans l'ombre de l'avion. Les avions de l'IA poseront la même question au M4.
+- **R** Images regardées :
+  - **midi** : la plaine est tachetée d'ombres bleutées sous chaque cumulus, décalées selon le soleil, et l'avion reste au soleil ;
+  - **contre-jour** : les ombres longues du soleil bas couvrent une grande part de la plaine.
+- **R** Une scène sans nuages n'a pas changé (0,1 %). Coût de la passe : 0,12 à 0,14 ms. Les autres passes paraissaient 30 % plus lentes et le CPU trois fois plus lent : l'autre session (capture en erreur) tournait en même temps. Le coût des textures de lumière dans la passe des opaques reste à remesurer au calme.
+- **A** `just check` et `just test` passent (421 tests). Revue du directeur artistique demandée.
