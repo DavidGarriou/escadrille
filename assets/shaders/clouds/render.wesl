@@ -70,10 +70,12 @@ const DIFFUSE_FALL: f32 = 0.055;
 const AMBIENT_LEVEL: f32 = 2.3;
 const GROUND_ALBEDO: f32 = 0.18;
 // Length of the first step towards the sun, m, a few texels of the detail noise so that
-// the buds shade one another; each next one is longer by LIGHT_GROWTH (6 steps: 900 m).
+// the buds shade one another; each next one is longer by LIGHT_GROWTH (6 steps: 2.9 km,
+// the width of a tower crossed by a low sun; at 900 m, the dark side of a tower against a
+// sun at 9° kept three times the light two-stream theory lets through).
 // The first DETAILED_LIGHT_STEPS look at the full density, the others at the coarse one.
 const LIGHT_STEP: f32 = 8.0;
-const LIGHT_GROWTH: f32 = 2.3;
+const LIGHT_GROWTH: f32 = 3.0;
 const DETAILED_LIGHT_STEPS: u32 = 2u;
 // Each step of the march is this share of the distance from the eye, between the
 // shortest step and MAX_STEP.
@@ -218,6 +220,9 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     let ground = GROUND_ALBEDO / PI * (sun_on_ground * (1.0 - clouds.cover) + PI * sky);
     let cos_theta = dot(direction, to_sun);
     let single_phase = phase(cos_theta);
+    // How much the eye's side of a cloud opens on the sky: fully when the eye looks down
+    // or across, not at all when it looks up at a base, whose eye's side faces the ground.
+    let flank_weight = saturate(1.0 - 2.0 * direction.y);
 
     var transmittance = 1.0;
     var light = vec3<f32>(0.0);
@@ -273,10 +278,17 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
         let r = length(atmosphere_position);
         let up = atmosphere_position / r;
         let sun_through_air = sun * sample_transmittance_lut(r, dot(to_sun, up));
-        // Cloud on each side: towards the sun; up to the top of the envelope, for the sky;
-        // down to the base of the layer, for the ground; at the density of the sample.
+        // Cloud on each side: towards the sun; for the sky, up to the top of the envelope,
+        // or back along the eye's ray when the eye looks at a flank, which sees the sky in
+        // front of it (third review: flanks lost the sky's blue); down to the base of the
+        // layer, for the ground; at the density of the sample.
         let depth_to_sun = optical_depth_to_sun(position, to_sun);
-        let depth_up = extinction * coarse.z;
+        let depth_eye = -log(max(transmittance, OPAQUE)) + 0.5 * extinction * step;
+        let depth_up = mix(
+            extinction * coarse.z,
+            min(extinction * coarse.z, depth_eye),
+            flank_weight,
+        );
         let depth_down = extinction * (position.y - bottom);
         let scattered = sun_through_air * sun_scattering(depth_to_sun, single_phase)
             + ambient_scattering(sky, ground, depth_up, depth_down);

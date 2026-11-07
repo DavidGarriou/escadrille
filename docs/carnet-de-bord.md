@@ -2810,3 +2810,16 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   6. **Mineurs** : un liseré jaune-vert sur les sommets les plus lointains ; à contre-jour, un flanc du fuselage trop éclairé, peut-être par la translucidité de la toile.
 - **R** Base suffisante pour passer au quart de résolution, à une condition : corriger d'abord le point 1. Les ombres au sol devraient être une carte de profondeur optique vers le soleil, qui servira aussi à l'ombre lointaine d'un nuage sur son voisin.
 - **?** Au joueur : corriger d'abord la lumière du ciel sur les flancs (environ une heure), comme le recommande la revue.
+
+### M3, incrément 1 : lumière du ciel sur les flancs, contre-jour
+
+- **Q** Le joueur : « Oui, corriger ».
+- **A** Vue de débogage par terme sur `cumulus_contre_jour` : quatre captures, une par terme d'éclairage (diffusion simple, diffusion multiple, ciel, sol), en remplaçant la somme dans le shader le temps de les faire.
+- **R** Le corps des tours est dominé par la diffusion multiple du soleil, orangée et presque uniforme. La lumière du ciel, bleue, y est déjà notable ; la diffusion simple ne donne qu'un liseré fin ; le sol est sombre.
+- **⚠** La cause principale n'est donc pas celle que supposait la revue. La marche vers le soleil s'arrêtait vers 900 m, alors qu'un soleil à 9° traverse plusieurs kilomètres de tour. La profondeur vers le soleil était sous-estimée, et la face sombre gardait environ trois fois la lumière que laisse passer la théorie à deux flux.
+- **A** La marche vers le soleil porte à 2,9 km (6 pas, ×3).
+- **A** La lumière du ciel passe aussi par le côté de l'œil : sa profondeur est la plus faible entre celle jusqu'au sommet de l'enveloppe et celle déjà traversée le long du rayon de vue. Un flanc vu de face voit le ciel devant lui. Ce chemin ne vaut pas quand l'œil regarde une base par en dessous, puisque de ce côté la base voit le sol. C'est la profondeur latérale de la revue, sans échantillon de plus.
+- **R** Images regardées :
+  - **contre-jour** : le corps des tours passe du brun saumon à un gris lilas bleuté, avec des bords dorés près du soleil. Le corps reste à peu près de la luminance du ciel ;
+  - **midi** : inchangé pour l'essentiel.
+- **R** Coût : 0,9 et 1,6 ms de GPU en 1440p. `just check` et `just test` passent (418 tests). Seul le shader change : le modèle Rust et ses tests restent valables.
