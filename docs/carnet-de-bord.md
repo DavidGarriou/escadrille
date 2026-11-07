@@ -2860,3 +2860,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Une scène sans nuages n'a pas changé (0,1 %). Coût de la passe : 0,12 à 0,14 ms. Les autres passes paraissaient 30 % plus lentes et le CPU trois fois plus lent : l'autre session (capture en erreur) tournait en même temps. Le coût des textures de lumière dans la passe des opaques reste à remesurer au calme.
 - **A** `just check` et `just test` passent (421 tests). Revue du directeur artistique demandée.
 - **R** Réponse au joueur : les ombres tachettent la plaine sous chaque cumulus, l'avion garde le soleil au-dessus des nuages ; restent l'ombre lointaine d'un nuage sur son voisin, les réserves des revues et deux scènes. La revue du directeur artistique est en cours.
+
+### Revue du directeur artistique : ombres des nuages
+
+- **R** Verdict « approuvé ». Les ombres donnent l'échelle à midi : la couche se lit à 1 000 m au-dessus de la plaine. Le contre-jour est jugé la meilleure image du projet : ombres de 9 à 15 km, couloir ensoleillé dans l'azimut du soleil, contraste chaud sur froid. L'avion garde le soleil dans les deux scènes.
+- **R** À corriger, par ordre d'impact :
+  1. **À midi, les ombres se lisent comme des lacs bleus.** La seule lumière d'ambiance est la carte d'environnement d'un ciel clair (`camera/mod.rs:88`). Piste : une `AmbientLight` presque neutre, proportionnelle à la couverture, pour viser un rapport ombre/soleil d'environ 1/3 en gardant la teinte des champs.
+  2. **Au-delà de 15 km, les ombres sont une copie périodique de la carte**, sans lien avec leurs nuages ; elles ne sont lues qu'au niveau de mip 0. Pistes : avancer le centre de la carte dans la direction de la vue, passer à 2 048² sur 48 km, et fondre ses bords vers la transmittance moyenne.
+  3. **Bords trop nets par soleil bas**, alors que la pénombre vaut 90 à 140 m à 10-15 km. Piste : un flou dans l'espace du soleil, proportionnel à la distance.
+  4. **Bords qui glissent en mouvement** : le centre suit l'œil sans s'aligner sur la grille des texels. Piste : l'aligner.
+  5. **Risque d'une tache de soleil fantôme** au sol, sur la ligne de soleil de l'avion, quand un nuage est sous lui. Piste : réduire le rayon à deux texels, et ajouter une scène de contrôle.
+- **R** À vérifier : l'avion à l'ombre d'un nuage, sous la base (aucune capture ne le montre) ; la lumière renvoyée par la mer de nuages vers le dessous de l'avion, que l'ambiance ignore.
+- **D** Prochaine itération recommandée : la lumière d'ambiance neutre (point 1), et dans la même passe les points 2 et 4 (centre avancé, bords fondus, alignement), puis une séquence en mouvement.
