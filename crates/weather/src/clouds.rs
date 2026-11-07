@@ -36,8 +36,9 @@ pub const WEATHER_SIZE: u32 = 512;
 const RISE_END: [f32; 3] = [0.1, 0.15, 0.06];
 const FALL_START: [f32; 3] = [0.4, 0.5, 0.65];
 
-/// Height fraction over which the detail noise turns from wisps (at the base) to billows.
-const WISPS_HEIGHT: f32 = 0.1;
+/// Height fraction over which the detail noise turns from wisps (at the base) to billows:
+/// a thin band, since the base of a cumulus is flat and sharp.
+const WISPS_HEIGHT: f32 = 0.03;
 
 /// Gain of the Perlin noise of the shape around ½, which spreads it over [0, 1].
 const PERLIN_GAIN: f32 = 1.5;
@@ -200,8 +201,8 @@ impl Default for CloudLayer {
     /// mission's weather:
     /// - base 1 200 m, cumulus 1 200 m thick (humilis to mediocris are a few hundred
     ///   metres to 1.5 km deep), stratocumulus 500 m, stratus 300 m;
-    /// - extinction 0.06/m, from σ ≈ 3 LWC / (2 ρw re) with a liquid water content of
-    ///   0.4 g/m³ and droplets of 10 µm: a visibility of about 65 m inside;
+    /// - extinction 0.09/m, from σ ≈ 3 LWC / (2 ρw re) with a liquid water content of
+    ///   0.5 g/m³ and droplets of 8 µm: a visibility of about 45 m inside at full density;
     /// - weather map repeat 32 km: clumps of about 2 km, one cumulus each, with a cover
     ///   that goes from clear to almost full from one clump to the next;
     /// - shape repeat 4 km, billows of about 700 m and finer; detail repeat 250 m.
@@ -214,7 +215,7 @@ impl Default for CloudLayer {
             cloud_type: 1.0,
             type_variation: 0.2,
             wind: DVec3::ZERO,
-            extinction: 0.06,
+            extinction: 0.09,
             shape_scale: 4_000.0,
             detail_scale: 250.0,
             weather_scale: 32_000.0,

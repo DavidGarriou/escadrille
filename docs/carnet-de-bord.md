@@ -2708,3 +2708,24 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Sur la RX 7800 XT, 18 % des points tombent dans un nuage. L'écart est au pire de 3,5·10⁻³ et en moyenne de 2,5·10⁻⁵, à cause de l'arrondi des poids du filtrage matériel. Seuils du test : 10⁻² au pire, 2·10⁻⁴ en moyenne.
 - **A** Mis à jour : skill `rendu-visuel` (parité, et `nuages-volumetriques.md`), plan `m3-beaute.md`. `just check` et `just test` passent (408 tests).
 - **A** Suite : la passe de rendu (marche de rayons en quart de résolution, éclairage, composition avec la profondeur), l'ADR 0009 et la scène `cumulus_midi`.
+
+### M3, incrément 1 : passe de rendu des nuages, premières images
+
+- **Q** Le joueur : « Oui, continuer » (passe de rendu, ADR 0009, scène `cumulus_midi`).
+- **D** ADR 0009 (proposé) : une marche de rayons maison, éclairée par les tables de l'atmosphère de Bevy. La passe recrée le groupe de liaisons de `render_sky`, dont toutes les ressources sont publiques, et importe ses fonctions WESL.
+- **⚠** Il faut poser les nuages après le ciel de Bevy et avant les objets transparents. Or `render_sky` est un système privé, et trois voies ont échoué :
+  - `.after()` ne peut pas nommer ce système ;
+  - son ensemble implicite se retrouve dans le schedule, mais on ne peut pas reconstruire son identifiant interné ;
+  - une passe de construction du schedule exigerait la crate `indexmap`, une dépendance de plus.
+
+  **A** Solution en deux temps, par des API publiques seulement :
+  - la marche écrit lumière et transmittance dans sa propre image, entre les opaques et les transparents, sans toucher à l'image principale ;
+  - un matériau transparent plein écran compose cette image. Un biais de tri le fait dessiner en premier dans la passe des transparents, donc après le ciel et sous les haubans.
+- **A** Scène `cumulus_midi` (champ `clouds` des scènes, facultatif) : le SPAD à 1 000 m parmi des cumulus dont la base est à 600 m, avec la graine 3, choisie par la référence Rust pour que la trajectoire reste dégagée. Les scènes sans nuages ne changent pas (écart de 0,09 %, le bruit de la TAA).
+- **⚠** Quatre défauts, trouvés l'un après l'autre sur les captures :
+  1. Vus de dessous, les nuages paraissaient bleus et translucides. Une capture de diagnostic, qui dessine les nuages en noir selon leur seule opacité, les a montrés opaques : c'était l'éclairage. Sous un nuage épais, la marche vers le soleil s'éteint, et les octaves de multidiffusion aussi ; seule restait la lumière du ciel. **A** Approximation de diffusion, en 1/(1 + ¾(1−g)τ) (Bohren 1987), et rebond du sol sous les bases.
+  2. Caméra dans la couche : les 96 pas s'épuisaient vers 1,5 km, et aucun nuage lointain n'apparaissait. **A** La marche enjambe l'air vide trois pas à la fois, et seuls les pas dans un nuage comptent.
+  3. Nuages cotonneux. **A** La lumière du ciel est atténuée dans le nuage ; l'extinction passe à 0,09/m (eau liquide 0,5 g/m³, gouttes de 8 µm) ; la frange en filaments de la base passe de 10 % à 3 % de la couche.
+  4. Encore trop doux et trop gris : en revue par le directeur artistique.
+- **R** Coût : 1,3 ms de GPU en 1440p, qualité « haut », en pleine résolution, sur la RX 7800 XT.
+- **A** `just check` et `just test` passent (410 tests).

@@ -40,7 +40,7 @@ const CLOUD_RISE_END = vec3<f32>(0.1, 0.15, 0.06);
 const CLOUD_FALL_START = vec3<f32>(0.4, 0.5, 0.65);
 
 // Height fraction over which the detail noise turns from wisps (at the base) to billows.
-const CLOUD_WISPS_HEIGHT: f32 = 0.1;
+const CLOUD_WISPS_HEIGHT: f32 = 0.03;
 
 // A quantity of the three types of cloud, blended for a type between them: stratus at 0,
 // stratocumulus at ½, cumulus at 1.

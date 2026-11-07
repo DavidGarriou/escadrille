@@ -4,24 +4,284 @@
 //! reference that the game also queries, and in WGSL by `assets/shaders/clouds/
 //! density.wesl` for the render (`CLAUDE.md`, CPU/GPU parity). The parity test below runs
 //! the shader on the GPU over the same textures and uniforms, and compares.
+//!
+//! The render (ADR 0009) has two steps: the ray march writes the light and transmittance
+//! of the clouds into [`CloudTarget`] (`pass`), then a transparent material over the
+//! whole screen, [`CloudComposite`], blends that image over the sky and the opaque
+//! objects, first in the transparent pass, after Bevy's sky.
+
+mod pass;
 
 use bevy::asset::RenderAssetUsages;
+use bevy::camera::visibility::NoFrustumCulling;
+use bevy::diagnostic::FrameCount;
 use bevy::image::{Image, ImageAddressMode, ImageFilterMode, ImageSampler, ImageSamplerDescriptor};
-use bevy::math::{Vec2, Vec3};
-use bevy::render::render_resource::{Extent3d, ShaderType, TextureDimension, TextureFormat};
-use escadrille_weather::clouds::CloudUniforms;
+use bevy::light::{NotShadowCaster, NotShadowReceiver};
+use bevy::math::{DVec3, Vec2, Vec3};
+use bevy::mesh::{Indices, MeshVertexBufferLayoutRef, PrimitiveTopology};
+use bevy::pbr::{MaterialPipeline, MaterialPipelineKey};
+use bevy::prelude::*;
+use bevy::render::render_resource::{
+    AsBindGroup, CompareFunction, Extent3d, RenderPipelineDescriptor, ShaderType,
+    SpecializedMeshPipelineError, TextureDimension, TextureFormat,
+};
+use bevy::shader::ShaderRef;
+use escadrille_weather::clouds::{CloudLayer, CloudTextures, CloudUniforms};
 use escadrille_weather::grid::{Plane, Volume};
+
+pub use pass::GpuCloudPass;
+
+use super::quality::Quality;
+use crate::flight::bridge::to_bevy;
+use crate::flight::simulation::RenderOrigin;
+
+/// Longest distance a ray marches, m: the clouds of a layer at 1 500 m seen from 2 000 m
+/// reach the horizon at about 50 km (`escadrille_weather`'s flat world).
+const MAX_DISTANCE_M: f32 = 60_000.0;
+/// Shortest step of a ray, m: a few texels of the detail noise (7.8 m).
+const MIN_STEP_M: f32 = 12.0;
+
+/// Format of the cloud image: light (rgb, HDR) and transmittance (a).
+const TARGET_FORMAT: TextureFormat = TextureFormat::Rgba16Float;
+
+/// The shader of the composite, under `assets/`.
+const COMPOSITE_SHADER: &str = "shaders/clouds/composite.wesl";
+
+/// Sort bias of the composite: far behind everything, so that the transparent pass draws
+/// it first and the wires and other transparent objects over it.
+const COMPOSITE_DEPTH_BIAS: f32 = -1.0e9;
+
+/// The layer of clouds over the world and the seed of its noises; without it, a clear
+/// sky. Set by a scene, later by a mission's weather.
+#[derive(Resource, Debug, Clone, PartialEq)]
+pub struct Clouds {
+    pub layer: CloudLayer,
+    pub seed: u32,
+}
+
+/// The noise textures of the clouds as images, and the seed they come from.
+#[derive(Resource, Debug, Clone)]
+pub struct CloudImages {
+    seed: u32,
+    pub shape: Handle<Image>,
+    pub detail: Handle<Image>,
+    pub weather: Handle<Image>,
+}
+
+/// The image the rays write, the size of the camera's, and the entity that blends it.
+#[derive(Resource, Debug, Clone)]
+pub struct CloudTarget {
+    pub image: Handle<Image>,
+    veil: Entity,
+}
+
+/// Material of the composite: the cloud image over the whole screen, premultiplied (light,
+/// and 1 − transmittance in alpha), without depth test or culling.
+#[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
+pub struct CloudComposite {
+    #[texture(0)]
+    #[sampler(1)]
+    pub clouds: Handle<Image>,
+}
+
+impl Material for CloudComposite {
+    fn vertex_shader() -> ShaderRef {
+        COMPOSITE_SHADER.into()
+    }
+
+    fn fragment_shader() -> ShaderRef {
+        COMPOSITE_SHADER.into()
+    }
+
+    fn alpha_mode(&self) -> AlphaMode {
+        AlphaMode::Premultiplied
+    }
+
+    fn depth_bias(&self) -> f32 {
+        COMPOSITE_DEPTH_BIAS
+    }
+
+    fn enable_prepass() -> bool {
+        false
+    }
+
+    fn enable_shadows() -> bool {
+        false
+    }
+
+    fn specialize(
+        _pipeline: &MaterialPipeline,
+        descriptor: &mut RenderPipelineDescriptor,
+        _layout: &MeshVertexBufferLayoutRef,
+        _key: MaterialPipelineKey<Self>,
+    ) -> Result<(), SpecializedMeshPipelineError> {
+        descriptor.primitive.cull_mode = None;
+        if let Some(depth) = descriptor.depth_stencil.as_mut() {
+            depth.depth_compare = Some(CompareFunction::Always);
+            depth.depth_write_enabled = Some(false);
+        }
+        Ok(())
+    }
+}
+
+/// A triangle that covers the screen in clip space: the composite's vertex shader passes
+/// its positions through.
+fn screen_triangle() -> Mesh {
+    Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::RENDER_WORLD,
+    )
+    .with_inserted_attribute(
+        Mesh::ATTRIBUTE_POSITION,
+        vec![[-1.0, -1.0, 0.0], [3.0, -1.0, 0.0], [-1.0, 3.0, 0.0]],
+    )
+    .with_inserted_indices(Indices::U16(vec![0, 1, 2]))
+}
+
+/// What the cloud pass needs this frame: the uniforms of the density, how the rays march.
+#[derive(Resource, Debug, Clone, Copy)]
+pub struct CloudFrame {
+    pub uniforms: GpuCloudUniforms,
+    pub pass: GpuCloudPass,
+}
+
+pub struct CloudsPlugin;
+
+impl Plugin for CloudsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_plugins(MaterialPlugin::<CloudComposite>::default())
+            .add_systems(
+                PostUpdate,
+                (
+                    (spawn_veil, generate_images, size_target, update_frame)
+                        .chain()
+                        .run_if(resource_exists::<Clouds>),
+                    clear_sky.run_if(not(resource_exists::<Clouds>)),
+                ),
+            );
+        pass::build(app);
+    }
+}
+
+/// The cloud image and the entity that blends it, once.
+fn spawn_veil(
+    target: Option<Res<CloudTarget>>,
+    mut images: ResMut<Assets<Image>>,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<CloudComposite>>,
+    mut commands: Commands,
+) {
+    if target.is_some() {
+        return;
+    }
+    let image = images.add(Image::new_target_texture(1, 1, TARGET_FORMAT, None));
+    let veil = commands
+        .spawn((
+            Name::new("Cloud veil"),
+            Mesh3d(meshes.add(screen_triangle())),
+            MeshMaterial3d(materials.add(CloudComposite {
+                clouds: image.clone(),
+            })),
+            Transform::default(),
+            NoFrustumCulling,
+            NotShadowCaster,
+            NotShadowReceiver,
+        ))
+        .id();
+    commands.insert_resource(CloudTarget { image, veil });
+}
+
+/// The cloud image keeps the size of the 3D camera's target, pixel for pixel.
+fn size_target(
+    target: Res<CloudTarget>,
+    cameras: Query<&Camera, With<Camera3d>>,
+    mut images: ResMut<Assets<Image>>,
+) {
+    let Some(size) = cameras.iter().find_map(Camera::physical_target_size) else {
+        return;
+    };
+    let Some(image) = images.get(&target.image) else {
+        return;
+    };
+    if image.size() != size
+        && let Some(mut image) = images.get_mut(&target.image)
+    {
+        image.resize(Extent3d {
+            width: size.x,
+            height: size.y,
+            depth_or_array_layers: 1,
+        });
+    }
+}
+
+/// The noise textures, generated again when the seed changes (0.2 s on 16 cores).
+fn generate_images(
+    clouds: Res<Clouds>,
+    current: Option<Res<CloudImages>>,
+    mut images: ResMut<Assets<Image>>,
+    mut commands: Commands,
+) {
+    if current.is_some_and(|c| c.seed == clouds.seed) {
+        return;
+    }
+    let CloudTextures {
+        shape,
+        detail,
+        weather,
+    } = CloudTextures::generate(clouds.seed);
+    let shape = GridTexture::of_volume(&shape).image(shape.data);
+    let detail = GridTexture::of_volume(&detail).image(detail.data);
+    let weather = GridTexture::of_plane(&weather).image(weather.data);
+    commands.insert_resource(CloudImages {
+        seed: clouds.seed,
+        shape: images.add(shape),
+        detail: images.add(detail),
+        weather: images.add(weather),
+    });
+}
+
+/// The uniforms of this frame: the clouds carried by the wind for the game's time, around
+/// the render origin.
+fn update_frame(
+    clouds: Res<Clouds>,
+    time: Res<Time>,
+    origin: Option<Res<RenderOrigin>>,
+    frames: Res<FrameCount>,
+    quality: Res<Quality>,
+    mut commands: Commands,
+) {
+    let origin = origin.map_or(DVec3::ZERO, |o| to_bevy(o.0));
+    let uniforms = clouds.layer.uniforms(time.elapsed_secs_f64(), origin);
+    let (steps, light_steps) = quality.cloud_steps();
+    commands.insert_resource(CloudFrame {
+        uniforms: GpuCloudUniforms::from(&uniforms),
+        pass: GpuCloudPass {
+            frame: frames.0,
+            steps,
+            light_steps,
+            min_step: MIN_STEP_M,
+            max_distance: MAX_DISTANCE_M,
+        },
+    });
+}
+
+fn clear_sky(
+    frame: Option<Res<CloudFrame>>,
+    target: Option<Res<CloudTarget>>,
+    mut commands: Commands,
+) {
+    if frame.is_some() {
+        commands.remove_resource::<CloudFrame>();
+    }
+    if let Some(target) = target {
+        commands.entity(target.veil).despawn();
+        commands.remove_resource::<CloudTarget>();
+    }
+}
 
 /// The shader's `CloudUniforms`: those of `escadrille_weather`, field for field and in the
 /// same order, laid out by `ShaderType` as WGSL lays them out.
-#[derive(ShaderType, Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "bound by the cloud pass, the next step of increment 1"
-    )
-)]
+#[derive(ShaderType, Debug, Clone, Copy, PartialEq, Default)]
 pub struct GpuCloudUniforms {
     pub shape_offset: Vec3,
     pub shape_inverse_scale: f32,
@@ -67,26 +327,12 @@ impl From<&CloudUniforms> for GpuCloudUniforms {
 /// A grid of `escadrille_weather` as the GPU stores it: a cube of `R8Unorm` texels or a
 /// square of `Rg8Unorm` texels, one mip level, the data unchanged.
 #[derive(Debug, Clone, Copy, PartialEq)]
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "loaded by the cloud pass, the next step of increment 1"
-    )
-)]
 pub struct GridTexture {
     pub size: Extent3d,
     pub dimension: TextureDimension,
     pub format: TextureFormat,
 }
 
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "loaded by the cloud pass, the next step of increment 1"
-    )
-)]
 impl GridTexture {
     pub fn of_volume(volume: &Volume) -> Self {
         Self {
@@ -128,13 +374,6 @@ impl GridTexture {
 
 /// Linear filtering and repeat addressing, without mipmaps: the sampling of
 /// `escadrille_weather::grid`.
-#[cfg_attr(
-    not(test),
-    expect(
-        dead_code,
-        reason = "loaded by the cloud pass, the next step of increment 1"
-    )
-)]
 pub fn repeat_linear() -> ImageSamplerDescriptor {
     ImageSamplerDescriptor {
         address_mode_u: ImageAddressMode::Repeat,
@@ -332,6 +571,28 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
             .iter()
             .map(|b| f32::from_le_bytes(*b))
             .collect()
+    }
+
+    #[test]
+    fn the_screen_triangle_covers_the_whole_screen() {
+        let mesh = screen_triangle();
+        let Some(bevy::mesh::VertexAttributeValues::Float32x3(p)) =
+            mesh.attribute(Mesh::ATTRIBUTE_POSITION)
+        else {
+            panic!("positions");
+        };
+        // Each corner of clip space is inside the triangle (left of every edge).
+        let inside = |x: f32, y: f32| {
+            (0..3).all(|i| {
+                let (a, b) = (p[i], p[(i + 1) % 3]);
+                (b[0] - a[0]) * (y - a[1]) - (b[1] - a[1]) * (x - a[0]) >= 0.0
+            })
+        };
+        assert!(
+            [(-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, 1.0)]
+                .iter()
+                .all(|&(x, y)| inside(x, y))
+        );
     }
 
     #[test]

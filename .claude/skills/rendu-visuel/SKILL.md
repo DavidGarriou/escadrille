@@ -20,7 +20,7 @@ Les scènes d'un vol sont des fichiers `assets/scenes/<nom>.ron` (scénario, cam
 | `vol-essai-poursuite`, `vol-essai-pilote` | le vol d'essai deux secondes après le départ, sans toucher aux commandes : vue de poursuite, vue du pilote |
 | `terrain-repos`, `terrain-pilote`, `terrain-roulage`, `terrain-roues`, `terrain-finale` | le SPAD sur le pré : à l'arrêt, depuis le poste queue basse, au roulage (7 s plein gaz, queue levée), le contact des roues, et le pré vu depuis la finale ; l'herbe doit se lire comme un repère de vitesse et de hauteur |
 | `aube_terrain` | soleil rasant, brume basse, avions alignés sur l'herbe, ombres longues |
-| `cumulus_midi` | champ de cumulus à 2 000 m, soleil haut, ombres des nuages au sol |
+| `cumulus_midi` | le SPAD à 1 000 m au milieu d'un champ de cumulus de beau temps (base 600 m, graine 3, qui laisse sa trajectoire dégagée), soleil haut ; plus tard, les ombres des nuages au sol |
 | `contre_jour_toile` | avion à contre-jour : toile translucide, nervures visibles ; construite en code (SPAD vu d'en dessous, soleil 9° derrière lui) |
 | `no_mans_land` | rase-mottes au-dessus des tranchées et des cratères inondés |
 | `combat_couchant` | combat au soleil couchant : traçantes, fumée, reflets |

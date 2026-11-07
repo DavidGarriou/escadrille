@@ -31,6 +31,16 @@ impl Quality {
         }
     }
 
+    /// Steps of a ray through the clouds, at most, and towards the sun (ADR 0009).
+    pub fn cloud_steps(self) -> (u32, u32) {
+        match self {
+            Self::Low => (48, 4),
+            Self::Medium => (64, 5),
+            Self::High => (96, 6),
+            Self::Ultra => (160, 8),
+        }
+    }
+
     /// Side of each cascade of the sun's shadow map, texels: « haut » keeps Bevy's own.
     pub fn shadow_map(self) -> usize {
         match self {
@@ -62,5 +72,14 @@ mod tests {
             DirectionalLightShadowMap::default().size
         );
         assert!(levels.iter().all(|q| q.shadow_map().is_power_of_two()));
+    }
+
+    #[test]
+    fn the_clouds_get_more_steps_as_the_level_climbs() {
+        let levels = [Quality::Low, Quality::Medium, Quality::High, Quality::Ultra];
+        for pair in levels.windows(2) {
+            let (low, high) = (pair[0].cloud_steps(), pair[1].cloud_steps());
+            assert!(low.0 < high.0 && low.1 < high.1);
+        }
     }
 }

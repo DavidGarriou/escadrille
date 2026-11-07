@@ -151,7 +151,7 @@ fn densities_are_bounded_and_the_detail_only_takes_away() {
             let density = textures().density(&uniforms, p);
             assert!((0.0..=1.0).contains(&density));
             assert!(density <= coarse.density + 1e-6);
-            assert_eq!(textures().extinction(&uniforms, p), density * 0.06);
+            assert_eq!(textures().extinction(&uniforms, p), density * 0.09);
         }
     }
 }

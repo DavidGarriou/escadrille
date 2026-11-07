@@ -10,7 +10,7 @@ use std::path::Path;
 
 use serde::Deserialize;
 
-use crate::units::Angle;
+use crate::units::{Angle, Length};
 use crate::{DataError, load_ron};
 
 /// Where the camera looks from.
@@ -39,6 +39,21 @@ pub struct ControlsSpec {
     pub throttle: f64,
 }
 
+/// A layer of clouds (`escadrille_weather::clouds::CloudLayer`); what it leaves out
+/// keeps the layer's default, fair-weather cumulus.
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct CloudsSpec {
+    /// Cloud base above mean sea level.
+    pub base: Length,
+    /// Share of the weather map where clouds stand, 0 to 1.
+    pub cover: f64,
+    /// Type of cloud: 0 stratus, ½ stratocumulus, 1 cumulus.
+    pub cloud_type: f64,
+    /// Seed of the cloud noises.
+    #[serde(default)]
+    pub seed: u32,
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename = "Scene")]
 pub struct SceneFile {
@@ -56,6 +71,9 @@ pub struct SceneFile {
     /// Frames rendered before the capture, unless the command line says otherwise.
     #[serde(default)]
     pub frames: Option<u32>,
+    /// A clear sky when left out.
+    #[serde(default)]
+    pub clouds: Option<CloudsSpec>,
 }
 
 fn directory(assets: &Path) -> std::path::PathBuf {
@@ -73,11 +91,14 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<SceneFile, DataError> {
         .sun
         .iter()
         .all(|s| (-90.0..=90.0).contains(&s.elevation.si().to_degrees()));
-    if !(commands && sun && scene.frames != Some(0)) {
+    let clouds = scene.clouds.iter().all(|c| {
+        c.base.si() >= 0.0 && (0.0..=1.0).contains(&c.cover) && (0.0..=1.0).contains(&c.cloud_type)
+    });
+    if !(commands && sun && clouds && scene.frames != Some(0)) {
         return Err(DataError::Invalid {
             origin: path.display().to_string(),
             message: "commands from −1 to 1 and throttle from 0 to 1, sun from −90° to 90°, \
-                      at least one frame"
+                      clouds above sea level with cover and type from 0 to 1, at least one frame"
                 .to_owned(),
         });
     }

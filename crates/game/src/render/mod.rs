@@ -13,18 +13,21 @@ pub struct RenderingPlugin;
 
 impl Plugin for RenderingPlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(MaterialPlugin::<wires::WireMaterial>::default())
-            .init_resource::<quality::Quality>()
-            .add_observer(damage::hide_damage_nodes)
-            .add_systems(PreStartup, quality::apply_quality)
-            .add_systems(
-                Update,
-                (
-                    mipmaps::fill_mip_chains,
-                    wires::widen_wires,
-                    fabric::translucent_fabric,
-                ),
-            );
+        app.add_plugins((
+            MaterialPlugin::<wires::WireMaterial>::default(),
+            clouds::CloudsPlugin,
+        ))
+        .init_resource::<quality::Quality>()
+        .add_observer(damage::hide_damage_nodes)
+        .add_systems(PreStartup, quality::apply_quality)
+        .add_systems(
+            Update,
+            (
+                mipmaps::fill_mip_chains,
+                wires::widen_wires,
+                fabric::translucent_fabric,
+            ),
+        );
     }
 }
 

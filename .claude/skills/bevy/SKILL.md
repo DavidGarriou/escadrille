@@ -91,6 +91,13 @@ codegen-units = 1
 - UI et debug masqués sauf demande.
 - Code de sortie non nul si un asset manque ou si un shader échoue : une capture doit être fiable pour la revue.
 
+## 7 bis. Passes de rendu maison (Bevy 0.20)
+
+- **Le graphe de rendu est un schedule**, `Core3d`, dont chaque passe est un système ordonné dans les ensembles `Prepass`, `MainPass`, `EarlyPostProcess` et `PostProcess` (`bevy_core_pipeline::schedule`). Une passe s'y ajoute avec `.after(main_opaque_pass_3d)`, `.before(main_transparent_pass_3d)`, etc. ; elle lit sa vue avec `ViewQuery` (sautée si la vue n'a pas les composants) et enregistre avec `RenderContext`. Modèle : l'exemple `shader_advanced/custom_post_processing.rs` du tag.
+- **Un système privé de Bevy ne se nomme pas** : ni `.after()`, ni l'ensemble implicite `SystemTypeSet` (son identifiant interné se compare par adresse), ni une passe de construction (`ScheduleBuildPass`), dont le trait impose un type d'`indexmap`. C'est le cas de `render_sky`. Parade des nuages (ADR 0009) : écrire dans sa propre image, à un endroit où l'ordre avec ce système n'importe pas, puis composer par un matériau transparent plein écran, premier dessiné de la passe des transparents grâce à `Material::depth_bias` (tri croissant, de l'arrière vers l'avant).
+- **Réutiliser l'atmosphère** : `crates/game/src/render/clouds/pass.rs` recrée la disposition du groupe de `render_sky`, dont toutes les ressources sont publiques, et le shader importe `bevy_pbr::atmosphere::functions`. À revérifier à chaque montée de version.
+- **Un GPU dans un test**, sans application : `bevy::render::renderer::initialize_renderer` (test de parité de `render/clouds.rs`).
+
 ## 8. Débogage
 
 - Gizmos (feature `dev`, touches de debug) : portance et traînée par bande, poussée, vent relatif, CG, trajectoires des balles, volumes d'impact.

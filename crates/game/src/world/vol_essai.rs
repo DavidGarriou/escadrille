@@ -13,6 +13,7 @@ use escadrille_data::mockup::load_mockup;
 use escadrille_data::scenario::load_scenario;
 use escadrille_data::scene::{CameraSpec, load_scene};
 use escadrille_fdm::aircraft::PilotControls;
+use escadrille_weather::clouds::CloudLayer;
 
 use super::meadow::spawn_meadow;
 use super::plain::{SUN_AZIMUTH_DEG, SUN_ELEVATION_DEG, Sun, spawn_plain};
@@ -21,6 +22,7 @@ use crate::camera::{PilotEye, View, spawn_flight_camera};
 use crate::dev::capture::{CaptureHold, CaptureRequest};
 use crate::flight::bridge::to_bevy;
 use crate::flight::{ON_THE_FIELD, PilotInput, StartCommands, spawn_scenario};
+use crate::render::clouds::Clouds;
 
 /// What a flight's scenes share: the plain and its assets.
 #[derive(SystemParam)]
@@ -68,6 +70,17 @@ pub fn spawn_scene_file(mut scene: Scene, request: Res<CaptureRequest>) -> Resul
         };
         scene.commands.insert_resource(StartCommands(held));
         scene.commands.insert_resource(PilotInput::holding(held));
+    }
+    if let Some(c) = file.clouds {
+        scene.commands.insert_resource(Clouds {
+            layer: CloudLayer {
+                base_altitude: c.base.si(),
+                cover: c.cover,
+                cloud_type: c.cloud_type,
+                ..default()
+            },
+            seed: c.seed,
+        });
     }
     Ok(())
 }
