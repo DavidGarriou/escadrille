@@ -2685,3 +2685,6 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - 680 m d'épaisseur moyenne, sommets jusqu'à 1 100 m au-dessus de la base ;
   - extinction de 0,06/m, d'après σ ≈ 3 LWC / (2 ρw re) : environ 65 m de visibilité dans le nuage.
 - **A** Suite : la même densité en WGSL, puis le test de parité sur le GPU. Il passera par `initialize_renderer` de Bevy, sans dépendance nouvelle.
+- **A** `just check` et `just test` passent (405 tests). Commit `064c0e0`.
+- **⚠** Push impossible : l'agent SSH est vide depuis le redémarrage. Six commits attendent en local. Le joueur charge sa clé avec `SSH_AUTH_SOCK=/run/user/1000/ssh-agent.socket ssh-add ~/.ssh/id_ed25519_fixe`, puis Claude pousse.
+- **?** Questions au joueur : l'ajout de `crates/weather/` à l'arborescence de `CLAUDE.md`, et la lecture retenue pour la date du jeu (`flandres-1917.md` § 1.2).
