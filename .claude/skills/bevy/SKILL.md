@@ -91,6 +91,7 @@ codegen-units = 1
 - La recette garde la capture précédente en `<scène>.avant.png` et `.avant.json`.
 - UI et debug masqués sauf demande.
 - Code de sortie non nul si un asset manque ou si un shader échoue : une capture doit être fiable pour la revue.
+- **Pipelines** (`dev/capture/pipelines.rs`) : un système du monde de rendu relève les pipelines en erreur dans le `PipelineCache` et les partage avec le monde principal. Si Bevy abandonne (le shader ne compile pas), la capture échoue tout de suite. S'il réessaie, elle échoue au moment de l'image, en nommant le pipeline et les shaders. C'est le cas d'un shader ou d'un import WESL introuvable : Bevy le réessaie sans fin et n'écrit qu'un avertissement, « unresolved import ».
 
 ## 7 bis. Passes de rendu maison (Bevy 0.20)
 

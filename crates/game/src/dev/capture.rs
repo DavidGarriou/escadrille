@@ -5,6 +5,11 @@
 //!
 //! A capture is the same image whatever the GPU's speed: the game's clock waits for the
 //! scene to load, then each frame advances it by [`FRAME_STEP_SECS`].
+//!
+//! A capture fails, with a non-zero exit code, when a pipeline does not build: the image
+//! would lack what its shader draws (`pipelines`).
+
+mod pipelines;
 
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
@@ -22,6 +27,7 @@ use crate::ASSETS_DIR;
 use crate::render::quality::Quality;
 use crate::states::AppState;
 use crate::world::scenes::{CODE_SCENES, known_scenes};
+use pipelines::PipelineFailures;
 
 /// Extra frames allowed after the requested one before giving up.
 const CAPTURE_TIMEOUT_FRAMES: u32 = 600;
@@ -138,6 +144,7 @@ impl Plugin for CapturePlugin {
                     .before(CameraUpdateSystems),
             )
             .add_systems(Update, drive_capture.run_if(in_state(AppState::Capture)));
+        pipelines::build(app);
     }
 }
 
@@ -158,6 +165,7 @@ fn prepare_capture(
     // The screenshot copies it out.
     image.texture_descriptor.usage |= TextureUsages::COPY_SRC;
     commands.insert_resource(CaptureTarget(images.add(image)));
+    commands.insert_resource(PipelineFailures::default());
     commands.insert_resource(TimeUpdateStrategy::ManualDuration(Duration::from_secs_f64(
         FRAME_STEP_SECS,
     )));
@@ -174,15 +182,25 @@ fn retarget_cameras(
     }
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "the whole course of a capture: request, image, statistics, loading, pipelines, clock"
+)]
 fn drive_capture(
     mut commands: Commands,
     request: Res<CaptureRequest>,
     target: Res<CaptureTarget>,
     mut stats: ResMut<CaptureStats>,
     hold: Res<CaptureHold>,
+    failures: Res<PipelineFailures>,
     mut clock: ResMut<Time<Virtual>>,
     mut exit: MessageWriter<AppExit>,
 ) {
+    // A shader that does not compile: no use waiting for the image.
+    if report_failures(&failures, false) {
+        exit.write(AppExit::error());
+        return;
+    }
     if hold.0 > 0 {
         stats.loading += 1;
         if stats.loading > CAPTURE_TIMEOUT_FRAMES {
@@ -203,6 +221,11 @@ fn drive_capture(
     }
 
     if !stats.requested && stats.frames >= request.frames {
+        // A pipeline Bevy still retries is missing from the image too.
+        if report_failures(&failures, true) {
+            exit.write(AppExit::error());
+            return;
+        }
         if let Some(dir) = request.png.parent()
             && let Err(err) = std::fs::create_dir_all(dir)
         {
@@ -219,6 +242,26 @@ fn drive_capture(
         error!("capture timed out: no image after {} frames", stats.frames);
         exit.write(AppExit::error());
     }
+}
+
+/// Logs the pipelines that do not build, if any: those Bevy gave up on, and those it
+/// still retries when `due`. Returns whether the capture fails.
+fn report_failures(failures: &PipelineFailures, due: bool) -> bool {
+    let failed: Vec<_> = failures
+        .current()
+        .into_iter()
+        .filter(|f| due || f.fatal)
+        .collect();
+    for failure in &failed {
+        error!("{failure}");
+    }
+    if !failed.is_empty() {
+        error!(
+            "capture failed: {} pipeline(s) did not build, the image would lack them",
+            failed.len()
+        );
+    }
+    !failed.is_empty()
 }
 
 /// The GPU time of each render pass, ms, averaged over the diagnostics' history: the

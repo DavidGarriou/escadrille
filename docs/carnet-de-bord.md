@@ -2847,3 +2847,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Images regardées : `cumulus_midi` et `cumulus_contre_jour` à peu près identiques à la pleine résolution, bords de l'avion propres. Deux images consécutives diffèrent de 0,04 % (3 pixels sur 1,28 million de plus de 4 %) : pas de scintillement.
 - **R** Coût en 1440p : marche 0,3 à 0,44 ms, temporel 0,02 ms, contre 0,9 à 1,6 ms en pleine résolution.
 - **A** Deux tests nouveaux (diviseur par qualité, taille arrondie). `just check` et `just test` passent (421 tests).
+
+### Le mode capture échoue quand un pipeline ne se construit pas
+
+- **Q** Session ouverte par la conversation principale : faire sortir la capture en erreur quand un pipeline de rendu ne se construit pas. `just capture cumulus_midi` avait rendu le code 0, et une image sans nuages, avec un import faux dans `composite.wesl`.
+- **R** Les sources de Bevy 0.20 (`pipeline_cache.rs`, `bevy_shader::shader_cache`) expliquent ce silence. Quand un shader ne compile pas, Bevy passe le pipeline en `CachedPipelineState::Err` et s'arrête là. Un module WESL introuvable, lui, donne `ShaderImportNotYetAvailable` : Bevy réessaie à chaque image, sans fin, et le journal n'en garde qu'un avertissement (« unresolved import »). Le pipeline passe d'`Err` à `Queued`, puis à `Creating`, et revient à `Err` : il n'atteint jamais d'état d'erreur définitif.
+- **A** Nouveau module `crates/game/src/dev/capture/pipelines.rs` :
+  - en capture seulement, un système du monde de rendu (`RenderSystems::Cleanup`, après le traitement de la file) relève les pipelines en erreur dans une ressource partagée par les deux mondes. Il s'agit d'un `Arc<Mutex>`, extrait une fois vers le monde de rendu. Un pipeline quitte la liste dès qu'il se construit ;
+  - `drive_capture` échoue aussitôt si Bevy a abandonné un pipeline. Pour un pipeline que Bevy réessaie encore, il échoue au moment de prendre l'image, donc sans écrire de PNG. Le message nomme le pipeline et le shader de chaque étage, par exemple `premultiplied_alpha_mesh_pipeline (vertex shaders/clouds/composite.wesl, fragment …)` ;
+  - les variantes d'un même matériau, qui échouent de la même façon, ne comptent qu'une fois.
+- **A** Quatre tests. Deux utilisent un vrai `PipelineCache` sur le GPU : un import faux reste en échec, une erreur de syntaxe est définitive, et l'échec s'efface quand l'import arrive. Les deux autres vérifient l'ordre et le libellé des messages.
+- **R** Vérification à la main :
+  - import faux dans `composite.wesl` : `just capture cumulus_midi` sort avec le code 1 ;
+  - erreur de syntaxe : code 1 au bout d'une seconde ;
+  - shader remis : code 0, et l'image a ses nuages ;
+  - les 15 scènes de référence se capturent sans fausse alerte.
+- **A** Skill `bevy` (§ 7) : le mécanisme est décrit, avec le piège de l'import WESL qu'on réessaie sans fin.
+- **A** `just check` et `just test` passent (425 tests).
+- **⚠** Pas couvert : un pipeline encore en cours de compilation au moment de l'image, sans erreur. Les scènes durent au moins 120 images, ce qui a suffi jusqu'ici.
