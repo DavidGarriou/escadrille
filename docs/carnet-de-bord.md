@@ -2763,3 +2763,15 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Point 3, les bords. Densité finale raidie ×4 puis saturée, érosion de détail portée à 0,55, en Rust comme en WGSL. L'écart de parité au pire passe à 1,6·10⁻², puisque le gain multiplie l'arrondi du filtrage ; la moyenne reste à 2,8·10⁻⁵. Seuil du test : 4·10⁻².
 - **R** Images regardées : un champ de cumulus blancs, en chou-fleur, plus clairs que la toile, avec des bases grises et des rangées qui bleuissent vers l'horizon ; à contre-jour, un vrai modelé. Restent des stries légères au loin (2 à 10 km), et le soleil est hors du cadre de la scène à contre-jour. Coût : 0,6 à 1,2 ms de GPU en 1440p.
 - **A** `just check` et `just test` passent (416 tests). Seconde revue du directeur artistique en cours.
+
+### Seconde revue du directeur artistique
+
+- **R** Verdict « à retravailler, net progrès ». `cumulus_midi` est enfin une image de vol ; l'énergie, le cadrage, l'échelle et les bords à moyenne distance sont réglés.
+- **R** À corriger, par ordre d'impact :
+  1. **Pas de modelé en lumière de face.** Le terme diffus isotrope pèse 7 fois la phase, et ne baisse qu'en 1/(1 + 0,08τ) : un bourgeon dans sa propre ombre n'est que 1,3 fois plus sombre. La marche vers le soleil commence à 20 m, sur la densité grossière, donc les bourgeons ne s'ombrent pas entre eux. Piste : des octaves Σ bⁿ e^(−aⁿτ), recalées sur les tests à deux flux ; un premier pas de 6 à 8 m vers le soleil, sur la densité détaillée.
+  2. **Stries lointaines.** Elles viennent de l'enjambée et non du temporel : toute une ligne d'écran partage la même grille d'échantillons, et la gigue ne couvre qu'un pas sur trois. Piste : gigue sur toute l'enjambée, test de vide conservateur.
+  3. **Le contre-jour ne se lit pas.** Les nuages sont à 25-40° du soleil, trop loin du lobe avant. Le ciel est atténué par la profondeur vers le soleil, si bien que les faces à l'ombre perdent leur bleu. Pistes : soleil à 8-10°, caméra dans la couche, ciel atténué vers le haut.
+  4. **Bords mous de près.** Un texel de détail couvre 8 m. Piste : une seconde octave de détail, distordue par un bruit de rotationnel.
+  5. **Champ trop régulier.** Les dômes ont tous la même taille. Piste : des tailles et des épaisseurs par cellule.
+  6. **Liserés jaunes** sur quelques sommets lointains : c'est la limite de la frange mince, à revoir après le point 1.
+- **D** Prochaine itération recommandée : refaire le terme de diffusion multiple en octaves, avec un premier pas fin vers le soleil et le ciel atténué vers le haut, plus la gigue sur l'enjambée et le recadrage du contre-jour. Ensuite viendront les ombres au sol.
