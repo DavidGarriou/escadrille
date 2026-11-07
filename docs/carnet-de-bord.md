@@ -2877,3 +2877,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
 - **R** La session séparée, lancée par le joueur, a fini son tour. Commit `d0d8eea` sur la branche `claude/elated-pascal-b9f3dd` : la capture sort avec le code 1 quand un pipeline ne se construit pas, en nommant le pipeline et le shader. Vérifié avec un import faux et une erreur de syntaxe ; les 15 scènes passent toujours, ainsi que `just check` et `just test`.
 - **?** La branche n'est pas fusionnée dans `main-tcd0yw` : la fusion attend l'accord du joueur.
+- **R** Second avis de la session séparée : rien de nouveau, elle a seulement pris acte de la fin de sa surveillance. La branche `claude/elated-pascal-b9f3dd` attend toujours l'accord du joueur pour être fusionnée.
