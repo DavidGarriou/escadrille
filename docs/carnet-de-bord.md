@@ -2747,3 +2747,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **D** Prochaine itération : points 1, 2 et 4 ensemble, validés par le test d'albédo ; le point 3 ensuite.
 - **R** Critique transmise au joueur, avec la recommandation : traiter ensemble les points 1, 2 et 4, puis le point 3.
 - **?** En attente du joueur : valider l'ADR 0009, et enchaîner ou non sur l'énergie de l'éclairage et le cadrage.
+
+### M3, incrément 1 : éclairage et cadrage des nuages, d'après la revue
+
+- **Q** Le joueur : « Oui, et valider l'ADR ».
+- **D** ADR 0009 accepté.
+- **A** Point 1, l'énergie. Nouveau module `escadrille_weather::scattering`, jumeau des fonctions du shader, avec 6 tests :
+  - diffusion multiple en 2,8 / (4π (1 + 0,08 τ)), étalonnée sur une couche τ = 50 éclairée à 58°. Elle renvoie par le dessus R = 1 − T et transmet par la base T = 1 / (1 + ¾(1−g)τ), d'après la théorie à deux flux de Bohren (1987), à 5 % près ; la base tient aussi de τ = 5 à 100 ;
+  - même étalonnage pour la lumière ambiante : une couche épaisse sous un ciel uniforme renvoie R ;
+  - phase normalisée, liseré à contre-jour, décroissance dans le nuage.
+- **⚠** Limite du modèle, qui est local : une frange mince au soleil renvoie autant que le sommet d'un nuage épais (2,3 fois trop à τ = 5). C'est écrit dans le code.
+- **A** Point 2, le modelé. Ciel et sol comptent chacun sur leur demi-sphère, atténués par diffusion. Le sol a un albédo de 0,18 (`ESTIMÉ` : 0,16 à 0,26 pour l'herbe et les cultures, Oke 1987) et reçoit le soleil hors des ombres des nuages.
+- **A** Point 4, le cadrage. Nouveau scénario `vol-2000` (trim de `fdm_lab` à 2 000 m et 160 km/h ; le test d'équilibre couvre désormais les deux vols). `cumulus_midi` passe au-dessus d'un champ de cumulus (base 1 000 m, 700 m d'épaisseur : champ `thickness` des scènes). Nouvelle scène `cumulus_contre_jour`, soleil au sud à 22°.
+- **⚠** Des stries horizontales barraient les dômes. Quand la marche enjambe l'air vide trois pas à la fois, elle entre dans le nuage à des distances quantifiées que la gigue ne couvre pas. **A** À l'entrée d'un nuage, la marche recule d'une enjambée et repart à pas fins.
+- **A** Point 3, les bords. Densité finale raidie ×4 puis saturée, érosion de détail portée à 0,55, en Rust comme en WGSL. L'écart de parité au pire passe à 1,6·10⁻², puisque le gain multiplie l'arrondi du filtrage ; la moyenne reste à 2,8·10⁻⁵. Seuil du test : 4·10⁻².
+- **R** Images regardées : un champ de cumulus blancs, en chou-fleur, plus clairs que la toile, avec des bases grises et des rangées qui bleuissent vers l'horizon ; à contre-jour, un vrai modelé. Restent des stries légères au loin (2 à 10 km), et le soleil est hors du cadre de la scène à contre-jour. Coût : 0,6 à 1,2 ms de GPU en 1440p.
+- **A** `just check` et `just test` passent (416 tests). Seconde revue du directeur artistique en cours.

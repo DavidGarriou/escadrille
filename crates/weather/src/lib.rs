@@ -15,3 +15,4 @@
 pub mod clouds;
 pub mod grid;
 pub mod noise;
+pub mod scattering;

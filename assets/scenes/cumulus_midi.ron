@@ -1,7 +1,7 @@
 Scene(
-    description: "Un champ de cumulus de beau temps à midi, vu de la poursuite au milieu des sommets : bases plates, dômes éclairés par un soleil haut, trouées sur la plaine, nuages lointains voilés par la perspective aérienne.",
-    scenario: "vol-essai",
-    camera: Chase(yaw: Deg(-25.0), pitch: Deg(-4.0)),
+    description: "Un champ de cumulus de beau temps à midi, vu de la poursuite au-dessus de leurs sommets : dômes éclairés par un soleil haut, bases plates et grises, trouées sur la plaine, rangées de nuages qui rapetissent et bleuissent vers l'horizon.",
+    scenario: "vol-2000",
+    camera: Chase(yaw: Deg(-25.0), pitch: Deg(0.0)),
     sun: Some((azimuth: Deg(180.0), elevation: Deg(58.0))),
-    clouds: Some((base: M(600.0), cover: 0.45, cloud_type: 1.0, seed: 3)),
+    clouds: Some((base: M(1000.0), cover: 0.45, cloud_type: 1.0, thickness: Some(M(700.0)), seed: 3)),
 )

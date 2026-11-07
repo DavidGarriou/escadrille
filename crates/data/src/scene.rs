@@ -49,6 +49,9 @@ pub struct CloudsSpec {
     pub cover: f64,
     /// Type of cloud: 0 stratus, ½ stratocumulus, 1 cumulus.
     pub cloud_type: f64,
+    /// Thickness of a layer of cumulus, the layer's own when left out.
+    #[serde(default)]
+    pub thickness: Option<Length>,
     /// Seed of the cloud noises.
     #[serde(default)]
     pub seed: u32,
@@ -92,7 +95,10 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<SceneFile, DataError> {
         .iter()
         .all(|s| (-90.0..=90.0).contains(&s.elevation.si().to_degrees()));
     let clouds = scene.clouds.iter().all(|c| {
-        c.base.si() >= 0.0 && (0.0..=1.0).contains(&c.cover) && (0.0..=1.0).contains(&c.cloud_type)
+        c.base.si() >= 0.0
+            && (0.0..=1.0).contains(&c.cover)
+            && (0.0..=1.0).contains(&c.cloud_type)
+            && c.thickness.is_none_or(|t| t.si() > 0.0)
     });
     if !(commands && sun && clouds && scene.frames != Some(0)) {
         return Err(DataError::Invalid {

@@ -7,19 +7,18 @@
 // Bevy's atmosphere work here: the same sun, sky and aerial perspective as the rest of the
 // image. Group 1 holds the clouds.
 //
-// Light of a sample:
-// - single scattering of the sun (Schneider 2015, Hillaire 2016): sunlight dimmed by the
-//   atmosphere (transmittance table) and by the clouds towards the sun (a short march on
-//   the coarse density), with a two-lobe Henyey-Greenstein phase;
-// - multiple scattering, by the diffusion approximation: in a thick cloud the sunlight
-//   that goes on through it falls as 1 / (1 + ¾ (1 − g) τ), not as e^−τ (two-stream
-//   theory, Bohren, "Multiple scattering of light and some of its observable
-//   consequences", Am. J. Phys. 55, 1987). Without it, the base of a cumulus only gets the
-//   light of the sky and takes its colour: blue, flat, as if seen through;
-// - the sky above the cloud and the ground below it, the latter from the ground's albedo
-//   lit by the sun, weighted by the height in the layer. The sky's light goes through the
-//   cloud like the sun's, by diffusion: the optical depth towards the sun stands for the
-//   depth towards the open sky above.
+// Light of a sample: the model of `escadrille_weather::scattering`, whose tests check its
+// energy against two-stream theory; the functions and constants below are its twins, to
+// be changed together.
+// - Sunlight, dimmed by the atmosphere (transmittance table), scattered once (two-lobe
+//   Henyey-Greenstein phase, e^−τ towards the sun) and many times (diffusion, falling as
+//   1 / (1 + k τ)). The optical depth towards the sun comes from a short march on the
+//   coarse density.
+// - The sky above and the ground below, each from its half of the sphere, dimmed by
+//   diffusion through the cloud on its side: towards the sun stands for towards the open
+//   sky; down to the base of the layer, at the density of the sample, for the ground. The
+//   ground is the albedo of fields lit by the sun, outside the clouds' shadows, and by the
+//   sky.
 // Each step is integrated exactly over its length (Hillaire 2016). Steps grow with the
 // distance, since the far clouds are small on screen, and stride over empty air: only the
 // steps inside a cloud count against the budget, so that the march reaches the far ones.
@@ -63,9 +62,11 @@ struct CloudPass {
 const FORWARD_G: f32 = 0.8;
 const BACKWARD_G: f32 = -0.3;
 const FORWARD_WEIGHT: f32 = 0.7;
-// Asymmetry of the droplets' phase function, for the diffusion (Mie, water droplets of
-// about 10 µm in visible light: 0.85).
-const DROPLET_G: f32 = 0.85;
+// Multiple scattering, ambient light, ground: `escadrille_weather::scattering`.
+const DIFFUSE_LEVEL: f32 = 2.8;
+const DIFFUSE_FALL: f32 = 0.08;
+const AMBIENT_LEVEL: f32 = 1.8;
+const GROUND_ALBEDO: f32 = 0.18;
 // Length of the first step towards the sun, m; each next one is longer by LIGHT_GROWTH.
 const LIGHT_STEP: f32 = 40.0;
 const LIGHT_GROWTH: f32 = 1.6;
@@ -74,7 +75,10 @@ const LIGHT_GROWTH: f32 = 1.6;
 const STEP_SHARE: f32 = 0.02;
 const MAX_STEP: f32 = 500.0;
 // Through empty air the march strides this many steps at once, and it looks at most
-// MAX_LOOKS times along a ray, empty or not.
+// MAX_LOOKS times along a ray, empty or not. On meeting a cloud after a stride it steps
+// back and goes on at its plain step: otherwise it enters the clouds at distances
+// quantised by the stride, which the jitter of the first step does not cover, and the
+// shells of equal distance show as stripes.
 const EMPTY_STRIDE: f32 = 3.0;
 const MAX_LOOKS: u32 = 384u;
 // Transmittance under which a ray stops: the rest cannot be seen.
@@ -86,11 +90,22 @@ fn henyey_greenstein(cos_theta: f32, g: f32) -> f32 {
 }
 
 fn phase(cos_theta: f32) -> f32 {
-    return mix(
-        henyey_greenstein(cos_theta, BACKWARD_G),
-        henyey_greenstein(cos_theta, FORWARD_G),
-        FORWARD_WEIGHT,
-    );
+    let backward = henyey_greenstein(cos_theta, BACKWARD_G);
+    let forward = henyey_greenstein(cos_theta, FORWARD_G);
+    return backward * (1.0 - FORWARD_WEIGHT) + forward * FORWARD_WEIGHT;
+}
+
+fn diffused(depth: f32) -> f32 {
+    return 1.0 / (1.0 + DIFFUSE_FALL * depth);
+}
+
+// `sun_scattering` of the reference, the phase already computed for the ray.
+fn sun_scattering(depth_to_sun: f32, single_phase: f32) -> f32 {
+    return single_phase * exp(-depth_to_sun) + DIFFUSE_LEVEL * diffused(depth_to_sun) / (4.0 * PI);
+}
+
+fn ambient_scattering(sky: vec3<f32>, ground: vec3<f32>, depth_up: f32, depth_down: f32) -> vec3<f32> {
+    return 0.5 * AMBIENT_LEVEL * (sky * diffused(depth_up) + ground * diffused(depth_down));
 }
 
 // Interleaved gradient noise (Jimenez, "Next Generation Post Processing in Call of Duty:
@@ -177,7 +192,7 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     }
     let ground_r = atmosphere.inner_radius;
     let sun_on_ground = sun * sample_transmittance_lut(ground_r, to_sun.y) * max(to_sun.y, 0.0);
-    let ground = atmosphere.ground_albedo / PI * (sun_on_ground + PI * sky);
+    let ground = GROUND_ALBEDO / PI * (sun_on_ground * (1.0 - clouds.cover) + PI * sky);
     let cos_theta = dot(direction, to_sun);
     let single_phase = phase(cos_theta);
 
@@ -189,6 +204,8 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     var t = near + clamp(near * STEP_SHARE, cloud_pass.min_step, MAX_STEP)
         * jitter(in.position.xy, cloud_pass.frame);
     var steps = 0u;
+    var strided = false;
+    var plain_steps = 0u;
     for (var look = 0u; look < MAX_LOOKS && steps < cloud_pass.steps; look++) {
         let step = clamp(t * STEP_SHARE, cloud_pass.min_step, MAX_STEP);
         let at = t;
@@ -197,7 +214,19 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
         }
         let position = eye + direction * at;
         if cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, position).x <= 0.0 {
-            t += step * EMPTY_STRIDE;
+            if plain_steps > 0u {
+                plain_steps--;
+                t += step;
+            } else {
+                t += step * EMPTY_STRIDE;
+                strided = true;
+            }
+            continue;
+        }
+        if strided {
+            t -= step * (EMPTY_STRIDE - 1.0);
+            strided = false;
+            plain_steps = u32(EMPTY_STRIDE);
             continue;
         }
         t += step;
@@ -216,16 +245,12 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
         let up = atmosphere_position / r;
         let sun_through_air = sun * sample_transmittance_lut(r, dot(to_sun, up));
         let depth_to_sun = optical_depth_to_sun(position, to_sun);
-        let single = single_phase * exp(-depth_to_sun);
-        let diffused = 1.0 / (1.0 + 0.75 * (1.0 - DROPLET_G) * depth_to_sun);
-        let multiple = diffused / (4.0 * PI);
-
-        // Sky above, through the cloud; ground below.
-        let height = saturate((position.y - bottom) / (top - bottom));
-        let ambient = mix(ground, sky * diffused, height);
+        let depth_down = extinction * (position.y - bottom);
+        let scattered = sun_through_air * sun_scattering(depth_to_sun, single_phase)
+            + ambient_scattering(sky, ground, depth_to_sun, depth_down);
 
         // Scattering coefficient = extinction (the albedo of cloud droplets is about 1).
-        let source = extinction * (sun_through_air * (single + multiple) + ambient);
+        let source = extinction * scattered;
         let through_step = exp(-extinction * step);
         light += transmittance * (source - source * through_step) / extinction;
         let absorbed = transmittance * (1.0 - through_step);

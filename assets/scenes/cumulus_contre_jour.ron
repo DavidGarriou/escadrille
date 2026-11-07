@@ -1,0 +1,7 @@
+Scene(
+    description: "Le même champ de cumulus vu face au soleil de l'après-midi, bas sur l'horizon sud : liseré argenté des bords, faces sombres tournées vers la caméra.",
+    scenario: "vol-2000",
+    camera: Chase(yaw: Deg(90.0), pitch: Deg(2.0)),
+    sun: Some((azimuth: Deg(180.0), elevation: Deg(22.0))),
+    clouds: Some((base: M(1000.0), cover: 0.45, cloud_type: 1.0, thickness: Some(M(700.0)), seed: 3)),
+)

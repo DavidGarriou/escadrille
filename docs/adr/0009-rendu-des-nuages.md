@@ -1,6 +1,6 @@
 # 0009 — Rendu des nuages : marche de rayons maison, éclairée par l'atmosphère de Bevy
 
-- Statut : Proposé
+- Statut : Accepté (validé par le joueur le 2026-11-07)
 - Date : 2026-11-07
 
 ## Contexte

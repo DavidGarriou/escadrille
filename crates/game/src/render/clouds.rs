@@ -655,8 +655,9 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         let worst = errors.iter().copied().fold(0.0, f32::max);
         let mean = errors.iter().sum::<f32>() / errors.len() as f32;
         println!("{cloudy} cloudy samples; error worst {worst:.2e}, mean {mean:.2e}");
-        // The GPU's filter weights are rounded to a few bits: 3.5e-3 at worst on the
-        // reference GPU (RX 7800 XT, RADV), 2.5e-5 on average, on 2026-11-07.
-        assert!(worst < 0.01 && mean < 2e-4, "worst {worst}, mean {mean}");
+        // The GPU's filter weights are rounded to a few bits, and the density's gain of 4
+        // (its sharpness) multiplies that: 1.6e-2 at worst on the reference GPU (RX 7800
+        // XT, RADV), 2.8e-5 on average, on 2026-11-07.
+        assert!(worst < 0.04 && mean < 2e-4, "worst {worst}, mean {mean}");
     }
 }

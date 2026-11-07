@@ -1,0 +1,25 @@
+// The test flight at 2 000 m, for the scenes above the clouds (M3, `cumulus_midi`): the
+// same SPAD and speed as vol-essai.ron, 1 000 m higher. The equilibrium is the flight
+// model's, solved by fdm_lab (`fdm_lab trim spad7 --speed-kmh 160 --altitude-m 2000`,
+// still air, full tanks); the test `the_test_flights_start_in_equilibrium` of fdm_lab
+// fails when the flight model no longer holds it, with the values to copy here.
+Scenario(
+    aircraft: "spad7",
+    fuel_fraction: 1.0,      // C: full tanks, the loading of the flight tests
+    heading: Deg(90.0),      // C: east, as vol-essai.ron
+    start: Flight(
+    altitude: M(2000.0),     // C: above a field of fair-weather cumulus (skill rendu-visuel, cumulus_midi)
+    speed: Kmh(160.0),       // C: as vol-essai.ron
+    equilibrium: (
+        //! C: fdm_lab trim of 2026-11-07 (level flight at the scenario's speed and altitude)
+        alpha: Rad(0.011595530),
+        beta: Rad(0.011103090),
+        roll: 0.003297775,
+        pitch: -0.092263554,
+        yaw: 0.007224200,
+        throttle: 0.603704870,
+        rotor_speed: RadS(156.380671549),
+        downwash: Rad(0.048142569),
+    ),
+    ),
+)

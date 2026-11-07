@@ -39,6 +39,9 @@ struct CloudUniforms {
 const CLOUD_RISE_END = vec3<f32>(0.1, 0.15, 0.06);
 const CLOUD_FALL_START = vec3<f32>(0.4, 0.5, 0.65);
 
+// Gain of the final density: the core reaches full density, the edge is sharp.
+const CLOUD_SHARPNESS: f32 = 4.0;
+
 // Height fraction over which the detail noise turns from wisps (at the base) to billows.
 const CLOUD_WISPS_HEIGHT: f32 = 0.03;
 
@@ -112,5 +115,5 @@ fn cloud_density(
     ).r;
     let billows = mix(d, 1.0 - d, saturate(coarse.y / CLOUD_WISPS_HEIGHT));
     let erosion = billows * u.detail_erosion;
-    return saturate((coarse.x - erosion) / (1.0 - erosion));
+    return saturate(CLOUD_SHARPNESS * (coarse.x - erosion) / (1.0 - erosion));
 }

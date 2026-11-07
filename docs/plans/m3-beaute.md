@@ -75,6 +75,7 @@ Chacun laisse le jeu lançable, avec tests, `just check`, `just test`, captures 
 - **schéma retenu** : celui de *Nubis* (2017). La carte météo place chaque nuage et fixe sa hauteur ; le bruit de forme érode son enveloppe. Couper le bruit de forme par la couverture (Schneider 2015) dessinait, vu de dessus, une grille de nuages identiques tous les 4 km.
 - **jumeau WGSL et parité** : `assets/shaders/clouds/density.wesl` ; le test le lance sur le GPU sur 65 536 points (écart au pire de 3,5·10⁻³, en moyenne de 2,5·10⁻⁵ sur la RX 7800 XT).
 - **passe de rendu** (ADR 0009) : marche de rayons en pleine résolution dans une image à part, éclairée par les tables de l'atmosphère de Bevy, puis composée par un matériau transparent plein écran. Premières images de `cumulus_midi` le 2026-11-07, en 1,3 ms de GPU en 1440p. L'aspect reste à régler, avec la revue du directeur artistique ; viendront ensuite le quart de résolution, les ombres et les autres scènes.
+- **revue du directeur artistique, puis seconde passe** : modèle de diffusion étalonné sur la théorie à deux flux (`escadrille_weather::scattering`), densité raidie, stries de la marche corrigées. Scénario `vol-2000` et scène `cumulus_contre_jour`. 0,6 à 1,2 ms de GPU en 1440p. Restent : les stries lointaines, à traiter avec la reconstruction temporelle ; les ombres au sol ; le quart de résolution ; les scènes `traversee_nuage` et `plafond_bas`.
 
 ### 2. Heure du jour
 

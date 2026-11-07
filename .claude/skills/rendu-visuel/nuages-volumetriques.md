@@ -21,6 +21,16 @@ Dans un simulateur de 14-18, les nuages sont à la fois le décor principal et u
 
 ## Éclairage
 
+**En place** (2026-11-07) : le modèle de `escadrille_weather::scattering`, jumeau des fonctions du shader `render.wesl`, dont les tests vérifient l'énergie :
+- **diffusion simple** : phase de Henyey-Greenstein à deux lobes × e^−τ vers le soleil ;
+- **diffusion multiple, par approximation de diffusion** : 2,8 / (4π (1 + 0,08 τ)). Elle est étalonnée pour qu'une couche τ = 50, soleil à 58°, renvoie par le dessus et transmette par la base ce que donne la théorie à deux flux (Bohren 1987), à 5 % près. Les octaves de Wrenninge, en e^−τ/2ⁿ, éteignaient la base des cumulus, qui prenait alors la couleur du ciel ;
+- **ciel et sol**, chacun sur sa demi-sphère, atténués par diffusion. Le sol a un albédo de 0,18 (`ESTIMÉ`, champs) et reçoit le soleil hors des ombres des nuages ;
+- **limite** : le modèle est local. Une frange mince au soleil renvoie autant que le sommet d'un nuage épais.
+
+Repères visés, d'après le directeur artistique : un cumulus au soleil est l'objet le plus lumineux du ciel, 2 à 4 fois plus que le ciel voisin ; sa base et ses creux sont 3 à 5 fois plus sombres que ses sommets ; son bord passe du clair à l'opaque en une dizaine de mètres (d'où le gain de 4 sur la densité finale).
+
+Principes de départ :
+
 - Beer-Lambert pour l'extinction, terme « powder » pour l'assombrissement des bords côté soleil.
 - Fonction de phase de Henyey-Greenstein à deux lobes (liseré argenté à contre-jour).
 - Approximation de la multidiffusion par octaves (Wrenninge) ; lumière ambiante issue du ciel.

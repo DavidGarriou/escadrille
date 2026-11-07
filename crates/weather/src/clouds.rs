@@ -40,6 +40,11 @@ const FALL_START: [f32; 3] = [0.4, 0.5, 0.65];
 /// a thin band, since the base of a cumulus is flat and sharp.
 const WISPS_HEIGHT: f32 = 0.03;
 
+/// Gain of the final density: the core of a cloud reaches full density and its edge turns
+/// from clear to opaque within a few metres, as a cumulus in the sun (art director's
+/// review of 2026-11-07; Nubis sharpens its density the same way).
+const SHARPNESS: f32 = 4.0;
+
 /// Gain of the Perlin noise of the shape around ½, which spreads it over [0, 1].
 const PERLIN_GAIN: f32 = 1.5;
 
@@ -104,7 +109,7 @@ impl CloudTextures {
             .sample(position * uniforms.detail_inverse_scale + uniforms.detail_offset);
         let billows = mix(detail, 1.0 - detail, saturate(coarse.height / WISPS_HEIGHT));
         let erosion = billows * uniforms.detail_erosion;
-        saturate((coarse.density - erosion) / (1.0 - erosion))
+        saturate(SHARPNESS * (coarse.density - erosion) / (1.0 - erosion))
     }
 
     /// Extinction coefficient of the clouds at a position, 1/m.
@@ -220,7 +225,7 @@ impl Default for CloudLayer {
             detail_scale: 250.0,
             weather_scale: 32_000.0,
             shape_erosion: 0.7,
-            detail_erosion: 0.35,
+            detail_erosion: 0.55,
         }
     }
 }

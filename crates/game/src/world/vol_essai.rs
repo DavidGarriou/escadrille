@@ -72,13 +72,17 @@ pub fn spawn_scene_file(mut scene: Scene, request: Res<CaptureRequest>) -> Resul
         scene.commands.insert_resource(PilotInput::holding(held));
     }
     if let Some(c) = file.clouds {
+        let mut layer = CloudLayer {
+            base_altitude: c.base.si(),
+            cover: c.cover,
+            cloud_type: c.cloud_type,
+            ..default()
+        };
+        if let Some(thickness) = c.thickness {
+            layer.thickness[2] = thickness.si();
+        }
         scene.commands.insert_resource(Clouds {
-            layer: CloudLayer {
-                base_altitude: c.base.si(),
-                cover: c.cover,
-                cloud_type: c.cloud_type,
-                ..default()
-            },
+            layer,
             seed: c.seed,
         });
     }

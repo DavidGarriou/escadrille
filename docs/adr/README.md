@@ -12,4 +12,4 @@ Une décision structurante = un fichier `NNNN-titre-court.md`, créé avec `/adr
 | 0006 | [Repères et conversions : Blender → glTF → Bevy → modèle de vol](0006-reperes-et-conversions.md) | Accepté |
 | 0007 | [Scripts Blender (Python) pour les sources de contenu dans `art/`](0007-scripts-blender.md) | Accepté |
 | 0008 | [Contact au sol : efforts de pénalité dans le RK4, à 240 Hz](0008-contact-au-sol.md) | Accepté |
-| 0009 | [Rendu des nuages : marche de rayons maison, éclairée par l'atmosphère de Bevy](0009-rendu-des-nuages.md) | Proposé |
+| 0009 | [Rendu des nuages : marche de rayons maison, éclairée par l'atmosphère de Bevy](0009-rendu-des-nuages.md) | Accepté |

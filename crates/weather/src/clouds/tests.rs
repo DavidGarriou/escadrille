@@ -143,14 +143,16 @@ fn the_cover_sets_the_share_of_cloud() {
 }
 
 #[test]
-fn densities_are_bounded_and_the_detail_only_takes_away() {
+fn densities_are_bounded_and_the_detail_only_erodes() {
     let uniforms = CloudLayer::default().uniforms(0.0, DVec3::ZERO);
     for altitude in [1_250.0, 1_500.0, 1_900.0, 2_300.0] {
         for p in positions(5_000, 30_000.0, altitude) {
             let coarse = textures().coarse(&uniforms, p);
             let density = textures().density(&uniforms, p);
             assert!((0.0..=1.0).contains(&density));
-            assert!(density <= coarse.density + 1e-6);
+            // The detail erodes the coarse density before its gain (the sharpness).
+            assert!(density <= saturate(SHARPNESS * coarse.density) + 1e-6);
+            assert!(coarse.density > 0.0 || density == 0.0);
             assert_eq!(textures().extinction(&uniforms, p), density * 0.09);
         }
     }

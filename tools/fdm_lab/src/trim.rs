@@ -410,13 +410,20 @@ pub(crate) mod tests {
         ground_altitude: NO_GROUND,
     };
 
-    /// The test flight's start (`assets/scenarios/vol-essai.ron`, plan
-    /// `docs/plans/m2-vol-essai.md`) is the flight model's own level flight: when the model
-    /// changes, this fails and prints the values to copy into the file.
+    /// The test flights' starts (`assets/scenarios/vol-essai.ron`, plan
+    /// `docs/plans/m2-vol-essai.md`, and `vol-2000.ron`, for the scenes above the clouds)
+    /// are the flight model's own level flight: when the model changes, this fails and
+    /// prints the values to copy into the file.
     #[test]
-    fn the_test_flight_starts_in_equilibrium() {
+    fn the_test_flights_start_in_equilibrium() {
+        for name in ["vol-essai", "vol-2000"] {
+            test_flight_starts_in_equilibrium(name);
+        }
+    }
+
+    fn test_flight_starts_in_equilibrium(name: &str) {
         let assets = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../assets");
-        let s = escadrille_data::scenario::load_scenario(&assets, "vol-essai").unwrap();
+        let s = escadrille_data::scenario::load_scenario(&assets, name).unwrap();
         let aircraft = load_aircraft(&assets, &s.aircraft)
             .unwrap()
             .build(&Loading {
@@ -431,7 +438,7 @@ pub(crate) mod tests {
             ..
         } = s.start
         else {
-            panic!("vol-essai starts in flight");
+            panic!("{name} starts in flight");
         };
         let trim = solve_robust(
             &aircraft,
@@ -451,7 +458,7 @@ pub(crate) mod tests {
             && (f.downwash - e.downwash.si()).abs() < 1e-5;
         assert!(
             held,
-            "the flight model's level flight moved; equilibrium for vol-essai.ron:\n\
+            "the flight model's level flight moved; equilibrium for {name}.ron:\n\
              alpha: Rad({:.9}), beta: Rad({:.9}), roll: {:.9}, pitch: {:.9}, yaw: {:.9}, \
              throttle: {:.9}, rotor_speed: RadS({:.9}), downwash: Rad({:.9})",
             f.alpha, f.beta, c.roll, c.pitch, c.yaw, c.throttle, f.rotor_speed, f.downwash
@@ -466,7 +473,7 @@ pub(crate) mod tests {
         let slowed = start.velocity_body.length() - state.velocity_body.length();
         assert!(
             climbed.abs() < 0.05 && slowed.abs() < 0.01,
-            "{climbed} m, {slowed} m/s"
+            "{name}: {climbed} m, {slowed} m/s"
         );
         assert!(state.angular_velocity_body.length() < 1e-3, "{state:?}");
     }
