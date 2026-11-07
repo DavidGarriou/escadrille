@@ -2872,3 +2872,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   5. **Risque d'une tache de soleil fantôme** au sol, sur la ligne de soleil de l'avion, quand un nuage est sous lui. Piste : réduire le rayon à deux texels, et ajouter une scène de contrôle.
 - **R** À vérifier : l'avion à l'ombre d'un nuage, sous la base (aucune capture ne le montre) ; la lumière renvoyée par la mer de nuages vers le dessous de l'avion, que l'ambiance ignore.
 - **D** Prochaine itération recommandée : la lumière d'ambiance neutre (point 1), et dans la même passe les points 2 et 4 (centre avancé, bords fondus, alignement), puis une séquence en mouvement.
+
+### Session « Capture en erreur si un pipeline ne compile pas »
+
+- **R** La session séparée, lancée par le joueur, a fini son tour. Commit `d0d8eea` sur la branche `claude/elated-pascal-b9f3dd` : la capture sort avec le code 1 quand un pipeline ne se construit pas, en nommant le pipeline et le shader. Vérifié avec un import faux et une erreur de syntaxe ; les 15 scènes passent toujours, ainsi que `just check` et `just test`.
+- **?** La branche n'est pas fusionnée dans `main-tcd0yw` : la fusion attend l'accord du joueur.
