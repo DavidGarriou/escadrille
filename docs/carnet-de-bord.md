@@ -2793,3 +2793,20 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   **R** Les stries ont disparu, jusqu'à l'horizon.
 - **A** Contre-jour recadré : soleil à 9°, avion à 2 000 m dans une couche de 1 500 à 2 400 m, caméra relevée de 5°. La graine 3 collait une tour à l'avion ; la graine 20, choisie avec la référence Rust, met les tours entre 1 et 3 km. **R** Soleil dans le cadre, bords clairs et chauds, faces à l'ombre.
 - **R** Coût : 0,9 ms (`cumulus_midi`) et 1,5 ms (`cumulus_contre_jour`) de GPU en 1440p. `just check` et `just test` passent (418 tests). Troisième revue du directeur artistique en cours.
+
+### Troisième revue du directeur artistique
+
+- **R** Verdict « à retravailler, de peu ». L'image de midi peut servir de base. Le contre-jour se lit, mais il est faux de couleur et de valeurs.
+- **R** Ce qui est réglé :
+  - les stries ;
+  - le modelé vertical à midi (dôme blanc, base gris lilas, proche des autochromes) ;
+  - la composition du contre-jour, soleil entre deux tours.
+- **R** À corriger, par ordre d'impact :
+  1. **Corps des tours brun saumon** à contre-jour, de la luminance du ciel. La lumière du ciel n'est atténuée que vers le haut : un flanc 600 m sous le sommet n'en garde que 8 %, alors qu'il voit la moitié du ciel par le côté. Piste : prendre aussi la profondeur latérale jusqu'au bord de l'enveloppe, après une vue de débogage par terme.
+  2. **Pas de liseré argenté** : mesurer dans l'image HDR les rapports bord/corps/ciel avant de régler quoi que ce soit (tonemapping, gain de densité, bloom).
+  3. **Bas des nuages qui se dissout**, bases arrondies. Piste : une rampe de base de 30 à 60 m, et une érosion qui diminue vers la base.
+  4. **Pas de bourgeons de 30 à 150 m** sur le nuage proche : il manque un bruit intermédiaire en chou-fleur.
+  5. **Pas d'auréole autour du soleil**.
+  6. **Mineurs** : un liseré jaune-vert sur les sommets les plus lointains ; à contre-jour, un flanc du fuselage trop éclairé, peut-être par la translucidité de la toile.
+- **R** Base suffisante pour passer au quart de résolution, à une condition : corriger d'abord le point 1. Les ombres au sol devraient être une carte de profondeur optique vers le soleil, qui servira aussi à l'ombre lointaine d'un nuage sur son voisin.
+- **?** Au joueur : corriger d'abord la lumière du ciel sur les flancs (environ une heure), comme le recommande la revue.
