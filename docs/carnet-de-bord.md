@@ -2745,3 +2745,5 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   5. **Couleur** : blancs crème au soleil, ombres bleutées. Les points 1 et 2 devraient corriger l'essentiel.
   6. **Ombres des nuages au sol**, déjà prévues. Une capture sans TAA dira quelle part du flou vient d'elle.
 - **D** Prochaine itération : points 1, 2 et 4 ensemble, validés par le test d'albédo ; le point 3 ensuite.
+- **R** Critique transmise au joueur, avec la recommandation : traiter ensemble les points 1, 2 et 4, puis le point 3.
+- **?** En attente du joueur : valider l'ADR 0009, et enchaîner ou non sur l'énergie de l'éclairage et le cadrage.
