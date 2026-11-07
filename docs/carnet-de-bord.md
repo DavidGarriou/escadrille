@@ -2650,3 +2650,38 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** État trouvé : l'incrément 0 du M3 est fait et commité (`7f438bd`) par l'autre conversation, avec deux entrées de carnet. Trois commits attendent en local : l'agent SSH est vide depuis le redémarrage de la machine.
 - **A** Historien relancé sur la recherche interrompue du 2026-11-04, avec la consigne d'écrire sa fiche question par question.
 - **A** Suite : incrément 1 du M3, les nuages volumétriques.
+
+## 2026-11-07
+
+### Reprise de l'entrée du 2026-11-05
+
+- **Q** Le joueur : « reprend l'entrée 2026-11-05 dans le carnet de bord ».
+- **R** État trouvé : la machine a redémarré, l'agent SSH est vide et quatre commits attendent en local. `just check` et `just test` passent d'une traite (380 tests) : l'arrêt du 2026-11-05 (code 137) ne s'est pas reproduit.
+- **A** Historien relancé une troisième fois, avec la consigne d'enregistrer sa fiche après chaque question. **R** `docs/recherche/flandres-1917.md` est écrite (sources F1 à F41). `demandes.md` reçoit un complément à D17 et les demandes D19 à D22 ; rien n'est envoyé.
+  - La SPA 3 est à Bergues-Bierne le 20 octobre 1917 (B), et à Saint-Pol-sur-Mer du 15 août au 25 septembre.
+  - Ce jour-là, S.254 est exposé aux Invalides : « S.254 au 20 octobre » désigne une livrée, pas un vol. La fiche propose trois lectures, à trancher par le joueur (§ 1.2).
+  - Aucun tracé du front n'existe en données ouvertes. Il faudra le relever sur les cartes de tranchées britanniques de la NLS, dont la licence CC-BY reste à confirmer.
+  - RGE ALTI : deux archives de 233 et 271 Mo, sous Licence Ouverte 2.0, avec une mention d'attribution proposée.
+  - DHMV II : GeoTIFF à 5 m, une archive par feuille NGI. La licence flamande de réutilisation gratuite est à confirmer dans le paquet.
+  - Comines-Warneton échappe peut-être aux deux MNT.
+- **A** Correction dans la fiche : la demande au SPW est D22, pas D23.
+
+### M3, incrément 1 : densité des nuages en Rust
+
+- **D** Nouvelle crate `escadrille_weather` (`crates/weather`), indépendante de Bevy comme le FDM et optimisée même en dev.
+  - La densité sert au rendu, au jeu et aux outils.
+  - Ses bruits (2 millions de texels) se génèrent en 0,2 s sur tous les cœurs, au lieu de plusieurs secondes.
+  - Son ajout à l'arborescence de `CLAUDE.md` attend l'accord du joueur.
+- **A** Contenu, couvert par 25 tests :
+  - bruits périodiques et déterministes : hachage PCG3D, Perlin, Worley, sommes fractales ;
+  - grilles de 8 bits échantillonnées comme le GPU : centres de texels, filtrage linéaire, répétition ;
+  - textures : forme 128³ (Perlin-Worley égalisé), détail 32³ (Worley), carte météo 512² (amas et type de nuage) ;
+  - `CloudLayer` (base, épaisseur par type, couverture, vent, extinction) et `CloudUniforms`, les uniformes du futur shader, avec des décalages ramenés dans une période en f64 ;
+  - densité grossière (premier regard de la marche de rayons) et densité complète.
+- **⚠** La première version suivait Schneider 2015 : la couverture coupait le bruit de forme. Vue de dessus, la répétition de ce bruit tous les 4 km dessinait une grille de nuages identiques. **A** Passage au schéma de *Nubis* (Schneider, 2017) : la carte météo place les nuages et fixe leur hauteur, le bruit de forme n'érode que leur enveloppe. **R** Vue de dessus : des cumulus épars, sans grille. En coupe : bases plates, dômes, flancs bosselés. Images regardées.
+- **R** Valeurs par défaut, des cumulus d'été (`ESTIMÉ`, justifiés dans le code) :
+  - base à 1 200 m ;
+  - 42 % du ciel couvert ;
+  - 680 m d'épaisseur moyenne, sommets jusqu'à 1 100 m au-dessus de la base ;
+  - extinction de 0,06/m, d'après σ ≈ 3 LWC / (2 ρw re) : environ 65 m de visibilité dans le nuage.
+- **A** Suite : la même densité en WGSL, puis le test de parité sur le GPU. Il passera par `initialize_renderer` de Bevy, sans dépendance nouvelle.

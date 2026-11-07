@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "crates/fdm",
     "crates/data",
+    "crates/weather",
     "crates/game",
     "tools/fdm_lab",
     "tools/mockup",
@@ -20,6 +21,7 @@ publish = false
 [workspace.dependencies]
 escadrille_fdm = { path = "crates/fdm" }
 escadrille_data = { path = "crates/data" }
+escadrille_weather = { path = "crates/weather" }
 
 # Engine (ADR 0004): exact versions.
 bevy = "=0.20.0"
@@ -58,6 +60,11 @@ opt-level = 3
 # The flight model steps 120 times a second in the game, RK4 over a hundred strips:
 # optimised even in development, or `just run` spends a quarter of a core on it.
 [profile.dev.package.escadrille_fdm]
+opt-level = 3
+
+# The cloud noises are generated at start, 2 million texels: optimised, they take a
+# fraction of a second.
+[profile.dev.package.escadrille_weather]
 opt-level = 3
 
 [profile.release]

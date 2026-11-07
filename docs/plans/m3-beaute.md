@@ -70,6 +70,10 @@ Chacun laisse le jeu lançable, avec tests, `just check`, `just test`, captures 
 - **ADR 0009** : la technique de rendu des nuages (décision 2).
 - **Scènes** : `cumulus_midi` ; `traversee_nuage`, une suite de captures en entrant dans un nuage ; `plafond_bas`, sans pluie.
 
+**En cours depuis le 2026-11-07** :
+- **densité de référence** : crate `escadrille_weather`, sans Bevy (le FDM en est le modèle), car la densité sert aussi au jeu et aux outils. Bruits périodiques générés en Rust, carte météo, profils, couverture et vent, 25 tests ;
+- **schéma retenu** : celui de *Nubis* (2017). La carte météo place chaque nuage et fixe sa hauteur ; le bruit de forme érode son enveloppe. Couper le bruit de forme par la couverture (Schneider 2015) dessinait, vu de dessus, une grille de nuages identiques tous les 4 km.
+
 ### 2. Heure du jour
 
 - **Soleil calculé** à partir de la date, de l'heure et de la latitude des Flandres : algorithme astronomique en Rust, avec un test sur des éphémérides publiées.

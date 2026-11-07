@@ -2820,6 +2820,7 @@ dependencies = [
  "clap",
  "escadrille_data",
  "escadrille_fdm",
+ "escadrille_weather",
 ]
 
 [[package]]
@@ -2835,6 +2836,13 @@ dependencies = [
 
 [[package]]
 name = "escadrille_fdm"
+version = "0.1.0"
+dependencies = [
+ "glam 0.33.12",
+]
+
+[[package]]
+name = "escadrille_weather"
 version = "0.1.0"
 dependencies = [
  "glam 0.33.12",

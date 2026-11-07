@@ -30,6 +30,10 @@ Règles :
 | D16 | 2 | Libraires ; bibliothèques | J. Calcine, *Atlas Aisne 1914-1918 : terrains d'aviation militaires*, 180 fiches de terrains | achat ou consultation, après vérification du contenu | à envoyer |
 | D17 | 1 | Service historique de la Défense, département Air (Vincennes) | instructions de 1916-1918 sur l'organisation des terrains et les signaux au sol ; journaux de marche des SPA 3 et 73 en Flandre (juillet-décembre 1917) | recherche d'inventaire, puis consultation | à envoyer |
 | D18 | 2 | Internet Archive (prêt numérique, compte du joueur) | J. M. Bruce, *War Planes of the First World War*, vol. 5 ; W. M. Lamberton, *Fighter Aircraft of the 1914-1918 War* ; F. Tallman, *Flying the Old Planes* ; E. Petit, *La Vie quotidienne dans l'aviation en France* | emprunt, relevé des passages par le joueur ou la session principale | à faire |
+| D19 | 1 | National Library of Scotland (Édimbourg), Map Library | cartes de tranchées britanniques 1915-1918 : licence CC-BY confirmée pour un jeu libre, attribution, images en pleine définition | courriel | à envoyer |
+| D20 | 1 | In Flanders Fields Museum (Ypres), centre de connaissance | SIG des lignes de front en Belgique, 1914-1918 | courriel | à envoyer |
+| D21 | 2 | Archives départementales du Nord (Lille) | réquisitions et indemnisations des terrains d'aviation de Bierne et de Saint-Pol-sur-Mer, 1917-1919 | recherche d'inventaire, puis consultation | à envoyer |
+| D22 | 3 | Service public de Wallonie, Géoportail (cellule LiDAR) | licence des MNT wallons pour Comines-Warneton | courriel, **seulement si** le DHMV II ne couvre pas la commune | en attente |
 
 ## D1 — Australian War Memorial : notice technique britannique du S.VII
 
@@ -371,6 +375,66 @@ Phrase à ajouter aux messages en français :
 
 > Je cherche aussi le détail du train d'atterrissage : nombre de tours et diamètre des sandows, dimensions des roues et des pneus, pression de gonflage, sabot et sandow de béquille.
 
+## D17 — Complément du 2026-11-07 : terrains de la SPA 3 en Flandre (M3)
+
+Fiche : `flandres-1917.md` § 1. Ajouter à ce que l'on cherche :
+1. dans les JMO des **SPA 3, SPA 73 et du GC 12** (juillet-décembre 1917) : dates exactes des mouvements (Bierne le 12 juillet, Saint-Pol-sur-Mer le 15 août, retour à Bierne le 26 septembre, départ le 11 décembre, selon deux sites non sourcés) ;
+2. l'**emplacement** des terrains de Bierne et de Saint-Pol (lieu-dit, ferme, route, canal) et leurs dimensions ;
+3. l'escadrille de bombardement de nuit sur Voisin qui partage le terrain de Bergues à l'automne 1917 (Biddle) : son numéro.
+
+Phrase à ajouter au message :
+
+> Je cherche aussi l'emplacement précis et les dimensions des terrains de Bierne (près de Bergues) et de Saint-Pol-sur-Mer occupés par le groupe de combat 12 de juillet à décembre 1917.
+
+## D19 — National Library of Scotland : cartes de tranchées
+
+- **Fonds** : « British First World War Trench Maps, 1915-1918 », environ 300 cartes géoréférencées, sur https://maps.nls.uk (adresse de la collection à vérifier : le site refuse l'outil web de l'historien) (`flandres-1917.md`, F15).
+- **Pourquoi** : c'est la seule numérisation de cartes de 1917 trouvée sous une licence acceptée (« CC-BY (NLS) » selon les notices, vu en résumé). Un wiki signale pourtant que la NLS fait payer certains usages commerciaux. Le jeu est libre, et ses assets (CC-BY-SA) sont réutilisables commercialement par des tiers : il faut une confirmation écrite.
+- **Ce qu'on demande** :
+  1. que la licence CC-BY s'applique bien aux feuilles de Belgique 12, 20, 28 et 36 (éditions de 1917) et permet d'en tirer des couches vectorielles (front, bois, routes, canaux) diffusées sous CC-BY-SA dans un jeu libre ;
+  2. la forme exacte de l'attribution ;
+  3. l'accès aux images en pleine définition, et leur coût éventuel.
+- **D'abord** : la session principale relève les notices avec curl (§ 5.2 de la fiche). La demande ne sert que si la notice est ambiguë ou si la pleine définition est payante.
+- **Message proposé** (en anglais) :
+
+> Dear Map Library team,
+>
+> I am working on an open-source flight simulation set over Flanders in 1917. Your georeferenced British First World War trench maps (sheets 12, 20, 28 and 36 of Belgium, 1917 editions) carry the re-use statement "CC-BY (NLS)".
+>
+> Could you confirm that this licence allows us to trace vector layers from these maps (front lines, woods, roads, canals) and to distribute them, with attribution, under CC-BY-SA within a free game that third parties may also reuse commercially? Could you also tell us the exact attribution wording you require, and whether full-resolution images can be obtained, and at what cost?
+>
+> Thank you for your help.
+>
+> [nom], [adresse]
+
+## D20 — In Flanders Fields Museum : SIG des lignes de front
+
+- **Objet** : le fichier SIG des principales lignes de front du Westhoek, 1914-1918, réalisé par le musée et cité par Onroerend Erfgoed (*SYNTAR* n° 19 ; `flandres-1917.md`, F16).
+- **Ce qu'on demande** : son existence et son contenu (dates représentées, précision, sources), sa **licence**, et s'il peut être fourni. Il ne servirait que sous licence acceptée (CC0, CC-BY, CC-BY-SA, domaine public, Modellicentie Gratis Hergebruik).
+- **Pourquoi** : aucun tracé du front en données ouvertes n'a été trouvé ; sinon, il faudra le relever à la main sur les cartes de tranchées.
+- **Message proposé** (en anglais ; le néerlandais est possible) :
+
+> Dear Kenniscentrum team,
+>
+> I am preparing an open-source flight simulation set over the Ypres Salient in 1917. A report by Onroerend Erfgoed (SYNTAR 19) mentions a GIS file, made by the In Flanders Fields Museum, showing the main front lines in Belgium from 1914 to 1918.
+>
+> Is this dataset available, and under what licence? We are especially interested in the front line on 31 July and around 20 October 1917, between Nieuport and Armentières. We could only use it under an open licence such as CC-BY or CC-BY-SA, with full attribution to the museum.
+>
+> Thank you very much.
+>
+> [nom], [adresse]
+
+## D21 — Archives départementales du Nord : terrains d'aviation de Bierne et de Saint-Pol
+
+- **Objet** : à repérer dans les inventaires : réquisitions militaires de terrains, indemnisations d'occupation et dommages de guerre pour les communes de **Bierne**, **Bergues** et **Saint-Pol-sur-Mer**, 1917-1919 ; éventuellement plans cadastraux annotés.
+- **Pourquoi** : aucune source ne place les terrains à la parcelle ; ces dossiers donnent souvent le lieu-dit, le propriétaire, la surface et la durée d'occupation.
+- **Démarche** : **cote non trouvée** ; recherche dans les inventaires en ligne des Archives du Nord (série R, dommages de guerre), puis consultation à Lille.
+
+## D22 — Service public de Wallonie : MNT de Comines-Warneton
+
+- **Seulement si** le DHMV II, avec sa bande de 5 km, ne couvre pas Comines-Warneton (à vérifier après téléchargement).
+- **Ce qu'on demande** : la licence du MNT LiDAR (2013-2014 ou 2021-2022) ; une seule notice, celle des orthophotos de 2021, dit CC BY 4.0. Contacts relevés : lidar@spw.wallonie.be, helpdesk.carto@spw.wallonie.be (à vérifier).
+
 ## Journal
 
 | Date | Demande | Événement |
@@ -380,3 +444,4 @@ Phrase à ajouter aux messages en français :
 | 2026-10-27 | D8 et D9 (compléments), D13, D14 | Ajoutés par l'historien pour la seconde couche de livrée de S.254 (`spad7-aspect.md` § 12.6) ; rien n'est envoyé |
 | 2026-10-31 | D15 ; D1 à D6 (compléments) | Ajoutés par l'historien pour l'enquête sur le centrage (`spad7.md` § 3.1) ; rien n'est envoyé |
 | 2026-11-01 | D16 à D18 ; D1 à D5 (compléments) | Ajoutés par l'historien pour le train et le sol (`spad7.md` § 6.6) ; rien n'est envoyé |
+| 2026-11-07 | D17 (complément) ; D19 à D22 | Ajoutés par l'historien pour le théâtre du M3 (`flandres-1917.md` § 5) ; rien n'est envoyé |
