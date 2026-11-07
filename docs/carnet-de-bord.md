@@ -2900,3 +2900,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 
 - **Q** Le joueur : « Oui, faire relire ».
 - **A** Revue du directeur artistique lancée sur `cumulus_midi`, `cumulus_contre_jour` (avant et après les corrections) et `cumulus_sous_la_base` (nouvelle). Questions posées : les points 1, 2, 4 et 5 sont-ils réglés, l'avion est-il juste à l'ombre, le contre-jour a-t-il régressé, et que reste-t-il pour clore l'incrément 1 des nuages.
+- **R** Verdict « approuvé pour les corrections » ; l'incrément 1 ne peut pas encore être clos.
+  - Point 1 (lacs bleus) : réglé au premier plan seulement. Au plan moyen de `cumulus_midi` et dans `cumulus_sous_la_base`, les ombres restent bleues et saturées : la perspective aérienne, que les nuages n'ombrent pas, s'ajoute par-dessus et domine avec la distance.
+  - Point 2 (ombres lointaines) : réglé à l'œil. Point 4 (bords qui glissent) : réglé d'après les mesures, à confirmer en séquence. Point 5 (tache fantôme) : réglé.
+  - Contre-jour : pas de régression, toujours la meilleure image du projet. À midi, l'ambiance remplit un peu le côté à l'ombre du capot (léger, non bloquant).
+  - Avion à l'ombre : couleur juste, valeur peut-être un peu claire. Critère proposé : rapport de luminance linéaire ombre/soleil de l'aile haute entre 0,25 et 0,4 ; au-delà de 0,5, le facteur 0,6 de l'ambiance est trop fort. Le fuselage mesuré la dernière fois donne environ 0,6 (mesure faite après le tonemapping, donc approchée).
+- **R** À corriger, par ordre d'impact :
+  1. **L'avion est plat à l'ombre**, comme une découpe de carton : l'`AmbientLight` est uniforme et rien ne l'occulte. Pistes : la SSAO de Bevy (`ScreenSpaceAmbientOcclusion`, présente dans `bevy_pbr` 0.20.0, vérifié), puis une ambiance directionnelle (le dessus voit la base grise du nuage, le dessous le sol au soleil).
+  2. **Lacs bleus au plan moyen** : atténuer la part solaire de la perspective aérienne par la transmittance de la couche sous la base, et/ou des aérosols (Mie) pour une brume plus blanche.
+  3. Bords nets par soleil bas (point 3, connu) : pénombre croissante avec la distance, à l'étape « heure du jour ».
+  4. Hors nuages : le terrain provisoire en cellules de Voronoï pèse désormais le plus sur `cumulus_sous_la_base`.
+  5. Ambiance par soleil bas, blanche et presque nulle à 9° : la teinter par le soleil et utiliser l'éclairement normal.
+  6. Risques à contrôler : le cockpit, que l'ambiance non occultée risque de déboucher ; les ombres lointaines qui « respirent » quand la caméra fait demi-tour.
+- **R** Pour clore l'incrément 1 :
+  - `plafond_bas`, avec un profil de stratus et une ambiance revue : à couverture 1 la formule actuelle donne l'ambiance maximale, alors qu'une couche épaisse ne transmet que 10 à 30 %. Il faut aussi baisser `AtmosphereEnvironmentMapLight::intensity` (champ vérifié dans `bevy_light` 0.20.0) selon l'épaisseur optique.
+  - `traversee_nuage` en séquence : pas de saut à l'entrée, la queue s'estompe avant le nez, l'avion s'assombrit en s'enfonçant.
+  - Une courte séquence de `cumulus_sous_la_base`, l'avion franchissant un bord d'ombre.
+  - Les réserves ouvertes (ombre d'un nuage sur son voisin, bases trop tranchées, auréole du soleil), reportables avec l'accord du joueur, et l'approbation du joueur sur les scènes.
+- **D** Recommandation du directeur artistique : la SSAO sur la caméra de vol, au meilleur rapport effet/effort, validée sur `cumulus_sous_la_base` et `avion-studio` (surveiller les halos autour de l'avion). En attente de la décision du joueur.
