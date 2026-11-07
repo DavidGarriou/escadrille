@@ -2895,3 +2895,8 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Scène de contrôle `cumulus_sous_la_base` : le SPAD à 1 000 m sous une base à 1 200 m, graine 8, choisie avec la référence Rust pour qu'un nuage soit sur sa ligne de soleil. **R** L'avion est à l'ombre : son fuselage passe de 86 % à 69 % en sRGB (0,6 en linéaire), sans ombre nette de l'aile haute, éclairé par le ciel et l'ambiance.
 - **R** Coût en 1440p, au calme : passe d'ombre 0,37 à 0,40 ms ; passe des opaques 0,18 à 0,21 ms, donc les textures de lumière n'y coûtent presque rien.
 - **A** Trois tests nouveaux : placement de la carte (devant l'œil, sur sa grille) ; part de la lumière d'ambiance ; transmittance de l'air. `just check` et `just test` passent (423 tests).
+
+### Relecture des ombres corrigées
+
+- **Q** Le joueur : « Oui, faire relire ».
+- **A** Revue du directeur artistique lancée sur `cumulus_midi`, `cumulus_contre_jour` (avant et après les corrections) et `cumulus_sous_la_base` (nouvelle). Questions posées : les points 1, 2, 4 et 5 sont-ils réglés, l'avion est-il juste à l'ombre, le contre-jour a-t-il régressé, et que reste-t-il pour clore l'incrément 1 des nuages.
