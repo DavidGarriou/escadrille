@@ -2940,3 +2940,21 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Coût en 1440p, niveau « haut » : 0,60 à 0,68 ms pour la SSAO. Image complète : `avion-studio` de 2,16 à 2,85 ms, `cumulus_sous_la_base` de 3,03 à 3,61 ms.
 - **A** Documentation : skills `rendu-visuel` (occlusion ambiante et son piège) et `bevy` (§ 9), plan du M3. Cinq tests nouveaux. `just check` et `just test` passent (427 tests).
 - **D** Le modelé de l'avion vu de loin demande une ambiance directionnelle : la base grise du nuage au-dessus, le sol au soleil en dessous, au lieu de l'`AmbientLight` uniforme. Proposée comme prochaine étape ; la revue du directeur artistique portera sur les deux ensemble.
+
+### Ambiance directionnelle : plan à valider
+
+- **Q** Le joueur : « Oui, l'ambiance » (ambiance directionnelle : la base du nuage au-dessus, le sol au soleil en dessous ; puis relecture de la SSAO et de l'ambiance par le directeur artistique).
+- **R** Piste du directeur artistique écartée : des lumières directionnelles sans ombre, l'une venant du haut, l'autre du bas. Bevy 0.20 traite toute lumière directionnelle comme un soleil de l'atmosphère (diffusion simple, multidiffusion, sol de la planète : `atmosphere/functions.wesl`). Une lumière venant du haut éclaircirait tout le ciel. Notre shader des nuages prend en outre la lumière d'indice 0 comme soleil.
+- **R** Constats :
+  - la carte d'environnement de l'atmosphère (128² par face) montre sous l'horizon un sol gris (albédo 0,3) au plein soleil, sans les ombres des nuages ;
+  - la lumière des nuages est une `AmbientLight` uniforme, qui éclaire le dessous des ailes autant que le dessus ;
+  - Bevy filtre la carte (`lightprobe_irradiance_map`, `lightprobe_radiance_map`) dans `Render` avant le graphe, sur ce que l'image précédente y a laissé. Une passe placée après `main_opaque`, où tournent déjà nos nuages, peut donc réécrire le cube, avec une image de retard.
+- **D** Plan proposé (plus d'une heure, à faire valider), option A, recommandée : **les nuages dans la carte d'environnement**.
+  1. Passe de calcul `clouds/environment.wesl`, pour chaque texel du cube : le ciel lu dans la table de l'atmosphère, plus les nuages, marchés en peu de pas (réglés par le niveau de qualité). Elle écrit dans le cube de `GeneratedEnvironmentMapLight`.
+  2. Le sol de l'atmosphère prend l'albédo des champs (0,18, vert-ocre, `ESTIMÉ`), atténué par la transmittance moyenne de la couche (1 − 0,76 × couverture).
+  3. L'`AmbientLight` des nuages disparaît : la lumière diffuse de Bevy, qui vient de la carte, devient directionnelle d'elle-même. Elle reste occultée par la SSAO.
+  4. Contrôles : le rapport ombre/soleil en linéaire, toujours entre 0,25 et 0,4 sur les faces du dessus, avec un dégradé du dessus au dessous ; captures des scènes de nuages ; `avion-studio` inchangée ; coût mesuré.
+  5. Complément à l'ADR 0009, documentation, revue du directeur artistique de la SSAO et de l'ambiance.
+  
+  Ce que cela règle aussi : les reflets du vernis et du verre montrent les nuages ; au-dessus d'une mer de nuages, leur lumière éclaire le dessous de l'avion (réserve de la revue) ; sous un plafond, la carte montre des bases grises au lieu d'un ciel bleu (prérequis de `plafond_bas`).
+- **D** Option B, plus courte mais jetable : une extension de matériau sur l'avion, qui pondère la lumière d'ambiance par l'hémisphère (pleine en haut, nulle en bas), et un albédo du sol teinté. Elle ne touche que l'avion, et la carte d'environnement reste fausse.
