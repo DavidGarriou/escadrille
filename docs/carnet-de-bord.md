@@ -2859,3 +2859,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **contre-jour** : les ombres longues du soleil bas couvrent une grande part de la plaine.
 - **R** Une scène sans nuages n'a pas changé (0,1 %). Coût de la passe : 0,12 à 0,14 ms. Les autres passes paraissaient 30 % plus lentes et le CPU trois fois plus lent : l'autre session (capture en erreur) tournait en même temps. Le coût des textures de lumière dans la passe des opaques reste à remesurer au calme.
 - **A** `just check` et `just test` passent (421 tests). Revue du directeur artistique demandée.
+- **R** Réponse au joueur : les ombres tachettent la plaine sous chaque cumulus, l'avion garde le soleil au-dessus des nuages ; restent l'ombre lointaine d'un nuage sur son voisin, les réserves des revues et deux scènes. La revue du directeur artistique est en cours.
