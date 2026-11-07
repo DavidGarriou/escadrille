@@ -2729,3 +2729,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   4. Encore trop doux et trop gris : en revue par le directeur artistique.
 - **R** Coût : 1,3 ms de GPU en 1440p, qualité « haut », en pleine résolution, sur la RX 7800 XT.
 - **A** `just check` et `just test` passent (410 tests).
+
+### Revue du directeur artistique : premiers nuages
+
+- **R** Verdict « à retravailler » : l'image se lit comme du brouillard, pas comme des cumulus. Ce qui fonctionne :
+  - la composition des plans, nuages derrière l'avion et haubans par-dessus ;
+  - pas de banding ni de bruit ;
+  - pas de répétition visible ;
+  - un voile accordé à celui du sol.
+- **R** À corriger, par ordre d'impact :
+  1. **Nuages éteints**, plus sombres que la toile au soleil. Le terme diffus 1/(1 + 0,11 τ), divisé par 4π, oublie la lumière renvoyée et accumulée : il manque un facteur 3 à 4. Cible : une plaque τ = 50 rend R ≈ 1 − T. Test CPU proposé.
+  2. **Aucun modelé**. La lumière diffuse ne dépend pas de l'incidence du soleil. Le rebond du sol n'est ni atténué ni ombré, et compte sur toute la sphère, avec l'albédo 0,3 de Bevy (cible : 0,15 à 0,2 pour des champs).
+  3. **Bords mous**. Densité plafonnée vers 0,3-0,45 : la raidir (×4 à ×6, saturée) et monter l'érosion de détail à 0,5-0,6 sur les flancs.
+  4. **Cadrage**. L'avion est dans la couche et ne voit que des flancs. Il faut des cumulus de 600 à 800 m d'épaisseur ou l'avion vers 1 500 m, deux tiers de ciel, et une variante face au soleil.
+  5. **Couleur** : blancs crème au soleil, ombres bleutées. Les points 1 et 2 devraient corriger l'essentiel.
+  6. **Ombres des nuages au sol**, déjà prévues. Une capture sans TAA dira quelle part du flou vient d'elle.
+- **D** Prochaine itération : points 1, 2 et 4 ensemble, validés par le test d'albédo ; le point 3 ensuite.
