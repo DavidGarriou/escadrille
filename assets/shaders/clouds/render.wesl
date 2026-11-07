@@ -1,6 +1,9 @@
-// The ray march of the clouds (ADR 0009): for each pixel, the light the clouds send
-// towards the eye and their transmittance, written into the cloud image, which a
-// transparent material then blends over the sky and the opaque objects:
+// The ray march of the clouds (ADR 0009): for each pixel of an image `divisor` times
+// smaller than the camera's on each side, the light the clouds send towards the eye and
+// their transmittance, and two distances: where the march stopped (the nearest object of
+// the pixel's block, or the longest distance) and the mean distance of the clouds. A
+// temporal pass blends it with the previous frames (`temporal.wesl`), then a transparent
+// material upsamples it over the sky and the opaque objects (`composite.wesl`):
 // colour = light + image × transmittance. Used by `crates/game/src/render/clouds/pass.rs`.
 //
 // Group 0 is the layout of `render_sky`, rebuilt by the pass, so that the functions of
@@ -45,6 +48,8 @@ struct CloudPass {
     // Steps of the march through the layer, at most, and towards the sun.
     steps: u32,
     light_steps: u32,
+    // Divisor of the camera's resolution, on each side.
+    divisor: u32,
     // Shortest step of the march, m.
     min_step: f32,
     // Longest distance marched, m.
@@ -173,19 +178,36 @@ fn sky_radiance(r: f32) -> vec3<f32> {
     return sum / 5.0;
 }
 
+struct MarchOutput {
+    // Light (rgb, exposed) and transmittance (a).
+    @location(0) color: vec4<f32>,
+    // Where the march stopped, and the mean distance of the clouds, m.
+    @location(1) distance: vec2<f32>,
+}
+
 @fragment
-fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
-    let clear = vec4<f32>(0.0, 0.0, 0.0, 1.0);
+fn fragment(in: FullscreenVertexOutput) -> MarchOutput {
     let direction = uv_to_ray_direction(in.uv);
     let eye = view.world_position;
 
-    // How far the ray goes: to the first opaque object, or to the longest distance.
+    // How far the ray goes: to the nearest opaque object of the pixel's block (reversed
+    // depth: the largest value), or to the longest distance.
+    let divisor = i32(cloud_pass.divisor);
+    let block = vec2<i32>(in.position.xy) * divisor;
+    let last = vec2<i32>(textureDimensions(depth_texture)) - 1;
+    var depth = 0.0;
+    for (var j = 0; j < divisor; j++) {
+        for (var i = 0; i < divisor; i++) {
+            depth = max(depth, textureLoad(depth_texture, min(block + vec2<i32>(i, j), last), 0));
+        }
+    }
     var far = cloud_pass.max_distance;
-    let depth = textureLoad(depth_texture, vec2<i32>(in.position.xy), 0);
     if depth > 0.0 {
         let p = view.view_from_clip * vec4<f32>(uv_to_ndc(in.uv), depth, 1.0);
         far = min(far, length(p.xyz / p.w));
     }
+    let stop = far;
+    let clear = MarchOutput(vec4<f32>(0.0, 0.0, 0.0, 1.0), vec2<f32>(stop, stop));
 
     // Where it crosses the layer, between its base and its highest top.
     let bottom = clouds.base_altitude - clouds.altitude_offset;
@@ -316,5 +338,5 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     let air = sample_transmittance_lut_segment(r_view, mu_view, distance);
     let haze = sample_aerial_view_lut(in.uv, distance);
     let color = light * air + haze * (1.0 - transmittance);
-    return vec4<f32>(color * view.exposure, transmittance);
+    return MarchOutput(vec4<f32>(color * view.exposure, transmittance), vec2<f32>(stop, distance));
 }

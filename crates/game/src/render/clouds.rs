@@ -5,10 +5,14 @@
 //! density.wesl` for the render (`CLAUDE.md`, CPU/GPU parity). The parity test below runs
 //! the shader on the GPU over the same textures and uniforms, and compares.
 //!
-//! The render (ADR 0009) has two steps: the ray march writes the light and transmittance
-//! of the clouds into [`CloudTarget`] (`pass`), then a transparent material over the
-//! whole screen, [`CloudComposite`], blends that image over the sky and the opaque
-//! objects, first in the transparent pass, after Bevy's sky.
+//! The render (ADR 0009) has three steps:
+//! - the ray march, at a fraction of the resolution, writes the light and transmittance
+//!   of the clouds and two distances (`pass`);
+//! - a temporal pass blends it with the previous frames, reprojected at the distance of
+//!   the clouds, into [`CloudTarget`] (`pass`);
+//! - a transparent material over the whole screen, [`CloudComposite`], first in the
+//!   transparent pass, after Bevy's sky, upsamples that image along the depth of the
+//!   scene and blends it over the sky and the opaque objects.
 
 mod pass;
 
@@ -23,7 +27,7 @@ use bevy::pbr::{MaterialPipeline, MaterialPipelineKey};
 use bevy::prelude::*;
 use bevy::render::render_resource::{
     AsBindGroup, CompareFunction, Extent3d, RenderPipelineDescriptor, ShaderType,
-    SpecializedMeshPipelineError, TextureDimension, TextureFormat,
+    SpecializedMeshPipelineError, TextureDimension, TextureFormat, TextureUsages,
 };
 use bevy::shader::ShaderRef;
 use escadrille_weather::clouds::{CloudLayer, CloudTextures, CloudUniforms};
@@ -43,6 +47,9 @@ const MIN_STEP_M: f32 = 12.0;
 
 /// Format of the cloud image: light (rgb, HDR) and transmittance (a).
 const TARGET_FORMAT: TextureFormat = TextureFormat::Rgba16Float;
+/// Format of the cloud distances: where the march stopped (the scene, or the longest
+/// distance) and the mean distance of the clouds, m.
+const DISTANCE_FORMAT: TextureFormat = TextureFormat::Rg32Float;
 
 /// The shader of the composite, under `assets/`.
 const COMPOSITE_SHADER: &str = "shaders/clouds/composite.wesl";
@@ -68,20 +75,29 @@ pub struct CloudImages {
     pub weather: Handle<Image>,
 }
 
-/// The image the rays write, the size of the camera's, and the entity that blends it.
+/// The images of the clouds after the temporal pass, the camera's size divided by
+/// `divisor`, and the entity that blends them.
 #[derive(Resource, Debug, Clone)]
 pub struct CloudTarget {
-    pub image: Handle<Image>,
+    pub color: Handle<Image>,
+    pub distance: Handle<Image>,
+    pub divisor: u32,
     veil: Entity,
 }
 
-/// Material of the composite: the cloud image over the whole screen, premultiplied (light,
-/// and 1 − transmittance in alpha), without depth test or culling.
+/// Material of the composite: the cloud images over the whole screen, upsampled along the
+/// depth of the scene, premultiplied (light, and 1 − transmittance in alpha), without
+/// depth test or culling.
 #[derive(Asset, TypePath, AsBindGroup, Debug, Clone)]
 pub struct CloudComposite {
     #[texture(0)]
     #[sampler(1)]
     pub clouds: Handle<Image>,
+    #[texture(2, sample_type = "float", filterable = false)]
+    pub distances: Handle<Image>,
+    /// Divisor of the resolution, longest distance of a ray (m), unused, unused.
+    #[uniform(3)]
+    pub params: Vec4,
 }
 
 impl Material for CloudComposite {
@@ -138,11 +154,13 @@ fn screen_triangle() -> Mesh {
     .with_inserted_indices(Indices::U16(vec![0, 1, 2]))
 }
 
-/// What the cloud pass needs this frame: the uniforms of the density, how the rays march.
+/// What the cloud pass needs this frame: the uniforms of the density, how the rays march,
+/// and the render origin, whose jump resets the temporal pass.
 #[derive(Resource, Debug, Clone, Copy)]
 pub struct CloudFrame {
     pub uniforms: GpuCloudUniforms,
     pub pass: GpuCloudPass,
+    pub origin: DVec3,
 }
 
 pub struct CloudsPlugin;
@@ -163,9 +181,10 @@ impl Plugin for CloudsPlugin {
     }
 }
 
-/// The cloud image and the entity that blends it, once.
+/// The cloud images and the entity that blends them, once.
 fn spawn_veil(
     target: Option<Res<CloudTarget>>,
+    quality: Res<Quality>,
     mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<CloudComposite>>,
@@ -174,13 +193,23 @@ fn spawn_veil(
     if target.is_some() {
         return;
     }
-    let image = images.add(Image::new_target_texture(1, 1, TARGET_FORMAT, None));
+    let image = |format| {
+        let mut image = Image::new_target_texture(1, 1, format, None);
+        // The temporal pass keeps a copy for the next frame.
+        image.texture_descriptor.usage |= TextureUsages::COPY_SRC;
+        image
+    };
+    let color = images.add(image(TARGET_FORMAT));
+    let distance = images.add(image(DISTANCE_FORMAT));
+    let divisor = quality.cloud_divisor();
     let veil = commands
         .spawn((
             Name::new("Cloud veil"),
             Mesh3d(meshes.add(screen_triangle())),
             MeshMaterial3d(materials.add(CloudComposite {
-                clouds: image.clone(),
+                clouds: color.clone(),
+                distances: distance.clone(),
+                params: Vec4::new(divisor as f32, MAX_DISTANCE_M, 0.0, 0.0),
             })),
             Transform::default(),
             NoFrustumCulling,
@@ -188,10 +217,20 @@ fn spawn_veil(
             NotShadowReceiver,
         ))
         .id();
-    commands.insert_resource(CloudTarget { image, veil });
+    commands.insert_resource(CloudTarget {
+        color,
+        distance,
+        divisor,
+        veil,
+    });
 }
 
-/// The cloud image keeps the size of the 3D camera's target, pixel for pixel.
+/// The size of the cloud images: the 3D camera's target divided by the divisor, rounded up.
+pub fn cloud_size(target: UVec2, divisor: u32) -> UVec2 {
+    target.map(|side| side.div_ceil(divisor))
+}
+
+/// The cloud images keep the size of the 3D camera's target, divided.
 fn size_target(
     target: Res<CloudTarget>,
     cameras: Query<&Camera, With<Camera3d>>,
@@ -200,17 +239,17 @@ fn size_target(
     let Some(size) = cameras.iter().find_map(Camera::physical_target_size) else {
         return;
     };
-    let Some(image) = images.get(&target.image) else {
-        return;
-    };
-    if image.size() != size
-        && let Some(mut image) = images.get_mut(&target.image)
-    {
-        image.resize(Extent3d {
-            width: size.x,
-            height: size.y,
-            depth_or_array_layers: 1,
-        });
+    let size = cloud_size(size, target.divisor);
+    for handle in [&target.color, &target.distance] {
+        if images.get(handle).is_some_and(|image| image.size() != size)
+            && let Some(mut image) = images.get_mut(handle)
+        {
+            image.resize(Extent3d {
+                width: size.x,
+                height: size.y,
+                depth_or_array_layers: 1,
+            });
+        }
     }
 }
 
@@ -259,9 +298,11 @@ fn update_frame(
             frame: frames.0,
             steps,
             light_steps,
+            divisor: quality.cloud_divisor(),
             min_step: MIN_STEP_M,
             max_distance: MAX_DISTANCE_M,
         },
+        origin,
     });
 }
 
@@ -571,6 +612,16 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
             .iter()
             .map(|b| f32::from_le_bytes(*b))
             .collect()
+    }
+
+    #[test]
+    fn the_cloud_images_cover_the_camera_s_rounded_up() {
+        assert_eq!(cloud_size(UVec2::new(2560, 1440), 2), UVec2::new(1280, 720));
+        assert_eq!(cloud_size(UVec2::new(2561, 1441), 2), UVec2::new(1281, 721));
+        assert_eq!(
+            cloud_size(UVec2::new(1920, 1080), 1),
+            UVec2::new(1920, 1080)
+        );
     }
 
     #[test]

@@ -2834,3 +2834,16 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Pendant une capture, `read_controls` ignore la manette et le clavier : les commandes restent celles du départ ou de la scène. Nouveau test : une flèche pressée ne change rien pendant une capture, et change bien le manche en dehors. Le skill `bevy` (§ 7) décrit le contrôle : deux captures de suite doivent différer de moins de 10⁻⁴. **R** Écart entre deux captures : 1,7·10⁻⁵, soleil au même pixel.
 - **A** `just check` et `just test` passent (419 tests).
 - **D** Suite : le quart de résolution et la reconstruction temporelle. Réserves à garder pour après : le chemin du ciel limité au haut de l'enveloppe, le liseré, les bases plates, le bruit intermédiaire, l'auréole du soleil, l'éclairage de l'avion à contre-jour.
+
+### M3, incrément 1 : quart de résolution et reconstruction temporelle des nuages
+
+- **Q** Le joueur : « Oui, attaquer ».
+- **A** Trois passes à la place d'une :
+  - **marche** à la moitié de la résolution sur chaque axe (diviseur 3, 2, 2, 1 selon la qualité). Deux sorties : la lumière et la transmittance ; la distance où elle s'est arrêtée (objet le plus proche du bloc) et la distance moyenne des nuages ;
+  - **passe temporelle** à basse résolution. Elle reprojette l'image précédente à la distance des nuages, découpe l'historique dans la moyenne du voisinage ± 1,25 écart-type (Salvi 2016), donne 12 % de poids à l'image courante, et repart de zéro quand l'origine de rendu saute. Elle écrit dans les images de `CloudTarget`, puis les recopie comme historique ;
+  - **composition** par le matériau transparent, avec un suréchantillonnage selon la profondeur du prépassage. Les texels dont la distance d'arrêt s'accorde avec le pixel pèsent le plus, et un nuage situé derrière l'objet du pixel ne passe pas devant.
+- **⚠** Premier essai : la capture est sortie avec le code 0 alors que le shader de composition ne compilait pas (chemin d'import faux, `bevy_pbr::render::mesh_view_bindings`). Le mode capture ne détecte pas l'échec d'un pipeline de matériau. C'est à corriger.
+- **⚠** Les cumulus lointains s'étiraient vers le bas en rideaux. La capture sans accumulation a désigné la passe temporelle, et la vue du décalage de reprojection en a montré un, vertical et presque uniforme. Cause : la direction du rayon était reconstruite en soustrayant l'œil, à 2 000 m, d'un point du plan proche situé à 5 cm, ce qui perd quelques pixels à l'arrondi f32. **A** Reprojection centrée sur l'œil (rotation seule, plus le déplacement de l'œil). **R** Décalage nul sur le ciel, plus de rideaux.
+- **R** Images regardées : `cumulus_midi` et `cumulus_contre_jour` à peu près identiques à la pleine résolution, bords de l'avion propres. Deux images consécutives diffèrent de 0,04 % (3 pixels sur 1,28 million de plus de 4 %) : pas de scintillement.
+- **R** Coût en 1440p : marche 0,3 à 0,44 ms, temporel 0,02 ms, contre 0,9 à 1,6 ms en pleine résolution.
+- **A** Deux tests nouveaux (diviseur par qualité, taille arrondie). `just check` et `just test` passent (421 tests).

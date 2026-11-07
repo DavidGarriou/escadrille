@@ -41,6 +41,16 @@ impl Quality {
         }
     }
 
+    /// Divisor of the resolution of the clouds' ray march, on each side: 2 marches a
+    /// quarter of the pixels, which the temporal pass and the upsampling make up for.
+    pub fn cloud_divisor(self) -> u32 {
+        match self {
+            Self::Low => 3,
+            Self::Medium | Self::High => 2,
+            Self::Ultra => 1,
+        }
+    }
+
     /// Side of each cascade of the sun's shadow map, texels: « haut » keeps Bevy's own.
     pub fn shadow_map(self) -> usize {
         match self {
@@ -72,6 +82,17 @@ mod tests {
             DirectionalLightShadowMap::default().size
         );
         assert!(levels.iter().all(|q| q.shadow_map().is_power_of_two()));
+    }
+
+    #[test]
+    fn the_clouds_march_at_a_quarter_of_the_pixels_on_the_reference() {
+        let levels = [Quality::Low, Quality::Medium, Quality::High, Quality::Ultra];
+        assert_eq!(Quality::High.cloud_divisor(), 2);
+        assert!(
+            levels
+                .windows(2)
+                .all(|pair| pair[0].cloud_divisor() >= pair[1].cloud_divisor())
+        );
     }
 
     #[test]

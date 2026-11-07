@@ -43,6 +43,13 @@ Principes de départ :
 
 ## Performances
 
+- **En place (2026-11-07)** : marche à la moitié de la résolution sur chaque axe (« haut »), puis reconstruction temporelle et suréchantillonnage selon la profondeur. Trois passes : `render.wesl`, `temporal.wesl`, `composite.wesl`.
+  - **Marche** : elle écrit la lumière, la transmittance, la distance où elle s'est arrêtée (l'objet le plus proche du bloc de pixels) et la distance moyenne des nuages.
+  - **Temporel** : reprojection à la distance moyenne, découpage dans la moyenne du voisinage ± 1,25 écart-type, 12 % de poids à l'image courante, remise à zéro quand l'origine de rendu saute.
+  - **Composition** : des quatre texels voisins, ceux dont la distance d'arrêt s'accorde avec la profondeur du pixel pèsent le plus ; un nuage situé derrière l'objet du pixel ne passe pas devant.
+  - **Coût en 1440p** : 0,3 à 0,44 ms pour la marche et 0,02 ms pour le temporel, contre 0,9 à 1,6 ms en pleine résolution. Deux images consécutives diffèrent de 0,04 % : pas de scintillement.
+- **Piège de précision** : reconstruire la direction d'un rayon en soustrayant l'œil, à 2 000 m, d'un point du plan proche situé à 5 cm perd quelques pixels à l'arrondi f32. La reprojection glissait alors vers le bas, en rideaux. Travailler en axes du monde centrés sur l'œil, avec le petit déplacement de l'œil d'une image à l'autre.
+
 - **Marche en place** : pas proportionnels à la distance (2 %). Elle enjambe trois pas à la fois l'air situé hors de toute enveloppe, avec une gigue étalée sur toute l'enjambée ; elle recule à l'entrée d'un nuage. Sans cela, des stries apparaissaient sur les dômes, et jusqu'à l'horizon.
 
 - Raymarching à résolution réduite (quart de résolution, par exemple) avec reprojection temporelle et reconstruction ; pas adaptatifs (grands pas dans le vide, petits dans la densité).
