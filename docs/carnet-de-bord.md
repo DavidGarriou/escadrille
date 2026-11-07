@@ -2823,3 +2823,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **contre-jour** : le corps des tours passe du brun saumon à un gris lilas bleuté, avec des bords dorés près du soleil. Le corps reste à peu près de la luminance du ciel ;
   - **midi** : inchangé pour l'essentiel.
 - **R** Coût : 0,9 et 1,6 ms de GPU en 1440p. `just check` et `just test` passent (418 tests). Seul le shader change : le modèle Rust et ses tests restent valables.
+
+### Contrôle du directeur artistique, et captures non reproductibles
+
+- **R** Contrôle du directeur artistique : la condition minimale est remplie. Le corps des tours à contre-jour est gris lilas froid sous des crêtes dorées ; aucune régression à midi. Passage au quart de résolution approuvé, avec des réserves :
+  - le bas des tours est aussi clair que le cœur : le chemin de la lumière du ciel côté œil vaut aussi pour les flancs bas. Piste : ne l'appliquer que dans le haut de l'enveloppe ;
+  - le corps reste clair et plat ;
+  - les captures d'avant et d'après ne se superposent pas.
+- **⚠** Ce dernier point était un vrai défaut. Deux captures de suite de la même scène différaient de 1,85 % en moyenne, avec le soleil à 1 182 puis à 1 248 px. Deux scènes temporaires ont mis hors de cause les nuages et le scénario `vol-2000`. **R** Cause : en capture, le jeu lisait la manette, restée branchée. La dérive de son stick droit faisait tourner la caméra de poursuite, y compris pendant les images de chargement, où le temps réel avance alors que l'horloge du jeu est en pause. Le test de reproductibilité du 2026-11-05 portait sans doute sur une scène au sol.
+- **A** Pendant une capture, `read_controls` ignore la manette et le clavier : les commandes restent celles du départ ou de la scène. Nouveau test : une flèche pressée ne change rien pendant une capture, et change bien le manche en dehors. Le skill `bevy` (§ 7) décrit le contrôle : deux captures de suite doivent différer de moins de 10⁻⁴. **R** Écart entre deux captures : 1,7·10⁻⁵, soleil au même pixel.
+- **A** `just check` et `just test` passent (419 tests).
+- **D** Suite : le quart de résolution et la reconstruction temporelle. Réserves à garder pour après : le chemin du ciel limité au haut de l'enveloppe, le liseré, les bases plates, le bruit intermédiaire, l'auréole du soleil, l'éclairage de l'avion à contre-jour.

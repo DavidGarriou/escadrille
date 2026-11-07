@@ -24,6 +24,7 @@ use bevy::ecs::system::SystemParam;
 use bevy::prelude::*;
 use escadrille_fdm::aircraft::PilotControls;
 
+use crate::dev::capture::CaptureRequest;
 use crate::flight::{FlightSet, PilotInput, RestartFlight, StartCommands};
 use processing::{Lever, around_neutral, expo, radial_dead_zone, ramp};
 
@@ -110,9 +111,12 @@ pub struct Outputs<'w> {
 }
 
 /// Reads the gamepad (the first one) and the keyboard, and writes the pilot's commands
-/// and the discrete actions.
+/// and the discrete actions. A capture reads neither: the scene holds its commands, and a
+/// gamepad left plugged in turned the camera by its drift, a few degrees from one capture
+/// to the next.
 fn read_controls(
     time: Res<Time<Real>>,
+    capture: Option<Res<CaptureRequest>>,
     gamepads: Query<&Gamepad>,
     keys: Res<ButtonInput<KeyCode>>,
     mut controls: ResMut<Controls>,
@@ -121,11 +125,12 @@ fn read_controls(
 ) {
     // Real time: the levers still move while the game is paused.
     let dt = time.delta_secs();
-    let pad = gamepads.iter().next();
+    let live = capture.is_none();
+    let pad = gamepads.iter().next().filter(|_| live);
     let pressed = |b: GamepadButton| pad.is_some_and(|g| g.pressed(b));
     let just = |b: GamepadButton| pad.is_some_and(|g| g.just_pressed(b));
-    let key = |k: KeyCode| keys.pressed(k);
-    let key_just = |k: KeyCode| keys.just_pressed(k);
+    let key = |k: KeyCode| live && keys.pressed(k);
+    let key_just = |k: KeyCode| live && keys.just_pressed(k);
 
     // Stick: gamepad, or keyboard keys through a ramp.
     let stick = pad.map_or(Vec2::ZERO, |g| radial_dead_zone(g.left_stick(), DEAD_ZONE));
@@ -202,5 +207,58 @@ fn read_controls(
     }
     if just(GamepadButton::Select) || key_just(KeyCode::KeyR) {
         out.restart.write(RestartFlight);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::PathBuf;
+
+    use super::*;
+
+    /// The pilot's commands after one frame with the up arrow held, with or without a
+    /// capture under way.
+    fn commands_with_up_arrow(capturing: bool) -> PilotControls {
+        let mut app = App::new();
+        app.add_plugins(MinimalPlugins)
+            .init_resource::<Controls>()
+            .init_resource::<PilotInput>()
+            .insert_resource(StartCommands(PilotControls {
+                roll: 0.0,
+                pitch: -0.09,
+                yaw: 0.0,
+                throttle: 0.6,
+            }))
+            .add_message::<Action>()
+            .add_message::<RestartFlight>()
+            .add_systems(Update, read_controls);
+        let mut keys = ButtonInput::<KeyCode>::default();
+        keys.press(KeyCode::ArrowUp);
+        app.insert_resource(keys);
+        if capturing {
+            app.insert_resource(CaptureRequest {
+                scene: "test".to_owned(),
+                frames: 1,
+                size: (64, 64),
+                png: PathBuf::from("test.png"),
+                json: PathBuf::from("test.json"),
+            });
+        }
+        // The clock's first update has no duration: the ramps move from the second.
+        app.update();
+        app.update();
+        app.world().resource::<PilotInput>().controls
+    }
+
+    #[test]
+    fn a_capture_holds_the_start_whatever_the_keyboard_or_gamepad() {
+        // The levers are f32: the start's commands come back within their rounding.
+        let close = |a: f64, b: f64| (a - b).abs() < 1e-6;
+        let captured = commands_with_up_arrow(true);
+        assert!(close(captured.pitch, -0.09), "{captured:?}");
+        assert!(close(captured.throttle, 0.6), "{captured:?}");
+        assert_eq!(captured.roll, 0.0);
+        // Out of a capture, the same key pulls the stick.
+        assert!(!close(commands_with_up_arrow(false).pitch, -0.09));
     }
 }
