@@ -56,17 +56,32 @@ const DISTANCE_FORMAT: TextureFormat = TextureFormat::Rg32Float;
 /// its light on the ground and the aircraft. Side, texels, and span, m: 23 m a texel,
 /// sharper than the penumbra of a cloud 1 km up (9 m for the sun's half degree) is not
 /// needed from the air. Beyond the span the map repeats, in the haze.
-const SHADOW_SIZE: u32 = 1024;
-const SHADOW_SPAN_M: f32 = 24_000.0;
+const SHADOW_SIZE: u32 = 2048;
+const SHADOW_SPAN_M: f32 = 48_000.0;
+/// The map lies ahead of the eye by this share of its span, horizontally: the ground in
+/// view reaches 15 km and more ahead from 2 000 m; behind and aside, much less.
+const SHADOW_AHEAD: f32 = 0.35;
 /// Looks along each ray of the shadow map, through the layer towards the sun.
 const SHADOW_STEPS: u32 = 24;
 /// Around the aircraft's line towards the sun, the map holds only the clouds above it: a
 /// ray holds one value for all its heights, and an aircraft in the sun above a cloud would
 /// otherwise take the shadow the cloud casts on the ground. The ground of that line lies in
-/// the aircraft's own shadow. Radius of the line, m; the map turns back to the full column
-/// over as much again.
-const SHADOW_FOCUS_RADIUS_M: f32 = 30.0;
+/// the aircraft's own shadow, but a cloud between them lets the sun through there: the
+/// radius is one texel, the least the map can hold, and the full column comes back over
+/// another one.
+const SHADOW_FOCUS_RADIUS_M: f32 = SHADOW_SPAN_M / SHADOW_SIZE as f32;
 const SHADOW_FORMAT: TextureFormat = TextureFormat::R8Unorm;
+
+/// Light the clouds send to the ground and the aircraft besides the sky's, as a share of
+/// the sun's horizontal irradiance times the cover. ESTIMÉ: under a field of cumulus the
+/// diffuse light is 25 to 35 % of the global irradiance, and nearly neutral, the white
+/// flanks and bases of the clouds adding to the blue sky (art director's review of the
+/// shadows, 2026-11-07); the clear sky alone left the shadows blue as lakes. 0.6 times a
+/// cover of 0.45 gives about a quarter of the sun.
+const AMBIENT_FROM_CLOUDS: f32 = 0.6;
+/// Optical depth of the clear air at the zenith in visible light, for the sun's irradiance
+/// on the ground. ESTIMÉ: Rayleigh about 0.1, aerosols 0.1 to 0.2 on a summer day.
+const AIR_OPTICAL_DEPTH: f32 = 0.25;
 
 /// The shader of the composite, under `assets/`.
 const COMPOSITE_SHADER: &str = "shaders/clouds/composite.wesl";
@@ -307,6 +322,9 @@ fn generate_images(
     });
 }
 
+/// The 3D camera, not the sun.
+type CameraOnly = (With<Camera3d>, Without<DirectionalLight>);
+
 /// The player's aircraft, neither the sun nor the camera.
 type PlayerOnly = (With<Player>, Without<DirectionalLight>, Without<Camera3d>);
 
@@ -314,9 +332,40 @@ type PlayerOnly = (With<Player>, Without<DirectionalLight>, Without<Camera3d>);
 type Suns<'w, 's> = Query<
     'w,
     's,
-    (Entity, &'static mut Transform, Has<DirectionalLightTexture>),
-    With<DirectionalLight>,
+    (
+        Entity,
+        &'static DirectionalLight,
+        &'static mut Transform,
+        Has<DirectionalLightTexture>,
+    ),
 >;
+
+/// Where the shadow map lies: ahead of the eye along its horizontal view, on the map's own
+/// grid of texels in the sun's plane, so that the shadows do not crawl as the eye moves.
+pub fn shadow_center(eye: Vec3, forward: Vec3, sun: Quat) -> Vec3 {
+    let ahead = Vec3::new(forward.x, 0.0, forward.z).normalize_or_zero();
+    let wanted = eye + ahead * SHADOW_AHEAD * SHADOW_SPAN_M;
+    let texel = SHADOW_SPAN_M / SHADOW_SIZE as f32;
+    let snap = |v: f32| (v / texel).round() * texel;
+    let (right, up, to_sun) = (sun * Vec3::X, sun * Vec3::Y, sun * Vec3::Z);
+    right * snap(wanted.dot(right)) + up * snap(wanted.dot(up)) + to_sun * wanted.dot(to_sun)
+}
+
+/// The sun's irradiance on level ground, lux: its illuminance through the clear air, by
+/// its height (`to_sun`, the direction towards it).
+pub fn sun_on_ground(illuminance: f32, to_sun: Vec3) -> f32 {
+    let height = to_sun.y;
+    if height <= 0.0 {
+        return 0.0;
+    }
+    illuminance * height * (-AIR_OPTICAL_DEPTH / height).exp()
+}
+
+/// The ambient light the clouds add, cd/m²: a Lambertian surface under an even radiance L
+/// receives π L.
+pub fn cloud_ambient(cover: f32, sun_on_ground: f32) -> f32 {
+    AMBIENT_FROM_CLOUDS * cover * sun_on_ground / std::f32::consts::PI
+}
 
 /// The uniforms of this frame: the clouds carried by the wind for the game's time, around
 /// the render origin. The sun carries the shadow map, centred on the camera, its side the
@@ -332,17 +381,21 @@ fn update_frame(
     origin: Option<Res<RenderOrigin>>,
     frames: Res<FrameCount>,
     quality: Res<Quality>,
-    cameras: Query<&Transform, (With<Camera3d>, Without<DirectionalLight>)>,
+    cameras: Query<(Entity, &Transform), CameraOnly>,
     player: Query<&Transform, PlayerOnly>,
     mut suns: Suns,
     mut commands: Commands,
 ) {
-    let eye = cameras.iter().next().map_or(Vec3::ZERO, |t| t.translation);
+    let camera = cameras.iter().next();
+    let eye = camera.map_or(Vec3::ZERO, |(_, t)| t.translation);
+    let forward = camera.map_or(Vec3::NEG_Z, |(_, t)| *t.forward());
     let focus = player.iter().next().map_or(eye, |t| t.translation);
     let mut shadow = GpuCloudShadow::default();
-    if let Some((sun, mut transform, textured)) = suns.iter_mut().next() {
+    let mut ambient = 0.0;
+    if let Some((sun, light, mut transform, textured)) = suns.iter_mut().next() {
         let half = 0.5 * SHADOW_SPAN_M;
-        transform.translation = eye;
+        let center = shadow_center(eye, forward, transform.rotation);
+        transform.translation = center;
         transform.scale = Vec3::new(half, half, 1.0);
         if !textured {
             commands.entity(sun).insert(DirectionalLightTexture {
@@ -350,16 +403,28 @@ fn update_frame(
                 tiled: true,
             });
         }
+        let to_sun = transform.rotation * Vec3::Z;
         shadow = GpuCloudShadow {
-            center: eye,
+            center,
             half_span: half,
             right: transform.rotation * Vec3::X,
             steps: SHADOW_STEPS,
             up: transform.rotation * Vec3::Y,
             focus_radius: SHADOW_FOCUS_RADIUS_M,
-            to_sun: transform.rotation * Vec3::Z,
+            to_sun,
             focus,
         };
+        ambient = cloud_ambient(
+            clouds.layer.cover as f32,
+            sun_on_ground(light.illuminance, to_sun),
+        );
+    }
+    if let Some((camera, _)) = camera {
+        commands.entity(camera).insert(AmbientLight {
+            color: Color::WHITE,
+            brightness: ambient,
+            affects_lightmapped_meshes: true,
+        });
     }
     let origin = origin.map_or(DVec3::ZERO, |o| to_bevy(o.0));
     let uniforms = clouds.layer.uniforms(time.elapsed_secs_f64(), origin);
@@ -383,6 +448,7 @@ fn clear_sky(
     frame: Option<Res<CloudFrame>>,
     target: Option<Res<CloudTarget>>,
     mut suns: Query<(Entity, &mut Transform), With<DirectionalLightTexture>>,
+    cameras: Query<Entity, (With<Camera3d>, With<AmbientLight>)>,
     mut commands: Commands,
 ) {
     if frame.is_some() {
@@ -391,6 +457,9 @@ fn clear_sky(
     for (sun, mut transform) in &mut suns {
         transform.scale = Vec3::ONE;
         commands.entity(sun).remove::<DirectionalLightTexture>();
+    }
+    for camera in &cameras {
+        commands.entity(camera).remove::<AmbientLight>();
     }
     if let Some(target) = target {
         commands.entity(target.veil).despawn();
@@ -690,6 +759,43 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
             .iter()
             .map(|b| f32::from_le_bytes(*b))
             .collect()
+    }
+
+    #[test]
+    fn the_shadow_map_lies_ahead_on_its_grid() {
+        let sun = Transform::default()
+            .looking_to(Vec3::new(0.3, -0.85, 0.4), Vec3::Y)
+            .rotation;
+        let texel = SHADOW_SPAN_M / SHADOW_SIZE as f32;
+        let eye = Vec3::new(123.4, 2_000.0, -567.8);
+        let center = shadow_center(eye, Vec3::new(0.0, -0.1, -1.0), sun);
+        for axis in [sun * Vec3::X, sun * Vec3::Y] {
+            let across = center.dot(axis) / texel;
+            assert!((across - across.round()).abs() < 1e-2, "{across}");
+        }
+        // Ahead of the eye, horizontally, by about the share of the span (in the sun's
+        // plane, within a texel).
+        let ahead = (center - eye) - (sun * Vec3::Z) * (center - eye).dot(sun * Vec3::Z);
+        let wanted = Vec3::NEG_Z * SHADOW_AHEAD * SHADOW_SPAN_M;
+        let wanted = wanted - (sun * Vec3::Z) * wanted.dot(sun * Vec3::Z);
+        assert!(
+            (ahead - wanted).length() < texel,
+            "{ahead} against {wanted}"
+        );
+    }
+
+    #[test]
+    fn the_clouds_add_about_a_quarter_of_the_noon_sun_as_ambient_light() {
+        let noon = Vec3::new(0.0, 58f32.to_radians().sin(), -58f32.to_radians().cos());
+        let sun = sun_on_ground(100_000.0, noon);
+        // On level ground, the sun's height times what gets through the air: about 75 %
+        // at 58°.
+        let through = sun / (100_000.0 * noon.y);
+        assert!((0.7..0.8).contains(&through), "{through}");
+        let ambient = std::f32::consts::PI * cloud_ambient(0.45, sun);
+        assert!((0.2..0.35).contains(&(ambient / sun)), "{}", ambient / sun);
+        assert_eq!(cloud_ambient(0.0, sun), 0.0);
+        assert_eq!(sun_on_ground(100_000.0, Vec3::new(1.0, -0.1, 0.0)), 0.0);
     }
 
     #[test]

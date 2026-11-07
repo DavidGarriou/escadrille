@@ -28,6 +28,14 @@ struct CloudShadow {
 @group(1) @binding(4) var weather_map: texture_2d<f32>;
 @group(1) @binding(5) var cloud_sampler: sampler;
 
+// Share of the ground in the clouds' shadow for a cover: about 0.76 of the cover
+// (`escadrille_weather`, test `a_summer_afternoon_has_scattered_cumulus`). ESTIMÉ.
+const SHADED_PER_COVER: f32 = 0.76;
+// The outer share of the map fades to the mean transmittance of the layer: the map
+// repeats beyond its edge, and an even veil reads better far away than a copy of the
+// near shadows.
+const EDGE_FADE: f32 = 0.2;
+
 @fragment
 fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
     let lit = vec4<f32>(1.0, 0.0, 0.0, 1.0);
@@ -58,5 +66,9 @@ fn fragment(in: FullscreenVertexOutput) -> @location(0) vec4<f32> {
         let at = base + to_sun * (start + (f32(i) + 0.5) * step);
         density += cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, at).x;
     }
-    return vec4<f32>(exp(-density * step * clouds.extinction), 0.0, 0.0, 1.0);
+    let transmittance = exp(-density * step * clouds.extinction);
+    let mean = 1.0 - SHADED_PER_COVER * clouds.cover;
+    let edge = max(abs(local.x), abs(local.y)) / shadow.half_span;
+    let fade = smoothstep(1.0 - EDGE_FADE, 1.0, edge);
+    return vec4<f32>(mix(transmittance, mean, fade), 0.0, 0.0, 1.0);
 }

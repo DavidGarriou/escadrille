@@ -79,6 +79,7 @@ Chacun laisse le jeu lançable, avec tests, `just check`, `just test`, captures 
 - **seconde revue, troisième passe** : diffusion multiple en deux parts (rapide et traîne), premiers pas détaillés vers le soleil, ciel atténué vers le haut, enjambée prudente et gigue étalée : les stries ont disparu jusqu'à l'horizon. Contre-jour recadré. 0,9 à 1,5 ms de GPU en 1440p.
 - **quart de résolution et reconstruction temporelle** (étape 2 de l'ADR 0009) : 0,3 à 0,44 ms pour la marche et 0,02 ms pour le temporel en 1440p, sans scintillement. Restent : les ombres des nuages au sol (carte de profondeur optique vers le soleil, qui donnera aussi l'ombre d'un nuage sur son voisin), les réserves de la revue (ciel limité au haut de l'enveloppe, bases plates, bruit intermédiaire, auréole du soleil) et les scènes `traversee_nuage` et `plafond_bas`.
 - **ombres des nuages** (2026-11-07) : carte de transmittance vue du soleil, posée sur le soleil comme texture de lumière (`pbr_light_textures`, ADR 0004). Au-dessus des nuages, l'avion garde le soleil. 0,12 à 0,14 ms. Restent : l'ombre lointaine d'un nuage sur son voisin, les réserves de la revue, les scènes `traversee_nuage` et `plafond_bas`.
+- **ombres, d'après la revue** : lumière d'ambiance des nuages, carte avancée dans la vue, doublée (48 km), bords fondus et alignée sur ses texels ; scène `cumulus_sous_la_base`. 0,37 à 0,40 ms.
 
 ### 2. Heure du jour
 

@@ -2878,3 +2878,20 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** La session séparée, lancée par le joueur, a fini son tour. Commit `d0d8eea` sur la branche `claude/elated-pascal-b9f3dd` : la capture sort avec le code 1 quand un pipeline ne se construit pas, en nommant le pipeline et le shader. Vérifié avec un import faux et une erreur de syntaxe ; les 15 scènes passent toujours, ainsi que `just check` et `just test`.
 - **?** La branche n'est pas fusionnée dans `main-tcd0yw` : la fusion attend l'accord du joueur.
 - **R** Second avis de la session séparée : rien de nouveau, elle a seulement pris acte de la fin de sa surveillance. La branche `claude/elated-pascal-b9f3dd` attend toujours l'accord du joueur pour être fusionnée.
+
+### M3, incrément 1 : ombres de midi et portée de la carte d'ombre
+
+- **Q** Le joueur : « Oui, corriger ».
+- **A** Lumière d'ambiance des nuages : une `AmbientLight` blanche sur la caméra, de luminance 0,6 × couverture × E_sol / π (`ESTIMÉ` : sous un champ de cumulus, la lumière diffuse fait 25 à 35 % de l'éclairement global). E_sol, l'éclairement du soleil sur un sol horizontal, prend une épaisseur optique de l'air de 0,25 au zénith (`ESTIMÉ`). Bevy ajoute cette lumière à la carte d'environnement du ciel clair. Elle s'en va avec les nuages.
+- **R** Mesuré sur `cumulus_midi` : l'ombre passe de (34, 47, 58) % à (40, 52, 59) % en sRGB ; le rouge et le vert remontent. Le bleu qui reste vient surtout de la perspective aérienne, à 2 km de distance, et de la lumière du ciel. La lumière diffuse fait environ 30 % de l'éclairement global, dans la fourchette visée.
+- **A** Carte d'ombre :
+  - 2 048² sur 48 km (toujours 23 m par texel) ;
+  - avancée de 0,35 fois sa largeur dans la direction horizontale de la vue ;
+  - alignée sur sa grille de texels dans le plan du soleil ;
+  - ses 20 % extérieurs fondus vers la transmittance moyenne de la couche ;
+  - la zone autour de la ligne de soleil de l'avion réduite à un texel, plus un de fondu.
+
+  **R** Deux images consécutives diffèrent de 0,07 à 0,08 % au sol : les ombres ne glissent pas.
+- **A** Scène de contrôle `cumulus_sous_la_base` : le SPAD à 1 000 m sous une base à 1 200 m, graine 8, choisie avec la référence Rust pour qu'un nuage soit sur sa ligne de soleil. **R** L'avion est à l'ombre : son fuselage passe de 86 % à 69 % en sRGB (0,6 en linéaire), sans ombre nette de l'aile haute, éclairé par le ciel et l'ambiance.
+- **R** Coût en 1440p, au calme : passe d'ombre 0,37 à 0,40 ms ; passe des opaques 0,18 à 0,21 ms, donc les textures de lumière n'y coûtent presque rien.
+- **A** Trois tests nouveaux : placement de la carte (devant l'œil, sur sa grille) ; part de la lumière d'ambiance ; transmittance de l'air. `just check` et `just test` passent (423 tests).

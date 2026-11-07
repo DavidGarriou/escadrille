@@ -59,10 +59,13 @@ Principes de départ :
 
 ## Ombres des nuages
 
-**En place (2026-11-07)** : une carte de transmittance vue du soleil (`shadow.wesl`, R8, 1 024² sur 24 km, soit 23 m par texel), posée sur le soleil comme texture de lumière (`DirectionalLightTexture`, feature `pbr_light_textures` ; voir ADR 0004). Bevy la projette le long du soleil sur tout ce que la lumière éclaire : sol et avion. Le soleil est recentré chaque image sur la caméra, son échelle étant la demi-portée de la carte ; ses cascades d'ombre n'utilisent que sa rotation. La carte est répétée : hors de la portée, une texture de lumière non répétée éteindrait le soleil, et la répétition se perd dans la brume.
-- **Une valeur par rayon de soleil** : sans précaution, un avion au soleil au-dessus d'un nuage prendrait l'ombre que ce nuage jette au sol. Autour de la ligne de soleil de l'avion joueur (30 m, puis un fondu sur autant), la carte ne compte que les nuages au-dessus de lui. Le sol de cette ligne est dans l'ombre de l'avion. Les avions de l'IA (M4) poseront la même question.
-- **Coût** : 0,12 à 0,14 ms en 1440p ; 24 pas sur la densité grossière par texel, à chaque image.
-- **À suivre** : la même carte, en profondeur optique, pour l'ombre lointaine d'un nuage sur son voisin, que la marche vers le soleil (2,9 km) ne voit pas sous un soleil bas.
+**En place (2026-11-07)** : une carte de transmittance vue du soleil (`shadow.wesl`, R8, 2 048² sur 48 km, soit 23 m par texel), posée sur le soleil comme texture de lumière (`DirectionalLightTexture`, feature `pbr_light_textures` ; voir ADR 0004). Bevy la projette le long du soleil sur tout ce que la lumière éclaire : sol et avion. La carte est répétée : hors de sa portée, une texture de lumière non répétée éteindrait le soleil.
+- **Placement** : la carte est avancée de 0,35 fois sa largeur dans la direction horizontale de la vue, et alignée sur sa grille de texels dans le plan du soleil, sans quoi ses bords ondulent en vol. Le soleil porte ce centre et une échelle égale à sa demi-largeur ; ses cascades d'ombre n'utilisent que sa rotation. Ses 20 % extérieurs se fondent dans la transmittance moyenne de la couche (1 − 0,76 × couverture, `ESTIMÉ`), pour que la répétition se lise comme un voile uniforme.
+- **Une valeur par rayon de soleil** : sans précaution, un avion au soleil au-dessus d'un nuage prendrait l'ombre que ce nuage jette au sol. Autour de la ligne de soleil de l'avion joueur (un texel, puis un fondu sur un autre), la carte ne compte que les nuages au-dessus de lui. Les avions de l'IA (M4) poseront la même question.
+- **Lumière d'ambiance des nuages** : une `AmbientLight` blanche sur la caméra, de luminance 0,6 × couverture × E_sol / π (`ESTIMÉ`). E_sol est l'éclairement du soleil sur un sol horizontal, à travers l'air (épaisseur optique 0,25 au zénith). Sans elle, l'ombre ne recevait que la lumière bleue d'un ciel clair, et se lisait comme un lac.
+- **Coût** : 0,37 à 0,40 ms en 1440p ; 24 pas sur la densité grossière par texel, à chaque image.
+- **Scène de contrôle** : `cumulus_sous_la_base`, l'avion à l'ombre d'un nuage.
+- **À suivre** : la même carte, en profondeur optique, pour l'ombre lointaine d'un nuage sur son voisin, que la marche vers le soleil (2,9 km) ne voit pas sous un soleil bas ; une pénombre qui croît avec la distance au nuage, par soleil bas.
 
 ## Dans le nuage
 

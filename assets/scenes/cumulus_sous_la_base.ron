@@ -1,0 +1,7 @@
+Scene(
+    description: "Le SPAD à 1 000 m sous la base d'un champ de cumulus, à l'ombre d'un nuage, vu de la poursuite : l'avion éclairé par le ciel seul, les bases grises au-dessus, la plaine tachetée d'ombre et de soleil.",
+    scenario: "vol-essai",
+    camera: Chase(yaw: Deg(-25.0), pitch: Deg(6.0)),
+    sun: Some((azimuth: Deg(180.0), elevation: Deg(58.0))),
+    clouds: Some((base: M(1200.0), cover: 0.55, cloud_type: 1.0, thickness: Some(M(700.0)), seed: 8)),
+)
