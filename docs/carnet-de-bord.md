@@ -2688,3 +2688,11 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** `just check` et `just test` passent (405 tests). Commit `064c0e0`.
 - **⚠** Push impossible : l'agent SSH est vide depuis le redémarrage. Six commits attendent en local. Le joueur charge sa clé avec `SSH_AUTH_SOCK=/run/user/1000/ssh-agent.socket ssh-add ~/.ssh/id_ed25519_fixe`, puis Claude pousse.
 - **?** Questions au joueur : l'ajout de `crates/weather/` à l'arborescence de `CLAUDE.md`, et la lecture retenue pour la date du jeu (`flandres-1917.md` § 1.2).
+
+### Push et arborescence
+
+- **Q** Le joueur : « c'est fait et ajoute crates/weather à l'arborescence de CLAUDE.md ».
+- **A** Clé chargée par le joueur : les six commits en attente sont poussés (`ffae64d..d61d50a`).
+- **D** `crates/weather/` (`escadrille_weather`) entre dans l'arborescence de `CLAUDE.md`, avec l'accord du joueur. Le fichier `nuages-volumetriques.md` du skill `rendu-visuel` indique où se trouve la densité de référence et pourquoi le schéma de *Nubis* a été retenu.
+- **?** Reste au joueur : la lecture retenue pour la date du jeu (`flandres-1917.md` § 1.2).
+- **A** Suite : la densité en WGSL et le test de parité sur le GPU.

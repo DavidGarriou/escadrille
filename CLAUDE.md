@@ -70,6 +70,7 @@ Cargo.toml              workspace, versions épinglées, profils
 crates/
   fdm/                  escadrille_fdm : atmosphère, corps rigide 6DDL, aéro, hélice, moteurs, sol, structure
   data/                 schémas des fichiers .ron (avions, armes, essais), chargement, conversions d'unités, validation
+  weather/              escadrille_weather : nuages (densité de référence du shader, bruits, carte météo), sans Bevy
   game/                 binaire Bevy, un plugin par domaine :
     src/flight/         pont FDM <-> ECS, pas fixe, interpolation
     src/input/          couche d'actions, profils manette, calibration

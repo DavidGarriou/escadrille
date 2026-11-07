@@ -16,6 +16,7 @@ Dans un simulateur de 14-18, les nuages sont à la fois le décor principal et u
 - **Bruits 3D** : Perlin-Worley basse fréquence (forme, environ 128³) et Worley haute fréquence (détail, environ 32³), **générés en Rust** de façon déterministe (au build ou au démarrage), en tuiles répétables.
 - **Profil vertical** par type (stratus, cumulus, cumulonimbus) ; couches distinctes possibles (cirrus en 2D ou en couche fine).
 - Fonction `cloud_density(pos_monde, temps) -> f32` écrite **deux fois** : en WGSL pour le rendu, en Rust pour le jeu. Test de parité obligatoire.
+- **En place** (2026-11-07) : la référence Rust est dans la crate `escadrille_weather` (`crates/weather/src/clouds.rs`), sans Bevy. Elle suit le schéma de *Nubis* : la carte météo place chaque nuage et fixe sa hauteur, le bruit de forme érode son enveloppe. Couper le bruit de forme par la couverture dessinait une grille de nuages identiques, à la période du bruit.
 
 ## Éclairage
 
