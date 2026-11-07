@@ -113,3 +113,4 @@ codegen-units = 1
 - Commandes différées : une entité créée n'existe qu'après l'application des commandes.
 - Jamais de position monde en f32 en dehors du rendu.
 - Espaces colorimétriques : sRGB pour la couleur de base uniquement ; normales, rugosité et masques en linéaire.
+- `NormalPrepass` (exigée par la SSAO) : la passe principale lit les normales de la prépasse, ce qui fausse les matériaux transparents et le clearcoat. Voir `render/own_normals.rs`.

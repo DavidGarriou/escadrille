@@ -4,6 +4,7 @@ pub mod clouds;
 pub mod damage;
 pub mod fabric;
 pub mod mipmaps;
+pub mod own_normals;
 pub mod quality;
 pub mod wires;
 
@@ -15,6 +16,7 @@ impl Plugin for RenderingPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((
             MaterialPlugin::<wires::WireMaterial>::default(),
+            MaterialPlugin::<own_normals::OwnNormalsMaterial>::default(),
             clouds::CloudsPlugin,
         ))
         .init_resource::<quality::Quality>()
@@ -26,6 +28,8 @@ impl Plugin for RenderingPlugin {
                 mipmaps::fill_mip_chains,
                 wires::widen_wires,
                 fabric::translucent_fabric,
+                quality::apply_occlusion_quality,
+                own_normals::light_with_own_normals,
             ),
         );
     }

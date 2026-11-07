@@ -2918,3 +2918,25 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Une courte séquence de `cumulus_sous_la_base`, l'avion franchissant un bord d'ombre.
   - Les réserves ouvertes (ombre d'un nuage sur son voisin, bases trop tranchées, auréole du soleil), reportables avec l'accord du joueur, et l'approbation du joueur sur les scènes.
 - **D** Recommandation du directeur artistique : la SSAO sur la caméra de vol, au meilleur rapport effet/effort, validée sur `cumulus_sous_la_base` et `avion-studio` (surveiller les halos autour de l'avion). En attente de la décision du joueur.
+
+### Occlusion ambiante (SSAO)
+
+- **Q** Le joueur : « Oui, la SSAO » (ajouter la SSAO sur la caméra de vol, revoir le facteur d'ambiance sur l'avion, captures avant/après de `cumulus_sous_la_base` et `avion-studio`).
+- **A** Mesure en lumière linéaire, sans tonemapping ni bloom, sur `cumulus_sous_la_base`, avec et sans l'ombre du nuage. À l'ombre, l'avion reçoit 0,28 à 0,36 fois sa lumière au soleil sur les faces du dessus, et 0,39 à 0,43 sur les flancs.
+  **R** C'est dans la fourchette du directeur artistique (0,25 à 0,4) : le facteur d'ambiance de 0,6 est gardé. Le « 0,6 » mesuré la fois précédente venait du tonemapping. L'avion à l'ombre paraît aussi clair que les champs au soleil parce que sa toile crème renvoie trois fois plus de lumière qu'eux.
+- **A** SSAO de Bevy (`ScreenSpaceAmbientOcclusion`) sur toutes les caméras d'extérieur :
+  - rayon de 1,5 m, l'entre-plans du SPAD ;
+  - échantillons au niveau de qualité du jeu (`Quality::occlusion`).
+- **⚠** La SSAO exige une prépasse de normales, et avec elle Bevy 0.20 éclaire chaque pixel avec la normale lue dans la prépasse (`LOAD_PREPASS_NORMALS`).
+  - L'hélice vernie est devenue blanche : la normale du clearcoat n'est alors jamais calculée et reste nulle.
+  - Les câbles, le disque d'hélice et le pare-brise, transparents, ont pris la normale de ce qu'il y a derrière eux. En vue pilote, le disque éclaircissait tout le sol.
+- **A** Correction : `render/own_normals.rs`. Une extension de matériau `OwnNormals` retire `LOAD_PREPASS_NORMALS` du shader (Bevy ne le fait que pour la transmission spéculaire), et elle est posée sur tout matériau transparent ou verni ; les câbles font de même dans leur `specialize`. L'hélice garde son vrai clearcoat.
+  **R** Après correction, le sol, les câbles et le disque ne changent plus d'un pixel, et l'hélice retrouve son noyer.
+- **R** Effet de la SSAO :
+  - en vue pilote, fort : de 21 à 24 % sous l'aile haute, sur les mâts et les flancs du capot. Le risque du cockpit trop éclairé, soulevé par le directeur artistique, est réglé ;
+  - à 10 m, en poursuite, presque nul (2 à 4 %) : la SSAO ne voit pas l'aile haute, qui n'est qu'une plaque mince. L'avion à l'ombre de `cumulus_sous_la_base` reste plat ;
+  - sur `avion-studio`, le sol s'assombrit de 11 % dans l'ombre de l'avion ; l'avion lui-même change de 1 à 2 % ;
+  - aucun halo autour de la silhouette.
+- **R** Coût en 1440p, niveau « haut » : 0,60 à 0,68 ms pour la SSAO. Image complète : `avion-studio` de 2,16 à 2,85 ms, `cumulus_sous_la_base` de 3,03 à 3,61 ms.
+- **A** Documentation : skills `rendu-visuel` (occlusion ambiante et son piège) et `bevy` (§ 9), plan du M3. Cinq tests nouveaux. `just check` et `just test` passent (427 tests).
+- **D** Le modelé de l'avion vu de loin demande une ambiance directionnelle : la base grise du nuage au-dessus, le sol au soleil en dessous, au lieu de l'`AmbientLight` uniforme. Proposée comme prochaine étape ; la revue du directeur artistique portera sur les deux ensemble.

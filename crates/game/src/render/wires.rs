@@ -4,14 +4,23 @@
 //! (`assets/shaders/wire_aa.wesl`) widens them to [`MIN_PIXELS`] on screen and whose
 //! fragment shader cuts their opacity in proportion. Each node carries the diameter of
 //! its wires in its glTF extras (`diameter_m`, written by `art/<id>/build.py`).
+//!
+//! Blended, the wires are not drawn by the normal prepass: they are lit with their own
+//! normals (`own_normals`).
 
 use bevy::gltf::GltfExtras;
-use bevy::pbr::{ExtendedMaterial, MaterialExtension};
+use bevy::mesh::MeshVertexBufferLayoutRef;
+use bevy::pbr::{
+    ExtendedMaterial, MaterialExtension, MaterialExtensionKey, MaterialExtensionPipeline,
+};
 use bevy::prelude::*;
-use bevy::render::render_resource::{AsBindGroup, ShaderType};
+use bevy::render::render_resource::{
+    AsBindGroup, RenderPipelineDescriptor, ShaderType, SpecializedMeshPipelineError,
+};
 use bevy::shader::ShaderRef;
 
 use super::extra_number;
+use super::own_normals::use_own_normals;
 
 const SHADER: &str = "shaders/wire_aa.wesl";
 
@@ -58,6 +67,16 @@ impl MaterialExtension for WireAa {
 
     fn fragment_shader() -> ShaderRef {
         SHADER.into()
+    }
+
+    fn specialize(
+        _pipeline: &MaterialExtensionPipeline,
+        descriptor: &mut RenderPipelineDescriptor,
+        _layout: &MeshVertexBufferLayoutRef,
+        _key: MaterialExtensionKey<Self>,
+    ) -> Result<(), SpecializedMeshPipelineError> {
+        use_own_normals(descriptor);
+        Ok(())
     }
 }
 

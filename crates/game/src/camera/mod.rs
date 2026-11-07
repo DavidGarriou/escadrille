@@ -5,7 +5,7 @@ use bevy::anti_alias::taa::TemporalAntiAliasing;
 use bevy::camera::Exposure;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::light::AtmosphereEnvironmentMapLight;
-use bevy::pbr::AtmosphereSettings;
+use bevy::pbr::{AtmosphereSettings, ScreenSpaceAmbientOcclusion};
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
 
@@ -29,6 +29,9 @@ pub const PILOT_LOOK_DOWN: f32 = 30.0 * std::f32::consts::PI / 180.0;
 pub const PILOT_LOOK_UP: f32 = 80.0 * std::f32::consts::PI / 180.0;
 /// Exposure of the outdoor scenes in afternoon sun (avion-studio, 2026-10-27).
 pub const DAYLIGHT_EV100: f32 = 13.0;
+/// Reach of the ambient occlusion, m: the gap between the wings of a biplane (1.2 m on the
+/// SPAD), so that the upper wing shades the lower one's ambient light.
+pub const OCCLUSION_RADIUS_M: f32 = 1.5;
 
 #[derive(SystemSet, Debug, Clone, PartialEq, Eq, Hash)]
 pub struct CameraSet;
@@ -74,7 +77,13 @@ impl Plugin for CameraPlugin {
 }
 
 /// A camera for outdoor daylight: vertical field `fov_deg`, the atmosphere and its light,
-/// temporal anti-aliasing and the game's tone mapping.
+/// ambient occlusion, temporal anti-aliasing and the game's tone mapping.
+///
+/// The ambient occlusion darkens the light of the sky and of the clouds (Bevy's
+/// environment and ambient lights, not the sun) where the aircraft hides it from itself:
+/// under the upper wing, at the roots of the wings, the struts and the wheels (art
+/// director's review of the cloud shadows: in the shade, the aircraft looked flat). Its
+/// quality follows the level (`render::quality`).
 pub fn outdoor_camera(transform: Transform, fov_deg: f32, ev100: f32) -> impl Bundle {
     (
         Camera3d::default(),
@@ -93,6 +102,10 @@ pub fn outdoor_camera(transform: Transform, fov_deg: f32, ev100: f32) -> impl Bu
         Bloom::NATURAL,
         Msaa::Off,
         TemporalAntiAliasing::default(),
+        ScreenSpaceAmbientOcclusion {
+            radius: OCCLUSION_RADIUS_M,
+            ..default()
+        },
     )
 }
 

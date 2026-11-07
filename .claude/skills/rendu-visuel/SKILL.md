@@ -48,6 +48,8 @@ Les scènes d'un vol sont des fichiers `assets/scenes/<nom>.ron` (scénario, cam
 - **Shaders** : Bevy 0.20 écrit les siens en WESL (WGSL avec imports et compilation conditionnelle). Les nôtres suivent, pour importer ses modules (`bevy_pbr::render::…`).
 - **Atmosphère** : utiliser l'atmosphère procédurale de Bevy si la version épinglée la fournit (vérifier) ; sinon implémenter Hillaire 2020 (LUT de transmittance, multidiffusion, vue du ciel, perspective aérienne). La **perspective aérienne** donne l'échelle du paysage : elle n'est pas optionnelle.
 - **Ombres** : cascades réglées pour l'avion et le cockpit de près, ombres des nuages au sol (carte d'ombre vue du dessus).
+- **Occlusion ambiante** (2026-11-07) : la SSAO de Bevy (`ScreenSpaceAmbientOcclusion`, rayon 1,5 m, l'entre-plans d'un biplan) sur toutes les caméras d'extérieur (`camera::outdoor_camera`), au niveau de qualité du jeu. Elle n'assombrit que l'ambiance (ciel, nuages), pas le soleil. Forte de près : 21 à 24 % en vue pilote sous l'aile haute, sur les mâts et les flancs du capot. Presque nulle à 10 m (2 à 4 %), car elle ne voit pas une plaque mince comme l'aile haute. 0,6 ms en « haut ».
+  - **Piège** : la SSAO exige une prépasse de normales, et avec elle Bevy 0.20 éclaire chaque pixel avec la normale de la prépasse (`LOAD_PREPASS_NORMALS`). Les matériaux transparents, que la prépasse ne dessine pas, prennent alors la normale de ce qui est derrière eux. Le clearcoat garde une normale nulle et devient un miroir blanc. `render/own_normals.rs` les éclaire avec leurs propres normales (extension `OwnNormals`, posée sur tout matériau transparent ou verni). Un nouveau matériau personnalisé transparent doit faire de même dans son `specialize` (voir `wires.rs`).
 
 ## Terrain et paysage de 1917
 
@@ -94,7 +96,7 @@ Flou de mouvement discret ; profondeur de champ dans le cockpit ; reflets d'obje
 ## Performances
 
 - Cible : 60 images/s minimum en 1440p, qualité « haut », sur le GPU de référence : **AMD Radeon RX 7800 XT 16 Go** (RDNA 3, Vulkan via Mesa RADV ; voir `docs/vision.md`). Mémoire vidéo ≤ 12 Go en « haut ». Mesurer sur ce pilote : RADV et le pilote propriétaire n'ont pas les mêmes performances. Budgets indicatifs à ajuster : nuages ≤ 3 ms, terrain ≤ 3 ms, ombres ≤ 2 ms, post-traitement ≤ 1,5 ms.
-- Préréglages de qualité : ressource `Quality` (`render/quality.rs`), `--quality bas|moyen|haut|ultra` ; chaque fonctionnalité coûteuse y lit son réglage : carte d'ombres du soleil, pas des nuages, diviseur de leur résolution (3, 2, 2 et 1).
+- Préréglages de qualité : ressource `Quality` (`render/quality.rs`), `--quality bas|moyen|haut|ultra` ; chaque fonctionnalité coûteuse y lit son réglage : carte d'ombres du soleil, pas des nuages, diviseur de leur résolution (3, 2, 2 et 1), échantillons de la SSAO (niveaux de Bevy, un pour un).
 - Mesurer avec Tracy et RenderDoc ; le `.json` de `/capture` sert de suivi de régression.
 
 ## Avant de déclarer fini

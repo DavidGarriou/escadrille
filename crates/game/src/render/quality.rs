@@ -3,6 +3,7 @@
 //! « haut » at 60 frames a second in 1440p on the RX 7800 XT.
 
 use bevy::light::DirectionalLightShadowMap;
+use bevy::pbr::{ScreenSpaceAmbientOcclusion, ScreenSpaceAmbientOcclusionQualityLevel};
 use bevy::prelude::*;
 use clap::ValueEnum;
 
@@ -60,11 +61,31 @@ impl Quality {
             Self::Ultra => 4096,
         }
     }
+
+    /// Samples of the ambient occlusion: Bevy's levels, one for one.
+    pub fn occlusion(self) -> ScreenSpaceAmbientOcclusionQualityLevel {
+        match self {
+            Self::Low => ScreenSpaceAmbientOcclusionQualityLevel::Low,
+            Self::Medium => ScreenSpaceAmbientOcclusionQualityLevel::Medium,
+            Self::High => ScreenSpaceAmbientOcclusionQualityLevel::High,
+            Self::Ultra => ScreenSpaceAmbientOcclusionQualityLevel::Ultra,
+        }
+    }
 }
 
 /// The sun's shadow map at the level asked for.
 pub fn apply_quality(quality: Res<Quality>, mut shadows: ResMut<DirectionalLightShadowMap>) {
     shadows.size = quality.shadow_map();
+}
+
+/// The ambient occlusion of each new camera at the level asked for.
+pub fn apply_occlusion_quality(
+    quality: Res<Quality>,
+    mut cameras: Query<&mut ScreenSpaceAmbientOcclusion, Added<ScreenSpaceAmbientOcclusion>>,
+) {
+    for mut occlusion in &mut cameras {
+        occlusion.quality_level = quality.occlusion();
+    }
 }
 
 #[cfg(test)]
@@ -92,6 +113,30 @@ mod tests {
             levels
                 .windows(2)
                 .all(|pair| pair[0].cloud_divisor() >= pair[1].cloud_divisor())
+        );
+    }
+
+    #[test]
+    fn the_occlusion_takes_the_level_of_its_camera() {
+        let mut app = App::new();
+        app.insert_resource(Quality::Low)
+            .add_systems(Update, apply_occlusion_quality);
+        let camera = app
+            .world_mut()
+            .spawn(ScreenSpaceAmbientOcclusion::default())
+            .id();
+        app.update();
+        let occlusion = app
+            .world()
+            .get::<ScreenSpaceAmbientOcclusion>(camera)
+            .unwrap();
+        assert_eq!(
+            occlusion.quality_level,
+            ScreenSpaceAmbientOcclusionQualityLevel::Low
+        );
+        assert_eq!(
+            Quality::High.occlusion(),
+            ScreenSpaceAmbientOcclusionQualityLevel::default()
         );
     }
 
