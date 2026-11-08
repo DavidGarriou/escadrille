@@ -3195,3 +3195,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **R** Effet plus large que prévu : hors du brouillard, les silhouettes sur fond de nuages traînaient un halo blanchâtre dédoublé (mâts, bords d'aile, mitrailleuse) ; elles sont nettes maintenant.
   - **R** Coût de la passe temporelle : 0,03 → 0,07 ms. Ailleurs, écarts au niveau du bruit d'une capture à l'autre. `just check` et `just test` passent (437 tests).
 - **A** Confirmation demandée au directeur artistique.
+- **R** Verdict du directeur artistique : **approuvé, le liseré est réglé, point clos**. Le grain des nuages, du sol et du brouillard est inchangé ; seuls les bords de l'avion gagnent en netteté (mâts non dédoublés, bord du stabilisateur sans dents de scie, cadre du pare-brise visible). Selon lui, la plus forte amélioration de netteté de l'avion depuis l'arrivée des nuages.
+- **A** Risque qu'il signalait, vérifié : le scintillement aux silhouettes, le bornage disposant de moins de voisins.
+  - **R** Séquence dense de l'entrée, avant/après, dans une bande de 8 px autour de la silhouette : variation moyenne d'une image à l'autre de 4,04 → 3,84·10⁻³ (95ᵉ centile 9,56 → 9,22), zone témoin inchangée (2,02). Pas de scintillement supplémentaire.
+  - **R** En qualité « bas » (texels trois fois plus grands) : bords propres dans le brouillard comme sur fond de nuages.
+- **?** Points antérieurs qu'il relève, hors de ce correctif :
+  - un trait jaune droit à l'horizon de `cumulus_midi`, de 2 à 4 px, à travers les nuages lointains (le bleu 17 niveaux sous le rouge), présent avant et après. Cause probable : la limite de distance de la marche ou le bord du terrain vus à travers les nuages lointains. La scène phare : à traiter vite ;
+  - le disque de l'hélice un peu plus clair que le brouillard en poursuite (0660) et en vue du pilote (1080), quand des pales de bois floues devraient l'assombrir. Détail.
