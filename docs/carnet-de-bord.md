@@ -3028,4 +3028,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Au moment de la réponse, l'agent SSH ne tient toujours pas de clé : l'envoi attend que le joueur la recharge.
 - **Q** Le joueur : « essaie » (la clé est rechargée).
 - **A** Envoi de `main-tcd0yw` (`28195a5..280919d`), puis avance rapide de `main` sur GitHub (`3a08e80..280919d`, sans forcer) et de `main` en local. **R** Les deux ont réussi : `main` contient désormais tout le travail du projet, et un `git pull` sur `main` le récupère.
-- **D** `main` suit la branche : à chaque envoi, Claude la refait avancer, toujours en avance rapide.
+- **?** Proposé, à confirmer par le joueur : que `main` suive la branche à chaque envoi, toujours en avance rapide. L'accord donné vaut pour cet échange seulement.
