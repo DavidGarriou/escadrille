@@ -3170,3 +3170,14 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Bord à 725 m (16,3 s), cœur à 760 m, sortie vers 1 175 m (26,5 s), ciel libre ensuite. 13 instants de 3 à 29 s.
   - **R** Séquence dense : pas de saut, au plus 4,8·10⁻³ par paire d'images à l'entrée ; à la sortie, une rampe jusqu'à 1,3·10⁻².
 - **A** `just check` et `just test` passent. Skill `rendu-visuel`, fiche des nuages et plan du M3 à jour. Revue finale du directeur artistique en cours.
+- **R** Revue finale du directeur artistique : **approuvé, chantier de l'arrondi clos**.
+  - Falaises et sommets plats réglés partout ; le mur continu a disparu de la traversée. La raideur restante du bord ne l'inquiète pas : un cumulus a des flancs presque verticaux près de sa base ; la falaise venait de la raideur, du sommet plat et de la longueur continue réunis.
+  - `cumulus_contre_jour` dépasse l'ancien rendu (crête variée, tourelles) et reste la meilleure image du projet ; `cumulus_midi` est un vrai champ de cumulus de beau temps.
+  - Traversée : bonne référence pour l'entrée et la sortie sans saut. Faiblesses non bloquantes : l'approche longe la tour sans la montrer entière ; l'avion s'assombrit à peine si près du sommet ; la dernière image de la poursuite montre surtout du nuage.
+- **A** Commentaire et description de la traversée corrigés (le flanc de la tour occupe déjà la moitié du cadre à 3 s ; l'avion s'estompe, à peine assombri) ; limite de la couverture consignée dans la doc de `CloudLayer::cover`.
+- **?** Reports proposés par le directeur artistique, par priorité :
+  - **haute** : le liseré argenté absent du contre-jour et la matière « coton » des nuages proches, à départager entre la résolution de la marche et l'éclairage (capture en pleine résolution d'abord) ;
+  - **moyenne** : la couverture par défaut de 0,55, structurelle (une carte météo en cellules distinctes) ;
+  - **basse** : la hauteur d'une tour à l'autre (troisième canal), la dernière image de la poursuite, une bande jaunâtre possible sur les sommets lointains de `cumulus_midi` ;
+  - **à surveiller** : la remontée des sommets selon la couverture puissance 8, sur `plafond_bas`.
+- **A** Suite, comme le joueur l'a fixé : le liseré clair le long des silhouettes dans le brouillard.

@@ -232,7 +232,11 @@ pub struct CloudLayer {
     pub thickness: [f64; 3],
     /// Share of the weather map where clouds stand, 0 (clear) to 1 (overcast). Seen from
     /// below, the share of the sky covered is less, since the shape noise erodes the
-    /// clouds' edges: about 40 % at 0.55 (test `a_summer_afternoon_has_scattered_cumulus`).
+    /// clouds' edges: about 38 % at 0.55 (test `a_summer_afternoon_has_scattered_cumulus`).
+    /// Limit: around 0.55 the clouds' footprint nears the percolation threshold of a 2D
+    /// random field (half the map), and the clumps join into ridges kilometres long; for
+    /// separate cumulus, stay near 0.45, with less of the sky covered. A weather map of
+    /// distinct cells would give both (art director's review, 2026-11-08).
     pub cover: f64,
     /// Range of the weather map over which a cloud goes from its edge to its full
     /// envelope, 0 to 1: small, sharp clouds of even height; large, varied clouds, the

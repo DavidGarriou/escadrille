@@ -10,13 +10,14 @@
 // beyond. A cover of 0.45: at 0.55 the clumps of the weather map joined into ridges
 // kilometres long, a wall to the horizon (art director's review).
 Scene(
-    description: "Le SPAD traverse un cumulus, vu de la poursuite : l'approche du flanc éclairé, l'entrée par le voile puis le cœur, le brouillard blanc où l'avion s'estompe et s'assombrit, la sortie dans le soleil. Une capture par instant de la séquence.",
+    description: "Le SPAD traverse une tour de cumulus, vu de la poursuite : l'approche le long de son flanc éclairé, au-dessus de sommets plus bas, l'entrée par le voile puis le cœur, le brouillard où l'avion s'estompe, à peine assombri si près du sommet, la sortie dans le soleil. Une capture par instant de la séquence.",
     scenario: "vol-essai",
     camera: Chase(yaw: Deg(-15.0), pitch: Deg(4.0)),
     sun: Some((azimuth: Deg(180.0), elevation: Deg(58.0))),
     clouds: Some((base: M(600.0), cover: 0.45, cloud_type: 1.0, seed: 85)),
-    // The tower afar (3 s), nearer over the lower clouds (8 s, 11 s), the wall ahead
-    // (14 s), the nose in the edge (16.3 s), the camera in the wisp (16.6 s), the aircraft
+    // The tower's flank, already half the frame on the right (3 s; the path runs along it
+    // before it enters), nearer over the lower clouds (8 s, 11 s), the wall ahead (14 s),
+    // the nose in the edge (16.3 s), the camera in the wisp (16.6 s), the aircraft
     // in the core (17 s), the camera into the core (17.2 s, the likeliest moment for a
     // jump), both inside (18 s), deep inside (21 s), near the far flank (25.5 s), the
     // aircraft out (26.55 s), the camera out (26.75 s); the last, in the sun again (29 s).
