@@ -5,7 +5,7 @@
 // ESTIMÉ until request D8 (docs/recherche/demandes.md).
 Liveries(
     colours: [
-        (name: "toile", srgb: (0.84, 0.76, 0.52)),       // E: varnished pale yellow linen of the factory finish (§ 12.1, C), judged on the tones of photographs
+        (name: "toile", srgb: (0.85, 0.77, 0.60)),       // E: varnished linen of the factory finish, light low-chroma buff (spad7-aspect § 12.1.1: S49 "yellowish white"; Methuen 4A3-4C4 range for doped and varnished linen, second-hand); was (0.84, 0.76, 0.52), judged on the tones of photographs, which render yellow too dark
         (name: "jaune_metal", srgb: (0.74, 0.60, 0.33)), // E: metal painted a darker yellow (§ 12.1, C)
         (name: "bleu", srgb: (0.15, 0.25, 0.50)),        // E: roundel and rudder blue, a dark ultramarine
         (name: "blanc", srgb: (0.90, 0.88, 0.82)),       // E: white, yellowed by the varnish over it

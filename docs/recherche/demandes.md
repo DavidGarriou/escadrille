@@ -23,7 +23,7 @@ Règles :
 | D9 | 1 | ECPAD (ImagesDéfense) | plaques d'Albert Moreau du 20 octobre 1917 (S.254 aux Invalides) et cliché SPA 236 M 4636 | fichiers en haute définition et conditions de réutilisation | à envoyer |
 | D10 | 2 | Vojenský historický ústav (Prague) | planche de bord d'origine d'un SPAD VII (n° 11 583) | photos et liste des instruments | à envoyer |
 | D11 | 2 | Libraires d'ouvrages anciens ; League of WWI Aviation Historians | J. M. Bruce, *Spad 7.C1* (Windsock Datafile n° 8) ; Velek et al., *SPAD S.VII C1* (4+ Publications n° 19) ; « Project Butterfly » (*Cross & Cockade* US, vol. 9 n° 1 ; vol. 13 n° 2 et 4) | achat | à envoyer |
-| D12 | 3 | Museo Francesco Baracca (Lugo) | SPAD VII S.2489 : dossier de restauration (1990-1993) et photos de détail | seulement si le joueur retient ce candidat de livrée | en attente |
+| D12 | 3 | Museo Francesco Baracca (Lugo) | SPAD VII S.2489 : dossier de restauration (1990-1993) et photos de détail ; toile d'origine éventuelle (complément du 2026-11-08) | dossier complet seulement si le joueur retient ce candidat ; question sur la toile d'origine dans tous les cas | en attente (dossier) ; à envoyer (toile) |
 | D13 | 1 | Libraires d'ouvrages anciens ; bibliothèques de la Défense | Klaeylé et Osché, *Guynemer : les avions d'un as* (1998) ; *Icare* n° 122 (1987) ; F. Blech, *Spa 3 : « Cigogne de Guynemer » (ailes basses)* (1986) | achat ; consultation pour Blech | à envoyer |
 | D14 | 1 | Musée de l'Armée (Paris), service des collections et photothèque | gros plan de S.254 aux Invalides (21e épisode du blog), autres photos de S.254 de 1917 ; dossier du dépôt au Musée de l'Air | photos de référence, légendes et dates | à envoyer |
 | D15 | 1 | University of Alabama in Huntsville, Archives and Special Collections | *Air Service Information Circulars* de McCook Field : n° 286 (essai du SPAD XIII, 1921) et toute pièce du dossier « D52.1 / Spad » | copie numérique | à envoyer |
@@ -435,6 +435,33 @@ Phrase à ajouter au message :
 - **Seulement si** le DHMV II, avec sa bande de 5 km, ne couvre pas Comines-Warneton (à vérifier après téléchargement).
 - **Ce qu'on demande** : la licence du MNT LiDAR (2013-2014 ou 2021-2022) ; une seule notice, celle des orthophotos de 2021, dit CC BY 4.0. Contacts relevés : lidar@spw.wallonie.be, helpdesk.carto@spw.wallonie.be (à vérifier).
 
+## D5, D8, D9, D11, D12 — Compléments du 2026-11-08 : teinte de la toile de la période jaune
+
+Enquête de `spad7-aspect.md` § 12.1.1. Aucune mesure de la toile d'usine des S.VII de 1916-1917 n'a été trouvée ; la valeur du jeu reste `ESTIMÉ`. Ajouter à ce que l'on cherche :
+
+- **D8** (Musée de l'Air, S.254), en priorité :
+  1. des photos de la **toile d'origine** dans une zone protégée de la lumière : sous une pièce, sous une bande, sur l'envers ou dans un repli. Prises en lumière du jour ou équivalente, **avec une charte de couleurs ou une carte grise** dans le champ ; à défaut, une mesure au colorimètre ou au spectrophotomètre si le musée en a fait une ;
+  2. ce que le dossier de restauration dit du revêtement d'origine : enduit incolore ou pigmenté, couche de vernis, toile de lin ou de coton ;
+  3. où l'on voit encore la toile d'origine, et où seul l'enduit pigmenté de la restauration apparaît.
+- **D5** (Service historique de la Défense, département Air) : cahiers des charges ou instructions de la Section technique de l'aéronautique, en 1916-1917, sur les **enduits et les vernis** des toiles d'avion : composition, pigment éventuel, teinte prescrite, nombre de couches.
+  - Inventaire du fonds Dorand signalé par un moteur de recherche : https://servicehistorique-admin.cnmosis.dirisi.defense.gouv.fr/en/node/707. Il est inaccessible à l'outil le 2026-11-08 ; la session principale peut tenter curl.
+  - Termes à y chercher : « toiles », « enduits », « vernis », « peinture », « camouflage », « laboratoire ».
+  - Sur FranceArchives, la recherche « enduit toile avion 1917 » s'affiche vide pour l'outil.
+- **D9** (ECPAD) : la Section photographique de l'armée a-t-elle des **autochromes** montrant des SPAD en 1916-1917 (opérateurs Castelnau, Cuville, Tournassoud ou autres) ? Cote, date, conditions de réutilisation. La session principale cherche d'abord sur ImagesDéfense et dans les métadonnées des Archives de la Planète (`spad7-aspect.md` § 15).
+- **D11** (ouvrages) : ajouter, après vérification du sommaire :
+  - J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8, **p. 24** (couleurs) ;
+  - R. Rimell et J. Guttman, *SPAD 7 Colours and Markings* : publication à identifier (article de revue ou supplément) ;
+  - B. Robertson, *WW1 British Aeroplane Colours and Markings*, Windsock Fabric Special n° 2, p. 5 (teinte du lin et transparence des enduits).
+- **D12** (Museo Francesco Baracca, Lugo) : même si le joueur ne retient pas S.2489 comme livrée, demander si la restauration de 1990-1993 a **gardé de la toile d'origine**, et si oui, des photos de référence avec une charte de couleurs. S.2489, construit en 1917 par Blériot, serait un second témoin de la finition d'usine.
+
+Phrase à ajouter au message de D8 :
+
+> Je cherche aussi à connaître la teinte d'origine de la toile du SPAD VII S 254, avant camouflage : serait-il possible de photographier, avec une charte de couleurs, une partie de la toile d'origine protégée de la lumière, et de savoir si le revêtement d'origine était un enduit incolore verni ou une couche pigmentée ?
+
+Phrase à ajouter au message de D12 (en anglais ; l'italien est possible) :
+
+> Did the 1990-1993 restoration of SPAD VII S.2489 preserve any of the original 1917 fabric? If so, could you supply reference photographs of it, ideally with a colour chart, and tell me whether the original finish was a clear varnish or a pigmented coat?
+
 ## Journal
 
 | Date | Demande | Événement |
@@ -445,3 +472,4 @@ Phrase à ajouter au message :
 | 2026-10-31 | D15 ; D1 à D6 (compléments) | Ajoutés par l'historien pour l'enquête sur le centrage (`spad7.md` § 3.1) ; rien n'est envoyé |
 | 2026-11-01 | D16 à D18 ; D1 à D5 (compléments) | Ajoutés par l'historien pour le train et le sol (`spad7.md` § 6.6) ; rien n'est envoyé |
 | 2026-11-07 | D17 (complément) ; D19 à D22 | Ajoutés par l'historien pour le théâtre du M3 (`flandres-1917.md` § 5) ; rien n'est envoyé |
+| 2026-11-08 | D5, D8, D9, D11, D12 (compléments) | Ajoutés par l'historien pour la teinte de la toile de la période jaune (`spad7-aspect.md` § 12.1.1) ; rien n'est envoyé |

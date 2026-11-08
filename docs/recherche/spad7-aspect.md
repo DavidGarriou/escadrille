@@ -1,7 +1,7 @@
 # SPAD S.VII C.1 (150 ch) — fiche d'aspect : modèle 3D et livrée
 
 - Identifiant : `spad7`. Fiches liées : [`spad7.md`](spad7.md) (histoire, géométrie, performances), [`spad7-calculs.md`](spad7-calculs.md) (cotes lues sur le dessin de 1917, § 3 et § 3.1), [`hispano-suiza-8a.md`](hispano-suiza-8a.md) (hélice, § 7.5).
-- Dernière mise à jour : 2026-10-27 (§ 12.6 : marques de S.254)
+- Dernière mise à jour : 2026-11-08 (§ 12.1.1 : teinte de la toile de la période jaune) ; précédente : 2026-10-27 (§ 12.6 : marques de S.254)
 - État : **en cours**, première passe. Elle répond au plan [`m3-modele-spad7.md`](../plans/m3-modele-spad7.md), parties B1 (aspect) et B2 (livrée).
 - Objet : tout ce qu'il faut pour modéliser et texturer un S.VII de 150 ch de 1917, extérieur et premier niveau du poste, puis choisir une livrée réelle.
 
@@ -9,10 +9,13 @@
 
 **Accès réseau (2026-10-26).** L'outil de lecture de pages échoue (DNS) sur museeairespace.fr, francearchives.gouv.fr, imagesdefense.gouv.fr, commons.wikimedia.org et en.wikipedia.org. Seul raw.githubusercontent.com répond : les livres de Bordeaux (`spad7.md` S1) et de Hall (S3) y ont été relus. Tout ce qui vient d'autres sites est vu **en résumé du moteur de recherche**.
 
+**Accès réseau (2026-11-08, § 12.1.1).** Répondent : museeairespace.fr, commons.wikimedia.org, artsandculture.google.com, le texte OCR d'archive.org, theaerodrome.com, linen.miraheze.org, data.gouv.fr. Échouent : archive.aeroscale.net, cbrnp.com, wp.scn.ru, bibliotheques-numeriques.defense.gouv.fr, collections.albert-kahn.hauts-de-seine.fr, web.archive.org.
+
 **Statuts** (mêmes conventions que `spad7.md` § 0) :
 - **[LU]** : texte intégral lu ;
 - **[LU-OCR]** : texte OCR d'archive.org lu comme des données ;
 - **[LU-IMG]** : lu sur l'image d'une page ;
+- **[LU-WEB]** : page ouverte par l'outil web et lue en résumé fidèle, avec de courts extraits (convention de `flandres-1917.md`) ;
 - **[RÉSUMÉ]** : vu seulement dans un résumé de recherche, page non ouverte. Aucun chiffre [RÉSUMÉ] n'est tenu pour vérifié ;
 - **[PISTE]** : référence repérée, non consultée.
 
@@ -53,7 +56,7 @@
 | Vickers | une, au-dessus du moteur, synchronisée | B | décalage latéral et goulottes non trouvés |
 | Hélice Éclair 6 | 2,40 × 1,95 m, moyeu de 150 mm ; noyer lamellé verni, sans gaine | C | forme de pale non trouvée |
 | Poste | siège étroit, manche à détente, palonnier à barre, planche en contreplaqué | C | disposition : **ESTIMÉ** d'après le S.XI |
-| Toile | écrue enduite, blanc jaunâtre à jaune pâle | C | aucune référence de couleur |
+| Toile | enduite et vernie : chamois clair **peu saturé**, du blanc jaunâtre au jaune pâle ; jaunit et fonce en vieillissant | C (fourchette), D (valeur) | aucune mesure ; valeur `ESTIMÉ` au § 12.1.1 |
 
 ## 2. Capot et nez
 
@@ -195,8 +198,8 @@
 
 | Matériau | Description | Sources | Confiance | `ESTIMÉ` |
 |---|---|---|---|---|
-| Toile, finition d'usine non camouflée | « blanc jaunâtre » sur le S.XI de juillet 1917 ; « jaune » verni, avec les parties métalliques d'un jaune plus foncé, sur les S.VII de 1916-1917 | S49 [LU-OCR] ; V15, V16 [RÉSUMÉ] ; `spad7.md` § 8 | C | teinte de travail : crème jaune pâle. **Aucune référence de couleur trouvée** |
-| Toile vue à contre-jour | structure visible à travers la toile enduite | — | — | effet attendu du rendu (plan B5), pas une source |
+| Toile, finition d'usine non camouflée | S.XI de juillet 1917 : revêtement des ailes et du fuselage « peint d'un blanc jaunâtre » ; « jaune » verni, avec les parties métalliques d'un jaune plus foncé, sur les S.VII de 1916-1917 | S49 [LU-OCR] ; V15, V16 [RÉSUMÉ] ; `spad7.md` § 8 ; § 12.1.1 | C | **aucune mesure** ; repères Methuen indirects et valeur proposée au § 12.1.1 |
+| Toile vue à contre-jour | structure visible à travers la toile enduite | — | — | effet attendu du rendu (plan B5), pas une source. **Non établi** : S49 dit la toile « peinte » et une piste parle d'une couche opaque (§ 12.1.1) ; à vérifier sur photo |
 | Enduit d'époque | non trouvé. La restauration de S.254 a employé un enduit de tension cellulosique, **pigmenté** pour masquer les lacunes : ses teintes actuelles ne sont pas un témoin fiable | V4 [RÉSUMÉ] | — | — |
 | Métal | capot en aluminium peint (§ 2) ; ferrures en acier sur les mâts (S.XI) | S48, S49 [LU-OCR] | C | acier peint ou brut : non trouvé |
 | Bois | mâts en bois profilé ; jambes de train en bois lamellé entoilé ; hélice en noyer vernie | S49 [LU-OCR] ; V1 [LU] | C | — |
@@ -234,18 +237,99 @@ Les photos ECPAD sont en noir et blanc : elles donnent formes, positions et cont
 
 | Point | Ce qui est établi | Sources | Confiance |
 |---|---|---|---|
-| Finition d'usine 1916-début 1917 | toile vernie jaune pâle, métal peint d'un jaune plus foncé (« période jaune ») | V15, V16 [RÉSUMÉ] ; S49 | C |
+| Finition d'usine 1916-début 1917 | toile vernie jaune pâle, métal peint d'un jaune plus foncé (« période jaune »). Teinte de la toile **claire et peu saturée**, qui jaunit et fonce en vieillissant : détail au § 12.1.1 | V15, V16 [RÉSUMÉ] ; S49 [LU-OCR] ; § 12.1.1 | C |
 | Camouflage | quatre ou cinq teintes sur le dessus et les flancs : écru (ou beige, ocre), vert clair, vert foncé, marron (châtaigne), et noir dans les schémas à cinq teintes. Un schéma par constructeur, fourni par la Section technique | V15, V17 [RÉSUMÉ] ; aile 2016.16.1 (beige, marron, vert, V3) | C |
 | Date d'introduction | **contestée** : « 1917 » (spécification officielle, selon un wiki) ; **octobre 1917** pour le passage de la période jaune aux cinq teintes (Wings of Linen) | V17 [RÉSUMÉ] | D |
 | Dessous des avions camouflés | écru ou jaune clair, parfois bleu clair ; l'aluminium de l'aile 2016.16.1 est hors règlement | V17, V3 [RÉSUMÉ] | C |
 | Peintures | enduits camouflants de Nauton frères et de Marsac (brevet du chimiste Tesse), pigments analysés par « Project Butterfly » ; peinture à l'huile approchante sur les tôles | V17, forum [RÉSUMÉ] | D |
-| Références de couleur | **non trouvées** (ni nuancier d'époque, ni équivalent moderne vérifié) | — | — |
+| Références de couleur | **non trouvées** : ni nuancier d'époque, ni mesure d'une toile d'origine, ni équivalent FS 595 ou RAL vérifié. Seuls repères : des codes Methuen donnés par des ouvrages de maquettisme, vus de seconde main (§ 12.1.1) | V49, V52 [LU-WEB] | D |
 | Cocardes | bleu au centre, blanc, rouge à l'extérieur | V32 [RÉSUMÉ] ; récit de restauration d'un musée vu en résumé (page non identifiée) | B |
 | Emplacement et diamètre des cocardes | **non trouvés** pour le S.VII | — | **ESTIMÉ** (§ 12.2) |
 | Gouvernail | bandes verticales bleu, blanc, rouge ; bleu côté charnière (convention connue, **non sourcée ici**) | — | C |
 | Numéro de série | peint sur le gouvernail (S.254 : « S 254 », piste V22). Le S.XI portait aussi sur le gouvernail une inscription de charges (poids utile 255 kg, poids de combustible 120 kg) | S49 [LU-OCR] ; V22 [RÉSUMÉ] | C |
 | Insigne de la SPA 3 | cigogne en vol, ailes **basses** ; les autres escadrilles du GC 12 ont d'autres cigognes ; peinte sur les flancs du fuselage | `spad7.md` § 8 (S36, S20) ; V5 | C |
 | Marques personnelles | numéro et nom peints en grand (Guynemer : « 2 » et « Vieux Charles ») ; à la SPA 124, tête d'Indien sur les flancs et marque personnelle (triangle, losange, bande, initiale) | V5 [RÉSUMÉ] ; S3, Hall [LU] | B |
+
+### 12.1.1 Teinte de la toile de la « période jaune » (passe du 2026-11-08)
+
+**Question.** Quelle teinte donner à la toile vernie d'usine des S.VII de 1916 et du début de 1917 ? Un jaune soutenu ou un chamois plus neutre ? Change-t-elle entre l'avion neuf et l'avion usé en escadrille ?
+
+**Point de départ.** `livrees.ron`, couleur `toile` : sRGB (0,84 ; 0,76 ; 0,52), étiquetée `E:` et jugée sur les tons de photographies. Converti (C:, sRGB et D65) : CIELAB L* 78,8 ; a* −1,5 ; b* 33,4. Saturation C* 33, angle de teinte 93°. En linéaire, le bleu fait 35 % du rouge.
+
+**Réponse courte.** Aucune mesure d'une toile de S.VII n'a été trouvée. Les sources qualitatives, dont la seule primaire, décrivent une teinte **claire et peu saturée** : « blanc jaunâtre », « jaune brun pâle », beige, chamois. Cette teinte jaunit et fonce avec l'âge. La valeur actuelle reste dans la fourchette des sources, mais à son bord le plus jaune ; un chamois clair moins saturé est mieux centré.
+
+#### Sources trouvées, par rang
+
+| Rang | Source | Ce qu'elle dit (paraphrase) | Statut | Portée pour la teinte |
+|---|---|---|---|---|
+| 1 | S49, rapport allemand sur un biplace S.XI construit sous licence par Ad. Bernard (La Courneuve) en **juillet 1917** | revêtement des ailes et du fuselage « peint d'un blanc jaunâtre » (*painted a yellowish white*, traduction anglaise du rapport) | [LU-OCR], relu le 2026-11-08 | **C** : autre type de la même famille, fin de la période jaune, regard technique sans parti pris. Va vers le pâle, et dit « peint » |
+| 1 | Autochromes de F. Cuville (Section photographique de l'armée), Soissons, 27 mai 1917, Musée Albert-Kahn, inv. A 12 162, A 12 163, A 12 165 (V59) | photos en couleur d'époque, mais de Nieuport 23, en finition aluminium | page de fichier [LU-WEB], image non vue | aucune pour la toile du SPAD. **Aucun autochrome de SPAD trouvé** |
+| 1 (méthode) | Walters et Davis, *Scientific Papers of the Bureau of Standards*, vol. 17 (V61) | les plaques ordinaires rendent le vert, le jaune, l'orange et le rouge comme du noir ; les orthochromatiques sont sensibles en plus au jaune-vert, pas au rouge | [LU-IMG] p. 353-354 | les tons des photos noir et blanc de 1917 **ne fixent pas** la saturation d'un jaune. La saturation de la valeur actuelle, jugée sur ces tons, n'a donc pas de base |
+| 2, de seconde main | R. Rimell et J. Guttman, *SPAD 7 Colours and Markings* (publication et page non identifiées), cités sur un forum (V49) | les Français recouvraient l'enduit incolore d'une couche colorée. Résultat opaque, du jaune d'œuf soutenu au beige ou chamois, jusqu'au blanc jaunâtre, selon les lots | [LU-WEB] | D tant que le texte n'est pas lu. Seule source à admettre un jaune soutenu, et comme variation entre lots |
+| 2, de seconde main | A. Toelle (ouvrage non précisé), cité sur le même forum (V49) | les toiles conservées trompent : leur vernis a jauni et foncé. Les illustrations sont souvent trop jaunes et trop sombres | [LU-WEB] | D. Selon des forums, Toelle a participé à « Project Butterfly » et aux recherches de teintes pour le SPAD XIII du Smithsonian ([RÉSUMÉ]) |
+| 2, de seconde main | B. Robertson, *WW1 British Aeroplane Colours and Markings*, Windsock Fabric Special n° 2, p. 5, cité sur un forum (V51) | enduits d'époque presque transparents ; le lin écru, irlandais ou de Courtrai, est d'un « jaune brun pâle » | [LU-WEB] | D ; toile britannique |
+| 2, de seconde main | « les publications Windsock », selon un wiki (V52) | toile enduite incolore : Methuen **4A3 à 4C3** | [LU-WEB] | D ; toutes nations, pas le vernis français |
+| 3 | C. Owers, historien, sur un forum (V49) | sur des restaurations et répliques néo-zélandaises (Bristol Fighter, BE2f, FE2b), le jaune est très clair, plus clair que sur les profils et les tableaux : de presque blanc à une nette nuance jaune | [LU-WEB] | D ; toile moderne, avions britanniques |
+| 3 | V4, notice muséale de S.254 ; V2 | la toile d'origine, en lambeaux, a été posée sur une toile neuve et ré-enduite d'un enduit cellulosique apparemment pigmenté. Selon V2, aucun autre avion d'as conservé ne réunit sa toile d'origine et une restauration aussi soignée | [LU-WEB] | la teinte actuelle de S.254 n'est pas un témoin fiable |
+| 3 | Autres restaurations : SPAD XIII « Smith IV » du Smithsonian, restauré en 1984-1986 (V62) ; SPAD XIII n° 4377 de Barnstormer (V63) ; S.2489 de Lugo (V26) | Smith IV : aucune valeur de teinte publiée trouvée. N° 4377 : seuls le métal, les cocardes inférieures et le drapeau seraient peints ; le reste porterait un revêtement pigmenté censé reproduire l'original. S.2489 : rien sur la toile | [RÉSUMÉ] | aucune : avions camouflés de 1918, ou choix de restauration non documentés |
+| matériau | ASTM D6961-03, mesure de la couleur de la fibre de lin (V56) | fibre rouie à la rosée : L* ≈ 60, a* ≈ +2,5, b* ≈ 11 ; rouie à l'eau : L* ≈ 65, b* ≈ 14 | [RÉSUMÉ] | C pour le **sens** de la teinte : une fibre beige grisé, un peu chaude, peu saturée. Ce n'est pas la toile tissée et enduite |
+| matériau | Science Museum Group Journal, 2016 (V57) | les toiles enduites peuvent jaunir : les impuretés du lin et du coton résistent mal à la lumière et à l'oxygène | [LU-WEB] | C, générique |
+| objet | toile française d'un Letord ou d'un Caudron R.IV de l'escadrille 20 (1917-1918), catalogue d'un marchand (V58) | envers gris beige ; endroit brun ambré, craquelé | [LU-IMG], photo non calibrée | D : un siècle de vieillissement, finition d'origine non identifiée |
+| 4 | forums et maquettistes (V50, V53, V54, V55) | « jaune beige pâle qui fonce avec le temps » ; enduit pigmenté jaune-beige ; vernis gras qui jaunit même neuf ; teinte selon le lin et le vernis, du presque blanc au miel. S.254 aurait la teinte d'un lin enduit incolore, jaunie par l'âge | [LU-WEB] | D, pistes. Peintures citées : Humbrol 74 et 103, Radome Tan, Polly Scale, MisterKit, Tru-Color FR-03 et FR-04. Aucune n'est mesurée sur une toile d'origine |
+
+**Témoignages de pilotes.** Recherches en français, anglais, allemand et italien : « spad jaune », *yellow Spad*, *gelber Spad*, *giallo paglierino*, et lettres de Walcott (SPA 84, 1917). **Aucun témoignage sur la couleur de la toile.** Les seuls témoins d'époque restent S49 (regard allemand, technique) et Hall (S3) : à la SPA 124, les avions d'occasion sont « décolorés par la fumée et l'huile ».
+
+#### Repères Methuen convertis (C:)
+
+Valeurs CIELAB mesurées par V52 au capteur Nix sur le *Methuen Handbook of Colour*, 3e éd. (1989). Conversion en sRGB et rapport bleu/rouge linéaire calculés ici.
+
+| Repère | Donné par | CIELAB (L* ; a* ; b*) | sRGB | Bleu/rouge linéaire |
+|---|---|---|---|---|
+| 4A3 | Windsock, borne claire (V52) | 91,7 ; −0,9 ; 23,1 | (0,97 ; 0,90 ; 0,73) | 0,53 |
+| 4B3 | Windsock (V52) | 83,2 ; −2,4 ; 22,0 | (0,86 ; 0,81 ; 0,65) | 0,54 |
+| 4C3 | Windsock, borne sombre (V52) ; D. S. Abbott, lin écru (V49) | 75,1 ; −3,1 ; 19,2 | (0,76 ; 0,73 ; 0,58) | 0,56 |
+| 4C4 | Abbott, borne haute du lin enduit et verni (V49) ; mesure de V52 | 71,0 ; −3,2 ; 30,9 | (0,74 ; 0,68 ; 0,46) | 0,35 |
+| `toile` actuelle | `livrees.ron` | 78,8 ; −1,5 ; 33,4 | (0,84 ; 0,76 ; 0,52) | 0,35 |
+| `toile` proposée | ci-dessous | 80,0 ; +0,7 ; 24,4 | (0,85 ; 0,77 ; 0,60) | 0,46 |
+
+Ces codes sont de seconde main et ne disent pas sur quels échantillons ils reposent. Ce ne sont que des repères (D).
+
+#### Ce que les sources permettent d'affirmer
+
+1. **Clarté** : élevée. Le rapport S49 dit « blanc jaunâtre » ; Owers, « très clair » ; les repères Methuen vont de L* 71 à 92. **C.**
+2. **Saturation** : faible à moyenne. Les repères Methuen vont de C* 19 (lin enduit) à 31 (lin enduit et verni, borne haute). La valeur actuelle (C* 33) dépasse cette borne. La seule source primaire tire vers le pâle, et Toelle met en garde contre le trop jaune. Seuls Rimell et Guttman admettent un jaune d'œuf, comme variation entre lots. **C** pour « peu saturé », **D** pour un chiffre.
+3. **Bleu/rouge en linéaire** : de 0,35 à 0,56 selon le repère. La valeur 0,35 ne correspond qu'à la borne vernie la plus jaune. Une valeur de 0,45 à 0,50 est donc dans la fourchette des sources, sans en être une mesure.
+4. **Angle de teinte** : un jaune, mais son sens fin n'est pas tranché.
+   - Vers le vert : les repères Methuen 4, mesurés au capteur, ont un a* de −1 à −3.
+   - Vers le chaud : la fibre de lin (a* ≈ +2,5), le vernis gras à l'huile de lin, ambré, et les mots des sources (beige, chamois, jaune brun).
+   - Aucune source n'appuie un jaune verdâtre marqué. Retenu : a* entre −3 et +3.
+5. **Peint ou transparent** : les sources divergent. S49 dit « peint » et Rimell et Guttman parlent d'une couche opaque. D'autres pistes décrivent un enduit incolore sous un vernis. Conséquence pour le rendu : la transparence de la toile à contre-jour (§ 10) **n'est pas établie**. On la vérifie sur les photos de la période jaune : cocardes ou nervures visibles par transparence.
+6. **Toile de lin ou de coton, enduit à l'acétate ou au nitrate de cellulose, nature du vernis** : **non trouvés** pour le S.VII, ni dans un document français d'époque.
+7. **Neuf ou vieilli** :
+   - Le sens est établi : la toile jaunit et fonce (V49 pour Toelle, V57, V58).
+   - L'ampleur sur quelques mois de service n'est pas trouvée.
+   - En escadrille, la salissure (fumée, huile : S3) compte au moins autant.
+   - Les avions conservés et les toiles de collection exagèrent le jaune et le brun.
+
+#### Proposition pour `livrees.ron` (appliquée le 2026-11-08)
+
+- **`toile` = sRGB (0,85 ; 0,77 ; 0,60)**, étiquette `E:` (CIELAB ≈ 80 ; +0,7 ; 24 ; bleu/rouge linéaire 0,46).
+- **Justification** :
+  - on garde la clarté et l'équilibre entre rouge et vert de la valeur actuelle ;
+  - on ramène la saturation au milieu des repères Methuen du lin enduit puis verni (C* 19 à 31), du côté de la seule primaire (« blanc jaunâtre ») ;
+  - l'angle de teinte reste au milieu de la fourchette du point 4.
+- **Commentaire proposé pour le fichier** : `// E: varnished linen of the factory finish, light low-chroma buff (spad7-aspect § 12.1.1: S49 "yellowish white"; Methuen 4A3-4C4 range for doped and varnished linen, second-hand)`.
+- **Confiance** : **C** pour la fourchette, **D** pour la valeur.
+- La valeur actuelle (0,84 ; 0,76 ; 0,52) reste plausible comme **borne vieillie**, pour une éventuelle couche d'usure. Elle ne convient pas comme teinte de base d'un avion neuf.
+- **Hors de cette passe** : `jaune_metal` (0,74 ; 0,60 ; 0,33), soit CIELAB ≈ 65 ; +5 ; 41, n'a pas été examiné. La relation « métal plus foncé que la toile » tient avec la valeur proposée. Sa saturation mérite le même examen : les pistes disent « jaune clair », « caramel », « brun clair » ou « beige ».
+
+#### Reste à établir, par ordre d'utilité
+
+1. **Mesure sur S.254** : toile d'origine dans une zone protégée (sous une pièce, sous les bandes du gouvernail, envers), photographiée avec une charte de couleurs ou mesurée au spectrophotomètre. Il faut la distinguer de l'enduit pigmenté de la restauration (D8, complément du 2026-11-08).
+2. **Spécifications françaises de 1916-1917** des enduits et des vernis (Section technique) : composition, pigment éventuel, teinte (D5, complément).
+3. **Autochromes** de SPAD de 1916-1917 : métadonnées des Archives de la Planète et fonds de la Section photographique de l'armée (§ 15 ; D9, complément).
+4. **Textes de rang 2** : Bruce, Windsock Datafile n° 8, p. 24 ; l'article de Rimell et Guttman, à identifier ; Robertson, Fabric Special n° 2 ; « Project Butterfly » (D11, complément).
+5. **Transparence** : examen des photos de la période jaune (D9, V40, V41).
 
 ### 12.2 Candidat 1 — S.254 « Vieux Charles », Georges Guynemer, N 3 puis SPA 3
 
@@ -503,6 +587,8 @@ Domaines à autoriser pour ces lectures : `albindenis.free.fr`, `daniel99725.wix
 
 Recherches menées sans résultat utile sur l'aspect : en allemand (examen d'un S.VII capturé : rien), en italien (livrée de S.2489 : rien de détaillé), en tchèque (instruments de la planche de Prague : rien de détaillé), en russe (volets et échappements : V12 seulement).
 
+Couleur de la toile (passe du 2026-11-08, § 12.1.1) : recherches en français (« spad jaune », « toile vernie »), en anglais (*yellow Spad* ; lettres de S. Walcott, SPA 84, 1917), en allemand (*gelber Spad* ; *Mein Fliegerleben* ; rapports sur des SPAD capturés) et en italien (*giallo paglierino*, *tela verniciata*) : **aucun témoignage de pilote sur la teinte**. Les seuls témoins d'époque restent S49 (« blanc jaunâtre ») et Hall (S3 : salissure de fumée et d'huile).
+
 ## 14. Écarts avec `spad7.md` (reportés le 2026-10-26)
 
 1. **§ 1.2, moteur de S.254** : la fiche le dit « non vérifié ». Le Musée de l'Air (V2) et Albin Denis (V10) le donnent comme le premier exemplaire à moteur surcomprimé de **180 ch**, reçu fin décembre 1916 : **B**.
@@ -527,6 +613,11 @@ Recherches menées sans résultat utile sur l'aspect : en allemand (examen d'un 
 | 2 | Notice du SPAD S XIII (S38) | https://bibliotheques-numeriques.defense.gouv.fr/index.php/document/fc97b662-8b01-43a8-9698-6e0be5953006 | matériau du pare-brise dans la liste des pièces |
 | 2 | *Flight* du 16 juillet 1915, p. 522 | archive.org, identifiant supposé `Flight_International_Magazine_1915-07-16-pdf` | pare-brise d'Avro en Triplex percé d'une balle : forme de la cassure |
 | 3 | SDASM sur Flickr Commons (« no known copyright restrictions ») | https://commons.flickr.org/tags/spadvii/ | photos d'époque de S.VII, possiblement réutilisables après vérification |
+| 1 | Métadonnées des Archives de la Planète (Musée Albert-Kahn), CSV de 42,2 Mo (V60) | https://www.data.gouv.fr/api/1/datasets/r/d495f087-d7e0-45e6-afd4-d87d59a0433c | chercher « Spad », « avion », « aviation », « escadrille » pour 1916-1917 : un **autochrome de SPAD** serait le seul témoin en couleur de la période jaune. Relever la cote et la licence de chaque notice (CC0, CC-BY ou réservée selon les fonds) |
+| 1 | E-médiathèque du Musée de l'Air et de l'Espace, recherche avancée : index « Aéronefs » = SPAD, dates 1916-1917, texte « autochrome » ou « couleur » | https://mediatheque.museeairespace.fr/ (le site répond ; la recherche n'est pas lisible par l'outil) | photos en couleur d'époque d'un SPAD de la période jaune ; photos récentes en couleur de S.254 et de la toile d'origine ; conditions de réutilisation |
+| 1 | ImagesDéfense (ECPAD), recherche « autochrome » avec « avion » ou « Spad » | https://imagesdefense.gouv.fr | autochromes de la Section photographique de l'armée (Castelnau, Cuville, Tournassoud) montrant des SPAD en 1916-1917 ; cote, date, conditions de réutilisation |
+| 2 | Aeroscale, fil « French Multi-Colour Camouflage 101 », page 3 (V17) | https://archive.aeroscale.net/forums/90429-page=3.htm (inaccessible à l'outil le 2026-11-08) | message d'un collectionneur sur des échantillons de toile française « écru » (SPAD, Breguet, Salmson, Nieuport 28) et sur les formules de « Project Butterfly » contrôlées au nuancier Munsell |
+| 2 | Notices des Bibliothèques numériques de la Défense sur la restauration de S.254 | https://bibliotheques-numeriques.defense.gouv.fr/impression/document/057c9336-4293-4461-8334-3b33b5fc081c ; `…/8339744f-ac6f-45cb-a584-300fcdfd4b44` ; `…/898c3db7-4a67-470d-aa05-c0052f176e01` ; `…/81cad4f2-d92c-405d-9885-a3c04709ae77` (connexion refusée le 2026-11-08) | **contenu inconnu** : résultats d'une recherche sur la toile d'origine de S.254. Relever titre et sommaire, et garder ce qui touche à la teinte de la toile ou à l'enduit |
 
 ## 16. Sources
 
@@ -586,6 +677,33 @@ Sources nouvelles du § 12.6, consultées le 2026-10-27 (toutes vues en résumé
 
 Détails tirés le 2026-10-27 de sources déjà citées : S36 (*Motor Sport*, mai 1976) donne aussi les postures des SPA 26 (ailes à mi-course), 103 (début du battement) et 73 (tête retournée), et fait de la cigogne de la SPA 3 le modèle de la mascotte Hispano-Suiza ; V21 (page du CAEA) cite les ouvrages d'Osché et la revue *Icare* pour la cigogne rouge de S.254 ; V22 (notice Interenchères) décrit une maquette en bois : nom (écrit en capitales dans la notice, ce qui ne dit rien de la maquette), cigogne rouge, « 2 » rouge, gouvernail tricolore marqué « S 254 ».
 
+Sources nouvelles du § 12.1.1, consultées le 2026-11-08 :
+
+- **S49 relu** — texte OCR de *Flight*, 16 mai 1918, https://archive.org/download/Flight_International_Magazine_1918-05-16-pdf/Flight_International_Magazine_1918-05-16-pdf_djvu.txt [LU-OCR]. Phrase sur la teinte : *Wing and body covering are painted a yellowish white*. Avion construit sous licence en juillet 1917 par Ad. Bernard, La Courneuve.
+- **V2 relu** et **V4 lu** le 2026-11-08 [LU-WEB] : V2 implique que S.254 a gardé sa toile d'origine ; V4 confirme la toile neuve posée sous la toile d'origine et l'enduit de tension cellulosique, apparemment pigmenté. **V3** [LU-WEB] : l'aile 2016.16.1 est datée de 1918, « toile enduite et peinte » ; elle ne témoigne donc pas de la période jaune.
+- **V49** — The Aerodrome (forum), fil « The Colours of Linen », avril 2009, http://www.theaerodrome.com/forum/showthread.php?t=40906 [LU-WEB]. Messages utilisés :
+  - n° 1 et n° 4, Romani, 10 avril 2009 : citations de R. Rimell et J. Guttman, *SPAD 7 Colours and Markings* (publication et page non données), et de A. Toelle (ouvrage non précisé) ;
+  - n° 3, D. S. Abbott, 10 avril 2009 : codes Methuen 4C3 et 4C3/4, sans échantillon cité ;
+  - n° 20, C. A. Owers, 17 avril 2009 : restaurations néo-zélandaises.
+
+  Forum : piste. Les citations d'auteurs de rang 2 sont à vérifier dans les textes.
+- **V50** — The Aerodrome (forum), fil « Color for Guynemer's SPAD XIII? », https://theaerodrome.com/forum/showthread.php?t=45405 [LU-WEB]. Messages de « 14-'18aviationcollector », « stevedrew », « davecww1 » (D. Calhoun) et « Tomasz ». Ils portent sur la teinte de S.254, sa toile altérée par l'âge et l'exposition, la couche de vernis et les peintures de maquette. Forum : piste.
+- **V51** — The Aerodrome (forum), fil « The Color of Linen », février 2019, http://www.theaerodrome.com/forum/showthread.php?t=71131 [LU-WEB]. MikeMeech (13 février 2019) y cite B. Robertson, *WW1 British Aeroplane Colours and Markings*, Windsock Fabric Special n° 2, p. 5. Forum : piste.
+- **V52** — Wings of Linen (wiki), « Clear-Doped Linen », modifié le 4 juillet 2018, https://linen.miraheze.org/wiki/Clear-Doped_Linen, et « French Five-Color Camouflage », https://linen.miraheze.org/wiki/French_Five-Color_Camouflage [LU-WEB]. Mesures au capteur Nix sur A. Kornerup et J. H. Wanscher, *Methuen Handbook of Colour*, 3e éd., Londres, Methuen, 1989. Wiki : piste. Les valeurs CIELAB sont la mesure d'un nuancier imprimé, pas d'une toile.
+- **V53** — G. Grasse, « Spad 7 (S3190) Escadrille Spa.94 », Histomin, https://www.histomin.com/Aviation/World%20War%201%20Aviation/WW1%20French%20Aircraft/WW1%20Spad%207%20Esc%20Spa.94/gpww1Spad%207%20(SO4009)%20Esc%20Spa%2094.htm [LU-WEB]. Maquettiste : piste D.
+- **V54** — C. Wentzel, « Airfix 1/72 SPAD VII », Modeling Madness, https://modelingmadness.com/review/w1/wentzelspad7.htm [LU-WEB]. Revue de maquette : piste D.
+- **V55** — FineScale (forum), « Need good doped linen color », 17 novembre 2004, https://forum.finescale.com/t/need-good-doped-linen-color/121567 [LU-WEB]. Forum : piste D.
+- **V56** — ASTM D6961-03, méthode de mesure de la couleur de la fibre de lin, tableau d'exemples (titre exact et tableau à vérifier) [RÉSUMÉ : norme non ouverte] ; H. H. Epps, D. E. Akin, J. A. Foulk et R. B. Dodd, « Color of Enzyme-Retted Flax Fibers Affected by Processing, Cleaning, and Cottonizing », *Textile Research Journal*, 2001, doi:10.1177/004051750107101011 [LU-WEB, résumé seulement]. Modernes ; matériau comparable.
+- **V57** — B. Regel, J. Langfeldt, L. Burden et M. Ryan, « Doping at the Science Museum: the conservation challenge of doped fabric aircraft in the Flight gallery », *Science Museum Group Journal*, n° 6, automne 2016, doi:10.15180/160605, https://journal.sciencemuseum.ac.uk/article/conservation-challenge-of-doped-fabric/ [LU-WEB]. Secondaire (conservation).
+- **V58** — The Aeroconservancy, *Private Sale of Artifacts from French and British Aircraft and Aviators of the First World War*, mai 2023, p. 15, n° 15, https://www.aeroconservancy.com/_files/ugd/2e4db9_8cb9a1f252c4414b846ddfa403c27691.pdf [LU-IMG]. Catalogue de marchand ; photos sous droits, référence seulement.
+- **V59** — Wikimedia Commons, « Biplan Nieuport - A12162.jpg », autochrome de F. Cuville, Soissons, 27 mai 1917, Musée départemental Albert-Kahn, inv. A 12 162, https://commons.wikimedia.org/wiki/File:Biplan_Nieuport_-_A12162.jpg [LU-WEB, page de fichier ; image non vue]. Licence indiquée : **CC0**, à revérifier sur la notice du musée avant tout usage. Voir aussi *Airscape*, « Dawn's early light », 7 février 2018, https://airscapemag.com/2018/02/07/albert-kahn-collection/ [LU-WEB] : liste A 12 162, A 12 163 et A 12 165 S. Primaire, mais ce sont des Nieuport.
+- **V60** — data.gouv.fr, « Archives de la Planète » (Département des Hauts-de-Seine), mis à jour le 19 septembre 2022, https://www.data.gouv.fr/fr/datasets/archives-de-la-planete/ [LU-WEB, page du jeu de données ; fichiers non téléchargés]. Droits variables selon les fonds.
+- **V61** — F. M. Walters Jr. et R. Davis, « Studies in color sensitive photographic plates and methods of sensitizing by bathing », *Scientific Papers of the Bureau of Standards*, vol. 17, Scientific Paper n° 422, p. 353-375 (1921 ou 1922, à vérifier), https://nvlpubs.nist.gov/nistpubs/ScientificPapers/nbsscientificpaper422vol17p353_A2b.pdf [LU-IMG p. 353-354]. Primaire (technique photographique) ; domaine public américain.
+- **V62** — Smithsonian, « Spad XIII "Smith IV" », https://si.edu/object/spad-xiii-smith-iv%3Anasm_A19200001000, et photos d'archives de la restauration (NASM.1989.0104), https://si.edu/object/archives/components/sova-nasm-1989-0104-ref609 [RÉSUMÉ]. Toile décomposée dans les années 1980 ; restauration complète en 1984-1986. Selon un forum (IL-2, https://forum.il2sturmovik.com/topic/58946-the-sxiii-skin-project/ [RÉSUMÉ]), A. Toelle a fait des recherches de teintes pour cette restauration.
+- **V63** — Barnstormer, « The Spad XIII n° 4377 », https://barnstormer.fr/en/preservation-program/41-polo-spad-dolan-preservation-program.html [RÉSUMÉ ; page refusée à l'outil]. SPAD XIII d'origine en état de vol : revêtement pigmenté censé reproduire l'original. Un rapport inédit de Toelle (2006) sur cet avion est signalé sur un forum (Aeroscale, https://archive.aeroscale.net/forums/125699-ord=-page=1/index.htm [RÉSUMÉ]).
+
+Peintures de maquettisme citées en pistes (D), aucune mesurée sur une toile d'origine : Humbrol 74 et 103, Model Master « Radome Tan », Polly Scale « doped linen », MisterKit « French doped linen » et « French light yellow », Tru-Color FR-03 « Light Yellow Doped Linen » et FR-04 « Yellow Doped Linen » (fiches de vente : https://arizonahobbies.com/products/french-air-force-wwi-fr-03-light-yellow-doped-linen-1-oz-bottle-airbrush-ready-tcp-1255-1 et https://arizonahobbies.com/products/french-air-force-wwi-fr-04-yellow-doped-linen-1-oz-bottle-airbrush-ready-tcp-1256-1 [RÉSUMÉ]).
+
 **Pistes non consultées, prioritaires** : J. M. Bruce, *Spad 7.C1*, Windsock Datafile n° 8 (`spad7.md` P1) et *SPAD Scouts S.VII-S.XIII*, Aircam Aviation Series n° 9 ; M. Velek, M. Ovčáčík et K. Susa, *SPAD S.VII C1*, 4+ Publications n° 19 (P3) ; Hardesty, Hastings et Toelle, « Project Butterfly », *Cross & Cockade* (US) vol. 9 n° 1 (1968), vol. 13 n° 2 et 4 (1972) (P14) ; C. Ravel, « La restauration du Spad VII n° 5248 », *Cahiers du RSA* n° 255, 2007 (appareil non identifié).
 
 ## 17. Journal des décisions
@@ -611,3 +729,11 @@ Détails tirés le 2026-10-27 de sources déjà citées : S36 (*Motor Sport*, ma
 - **2026-10-27 — « Bande tricolore des as » : contradiction non tranchée.** La version anglaise du billet du Musée de l'Armée (V5) dit que la queue de S.254 porte la bande tricolore des as. Le § 12.5 classe une telle bande en anachronisme pour S.254. Deux lectures possibles : le tricolore réglementaire du gouvernail, ou une bande distincte comme sur S.115 et S.113. **Retenu provisoirement : pas de bande supplémentaire.** Premier point à vérifier sur les plaques du 20 octobre.
 - **2026-10-27 — Photo espagnole exclue.** La photo de la Biblioteca Virtual de Defensa (V42) suit la 16e victoire (1916) : ce n'est pas S.254. Elle ne sert qu'à comparer la graphie du nom sur un avion antérieur.
 - **2026-11-01 — Matériau du pare-brise.** Du **verre**, d'après le seul Hall (S3, SPA 124, été 1917) : **C**. Aucune source ne dit s'il était simple ou feuilleté, ni ne mentionne de celluloïd ou de mica sur un S.VII français ; rien non plus selon le constructeur. Contexte : le verre feuilleté Triplex est français (brevet Bénédictus de 1909, société fondée en 1911) ; *Flight* du 16 juillet 1915 (p. 522, vu en légende seulement) montre un pare-brise d'Avro en Triplex percé d'une balle ; un dossier britannique de 1918 porte sur le Triplex en avion (TNA MUN 8/13, résumé). **Retenu : feuilleté, ESTIMÉ (D)**, parce que le pare-brise cassé de S.254 est resté en place. Sous une balle, il garde sa vitre : un trou, du verre écrasé et laiteux autour, une étoile de fêlures en rayons et en anneaux. Le verre simple, lui, perdrait de gros morceaux : à revoir si une photo de S.254 en montre. La ligne `windscreen` de `maquette.ron` ne cite plus que Hall : Bordeaux parle d'un pare-brise brisé sur le Nieuport de Guynemer à Verdun, en mars 1916, pas d'un SPAD.
+- **2026-11-08 — Teinte de la toile de la période jaune (§ 12.1.1).**
+  - **Constat** : aucune mesure, aucun nuancier d'époque, aucun autochrome de SPAD, aucun témoignage de pilote sur la teinte.
+  - **Fourchette** : de « blanc jaunâtre » (S49, seule primaire, S.XI de juillet 1917) au jaune d'œuf (Rimell et Guttman, de seconde main, comme variation entre lots). Les repères Methuen de seconde main donnent L* 71 à 92 et C* 19 à 31 ; bleu/rouge linéaire de 0,35 à 0,56.
+  - **Choix** : un chamois clair, **peu saturé**. La primaire et deux auteurs (Toelle, Owers) tirent vers le pâle, et mettent en garde contre les profils trop jaunes et les toiles conservées, jaunies.
+  - **Rejeté** : fonder la saturation sur les tons des photos noir et blanc. Les plaques ordinaires et orthochromatiques assombrissent le jaune (V61).
+  - **Valeur proposée** : sRGB (0,85 ; 0,77 ; 0,60), `E:`, confiance D. La fourchette est en C. L'ancienne valeur (0,84 ; 0,76 ; 0,52) devient la borne vieillie.
+  - **Indépendance du choix** : le rapport bleu/rouge de la valeur proposée (0,46) tombe dans la fenêtre du directeur artistique (0,45 à 0,50). Il n'a pas servi à la choisir : la valeur vient du milieu de la fourchette des sources, à clarté et teinte inchangées. Une source qui donnerait une toile neuve plus saturée (texte de Rimell et Guttman, mesure sur S.254) ferait revenir sur ce choix.
+  - **Non modifié** : `livrees.ron` ; la décision revient au joueur.

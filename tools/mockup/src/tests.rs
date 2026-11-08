@@ -229,7 +229,7 @@ fn the_liveries_paint_faces_and_nodes_the_aircraft_has() {
     let text = export::model_json(&data, Some(&mockup), Some(&liveries())).unwrap();
     let json: gltf::json::Value = gltf::json::deserialize::from_str(&text).unwrap();
     let l = &json["liveries"];
-    assert_eq!(l["colours"]["toile"][0], 0.84);
+    assert_eq!(l["colours"]["toile"][0], 0.85);
     let first = &l["liveries"][0];
     assert_eq!(first["name"], "usine-1917");
     assert_eq!(first["marks"][0]["kind"], "roundel");

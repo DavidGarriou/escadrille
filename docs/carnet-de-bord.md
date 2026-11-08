@@ -3049,3 +3049,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **Meilleur effet** : l'ombre de contact sous l'avion au sol ; le poste gagne en densité.
   - **À surveiller en mouvement** : un léger grain sur le sol lointain (1 à 3 km), dans les ombres des nuages. S'il scintille, estomper la SSAO avec la distance.
   - **Plus tard**, si le budget se tend : la couper en poursuite au-dessus d'une cinquantaine de mètres ; et cuire une carte d'occlusion pour le modelé de l'avion vu de l'extérieur.
+- **R** Rapport de l'historien sur la toile de la période jaune (fiche `spad7-aspect.md` § 12.1.1, sources V49 à V63) :
+  - aucune mesure d'une toile d'origine n'a été trouvée ;
+  - la seule source primaire, un rapport allemand sur un S.XI de juillet 1917 traduit dans *Flight* (16 mai 1918), dit « blanc jaunâtre » ;
+  - les codes Methuen cités de seconde main (Windsock, Abbott) donnent, pour le lin enduit puis verni, une saturation C* de 19 à 31 et un bleu de 35 à 56 % du rouge en linéaire. L'ancienne valeur (C* 33) dépassait la borne haute ;
+  - les plaques noir et blanc d'époque rendent le jaune trop sombre (Bureau of Standards), et juger la teinte sur leurs tons n'a pas de base.
+  - **Proposition** : sRGB (0,85 ; 0,77 ; 0,60), `E:`. Même clarté et même teinte, saturation ramenée au milieu de la fourchette ; le bleu fait 46 % du rouge en linéaire. Confiance C pour la fourchette, D pour la valeur.
+- **A** Valeur appliquée dans `livrees.ron`, avec son commentaire sourcé ; l'ancienne valeur reste notée comme borne d'une toile vieillie. Modèle reconstruit (`just modele spad7 assets`, contrôlé par `asset_check`). Test de l'exportateur mis à la nouvelle valeur.
+- **R** Captures de contrôle (`cumulus_contre_jour`, `cumulus_midi`, `cumulus_sous_la_base`, `avion-studio`) :
+  - la toile est moins jaune, plus crème : sur le fuselage sous la base, le bleu passe de 119 à 130 en sRGB ;
+  - au contre-jour, le fuselage perd son orangé, mais le dessous de l'aile basse reste vert menthe. Il voit les champs, et leur lumière domine là ;
+  - le capot, d'un jaune plus saturé (`jaune_metal`), tranche un peu plus sur la toile.
+- **⚠** Deux points de l'historien, hors de cette passe :
+  - **la transparence de la toile à contre-jour n'est pas établie** : le rapport allemand dit la toile « peinte », une autre source parle d'une couche opaque. C'est à lire sur les photos de la période jaune ; la toile translucide du rendu (`render/fabric.rs`) en dépend ;
+  - `jaune_metal` (C* ≈ 41) mérite le même examen.
+- **R** Compléments ajoutés aux demandes D5, D8, D9, D11 et D12. Téléchargements suggérés par l'historien (fiche § 15 : CSV des Archives de la Planète, e-médiathèque du Musée de l'Air, ImagesDéfense) : non faits, ils attendent l'accord du joueur, fichier par fichier.
+- **A** `just check` et `just test` passent (430 tests).
