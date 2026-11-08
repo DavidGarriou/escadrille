@@ -3122,3 +3122,5 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - une poursuite longue, pour voir l'avion avalé nez en premier.
 - **Q** Le joueur : « as-tu poussé du code ? »
 - **R** Oui. Trois commits sont sur GitHub depuis celui de la toile, sur `main` et `main-tcd0yw` (toutes deux à `ad81dc3`) : `b4efb84` (scène de traversée, marche, voile des transparents, champ `sequence`), `aa73462` (profondeur de l'œil par image, vue du pilote) et `ad81dc3` (carnet et plan seulement).
+- **Q** Le joueur : « je suis sur main, et mon git pull me répond "Déjà à jour". Sur quelle branche pousses-tu ? »
+- **R** Sur `main` de `git@github.com:DavidGarriou/escadrille.git` (et `main-tcd0yw`, gardée identique). Claude travaille dans le dépôt `/home/dacid/Depots/personnel/escadrille` lui-même, sur `main` : ses commits y sont créés en local, puis poussés. Dans ce dossier, `git pull` n'a donc rien à rapporter, car la branche locale contient déjà tout ; `git log --oneline -5` montre les commits. Dans un autre clone, `git pull` les récupère.
