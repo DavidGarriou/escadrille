@@ -3041,3 +3041,4 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **R** 41 % des pixels de la vue pilote s'assombrissent de plus de 5 %, contre 5,6 % pour `avion-studio` et 3,0 % pour `cumulus_sous_la_base`. Coût : 0,59 à 0,61 ms.
   - **A** Images envoyées au directeur artistique, qui doit lever ou confirmer sa réserve.
 - **R** Blender 5.2.2 est installé : le modèle pourra être reconstruit (`just modele spad7 assets`) si la couleur change.
+- **⚠** Le dépôt local est désormais sur la branche `main`, et non plus sur `main-tcd0yw` : le joueur l'a changée lui-même. Le commit précédent du carnet est donc arrivé sur `main`. **A** `main` est poussée, et `main-tcd0yw` avance jusqu'à elle en avance rapide, sur GitHub et en local : les deux restent identiques. Claude ne change pas de branche sans le demander. La mémoire du projet tient compte de ce cas.
