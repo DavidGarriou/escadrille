@@ -242,6 +242,7 @@ mod tests {
                 size: (64, 64),
                 png: PathBuf::from("test.png"),
                 json: PathBuf::from("test.json"),
+                sequence: Vec::new(),
             });
         }
         // The clock's first update has no duration: the ramps move from the second.

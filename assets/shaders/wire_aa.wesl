@@ -3,7 +3,8 @@
 // coverage of its true width, so that it neither breaks into dashes nor shimmers.
 // The wire's mesh is a smooth tube: its normals point away from its axis, along which
 // the vertex shader moves each vertex. Used by `crates/game/src/render/wires.rs` with
-// the StandardMaterial of the model's `wire_*` nodes, in alpha blending.
+// the StandardMaterial of the model's `wire_*` nodes, in alpha blending, veiled by the
+// clouds' fog in front of them (`clouds/fog.wesl`).
 
 import bevy_pbr::render::{
     mesh_functions,
@@ -13,6 +14,7 @@ import bevy_pbr::render::{
     pbr_fragment::pbr_input_from_standard_material,
     pbr_functions::{alpha_discard, apply_pbr_lighting, main_pass_post_lighting_processing},
 };
+import super::clouds::fog::veil;
 
 struct Wire {
     // True radius of the wire, m.
@@ -89,6 +91,7 @@ fn fragment(
     );
     var out: FragmentOutput;
     out.color = apply_pbr_lighting(pbr_input);
+    out.color = veil(out.color, in.position.xy, in.world_position.xyz, true);
     out.color = main_pass_post_lighting_processing(pbr_input, out.color);
     return out;
 }

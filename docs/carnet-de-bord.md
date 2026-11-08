@@ -3065,3 +3065,25 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - `jaune_metal` (C* ≈ 41) mérite le même examen.
 - **R** Compléments ajoutés aux demandes D5, D8, D9, D11 et D12. Téléchargements suggérés par l'historien (fiche § 15 : CSV des Archives de la Planète, e-médiathèque du Musée de l'Air, ImagesDéfense) : non faits, ils attendent l'accord du joueur, fichier par fichier.
 - **A** `just check` et `just test` passent (430 tests).
+
+### Traversée du nuage : la scène `traversee_nuage`
+
+- **Q** Le joueur : « Traversée du nuage » (la scène `traversee_nuage` en séquence : entrée, intérieur, sortie, avec les critères du directeur artistique).
+- **A** Champ `sequence` des fiches de scène : des images antérieures du même vol, enregistrées en plus sous `<scène>-<image>.png`. La recette `just capture` garde aussi les précédentes en `.avant.png`. Tests sur le chargement et sur les chemins.
+- **A** Nuage placé sur la route d'après la densité de référence en Rust (`escadrille_weather`), en cherchant une graine et une base parmi 150 graines.
+  - **Retenu** : graine 63, base 700 m, couverture 0,55, scénario `vol-essai` (1 000 m, cap à l'est, 160 km/h).
+  - **Le trajet** : un voile ténu dès 265 m du départ, le cœur dense dès 305 m (6,9 s), le flanc de sortie à 915 m (20,6 s).
+  - **Le soleil sur l'avion** : 100 % à 250 m, 43 % à 300 m, plus rien à 350 m.
+- **A** Séquence : 3 s, 5 s, 6 s, 6,5 s, 7 s, 7,5 s, 10 s, 19,5 s, 20,25 s, 20,75 s et 22 s, vue de la poursuite.
+- **R** Premières images, avant correction : l'entrée est progressive, mais trois défauts apparaissent.
+  - **⚠** Une ligne horizontale coupe le brouillard à l'horizon : gris-beige au-dessus, bleuté en dessous. La marche supposait que le côté de l'œil donne sur le ciel, comme pour un flanc vu de dehors. **A** Depuis l'intérieur, ce chemin passe d'abord par le nuage derrière l'œil : sa profondeur optique est maintenant comptée. La ligne a disparu.
+  - **⚠** Le brouillard entre la caméra et l'avion était faux. Le premier pas de la marche tombe au hasard dans une enjambée de 36 m, et la tranche entre l'œil et ce pas n'était jamais intégrée ; le dernier pas n'était pas coupé à la distance de l'avion. **A** Un échantillon tiré au hasard dans la tranche la représente tout entière, et le dernier pas est coupé où le rayon s'arrête.
+  - **⚠** Les câbles, le disque de l'hélice et le verre restaient nets dans le brouillard : ces matériaux transparents sont dessinés après la composition des nuages. **A** Leurs shaders appliquent maintenant le brouillard devant eux (`render/clouds/fog.rs`, `shaders/clouds/fog.wesl`).
+    - Là où la marche s'est arrêtée sur l'avion derrière eux, ils prennent sa lumière et sa transmittance.
+    - Ailleurs, ils prennent l'extinction du nuage à l'œil, calculée en Rust et écrite une fois par image dans un tampon partagé.
+    - `own_normals` reçoit pour cela son propre shader de fragment, celui de Bevy plus ce voile.
+- **R** Mesures après correction :
+  - **luminance d'affichage, fuselage / brouillard** : 0,65 / 0,62 à l'approche, 0,54 / 0,71 à l'entrée dans l'ombre du nuage, 0,50 / 0,58 au cœur. L'avion s'assombrit et reste une silhouette un peu plus sombre que le brouillard ;
+  - **séquence dense** (une image sur deux, en 720p) : pas de saut à l'entrée ni à la sortie, la variation monte et redescend en douceur sur une dizaine d'images ;
+  - **régressions** : aucune mesurable sur `cumulus_midi`, `cumulus_contre_jour`, `cumulus_sous_la_base` et `avion-studio` ; coût GPU inchangé.
+- **A** `just check` et `just test` passent (433 tests). Skills `bevy` et `rendu-visuel` et fiche des nuages à jour.

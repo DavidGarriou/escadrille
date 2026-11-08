@@ -19,7 +19,11 @@
 //! fields below the horizon, in the clouds' mean shadow ([`ground_shade`]), from which
 //! Bevy lights every surface. The ground beneath a layer the camera flies above takes the
 //! light of the bases the map misses ([`ground_cloud_light`], `render::ground`).
+//!
+//! The transparent surfaces, drawn after the composite, veil themselves with the fog in
+//! front of them (`fog`).
 
+mod fog;
 mod pass;
 
 use bevy::asset::RenderAssetUsages;
@@ -33,12 +37,13 @@ use bevy::pbr::{MaterialPipeline, MaterialPipelineKey};
 use bevy::prelude::*;
 use bevy::render::render_resource::{
     AsBindGroup, CompareFunction, Extent3d, RenderPipelineDescriptor, ShaderType,
-    SpecializedMeshPipelineError, TextureDimension, TextureFormat, TextureUsages,
+    SpecializedMeshPipelineError, TextureDimension, TextureFormat,
 };
 use bevy::shader::ShaderRef;
 use escadrille_weather::clouds::{CloudLayer, CloudTextures, CloudUniforms};
 use escadrille_weather::grid::{Plane, Volume};
 
+pub use fog::{CloudDensity, CloudFog};
 pub use pass::{GpuCloudPass, GpuCloudShadow};
 
 use super::ground::{GroundAlbedo, GroundLight};
@@ -216,13 +221,20 @@ pub struct CloudsPlugin;
 impl Plugin for CloudsPlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins(MaterialPlugin::<CloudComposite>::default())
+            .add_systems(Startup, fog::create)
             .add_systems(
                 PostUpdate,
                 (
-                    (spawn_veil, generate_images, size_target, update_frame)
+                    (
+                        spawn_veil,
+                        generate_images,
+                        size_target,
+                        update_frame,
+                        fog::update,
+                    )
                         .chain()
                         .run_if(resource_exists::<Clouds>),
-                    clear_sky.run_if(not(resource_exists::<Clouds>)),
+                    (clear_sky, fog::clear).run_if(not(resource_exists::<Clouds>)),
                 )
                     .before(TransformSystems::Propagate),
             );
@@ -230,10 +242,12 @@ impl Plugin for CloudsPlugin {
     }
 }
 
-/// The cloud images and the entity that blends them, once.
+/// The cloud images and the entity that blends them, once. The images are the fog's,
+/// which the transparent materials bind for every sky.
 fn spawn_veil(
     target: Option<Res<CloudTarget>>,
     quality: Res<Quality>,
+    fog: Res<CloudFog>,
     mut images: ResMut<Assets<Image>>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<CloudComposite>>,
@@ -242,14 +256,8 @@ fn spawn_veil(
     if target.is_some() {
         return;
     }
-    let image = |format| {
-        let mut image = Image::new_target_texture(1, 1, format, None);
-        // The temporal pass keeps a copy for the next frame.
-        image.texture_descriptor.usage |= TextureUsages::COPY_SRC;
-        image
-    };
-    let color = images.add(image(TARGET_FORMAT));
-    let distance = images.add(image(DISTANCE_FORMAT));
+    let color = fog.light.clone();
+    let distance = fog.distance.clone();
     let shadow = images.add(Image::new_target_texture(
         SHADOW_SIZE,
         SHADOW_SIZE,
@@ -309,7 +317,8 @@ fn size_target(
     }
 }
 
-/// The noise textures, generated again when the seed changes (0.2 s on 16 cores).
+/// The noise textures, generated again when the seed changes (0.2 s on 16 cores), as
+/// images and on the CPU.
 fn generate_images(
     clouds: Res<Clouds>,
     current: Option<Res<CloudImages>>,
@@ -319,14 +328,11 @@ fn generate_images(
     if current.is_some_and(|c| c.seed == clouds.seed) {
         return;
     }
-    let CloudTextures {
-        shape,
-        detail,
-        weather,
-    } = CloudTextures::generate(clouds.seed);
-    let shape = GridTexture::of_volume(&shape).image(shape.data);
-    let detail = GridTexture::of_volume(&detail).image(detail.data);
-    let weather = GridTexture::of_plane(&weather).image(weather.data);
+    let textures = CloudTextures::generate(clouds.seed);
+    let shape = GridTexture::of_volume(&textures.shape).image(textures.shape.data.clone());
+    let detail = GridTexture::of_volume(&textures.detail).image(textures.detail.data.clone());
+    let weather = GridTexture::of_plane(&textures.weather).image(textures.weather.data.clone());
+    commands.insert_resource(CloudDensity(textures));
     commands.insert_resource(CloudImages {
         seed: clouds.seed,
         shape: images.add(shape),

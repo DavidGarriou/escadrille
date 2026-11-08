@@ -74,6 +74,10 @@ pub struct SceneFile {
     /// Frames rendered before the capture, unless the command line says otherwise.
     #[serde(default)]
     pub frames: Option<u32>,
+    /// Earlier frames of the same flight also saved, increasing: a sequence, such as
+    /// entering a cloud.
+    #[serde(default)]
+    pub sequence: Vec<u32>,
     /// A clear sky when left out.
     #[serde(default)]
     pub clouds: Option<CloudsSpec>,
@@ -100,11 +104,18 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<SceneFile, DataError> {
             && (0.0..=1.0).contains(&c.cloud_type)
             && c.thickness.is_none_or(|t| t.si() > 0.0)
     });
-    if !(commands && sun && clouds && scene.frames != Some(0)) {
+    let sequence = scene.sequence.first().is_none_or(|&f| f > 0)
+        && scene.sequence.is_sorted_by(|a, b| a < b)
+        && scene
+            .sequence
+            .last()
+            .is_none_or(|&f| scene.frames.is_none_or(|n| f < n));
+    if !(commands && sun && clouds && sequence && scene.frames != Some(0)) {
         return Err(DataError::Invalid {
             origin: path.display().to_string(),
             message: "commands from −1 to 1 and throttle from 0 to 1, sun from −90° to 90°, \
-                      clouds above sea level with cover and type from 0 to 1, at least one frame"
+                      clouds above sea level with cover and type from 0 to 1, at least one frame, \
+                      a sequence of increasing frames before the last"
                 .to_owned(),
         });
     }
@@ -148,5 +159,24 @@ mod tests {
             assert!(!scene.description.is_empty(), "{name}");
             load_scenario(&assets(), &scene.scenario).unwrap();
         }
+    }
+
+    #[test]
+    fn a_sequence_runs_forward_before_the_last_frame() {
+        let scene = load_scene(&assets(), "traversee_nuage").unwrap();
+        assert_eq!(scene.sequence.first(), Some(&180));
+        let dir = std::env::temp_dir().join(format!("escadrille-scene-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("scenes")).unwrap();
+        let text = std::fs::read_to_string(assets().join("scenes/traversee_nuage.ron")).unwrap();
+        for (from, to) in [
+            ("[180, 300,", "[300, 180,"),
+            ("1245]", "1320]"),
+            ("[180,", "[0,"),
+        ] {
+            std::fs::write(dir.join("scenes/bad.ron"), text.replace(from, to)).unwrap();
+            let error = load_scene(&dir, "bad").unwrap_err();
+            assert!(error.to_string().contains("sequence"), "{to}: {error}");
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
     }
 }

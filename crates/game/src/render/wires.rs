@@ -6,7 +6,8 @@
 //! its wires in its glTF extras (`diameter_m`, written by `art/<id>/build.py`).
 //!
 //! Blended, the wires are not drawn by the normal prepass: they are lit with their own
-//! normals (`own_normals`).
+//! normals (`own_normals`); drawn after the clouds' composite, they veil themselves with
+//! the clouds' fog (`clouds::fog`).
 
 use bevy::gltf::GltfExtras;
 use bevy::mesh::MeshVertexBufferLayoutRef;
@@ -17,8 +18,10 @@ use bevy::prelude::*;
 use bevy::render::render_resource::{
     AsBindGroup, RenderPipelineDescriptor, ShaderType, SpecializedMeshPipelineError,
 };
+use bevy::render::storage::ShaderBuffer;
 use bevy::shader::ShaderRef;
 
+use super::clouds::CloudFog;
 use super::extra_number;
 use super::own_normals::use_own_normals;
 
@@ -35,6 +38,13 @@ pub type WireMaterial = ExtendedMaterial<StandardMaterial, WireAa>;
 pub struct WireAa {
     #[uniform(100)]
     pub wire: WireUniform,
+    /// The clouds' fog (`clouds::fog`, `assets/shaders/clouds/fog.wesl`).
+    #[texture(101)]
+    pub cloud_light: Handle<Image>,
+    #[texture(102, sample_type = "float", filterable = false)]
+    pub cloud_distance: Handle<Image>,
+    #[storage(103, read_only)]
+    pub cloud_fog: Handle<ShaderBuffer>,
 }
 
 /// The shader's `Wire`, padded to 16 bytes.
@@ -48,7 +58,7 @@ pub struct WireUniform {
 }
 
 impl WireAa {
-    pub fn new(diameter_m: f32) -> Self {
+    pub fn new(diameter_m: f32, fog: &CloudFog) -> Self {
         Self {
             wire: WireUniform {
                 radius: 0.5 * diameter_m,
@@ -56,6 +66,9 @@ impl WireAa {
                 _padding_a: 0.0,
                 _padding_b: 0.0,
             },
+            cloud_light: fog.light.clone(),
+            cloud_distance: fog.distance.clone(),
+            cloud_fog: fog.fog.clone(),
         }
     }
 }
@@ -87,6 +100,7 @@ pub fn widen_wires(
     nodes: Query<(&Name, &GltfExtras, &Children), Added<GltfExtras>>,
     meshes: Query<&MeshMaterial3d<StandardMaterial>>,
     standard: Res<Assets<StandardMaterial>>,
+    fog: Res<CloudFog>,
     mut wires: ResMut<Assets<WireMaterial>>,
 ) {
     for (name, extras, children) in &nodes {
@@ -107,7 +121,7 @@ pub fn widen_wires(
                     alpha_mode: AlphaMode::Blend,
                     ..base.clone()
                 },
-                extension: WireAa::new(diameter as f32),
+                extension: WireAa::new(diameter as f32, &fog),
             });
             commands
                 .entity(child)
@@ -123,7 +137,7 @@ mod tests {
 
     #[test]
     fn the_shader_gets_the_radius() {
-        let wire = WireAa::new(0.0045).wire;
+        let wire = WireAa::new(0.0045, &CloudFog::default()).wire;
         assert!((wire.radius - 0.00225).abs() < 1e-9);
         assert_eq!(wire.min_pixels, MIN_PIXELS);
     }

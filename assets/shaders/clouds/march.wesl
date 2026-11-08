@@ -16,9 +16,10 @@
 //   the cloud on its side: up to the top of the envelope, and down to the base of the
 //   layer, at the density of the sample. The ground is the albedo of fields lit by the
 //   sun, outside the clouds' shadows, and by the sky.
-// Each step is integrated exactly over its length (Hillaire 2016). Steps grow with the
-// distance, since the far clouds are small on screen, and stride over empty air: only the
-// steps inside a cloud count against the budget, so that the march reaches the far ones.
+// Each step is integrated exactly over its length (Hillaire 2016), the last one cut where
+// the ray ends. Steps grow with the distance, since the far clouds are small on screen,
+// and stride over empty air: only the steps inside a cloud count against the budget, so
+// that the march reaches the far ones.
 
 import bevy_render::maths::PI;
 import bevy_pbr::atmosphere::{
@@ -91,6 +92,9 @@ const EMPTY_STRIDE: f32 = 3.0;
 const MAX_LOOKS: u32 = 384u;
 // Transmittance under which a ray stops: the rest cannot be seen.
 const OPAQUE: f32 = 0.01;
+// Offset of the second jitter from the first, the golden ratio's fraction: the place of
+// the sample of the stretch before the first look.
+const SECOND_JITTER: f32 = 0.618034;
 
 fn henyey_greenstein(cos_theta: f32, g: f32) -> f32 {
     let g2 = g * g;
@@ -129,14 +133,15 @@ fn jitter(pixel: vec2<f32>, frame: u32) -> f32 {
     return fract(52.9829189 * fract(dot(p, vec2<f32>(0.06711056, 0.00583715))));
 }
 
-// Optical depth of the clouds from a point towards the sun: the full density on the first
-// steps, so that the buds of the detail shade one another, the coarse one beyond.
-fn optical_depth_to_sun(position: vec3<f32>, to_sun: vec3<f32>) -> f32 {
+// Optical depth of the clouds from a point along a direction, towards the sun or back
+// behind the eye: the full density on the first steps, so that the buds of the detail
+// shade one another, the coarse one beyond.
+fn optical_depth_along(position: vec3<f32>, direction: vec3<f32>) -> f32 {
     var depth = 0.0;
     var travelled = 0.0;
     var step = LIGHT_STEP;
     for (var i = 0u; i < cloud_pass.light_steps; i++) {
-        let at = position + to_sun * (travelled + 0.5 * step);
+        let at = position + direction * (travelled + 0.5 * step);
         var density = 0.0;
         if i < DETAILED_LIGHT_STEPS {
             density = cloud_density(
@@ -221,47 +226,71 @@ fn march(eye: vec3<f32>, direction: vec3<f32>, far_away: f32, first: f32) -> Mar
     // How much the eye's side of a cloud opens on the sky: fully when the eye looks down
     // or across, not at all when it looks up at a base, whose eye's side faces the ground.
     let flank_weight = saturate(1.0 - 2.0 * direction.y);
+    // An eye inside a cloud looks at no flank: the eye's side of a sample opens on the sky
+    // only beyond the cloud behind the eye (traversee_nuage: from inside, the rays under
+    // the horizon took the sky's blue, those above did not, and a line split the fog).
+    var behind = 0.0;
+    let start = eye + direction * near;
+    if cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, start).z > 0.0 {
+        behind = optical_depth_along(start, -direction);
+    }
 
     var transmittance = 1.0;
     var light = vec3<f32>(0.0);
     var weighted_distance = 0.0;
     var weights = 0.0;
-    // The first look is shifted within a stride by the jitter, the others follow it.
+    // The first look is shifted within a stride by the jitter, the others follow it. The
+    // stretch it leaves before it, up to a stride, holds the cloud around an eye inside it
+    // and the aircraft in front: one sample there, at a second jitter, stands for all of it.
     var t = near + clamp(near * STEP_SHARE, cloud_pass.min_step, MAX_STEP) * EMPTY_STRIDE * first;
+    var gap = min(t, far) - near;
     var steps = 0u;
     var strided = false;
     var plain_steps = 0u;
     for (var look = 0u; look < MAX_LOOKS && steps < cloud_pass.steps; look++) {
-        let step = clamp(t * STEP_SHARE, cloud_pass.min_step, MAX_STEP);
-        let at = t;
-        if at > far {
-            break;
-        }
-        let position = eye + direction * at;
-        let coarse = cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, position);
-        if coarse.x <= 0.0 {
-            if coarse.z > 0.0 {
-                // Inside an envelope the shape may come back at the next look: plain
-                // steps, and no step back on meeting it.
-                strided = false;
-                t += step;
-            } else if plain_steps > 0u {
-                plain_steps--;
-                t += step;
-            } else {
-                t += step * EMPTY_STRIDE;
-                strided = true;
+        var at = t;
+        var stretch = 0.0;
+        var coarse: vec3<f32>;
+        if gap > 0.0 {
+            at = near + gap * fract(first + SECOND_JITTER);
+            stretch = gap;
+            gap = 0.0;
+            coarse = cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, eye + direction * at);
+            if coarse.x <= 0.0 {
+                continue;
             }
-            continue;
+        } else {
+            let step = clamp(t * STEP_SHARE, cloud_pass.min_step, MAX_STEP);
+            if at >= far {
+                break;
+            }
+            coarse = cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, eye + direction * at);
+            if coarse.x <= 0.0 {
+                if coarse.z > 0.0 {
+                    // Inside an envelope the shape may come back at the next look: plain
+                    // steps, and no step back on meeting it.
+                    strided = false;
+                    t += step;
+                } else if plain_steps > 0u {
+                    plain_steps--;
+                    t += step;
+                } else {
+                    t += step * EMPTY_STRIDE;
+                    strided = true;
+                }
+                continue;
+            }
+            if strided {
+                t -= step * (EMPTY_STRIDE - 1.0);
+                strided = false;
+                plain_steps = u32(EMPTY_STRIDE);
+                continue;
+            }
+            t += step;
+            stretch = min(step, far - at);
         }
-        if strided {
-            t -= step * (EMPTY_STRIDE - 1.0);
-            strided = false;
-            plain_steps = u32(EMPTY_STRIDE);
-            continue;
-        }
-        t += step;
         steps++;
+        let position = eye + direction * at;
         let density = cloud_density(
             clouds, shape_noise, detail_noise, weather_map, cloud_sampler, position,
         );
@@ -279,8 +308,8 @@ fn march(eye: vec3<f32>, direction: vec3<f32>, far_away: f32, first: f32) -> Mar
         // or back along the eye's ray when the eye looks at a flank, which sees the sky in
         // front of it (third review: flanks lost the sky's blue); down to the base of the
         // layer, for the ground; at the density of the sample.
-        let depth_to_sun = optical_depth_to_sun(position, to_sun);
-        let depth_eye = -log(max(transmittance, OPAQUE)) + 0.5 * extinction * step;
+        let depth_to_sun = optical_depth_along(position, to_sun);
+        let depth_eye = behind - log(max(transmittance, OPAQUE)) + 0.5 * extinction * stretch;
         let depth_up = mix(
             extinction * coarse.z,
             min(extinction * coarse.z, depth_eye),
@@ -292,7 +321,7 @@ fn march(eye: vec3<f32>, direction: vec3<f32>, far_away: f32, first: f32) -> Mar
 
         // Scattering coefficient = extinction (the albedo of cloud droplets is about 1).
         let source = extinction * scattered;
-        let through_step = exp(-extinction * step);
+        let through_step = exp(-extinction * stretch);
         light += transmittance * (source - source * through_step) / extinction;
         let absorbed = transmittance * (1.0 - through_step);
         weighted_distance += absorbed * at;

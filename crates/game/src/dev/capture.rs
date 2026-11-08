@@ -1,6 +1,7 @@
 //! Capture mode: render a reference scene, save it as PNG with a JSON report, quit.
 //!
-//! `just capture <scene>` → `target/captures/<scene>.png` and `.json`.
+//! `just capture <scene>` → `target/captures/<scene>.png` and `.json`; a scene with a
+//! sequence also saves its earlier frames, `<scene>-<frame>.png`.
 //! The PNG is what Claude looks at to validate any visual change (skill `capture`).
 //!
 //! A capture is the same image whatever the GPU's speed: the game's clock waits for the
@@ -41,6 +42,8 @@ pub struct CaptureRequest {
     pub size: (u32, u32),
     pub png: PathBuf,
     pub json: PathBuf,
+    /// The earlier frames of the scene's sequence and where each goes, before `frames`.
+    pub sequence: Vec<(u32, PathBuf)>,
 }
 
 impl CaptureRequest {
@@ -57,25 +60,34 @@ impl CaptureRequest {
                 known.join(", ")
             ));
         }
-        let frames = match frames {
-            Some(f) => f,
-            None if CODE_SCENES.contains(&scene.as_str()) => DEFAULT_FRAMES,
-            None => load_scene(Path::new(ASSETS_DIR), &scene)
-                .map_err(|e| e.to_string())?
-                .frames
-                .unwrap_or(DEFAULT_FRAMES),
+        let file = if CODE_SCENES.contains(&scene.as_str()) {
+            None
+        } else {
+            Some(load_scene(Path::new(ASSETS_DIR), &scene).map_err(|e| e.to_string())?)
         };
+        let frames = frames
+            .or_else(|| file.as_ref().and_then(|f| f.frames))
+            .unwrap_or(DEFAULT_FRAMES)
+            .max(1);
         let png = out.unwrap_or_else(|| Path::new("target/captures").join(format!("{scene}.png")));
         if png.extension().and_then(|e| e.to_str()) != Some("png") {
             return Err(format!("output must be a .png file: {}", png.display()));
         }
         let json = png.with_extension("json");
+        let stem = png.file_stem().and_then(|s| s.to_str()).unwrap_or(&scene);
+        let sequence = file
+            .iter()
+            .flat_map(|f| &f.sequence)
+            .filter(|&&frame| frame < frames)
+            .map(|&frame| (frame, png.with_file_name(format!("{stem}-{frame:04}.png"))))
+            .collect();
         Ok(Self {
             scene,
-            frames: frames.max(1),
+            frames,
             size,
             png,
             json,
+            sequence,
         })
     }
 }
@@ -202,12 +214,16 @@ fn drive_capture(
         stats.durations.push((now - last).as_secs_f64());
     }
 
+    if let Some((_, png)) = request.sequence.iter().find(|(f, _)| *f == stats.frames) {
+        if !create_parent(png, &mut exit) {
+            return;
+        }
+        commands
+            .spawn(Screenshot::image(target.0.clone()))
+            .observe(save_to_disk(png.clone()));
+    }
     if !stats.requested && stats.frames >= request.frames {
-        if let Some(dir) = request.png.parent()
-            && let Err(err) = std::fs::create_dir_all(dir)
-        {
-            error!("cannot create {}: {err}", dir.display());
-            exit.write(AppExit::error());
+        if !create_parent(&request.png, &mut exit) {
             return;
         }
         stats.requested = true;
@@ -219,6 +235,18 @@ fn drive_capture(
         error!("capture timed out: no image after {} frames", stats.frames);
         exit.write(AppExit::error());
     }
+}
+
+/// Creates the directory of an image, or asks to quit.
+fn create_parent(png: &Path, exit: &mut MessageWriter<AppExit>) -> bool {
+    if let Some(dir) = png.parent()
+        && let Err(err) = std::fs::create_dir_all(dir)
+    {
+        error!("cannot create {}: {err}", dir.display());
+        exit.write(AppExit::error());
+        return false;
+    }
+    true
 }
 
 /// The GPU time of each render pass, ms, averaged over the diagnostics' history: the
@@ -353,6 +381,25 @@ mod tests {
         assert_eq!(told.unwrap().frames, 30);
         let code = CaptureRequest::new("m0-sol".into(), None, (640, 360), None);
         assert_eq!(code.unwrap().frames, DEFAULT_FRAMES);
+    }
+
+    #[test]
+    fn a_sequence_saves_its_earlier_frames_next_to_the_last() {
+        let r = CaptureRequest::new("traversee_nuage".into(), None, (640, 360), None).unwrap();
+        assert_eq!(r.sequence.len(), 10);
+        assert_eq!(
+            r.sequence[0],
+            (
+                180,
+                PathBuf::from("target/captures/traversee_nuage-0180.png")
+            )
+        );
+        // A shorter run keeps the frames it reaches.
+        let out = Some(PathBuf::from("shots/entry.png"));
+        let short = CaptureRequest::new("traversee_nuage".into(), Some(400), (640, 360), out);
+        let short = short.unwrap();
+        assert_eq!(short.sequence.len(), 4);
+        assert_eq!(short.sequence[3].1, Path::new("shots/entry-0390.png"));
     }
 
     #[test]

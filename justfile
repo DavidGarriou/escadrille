@@ -51,12 +51,16 @@ labo-manette:
     cargo run -p escadrille --features dev -- --labo-manette
 
 # Render a reference scene to target/captures/<scene>.png (+ .json), then quit; the
-# previous one is kept as <scene>.avant.png (and .json) for the comparison.
+# previous one is kept as <scene>.avant.png (and .json) for the comparison. A scene with a
+# sequence also saves <scene>-<frame>.png, kept likewise as <scene>-<frame>.avant.png.
 # Without a display (cloud sessions), runs under Xvfb with software rendering (lavapipe).
 capture scene *args:
     cargo build -p escadrille --release
     for ext in png json; do \
         if [ -f target/captures/{{scene}}.$ext ]; then cp target/captures/{{scene}}.$ext target/captures/{{scene}}.avant.$ext; fi; \
+    done
+    for shot in target/captures/{{scene}}-[0-9][0-9][0-9][0-9].png; do \
+        if [ -f "$shot" ]; then cp "$shot" "${shot%.png}.avant.png"; fi; \
     done
     if [ -z "${DISPLAY:-}" ] && [ -z "${WAYLAND_DISPLAY:-}" ]; then \
         xvfb-run -a -s "-screen 0 2560x1440x24" target/release/escadrille --capture {{scene}} {{args}}; \

@@ -1,0 +1,19 @@
+// The SPAD flies through a cumulus, seen from the chase: one flight, captured at the
+// frames of `sequence` and at the last (art director's criteria of 2026-11-07: no jump on
+// entering, the parts of the aircraft deeper in the cloud fade first, the aircraft darkens
+// as it goes deeper). The seed and the base put the cloud on the path, worked out from
+// `escadrille_weather`'s density along it (2026-11-08): at 1 000 m, 300 m above the base,
+// a wisp from 265 m east of the start, the core from 305 m (6.9 s at 160 km/h), the far
+// flank at 915 m (20.6 s).
+Scene(
+    description: "Le SPAD traverse un cumulus, vu de la poursuite : l'approche du flanc éclairé, l'entrée par le voile puis le cœur, le brouillard blanc où l'avion s'estompe et s'assombrit, la sortie dans le soleil. Une capture par instant de la séquence.",
+    scenario: "vol-essai",
+    camera: Chase(yaw: Deg(-15.0), pitch: Deg(4.0)),
+    sun: Some((azimuth: Deg(180.0), elevation: Deg(58.0))),
+    clouds: Some((base: M(700.0), cover: 0.55, cloud_type: 1.0, seed: 63)),
+    // Approach (3 s), the wall ahead (5 s), the nose in the wisp (6 s), the camera in the
+    // wisp (6.5 s), the aircraft in the core (7 s, 7.5 s), deep inside (10 s), the far
+    // flank (19.5 s), the aircraft out (20.25 s, 20.75 s); the last, in the sun again (22 s).
+    sequence: [180, 300, 360, 390, 420, 450, 600, 1170, 1215, 1245],
+    frames: Some(1320),
+)

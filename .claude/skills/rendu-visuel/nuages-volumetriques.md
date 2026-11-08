@@ -51,6 +51,7 @@ Principes de départ :
 - **Piège de précision** : reconstruire la direction d'un rayon en soustrayant l'œil, à 2 000 m, d'un point du plan proche situé à 5 cm perd quelques pixels à l'arrondi f32. La reprojection glissait alors vers le bas, en rideaux. Travailler en axes du monde centrés sur l'œil, avec le petit déplacement de l'œil d'une image à l'autre.
 
 - **Marche en place** : pas proportionnels à la distance (2 %). Elle enjambe trois pas à la fois l'air situé hors de toute enveloppe, avec une gigue étalée sur toute l'enjambée ; elle recule à l'entrée d'un nuage. Sans cela, des stries apparaissaient sur les dômes, et jusqu'à l'horizon.
+  - **La tranche avant le premier pas** (2026-11-08, `traversee_nuage`) : la gigue place le premier pas jusqu'à une enjambée de l'œil (36 m de près). Un échantillon tiré dans cette tranche, à une seconde gigue, la représente tout entière ; le dernier pas est coupé où le rayon s'arrête. Sans cela, caméra dans le nuage, le brouillard devant l'avion à 10 m était tantôt nul, tantôt d'un pas entier.
 
 - Raymarching à résolution réduite (quart de résolution, par exemple) avec reprojection temporelle et reconstruction ; pas adaptatifs (grands pas dans le vide, petits dans la densité).
 - Bruit bleu pour décaler les échantillons, accumulé par la reprojection.
@@ -84,6 +85,12 @@ Bevy filtre ce cube au début de l'image suivante en lumière diffuse et en refl
 
 - Caméra dans le volume : brouillard volumétrique local, perte de repères, gouttelettes sur le pare-brise en option, turbulence (le FDM lit la densité via le trait `Environment`).
 - La transition extérieur → intérieur ne doit montrer ni « pop » ni bande.
+- **En place (2026-11-08)**, vérifié sur la séquence `traversee_nuage` :
+  - **brouillard jusqu'à l'avion** : la tranche avant le premier pas de la marche est intégrée (section Performances) ;
+  - **pas de flanc vu de dedans** : la lumière du ciel par le côté de l'œil suppose que le rayon est entré dans le nuage par un flanc. Œil dans une enveloppe, ce chemin passe d'abord par le nuage derrière l'œil, dont la profondeur optique (`optical_depth_along` vers l'arrière) s'ajoute. Sans cela, une ligne coupait le brouillard à l'horizon, bleutée en dessous ;
+  - **surfaces transparentes voilées** (`render/clouds/fog.rs`, `shaders/clouds/fog.wesl`) : câbles, disque de l'hélice et verre sont dessinés après la composition des nuages, donc sans leur brouillard. Leurs shaders (`wire_aa.wesl`, `own_normals.wesl`) lisent l'image des nuages à leur pixel. Si la marche s'y est arrêtée à leur distance, sur l'avion derrière eux, ils prennent sa lumière et sa transmittance. Sinon, ils prennent l'extinction du nuage à l'œil (calculée en Rust, dans un tampon partagé écrit une fois par image), et la lumière de la marche dans la même part. Hors des nuages, pas de voile, quels que soient les nuages derrière ;
+  - **mesures** : aucun saut d'une image à l'autre à l'entrée ni à la sortie (séquence dense, variation lisse sur une dizaine d'images) ; l'avion passe de 0,65 de luminance d'affichage au soleil à 0,50 au cœur, un peu plus sombre que le brouillard (0,58).
+- **Limites** : vu de la poursuite, l'avion voilé à 10 m reste lisible au cœur ; vue du pilote, rien n'est encore vérifié.
 
 ## Usages de jeu (même fonction de densité, côté CPU)
 
@@ -93,5 +100,5 @@ Bevy filtre ce cube au début de l'image suivante en lumière diffuse et en refl
 
 ## Validation
 
-- Scènes `cumulus_midi`, `combat_couchant`, `plafond_bas` et une scène de traversée (séquence de captures en entrant dans un nuage).
+- Scènes `cumulus_midi`, `cumulus_contre_jour`, `cumulus_sous_la_base`, `traversee_nuage` (un vol capturé en séquence), puis `combat_couchant` et `plafond_bas`.
 - Vérifier : pas de banding (bruit bleu), pas de traînées de reprojection derrière un avion en mouvement rapide, bords nets mais pas découpés, lumière cohérente avec le soleil.

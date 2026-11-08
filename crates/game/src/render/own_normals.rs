@@ -13,6 +13,10 @@
 //! Bevy itself drops the prepass's normals for specular transmission only. These
 //! materials drop them too: [`OwnNormals`] removes the shader definition from their
 //! pipelines, and [`light_with_own_normals`] gives it to each material that needs it.
+//!
+//! Its fragment shader (`assets/shaders/own_normals.wesl`) is Bevy's, but for one step:
+//! drawn after the clouds' composite, the blended ones veil themselves with the clouds'
+//! fog (`clouds::fog`).
 
 use bevy::mesh::MeshVertexBufferLayoutRef;
 use bevy::pbr::{
@@ -23,15 +27,42 @@ use bevy::prelude::*;
 use bevy::render::render_resource::{
     AsBindGroup, RenderPipelineDescriptor, SpecializedMeshPipelineError,
 };
-use bevy::shader::ShaderDefVal;
+use bevy::render::storage::ShaderBuffer;
+use bevy::shader::{ShaderDefVal, ShaderRef};
+
+use super::clouds::CloudFog;
+
+const SHADER: &str = "shaders/own_normals.wesl";
 
 /// A standard material lit with its own normals.
 pub type OwnNormalsMaterial = ExtendedMaterial<StandardMaterial, OwnNormals>;
 
+/// The clouds' fog (`clouds::fog`, `assets/shaders/clouds/fog.wesl`).
 #[derive(Asset, AsBindGroup, Reflect, Debug, Clone, Default)]
-pub struct OwnNormals {}
+pub struct OwnNormals {
+    #[texture(101)]
+    pub cloud_light: Handle<Image>,
+    #[texture(102, sample_type = "float", filterable = false)]
+    pub cloud_distance: Handle<Image>,
+    #[storage(103, read_only)]
+    pub cloud_fog: Handle<ShaderBuffer>,
+}
+
+impl OwnNormals {
+    pub fn new(fog: &CloudFog) -> Self {
+        Self {
+            cloud_light: fog.light.clone(),
+            cloud_distance: fog.distance.clone(),
+            cloud_fog: fog.fog.clone(),
+        }
+    }
+}
 
 impl MaterialExtension for OwnNormals {
+    fn fragment_shader() -> ShaderRef {
+        SHADER.into()
+    }
+
     fn specialize(
         _pipeline: &MaterialExtensionPipeline,
         descriptor: &mut RenderPipelineDescriptor,
@@ -69,6 +100,7 @@ pub fn light_with_own_normals(
         Changed<MeshMaterial3d<StandardMaterial>>,
     >,
     standard: Res<Assets<StandardMaterial>>,
+    fog: Res<CloudFog>,
     mut own: ResMut<Assets<OwnNormalsMaterial>>,
     mut copies: Local<HashMap<AssetId<StandardMaterial>, Handle<OwnNormalsMaterial>>>,
 ) {
@@ -84,7 +116,7 @@ pub fn light_with_own_normals(
             .or_insert_with(|| {
                 own.add(ExtendedMaterial {
                     base: base.clone(),
-                    extension: OwnNormals {},
+                    extension: OwnNormals::new(&fog),
                 })
             })
             .clone();
@@ -142,6 +174,7 @@ mod tests {
         app.add_plugins((MinimalPlugins, AssetPlugin::default()))
             .init_asset::<StandardMaterial>()
             .init_asset::<OwnNormalsMaterial>()
+            .init_resource::<CloudFog>()
             .add_systems(Update, light_with_own_normals);
         let world = app.world_mut();
         let glass = world
