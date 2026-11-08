@@ -3029,3 +3029,5 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur : « essaie » (la clé est rechargée).
 - **A** Envoi de `main-tcd0yw` (`28195a5..280919d`), puis avance rapide de `main` sur GitHub (`3a08e80..280919d`, sans forcer) et de `main` en local. **R** Les deux ont réussi : `main` contient désormais tout le travail du projet, et un `git pull` sur `main` le récupère.
 - **?** Proposé, à confirmer par le joueur : que `main` suive la branche à chaque envoi, toujours en avance rapide. L'accord donné vaut pour cet échange seulement.
+- **Q** Le joueur : « Oui, à chaque envoi ».
+- **D** Règle durable : à chaque envoi, Claude pousse `main-tcd0yw`, puis fait avancer `main` jusqu'à elle (`git push origin main-tcd0yw:main`), toujours en avance rapide. Si l'avance rapide est refusée, il s'arrête et demande au lieu de forcer. **A** Règle enregistrée dans la mémoire de Claude pour ce projet.
