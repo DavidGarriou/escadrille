@@ -1,7 +1,8 @@
 //! Reference scenes, rendered by the capture mode and reviewed by Claude.
 //!
 //! The scenes of a flight are files, `assets/scenes/<scene>.ron` (`escadrille_data::scene`),
-//! built by one system ([`super::vol_essai::spawn_scene_file`]). Those that set the
+//! built by one system ([`super::vol_essai::spawn_scene_file`]) for a capture or, with
+//! `--scene`, for a flight with the gamepad ([`FlightScene`]). Those that set the
 //! aircraft up by hand are built in code, each by its system, run when the capture asks
 //! for it ([`capture_scene_is`]).
 
@@ -31,9 +32,30 @@ pub fn known_scenes() -> Vec<String> {
     names
 }
 
-/// Run condition: the capture asks for a scene of `assets/scenes`.
-pub fn capture_from_file(request: Option<Res<CaptureRequest>>) -> bool {
-    request.is_some_and(|r| !CODE_SCENES.contains(&r.scene.as_str()))
+/// The scene of `assets/scenes` a flight starts from: the capture's, or the one `--scene`
+/// names to fly it with the gamepad. Without it, the flight starts on the field.
+#[derive(Resource, Debug, Clone, PartialEq, Eq)]
+pub struct FlightScene(pub String);
+
+impl FlightScene {
+    /// A scene of `assets/scenes` to fly; the scenes built in code are still poses, for
+    /// captures only.
+    pub fn to_fly(name: String) -> Result<Self, String> {
+        let files = scene_names(Path::new(ASSETS_DIR));
+        if files.contains(&name) {
+            Ok(Self(name))
+        } else {
+            Err(format!(
+                "no scene `{name}` to fly (scenes of a flight: {})",
+                files.join(", ")
+            ))
+        }
+    }
+
+    /// The scene of a capture, when it is a file.
+    pub fn of_capture(request: &CaptureRequest) -> Option<Self> {
+        (!CODE_SCENES.contains(&request.scene.as_str())).then(|| Self(request.scene.clone()))
+    }
 }
 
 /// Run condition: the capture asks for scene `name`.

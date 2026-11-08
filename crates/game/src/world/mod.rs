@@ -4,7 +4,8 @@
 //! frames of the 3D models (ADR 0006), `avion-studio` and `contre_jour_toile` the SPAD
 //! as the game renders it, `degats-spad7` and `degats-spad7-proche` the damage its model
 //! can show. The scenes of a flight are files of `assets/scenes` (`scenes`).
-//! Outside captures, the game starts the test flight, on the field (`vol_essai`).
+//! Outside captures, the game starts the test flight, on the field (`vol_essai`), or the
+//! scene `--scene` names (`scenes::FlightScene`).
 
 pub mod degats;
 pub mod maquette;
@@ -19,14 +20,20 @@ use bevy::prelude::*;
 use crate::flight::FlightSet;
 use crate::flight::simulation::RenderOrigin;
 use crate::states::AppState;
-use scenes::{capture_from_file, capture_scene_is};
+use scenes::{FlightScene, capture_scene_is};
 
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(ClearColor(scenes::SKY_COLOR))
-            .add_systems(OnEnter(AppState::Vol), vol_essai::spawn_on_the_field)
+            .add_systems(
+                OnEnter(AppState::Vol),
+                (
+                    vol_essai::spawn_on_the_field.run_if(not(resource_exists::<FlightScene>)),
+                    vol_essai::spawn_scene_file.run_if(resource_exists::<FlightScene>),
+                ),
+            )
             .add_systems(
                 OnEnter(AppState::Capture),
                 (
@@ -36,7 +43,7 @@ impl Plugin for WorldPlugin {
                     studio::spawn_contre_jour.run_if(capture_scene_is(studio::SCENE_CONTRE_JOUR)),
                     degats::spawn.run_if(capture_scene_is(degats::SCENE)),
                     degats::spawn_close.run_if(capture_scene_is(degats::SCENE_CLOSE)),
-                    vol_essai::spawn_scene_file.run_if(capture_from_file),
+                    vol_essai::spawn_scene_file.run_if(resource_exists::<FlightScene>),
                 ),
             )
             .add_systems(

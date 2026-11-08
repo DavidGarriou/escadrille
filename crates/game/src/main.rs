@@ -23,6 +23,7 @@ use clap::Parser;
 
 use dev::capture::{CaptureRequest, parse_size};
 use states::AppState;
+use world::scenes::FlightScene;
 
 /// The game's `assets/` directory, the workspace's: under `cargo run`, Bevy would look in
 /// `crates/game/assets`, and next to the executable otherwise. Where a release finds its
@@ -35,6 +36,11 @@ struct Cli {
     /// Open the gamepad diagnostic lab.
     #[arg(long, conflicts_with = "capture")]
     labo_manette: bool,
+
+    /// Fly a reference scene of `assets/scenes` with the gamepad: its start, sun, clouds
+    /// and camera (`traversee_nuage`, for instance).
+    #[arg(long, value_name = "SCENE", conflicts_with_all = ["capture", "labo_manette"])]
+    scene: Option<String>,
 
     /// Render a reference scene to a PNG file, then quit.
     #[arg(long, value_name = "SCENE")]
@@ -70,6 +76,17 @@ fn main() -> AppExit {
             }
         },
         None => None,
+    };
+    let flight_scene = match (&capture, cli.scene) {
+        (Some(request), _) => FlightScene::of_capture(request),
+        (None, Some(name)) => match FlightScene::to_fly(name) {
+            Ok(scene) => Some(scene),
+            Err(message) => {
+                eprintln!("error: {message}");
+                return AppExit::from_code(2);
+            }
+        },
+        (None, None) => None,
     };
 
     let start_state = match (&capture, cli.labo_manette) {
@@ -118,6 +135,9 @@ fn main() -> AppExit {
     ));
 
     app.insert_resource(cli.quality);
+    if let Some(scene) = flight_scene {
+        app.insert_resource(scene);
+    }
     if let Some(request) = capture {
         // The GPU time of each pass, for the capture's report.
         app.add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin)
@@ -135,6 +155,18 @@ mod tests {
     #[test]
     fn cli_definition_is_valid() {
         Cli::command().debug_assert();
+    }
+
+    #[test]
+    fn a_scene_is_flown_or_captured_not_both() {
+        let cli = Cli::try_parse_from(["escadrille", "--scene", "traversee_nuage"]).unwrap();
+        assert_eq!(cli.scene.as_deref(), Some("traversee_nuage"));
+        assert!(Cli::try_parse_from(["escadrille", "--scene", "a", "--capture", "b"]).is_err());
+        assert!(FlightScene::to_fly("traversee_nuage".to_owned()).is_ok());
+        // A pose built in code is not flown; an unknown name lists the scenes.
+        assert!(FlightScene::to_fly("avion-studio".to_owned()).is_err());
+        let error = FlightScene::to_fly("nope".to_owned()).unwrap_err();
+        assert!(error.contains("traversee_nuage"), "{error}");
     }
 
     #[test]

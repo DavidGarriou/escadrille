@@ -42,9 +42,10 @@ modele avion dest="target":
     cargo run -q -p asset_check -- {{avion}} --model target/modele/{{avion}}.glb
     if [ "{{dest}}" = "assets" ]; then cp target/modele/{{avion}}.glb assets/aircraft/{{avion}}/model.glb; fi
 
-# Run the game in development mode (dynamic linking for faster rebuilds).
-run:
-    cargo run -p escadrille --features dev
+# Run the game in development mode (dynamic linking for faster rebuilds): the test flight
+# on the field, or a reference scene flown with the gamepad (`just run --scene traversee_nuage`).
+run *args:
+    cargo run -p escadrille --features dev -- {{args}}
 
 # Gamepad diagnostic screen; writes target/labo-manette/rapport.txt on request.
 labo-manette:

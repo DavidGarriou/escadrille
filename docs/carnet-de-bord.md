@@ -3128,3 +3128,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur : « je ne vois pas les nuages avec un "just run" ».
 - **R** Cause : seule une fiche de scène posait la couche de nuages. Le vol d'essai de `just run` (`spawn_on_the_field`) n'en avait pas, donc le ciel restait dégagé ; les nuages n'existaient que dans les captures.
 - **A** Le vol d'essai reçoit la couche de cumulus de `cumulus_sous_la_base`, revue par le directeur artistique : base à 1 200 m, couverture 0,55, 700 m d'épaisseur, graine 8. Elle est vue d'en dessous au décollage et traversée en montée. Elle tiendra lieu de météo jusqu'à celle des missions. `just check` et `just test` passent (435 tests). Le rendu suit le même chemin que la scène revue ; la fenêtre de `just run` n'a pas été regardée par Claude.
+- **Q** Le joueur : « Oui, l'ajouter » (piloter directement une scène de référence, comme la traversée).
+- **A** Option `--scene <scène>` : `just run --scene traversee_nuage` lance le vol depuis une scène de `assets/scenes`, avec son scénario, son soleil, ses nuages et sa caméra.
+  - Les manettes partent des commandes de la scène, puis suivent la manette. Le redémarrage ramène au départ du scénario, donc devant le nuage pour la traversée.
+  - Une ressource `FlightScene` porte le nom de la scène ; les captures de scènes fichiers passent par elle aussi. Les poses construites en code (`avion-studio`…) ne se pilotent pas : le nom est refusé, avec la liste des scènes pilotables.
+  - La recette `just run` transmet ses arguments.
+- **R** Vérifications :
+  - test de l'option (scène acceptée, pose refusée, conflit avec `--capture`) ;
+  - captures de `cumulus_midi` et `avion-studio` toujours bonnes ;
+  - `--scene traversee_nuage` et le vol d'essai lancés 15 s chacun sans erreur, manette détectée. La fenêtre elle-même n'a pas été regardée : pas d'écran virtuel sur cette machine.
+  - `just check` et `just test` passent (436 tests).

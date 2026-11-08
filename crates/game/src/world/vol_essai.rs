@@ -19,10 +19,11 @@ use super::meadow::spawn_meadow;
 use super::plain::{SUN_AZIMUTH_DEG, SUN_ELEVATION_DEG, Sun, spawn_plain};
 use crate::ASSETS_DIR;
 use crate::camera::{PilotEye, View, spawn_flight_camera};
-use crate::dev::capture::{CaptureHold, CaptureRequest};
+use crate::dev::capture::CaptureHold;
 use crate::flight::bridge::to_bevy;
 use crate::flight::{ON_THE_FIELD, PilotInput, StartCommands, spawn_scenario};
 use crate::render::clouds::Clouds;
+use crate::world::scenes::FlightScene;
 
 /// What a flight's scenes share: the plain and its assets.
 #[derive(SystemParam)]
@@ -63,9 +64,11 @@ pub fn spawn_on_the_field(mut scene: Scene) -> Result {
     Ok(())
 }
 
-/// A scene of `assets/scenes`: its scenario, sun, camera and held commands.
-pub fn spawn_scene_file(mut scene: Scene, request: Res<CaptureRequest>) -> Result {
-    let file = load_scene(Path::new(ASSETS_DIR), &request.scene)?;
+/// A scene of `assets/scenes`, captured or flown: its scenario, sun, camera, clouds and
+/// held commands. Flown, the levers start where the scene holds them, then follow the
+/// gamepad.
+pub fn spawn_scene_file(mut scene: Scene, name: Res<FlightScene>) -> Result {
+    let file = load_scene(Path::new(ASSETS_DIR), &name.0)?;
     let sun = file.sun.map_or(AFTERNOON, |s| Sun {
         azimuth_deg: s.azimuth.si().to_degrees(),
         elevation_deg: s.elevation.si().to_degrees(),
