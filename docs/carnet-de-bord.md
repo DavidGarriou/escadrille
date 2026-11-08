@@ -3147,3 +3147,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **les sommets** : la couverture sature à 1 au cœur des taches de la carte météo (10 à 31 % de la surface nuageuse selon la scène). Le sommet y est partout à l'épaisseur de la couche, et seul le bruit de forme le découpe ;
   - aucune autre source ne fait varier la hauteur d'un nuage à l'autre.
 - **?** Plan proposé, à valider : profil en dôme, couverture non saturée pour la hauteur, variation du sommet d'un nuage à l'autre ; mêmes changements dans le jumeau WGSL, test de parité, nouveaux tests chiffrés, captures avant/après de toutes les scènes de nuages et revue du directeur artistique.
+- **Q** Le joueur : « Oui, lancer » (le plan d'arrondi des cumulus).
+- **A** Première passe (v1) dans le modèle de référence et le WGSL : profil en dôme 1 − h² sur toute la hauteur, sommet qui part du bord visible et sature en douceur, variation de 25 % par le bruit de type, gain d'enveloppe 2.
+  - **R** Sur le banc de mesure : parois −33 à −48 %, plus de colonnes au haut de la couche (7,6 % → 0,2 %), test de l'après-midi d'été tenu. Parité GPU tenue.
+  - **⚠** Mais sur les images, régression nette : les tours de `cumulus_contre_jour` deviennent une mer de nuages basse ; dans la traversée, la falaise reste et des pics en pain de sucre apparaissent. Le dôme vide le haut des nuages, que l'érosion mange ; les mesures de paroi ne disaient pas ce qui se voit.
+  - **⚠** Le nuage de la traversée a aussi changé (entrée franche à 225 m, sortie à 980 m) : instants des deux séquences recalés.
+- **A** Itérations sur le shader seul, qui se recharge sans recompiler, en captures rapides de trois scènes : v4 (arrondi dès la moitié de la hauteur, sommets plus bas), v6 et v7 (sommet mesuré par rapport au plus fort de la tache, sans plateau). v7 garde les tours du contre-jour et arrondit les sommets ; dans la traversée, le grand nuage vu de près reste une masse raide.
+- **A** Arbitrage demandé au directeur artistique sur les planches v0 à v7, avant de reporter la variante retenue dans le Rust. Rien de cette passe n'est encore commité.
