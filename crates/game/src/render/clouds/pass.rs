@@ -15,8 +15,14 @@
 //! texel, the sunlight's transmittance through the layer along its ray towards the sun.
 //! The sun carries it as its light texture, so the ground and the aircraft see it.
 //!
-//! The march's group 0 rebuilds the layout of `render_sky` (bindings 0 to 13 of
-//! `bevy_pbr::atmosphere::bindings`, then the depth), so that the shader can import the
+//! A fourth, a compute pass after the opaque objects, draws the sky and the clouds into
+//! the cube of the camera's environment map, over the sky Bevy's atmosphere drew there:
+//! Bevy filters it at the start of the next frame into the diffuse and specular light of
+//! every lit surface.
+//!
+//! The march's group 0 rebuilds the layout of `render_sky` (bindings 0 to 12 of
+//! `bevy_pbr::atmosphere::bindings`, then the depth, or the cube for the environment's
+//! pass, as Bevy's own `environment_bind_group_layout`), so that the shader can import the
 //! atmosphere's functions: every resource it binds is public, only Bevy's own bind group
 //! is not. A Bevy upgrade must check this layout against `render_sky`'s
 //! (`bevy_pbr/src/atmosphere/resources.rs`); a mismatch stops the pipeline, and the
@@ -25,6 +31,7 @@
 use bevy::core_pipeline::FullscreenShader;
 use bevy::core_pipeline::core_3d::{main_opaque_pass_3d, main_transparent_pass_3d};
 use bevy::core_pipeline::schedule::Core3d;
+use bevy::light::{AtmosphereEnvironmentMapLight, GeneratedEnvironmentMapLight};
 use bevy::math::{DVec3, Mat4, UVec2, Vec3};
 use bevy::pbr::resources::{
     AtmosphereSampler, AtmosphereTextures, AtmosphereTransform, AtmosphereTransforms,
@@ -40,32 +47,41 @@ use bevy::render::diagnostic::RecordDiagnostics;
 use bevy::render::extract_component::{ComponentUniforms, DynamicUniformIndex};
 use bevy::render::render_asset::RenderAssets;
 use bevy::render::render_resource::binding_types::{
-    sampler, texture_2d, texture_3d, uniform_buffer,
+    sampler, texture_2d, texture_3d, texture_storage_2d_array, uniform_buffer,
 };
 use bevy::render::render_resource::{
     BindGroup, BindGroupEntries, BindGroupLayoutDescriptor, BindGroupLayoutEntries,
-    CachedRenderPipelineId, ColorTargetState, ColorWrites, Extent3d, FilterMode, FragmentState,
-    LoadOp, Operations, PipelineCache, RenderPassColorAttachment, RenderPassDescriptor,
+    CachedComputePipelineId, CachedRenderPipelineId, ColorTargetState, ColorWrites,
+    ComputePassDescriptor, ComputePipelineDescriptor, Extent3d, FilterMode, FragmentState, LoadOp,
+    Operations, PipelineCache, RenderPassColorAttachment, RenderPassDescriptor,
     RenderPipelineDescriptor, Sampler, SamplerBindingType, SamplerDescriptor, ShaderStages,
-    ShaderType, StoreOp, Texture, TextureDescriptor, TextureDimension, TextureFormat,
-    TextureSampleType, TextureUsages, TextureView, TextureViewDescriptor, UniformBuffer,
+    ShaderType, StorageTextureAccess, StoreOp, Texture, TextureDescriptor, TextureDimension,
+    TextureFormat, TextureSampleType, TextureUsages, TextureView, TextureViewDescriptor,
+    TextureViewDimension, UniformBuffer,
 };
 use bevy::render::renderer::{RenderContext, RenderDevice, RenderQueue, ViewQuery};
+use bevy::render::sync_world::RenderEntity;
 use bevy::render::texture::GpuImage;
 use bevy::render::view::{
     ExtractedView, ViewDepthStencilTexture, ViewUniform, ViewUniformOffset, ViewUniforms,
 };
-use bevy::render::{ExtractSchedule, MainWorld, Render, RenderApp, RenderStartup, RenderSystems};
+use bevy::render::{
+    Extract, ExtractSchedule, MainWorld, Render, RenderApp, RenderStartup, RenderSystems,
+};
 
 use super::{
     CloudFrame, CloudImages, CloudTarget, DISTANCE_FORMAT, GpuCloudUniforms, TARGET_FORMAT,
     repeat_linear,
 };
 
-/// The shaders of the march, of the temporal pass and of the shadow map, under `assets/`.
+/// The shaders of the march, of the temporal pass, of the shadow map and of the
+/// environment map, under `assets/`.
 const MARCH_SHADER: &str = "shaders/clouds/render.wesl";
 const TEMPORAL_SHADER: &str = "shaders/clouds/temporal.wesl";
 const SHADOW_SHADER: &str = "shaders/clouds/shadow.wesl";
+const ENVIRONMENT_SHADER: &str = "shaders/clouds/environment.wesl";
+/// Side of the environment shader's workgroups, texels.
+const ENVIRONMENT_WORKGROUP: u32 = 8;
 
 /// Weight of the current frame in the temporal blend: about ten frames averaged, which
 /// smooths the jitter of the steps.
@@ -81,6 +97,10 @@ pub struct GpuCloudPass {
     pub divisor: u32,
     pub min_step: f32,
     pub max_distance: f32,
+    /// Mean albedo of the fields, linear, seen below the horizon of the environment map.
+    pub ground_albedo: Vec3,
+    /// Share of their sunlight the clouds' mean shadow leaves them.
+    pub ground_shade: f32,
 }
 
 /// The temporal shader's `CloudTemporal`. The views are centred on the eye: at 2 000 m,
@@ -121,6 +141,7 @@ pub struct GpuCloudShadow {
 struct ExtractedClouds {
     uniforms: GpuCloudUniforms,
     pass: GpuCloudPass,
+    environment: GpuCloudPass,
     shadow: GpuCloudShadow,
     origin: DVec3,
     images: CloudImages,
@@ -137,7 +158,7 @@ pub fn build(app: &mut App) {
         .init_resource::<CloudBuffers>()
         .init_resource::<CloudViews>()
         .add_systems(RenderStartup, init_pipelines)
-        .add_systems(ExtractSchedule, extract_clouds)
+        .add_systems(ExtractSchedule, (extract_clouds, extract_environments))
         .add_systems(
             Render,
             (
@@ -154,14 +175,20 @@ pub fn build(app: &mut App) {
                     .chain()
                     .after(main_opaque_pass_3d)
                     .before(main_transparent_pass_3d),
+                // After Bevy's atmosphere has drawn the sky into the cube (before the main
+                // pass), so that the clouds land over it.
+                light_environment
+                    .after(main_opaque_pass_3d)
+                    .before(main_transparent_pass_3d),
             ),
         );
 }
 
-/// The layouts, samplers and pipelines of both passes.
+/// The layouts, samplers and pipelines of the passes.
 #[derive(Resource)]
 struct CloudPipelines {
     atmosphere: BindGroupLayoutDescriptor,
+    environment_atmosphere: BindGroupLayoutDescriptor,
     clouds: BindGroupLayoutDescriptor,
     temporal: BindGroupLayoutDescriptor,
     shadow: BindGroupLayoutDescriptor,
@@ -170,6 +197,7 @@ struct CloudPipelines {
     march: CachedRenderPipelineId,
     resolve: CachedRenderPipelineId,
     shadow_map: CachedRenderPipelineId,
+    environment: CachedComputePipelineId,
 }
 
 fn init_pipelines(
@@ -202,10 +230,39 @@ fn init_pipelines(
             ),
         ),
     );
+    // The same for the environment's compute pass, the cube in place of the depth.
+    let environment_atmosphere = BindGroupLayoutDescriptor::new(
+        "clouds_environment_atmosphere_layout",
+        &BindGroupLayoutEntries::with_indices(
+            ShaderStages::COMPUTE,
+            (
+                (0, uniform_buffer::<GpuAtmosphere>(true)),
+                (1, uniform_buffer::<GpuAtmosphereSettings>(true)),
+                (2, uniform_buffer::<AtmosphereTransform>(true)),
+                (3, uniform_buffer::<ViewUniform>(true)),
+                (4, uniform_buffer::<GpuLights>(true)),
+                (5, texture_2d(TextureSampleType::default())),
+                (6, texture_2d(TextureSampleType::default())),
+                (7, sampler(SamplerBindingType::Filtering)),
+                (8, texture_2d(TextureSampleType::default())),
+                (9, texture_2d(TextureSampleType::default())),
+                (10, texture_2d(TextureSampleType::default())),
+                (11, texture_3d(TextureSampleType::default())),
+                (12, sampler(SamplerBindingType::Filtering)),
+                (
+                    13,
+                    texture_storage_2d_array(
+                        TextureFormat::Rgba16Float,
+                        StorageTextureAccess::WriteOnly,
+                    ),
+                ),
+            ),
+        ),
+    );
     let clouds = BindGroupLayoutDescriptor::new(
         "clouds_layout",
         &BindGroupLayoutEntries::sequential(
-            ShaderStages::FRAGMENT,
+            ShaderStages::FRAGMENT | ShaderStages::COMPUTE,
             (
                 uniform_buffer::<GpuCloudUniforms>(false),
                 uniform_buffer::<GpuCloudPass>(false),
@@ -292,8 +349,15 @@ fn init_pipelines(
         }),
         ..default()
     });
+    let environment = pipeline_cache.queue_compute_pipeline(ComputePipelineDescriptor {
+        label: Some("clouds_environment_pipeline".into()),
+        layout: vec![environment_atmosphere.clone(), clouds.clone()],
+        shader: asset_server.load(ENVIRONMENT_SHADER),
+        ..default()
+    });
     commands.insert_resource(CloudPipelines {
         atmosphere,
+        environment_atmosphere,
         clouds,
         temporal,
         shadow,
@@ -302,6 +366,7 @@ fn init_pipelines(
         march,
         resolve,
         shadow_map,
+        environment,
     });
 }
 
@@ -318,6 +383,7 @@ fn extract_clouds(
         (Some(frame), Some(images), Some(target)) => commands.insert_resource(ExtractedClouds {
             uniforms: frame.uniforms,
             pass: frame.pass,
+            environment: frame.environment,
             shadow: frame.shadow,
             origin: frame.origin,
             images: images.clone(),
@@ -330,14 +396,35 @@ fn extract_clouds(
     }
 }
 
-/// The uniform buffers of the march's group 1 and of the shadow map, and the shadow
-/// map's bind groups.
+/// The cube of a view's environment map, into which the clouds are drawn.
+#[derive(Component, Debug, Clone)]
+struct CloudEnvironment(Handle<Image>);
+
+/// The cube of each camera whose environment map Bevy's atmosphere draws.
+fn extract_environments(
+    mut commands: Commands,
+    cameras: Extract<
+        Query<(RenderEntity, &GeneratedEnvironmentMapLight), With<AtmosphereEnvironmentMapLight>>,
+    >,
+) {
+    for (entity, light) in &cameras {
+        if let Ok(mut entity) = commands.get_entity(entity) {
+            entity.insert(CloudEnvironment(light.environment_map.clone()));
+        }
+    }
+}
+
+/// The uniform buffers of the march's group 1 (seen from the camera and in the
+/// environment) and of the shadow map, and the bind groups of the shadow map and of the
+/// environment's clouds.
 #[derive(Resource, Default)]
 struct CloudBuffers {
     uniforms: UniformBuffer<GpuCloudUniforms>,
     pass: UniformBuffer<GpuCloudPass>,
+    environment: UniformBuffer<GpuCloudPass>,
     shadow: UniformBuffer<GpuCloudShadow>,
     shadow_groups: Option<(BindGroup, BindGroup)>,
+    environment_group: Option<BindGroup>,
 }
 
 fn write_buffers(
@@ -352,14 +439,17 @@ fn write_buffers(
     let CloudBuffers {
         uniforms,
         pass,
+        environment,
         shadow,
         ..
     } = buffers.as_mut();
     uniforms.set(clouds.uniforms);
     pass.set(clouds.pass);
+    environment.set(clouds.environment);
     shadow.set(clouds.shadow);
     uniforms.write_buffer(&render_device, &render_queue);
     pass.write_buffer(&render_device, &render_queue);
+    environment.write_buffer(&render_device, &render_queue);
     shadow.write_buffer(&render_device, &render_queue);
 }
 
@@ -409,6 +499,8 @@ struct CloudView {
     temporal: UniformBuffer<GpuCloudTemporal>,
     march_groups: Option<(BindGroup, BindGroup)>,
     temporal_group: Option<BindGroup>,
+    /// The environment pass's group 0, with the cube, and the cube's side.
+    environment_group: Option<(BindGroup, UVec2)>,
 }
 
 /// The views' state, by render-world view entity.
@@ -452,6 +544,7 @@ fn prepare_views(
             temporal: UniformBuffer::default(),
             march_groups: None,
             temporal_group: None,
+            environment_group: None,
         };
         let cloud_view = state.0.entry(entity).or_insert_with(fresh);
         if cloud_view.size != size {
@@ -490,6 +583,7 @@ fn prepare_bind_groups(
         &ExtractedAtmosphere,
         &AtmosphereTextures,
         &ViewDepthStencilTexture,
+        Option<&CloudEnvironment>,
     )>,
     clouds: Option<Res<ExtractedClouds>>,
     mut buffers: ResMut<CloudBuffers>,
@@ -525,6 +619,7 @@ fn prepare_bind_groups(
         Some(lights_binding),
         Some(uniforms_binding),
         Some(pass_binding),
+        Some(environment_binding),
         Some(shadow_binding),
     ) = (
         atmospheres.binding(),
@@ -534,6 +629,7 @@ fn prepare_bind_groups(
         lights.view_gpu_lights.binding(),
         buffers.uniforms.binding(),
         buffers.pass.binding(),
+        buffers.environment.binding(),
         buffers.shadow.binding(),
     )
     else {
@@ -551,13 +647,26 @@ fn prepare_bind_groups(
             &pipelines.noise_sampler,
         )),
     );
+    let environment_cloud_group = render_device.create_bind_group(
+        "clouds_environment_bind_group",
+        &pipeline_cache.get_bind_group_layout(&pipelines.clouds),
+        &BindGroupEntries::sequential((
+            buffers.uniforms.binding().expect("bound above"),
+            environment_binding,
+            &shape.texture_view,
+            &detail.texture_view,
+            &weather.texture_view,
+            &pipelines.noise_sampler,
+        )),
+    );
     let shadow_group = render_device.create_bind_group(
         "clouds_shadow_bind_group",
         &pipeline_cache.get_bind_group_layout(&pipelines.shadow),
         &BindGroupEntries::single(shadow_binding),
     );
     buffers.shadow_groups = Some((shadow_group, cloud_group.clone()));
-    for (entity, atmosphere, textures, depth) in &views {
+    buffers.environment_group = Some(environment_cloud_group);
+    for (entity, atmosphere, textures, depth, environment) in &views {
         let Some(cloud_view) = state.0.get_mut(&entity) else {
             continue;
         };
@@ -603,6 +712,36 @@ fn prepare_bind_groups(
         );
         cloud_view.march_groups = Some((atmosphere_group, cloud_group.clone()));
         cloud_view.temporal_group = Some(temporal_group);
+        // The environment's cube, seen as the array of its six faces.
+        cloud_view.environment_group = environment.and_then(|e| images.get(&e.0)).map(|cube| {
+            let faces = cube.texture.create_view(&TextureViewDescriptor {
+                label: Some("clouds_environment_faces"),
+                dimension: Some(TextureViewDimension::D2Array),
+                ..default()
+            });
+            let group = render_device.create_bind_group(
+                "clouds_environment_atmosphere_bind_group",
+                &pipeline_cache.get_bind_group_layout(&pipelines.environment_atmosphere),
+                &BindGroupEntries::with_indices((
+                    (0, atmosphere_binding.clone()),
+                    (1, settings_binding.clone()),
+                    (2, transforms_binding.clone()),
+                    (3, view_binding.clone()),
+                    (4, lights_binding.clone()),
+                    (5, &medium.density_lut_view),
+                    (6, &medium.scattering_lut_view),
+                    (7, medium_sampler.sampler()),
+                    (8, &textures.transmittance_lut.default_view),
+                    (9, &textures.multiscattering_lut.default_view),
+                    (10, &textures.sky_view_lut.default_view),
+                    (11, &textures.aerial_view_lut.default_view),
+                    (12, &**atmosphere_sampler),
+                    (13, &faces),
+                )),
+            );
+            let size = cube.texture_descriptor.size;
+            (group, UVec2::new(size.width, size.height))
+        });
     }
 }
 
@@ -783,5 +922,72 @@ fn shadow_clouds(
     pass.set_bind_group(0, shadow_group, &[]);
     pass.set_bind_group(1, cloud_group, &[]);
     pass.draw(0..3, 0..1);
+    span.end(&mut pass);
+}
+
+/// The sky and the clouds into the cube of the view's environment map, over the sky Bevy's
+/// atmosphere drew there before the main pass.
+#[expect(
+    clippy::type_complexity,
+    reason = "the dynamic offsets of render_sky's layout, one component each"
+)]
+fn light_environment(
+    view: ViewQuery<(
+        Entity,
+        &DynamicUniformIndex<GpuAtmosphere>,
+        &DynamicUniformIndex<GpuAtmosphereSettings>,
+        &AtmosphereTransformsOffset,
+        &ViewUniformOffset,
+        &ViewLightsUniformOffset,
+    )>,
+    clouds: Option<Res<ExtractedClouds>>,
+    pipelines: Option<Res<CloudPipelines>>,
+    pipeline_cache: Res<PipelineCache>,
+    buffers: Res<CloudBuffers>,
+    state: Res<CloudViews>,
+    mut ctx: RenderContext,
+) {
+    let (Some(_), Some(pipelines)) = (clouds, pipelines) else {
+        return;
+    };
+    let (entity, atmosphere, settings, transforms, view_offset, lights) = view.into_inner();
+    let Some(cloud_view) = state.0.get(&entity) else {
+        return;
+    };
+    let (Some(pipeline), Some((atmosphere_group, size)), Some(cloud_group)) = (
+        pipeline_cache.get_compute_pipeline(pipelines.environment),
+        cloud_view.environment_group.as_ref(),
+        buffers.environment_group.as_ref(),
+    ) else {
+        return;
+    };
+
+    let diagnostics = ctx.diagnostic_recorder();
+    let diagnostics = diagnostics.as_deref();
+    let mut pass = ctx
+        .command_encoder()
+        .begin_compute_pass(&ComputePassDescriptor {
+            label: Some("clouds_environment"),
+            timestamp_writes: None,
+        });
+    let span = diagnostics.pass_span(&mut pass, "clouds_environment");
+    pass.set_pipeline(pipeline);
+    pass.set_bind_group(
+        0,
+        atmosphere_group,
+        &[
+            atmosphere.index(),
+            settings.index(),
+            transforms.index(),
+            view_offset.offset,
+            lights.offset,
+        ],
+    );
+    pass.set_bind_group(1, cloud_group, &[]);
+    pass.dispatch_workgroups(
+        size.x.div_ceil(ENVIRONMENT_WORKGROUP),
+        size.y.div_ceil(ENVIRONMENT_WORKGROUP),
+        6,
+    );
     span.end(&mut pass);
 }

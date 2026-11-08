@@ -21,14 +21,14 @@ Dans un simulateur de 14-18, les nuages sont à la fois le décor principal et u
 
 ## Éclairage
 
-**En place** (2026-11-07) : le modèle de `escadrille_weather::scattering`, jumeau des fonctions du shader `render.wesl`, dont les tests vérifient l'énergie :
+**En place** (2026-11-07) : le modèle de `escadrille_weather::scattering`, jumeau des fonctions du shader `march.wesl` (la marche, partagée par la vue et la carte d'environnement), dont les tests vérifient l'énergie :
 - **diffusion simple** : phase de Henyey-Greenstein à deux lobes × e^−τ vers le soleil ;
 - **diffusion multiple, en deux parts** : une part rapide près de la face éclairée, 1,8·e^−τ, qui donne les creux entre les bourgeons ; puis la traîne de diffusion, 2,1/(1 + 0,055τ), qui garde la lumière des bases ; le tout divisé par 4π. Les constantes viennent d'un balayage contre la théorie à deux flux (Bohren 1987) : à τ = 50, sommet à +8 % et base à −2 % ; un bourgeon de 50 m dans son ombre est 2 fois plus sombre. Deux impasses : les octaves de Wrenninge en e^−τ/2ⁿ éteignaient les bases, la diffusion seule ne laissait aucun modelé ;
 - **marche vers le soleil** : premier pas de 8 m, puis ×3, soit 2,9 km en 6 pas ; les deux premiers pas portent sur la densité détaillée, pour que les bourgeons s'ombrent entre eux. À 900 m de portée, la face sombre d'une tour face à un soleil à 9° gardait trois fois la lumière que laisse passer la théorie à deux flux, et virait au brun orangé ;
 - **ciel et sol**, chacun sur sa demi-sphère, atténués par la même décroissance :
   - le ciel, par la profondeur jusqu'au sommet de l'enveloppe, ou par la profondeur déjà traversée le long du rayon de l'œil quand celui-ci regarde un flanc, qui voit le ciel devant lui. Ce second chemin ne vaut pas quand l'œil regarde une base par en dessous : de ce côté, la base voit le sol ;
   - le sol, par la profondeur jusqu'à la base ;
-- **vue de débogage par terme** : remplacer, le temps de quelques captures, la somme `scattered` de `render.wesl` par un seul terme (simple, multiple, ciel ou sol), sans voile de distance. Les shaders se chargent au lancement : sans recompiler le jeu, chaque capture prend une minute. C'est elle qui a montré que la diffusion multiple, et non le ciel, rendait le contre-jour orangé. Le sol a un albédo de 0,18 (`ESTIMÉ`, champs) et reçoit le soleil hors des ombres des nuages ;
+- **vue de débogage par terme** : remplacer, le temps de quelques captures, la somme `scattered` de `march.wesl` par un seul terme (simple, multiple, ciel ou sol), sans voile de distance. Les shaders se chargent au lancement : sans recompiler le jeu, chaque capture prend une minute. C'est elle qui a montré que la diffusion multiple, et non le ciel, rendait le contre-jour orangé. Le sol a un albédo de 0,18 (`ESTIMÉ`, champs) et reçoit le soleil hors des ombres des nuages ;
 - **limite** : le modèle est local. Une frange mince au soleil renvoie autant que le sommet d'un nuage épais.
 
 Repères visés, d'après le directeur artistique : un cumulus au soleil est l'objet le plus lumineux du ciel, 2 à 4 fois plus que le ciel voisin ; sa base et ses creux sont 3 à 5 fois plus sombres que ses sommets ; son bord passe du clair à l'opaque en une dizaine de mètres (d'où le gain de 4 sur la densité finale).
@@ -43,7 +43,7 @@ Principes de départ :
 
 ## Performances
 
-- **En place (2026-11-07)** : marche à la moitié de la résolution sur chaque axe (« haut »), puis reconstruction temporelle et suréchantillonnage selon la profondeur. Trois passes : `render.wesl`, `temporal.wesl`, `composite.wesl`.
+- **En place (2026-11-07)** : marche à la moitié de la résolution sur chaque axe (« haut »), puis reconstruction temporelle et suréchantillonnage selon la profondeur. Trois passes : `render.wesl` (qui appelle la marche de `march.wesl`), `temporal.wesl`, `composite.wesl`.
   - **Marche** : elle écrit la lumière, la transmittance, la distance où elle s'est arrêtée (l'objet le plus proche du bloc de pixels) et la distance moyenne des nuages.
   - **Temporel** : reprojection à la distance moyenne, découpage dans la moyenne du voisinage ± 1,25 écart-type, 12 % de poids à l'image courante, remise à zéro quand l'origine de rendu saute.
   - **Composition** : des quatre texels voisins, ceux dont la distance d'arrêt s'accorde avec la profondeur du pixel pèsent le plus ; un nuage situé derrière l'objet du pixel ne passe pas devant.
@@ -62,10 +62,23 @@ Principes de départ :
 **En place (2026-11-07)** : une carte de transmittance vue du soleil (`shadow.wesl`, R8, 2 048² sur 48 km, soit 23 m par texel), posée sur le soleil comme texture de lumière (`DirectionalLightTexture`, feature `pbr_light_textures` ; voir ADR 0004). Bevy la projette le long du soleil sur tout ce que la lumière éclaire : sol et avion. La carte est répétée : hors de sa portée, une texture de lumière non répétée éteindrait le soleil.
 - **Placement** : la carte est avancée de 0,35 fois sa largeur dans la direction horizontale de la vue, et alignée sur sa grille de texels dans le plan du soleil, sans quoi ses bords ondulent en vol. Le soleil porte ce centre et une échelle égale à sa demi-largeur ; ses cascades d'ombre n'utilisent que sa rotation. Ses 20 % extérieurs se fondent dans la transmittance moyenne de la couche (1 − 0,76 × couverture, `ESTIMÉ`), pour que la répétition se lise comme un voile uniforme.
 - **Une valeur par rayon de soleil** : sans précaution, un avion au soleil au-dessus d'un nuage prendrait l'ombre que ce nuage jette au sol. Autour de la ligne de soleil de l'avion joueur (un texel, puis un fondu sur un autre), la carte ne compte que les nuages au-dessus de lui. Les avions de l'IA (M4) poseront la même question.
-- **Lumière d'ambiance des nuages** : une `AmbientLight` blanche sur la caméra, de luminance 0,6 × couverture × E_sol / π (`ESTIMÉ`). E_sol est l'éclairement du soleil sur un sol horizontal, à travers l'air (épaisseur optique 0,25 au zénith). Sans elle, l'ombre ne recevait que la lumière bleue d'un ciel clair, et se lisait comme un lac.
+- **Lumière des bases sur le sol** : quand la caméra survole la couche, la carte d'environnement (ci-dessous), vue de la caméra, montre un ciel clair au-dessus. Le sol, lui, voit les bases. Son matériau (`render/ground.rs`, `shaders/ground.wesl`) ajoute donc leur lumière, 0,6 × couverture × E_sol / π (`ESTIMÉ`), dans la part de la couche que la caméra survole. E_sol est l'éclairement du soleil sur un sol horizontal, à travers l'air (épaisseur optique 0,25 au zénith). Sans elle, l'ombre ne recevait que la lumière bleue d'un ciel clair, et se lisait comme un lac. Du 2026-11-07 au 2026-11-08, c'était une `AmbientLight` uniforme, qui rendait l'avion plat.
 - **Coût** : 0,37 à 0,40 ms en 1440p ; 24 pas sur la densité grossière par texel, à chaque image.
 - **Scène de contrôle** : `cumulus_sous_la_base`, l'avion à l'ombre d'un nuage.
 - **À suivre** : la même carte, en profondeur optique, pour l'ombre lointaine d'un nuage sur son voisin, que la marche vers le soleil (2,9 km) ne voit pas sous un soleil bas ; une pénombre qui croît avec la distance au nuage, par soleil bas.
+
+## Lumière des nuages sur la scène (carte d'environnement)
+
+**En place (2026-11-08, complément de l'ADR 0009)** : la passe de calcul `environment.wesl` écrit dans le cube de la carte d'environnement de la caméra (`GeneratedEnvironmentMapLight`, 128² par face) :
+- le ciel de l'atmosphère ;
+- les nuages, marchés par la fonction de la vue (`march.wesl`) avec moins de pas : de 24 à 64 selon le niveau, avec un bruit fixe par texel ;
+- sous l'horizon, les champs à la place de la planète grise de Bevy : albédo moyen de leur palette, soleil atténué par l'ombre moyenne des nuages, ciel.
+
+Bevy filtre ce cube au début de l'image suivante en lumière diffuse et en reflets. L'avion prend ainsi le gris des bases par-dessus, le sol vert-ocre par-dessous, et le blanc de la mer de nuages quand il la survole.
+- **Piège** : l'albédo de l'`Atmosphere` sert aussi à sa multidiffusion. Mis aux couleurs des champs, il rendait la brume de l'horizon olive : il reste au gris de la Terre, et seule la carte montre les champs.
+- **Mesure** (`cumulus_sous_la_base`, lumière linéaire) : à l'ombre, les faces du dessus de l'avion reçoivent 0,27 à 0,31 fois la lumière au soleil, et les flancs 0,30. Le directeur artistique vise 0,25 à 0,4.
+- **Coût** : 0,09 à 0,13 ms en 1440p.
+- **Limites** : une seule carte, vue de la caméra ; sans nuages, la planète grise de Bevy reste sous l'horizon.
 
 ## Dans le nuage
 

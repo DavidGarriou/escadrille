@@ -42,6 +42,18 @@ impl Quality {
         }
     }
 
+    /// Steps of a ray through the clouds, at most, and towards the sun, in the environment
+    /// map: a texel of its 128² faces is 0.7° wide, coarser than a pixel, and the map is
+    /// filtered into diffuse light and blurred reflections.
+    pub fn cloud_environment_steps(self) -> (u32, u32) {
+        match self {
+            Self::Low => (24, 3),
+            Self::Medium => (32, 4),
+            Self::High => (48, 5),
+            Self::Ultra => (64, 6),
+        }
+    }
+
     /// Divisor of the resolution of the clouds' ray march, on each side: 2 marches a
     /// quarter of the pixels, which the temporal pass and the upsampling make up for.
     pub fn cloud_divisor(self) -> u32 {
@@ -144,8 +156,14 @@ mod tests {
     fn the_clouds_get_more_steps_as_the_level_climbs() {
         let levels = [Quality::Low, Quality::Medium, Quality::High, Quality::Ultra];
         for pair in levels.windows(2) {
-            let (low, high) = (pair[0].cloud_steps(), pair[1].cloud_steps());
-            assert!(low.0 < high.0 && low.1 < high.1);
+            for steps in [Quality::cloud_steps, Quality::cloud_environment_steps] {
+                let (low, high) = (steps(pair[0]), steps(pair[1]));
+                assert!(low.0 < high.0 && low.1 < high.1);
+            }
+        }
+        // The environment map's coarse texels take fewer steps than the camera's pixels.
+        for level in levels {
+            assert!(level.cloud_environment_steps().0 < level.cloud_steps().0);
         }
     }
 }

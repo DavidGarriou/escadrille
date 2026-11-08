@@ -114,3 +114,5 @@ codegen-units = 1
 - Jamais de position monde en f32 en dehors du rendu.
 - Espaces colorimétriques : sRGB pour la couleur de base uniquement ; normales, rugosité et masques en linéaire.
 - `NormalPrepass` (exigée par la SSAO) : la passe principale lit les normales de la prépasse, ce qui fausse les matériaux transparents et le clearcoat. Voir `render/own_normals.rs`.
+- Toute `DirectionalLight` est un soleil pour l'atmosphère (diffusion, sol de la planète) : pas de lumière directionnelle d'appoint en extérieur.
+- Les cartes d'environnement générées sont filtrées dans `Render` avant le graphe, sur ce que l'image précédente a laissé dans leur cube : une passe du graphe peut y dessiner (`render/clouds/pass.rs`, `light_environment`).

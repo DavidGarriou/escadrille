@@ -61,3 +61,45 @@ Les **ombres des nuages** (au sol, sur l'avion) viendront ensuite. Elles utilise
 - **TAA** : les nuages n'ont pas de vecteurs de mouvement. La TAA les reprojette comme s'ils étaient à l'infini. Il faudra surveiller les traînées en vol rapide près d'un nuage ; la reconstruction temporelle de l'étape 2 utilisera sa propre reprojection, à la distance des nuages.
 - **Coût** : mesuré dans le `.json` de chaque capture (`gpu_passes_ms`). Les réglages de qualité règleront le nombre de pas et la résolution.
 - **Réglages** : la couche de nuages devient une ressource du jeu, que les scènes et, plus tard, les missions décrivent en données.
+
+## Complément du 2026-11-08 : la lumière des nuages sur la scène
+
+Validé par le joueur (« Plan A, la carte »), après la revue des ombres par le directeur artistique : à l'ombre d'un nuage, l'avion était plat, éclairé de la même façon sur toutes ses faces.
+
+### Contexte
+
+Jusqu'ici, la lumière des nuages était une `AmbientLight` uniforme : 0,6 × couverture × éclairement solaire au sol / π. Elle éclairait le dessous des ailes autant que le dessus. Bevy éclaire par ailleurs chaque surface avec la carte d'environnement de son atmosphère, un cube de 128² par face vu de la caméra : un ciel clair et, sous l'horizon, la planète de Bevy (albédo gris 0,3, en plein soleil).
+
+### Options
+
+1. **Deux lumières directionnelles sans ombre**, l'une venant du haut (bases des nuages), l'autre du bas (sol). Écartée : Bevy traite toute lumière directionnelle comme un soleil de l'atmosphère (diffusion, multidiffusion, sol de la planète) ; une lumière venant du haut éclaircirait tout le ciel. Le shader des nuages prend aussi la lumière d'indice 0 comme soleil.
+2. **Une extension de matériau sur l'avion**, qui pondère l'ambiance par l'hémisphère. Courte, mais limitée à l'avion ; la carte d'environnement resterait fausse (reflets, verre).
+3. **Les nuages dans la carte d'environnement.** Bevy filtre le cube dans `Render`, avant le graphe, sur ce que l'image précédente y a laissé : une passe de calcul placée après `main_opaque_pass_3d` peut le réécrire, avec une image de retard.
+
+### Décision
+
+**Option 3.**
+- **La passe** (`clouds/environment.wesl`, `pass.rs`) écrit dans le cube de `GeneratedEnvironmentMapLight`. Pour chaque texel, elle compose :
+  - le ciel lu dans la table de l'atmosphère ;
+  - les nuages, marchés par la même fonction que la vue principale (`clouds/march.wesl`), avec moins de pas : de 24 à 64 selon le niveau ;
+  - une perspective aérienne approchée.
+
+  Elle vient après le dessin du ciel de Bevy dans ce cube, et la lumière diffuse de Bevy en devient directionnelle d'elle-même.
+- **Sous l'horizon**, la passe retire la planète de Bevy et met les champs à sa place. Leur albédo moyen, (0,15 ; 0,17 ; 0,06) en linéaire, est tiré de leur palette (`GroundAlbedo`). Ils sont éclairés par le soleil, atténué par l'ombre moyenne des nuages (1 − 0,76 × couverture), et par le ciel.
+  - L'albédo de l'atmosphère reste le gris de la Terre, dont sa multidiffusion a besoin. Mis aux couleurs des champs, il rendait la brume de l'horizon olive, même sans nuages.
+- **L'`AmbientLight` des nuages disparaît.** Le sol seul garde la lumière des bases, par une extension de son matériau (`render/ground.rs`, `shaders/ground.wesl`). Elle s'applique dans la part de la couche que la caméra survole : au-dessus des nuages, la carte, vue de la caméra, ne montre plus les bases que le sol voit.
+
+### Conséquences
+
+- **Mesures** sur `cumulus_sous_la_base`, en lumière linéaire, entre l'ombre et le soleil :
+  - les faces du dessus de l'avion reçoivent 0,27 à 0,31 fois la lumière au soleil, les flancs 0,30 (contre 0,39 à 0,43 avec l'ambiance uniforme) ;
+  - à l'ombre, le dessus du fuselage reçoit environ 10 % de plus que le dessous.
+- **Coût** : 0,09 à 0,13 ms par image en 1440p au niveau « haut ».
+- **Une image de retard** sur la lumière des nuages : invisible, la couche bouge lentement.
+- **Montées de version de Bevy** : il faut revérifier trois points.
+  - L'ordre : le filtrage des cartes générées doit rester avant le graphe, et le dessin du ciel de l'atmosphère avant la passe principale.
+  - La forme du terme de sol de `raymarch_atmosphere`, que la passe soustrait.
+  - Le nom des composants `GeneratedEnvironmentMapLight` et `AtmosphereEnvironmentMapLight`.
+- **Une seule carte, vue de la caméra** : un avion lointain, à une autre altitude, prend la lumière de la caméra. Ce sera à revoir avec les sondes de lumière quand plusieurs avions voleront.
+- **Sans nuages**, la passe ne tourne pas : la carte garde la planète grise de Bevy sous l'horizon. À revoir quand la météo sera toujours présente.
+- **La prairie de l'aérodrome** ne prend pas encore la lumière des bases : un de ses systèmes lit son matériau standard.

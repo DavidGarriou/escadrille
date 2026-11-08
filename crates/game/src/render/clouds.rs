@@ -13,6 +13,12 @@
 //! - a transparent material over the whole screen, [`CloudComposite`], first in the
 //!   transparent pass, after Bevy's sky, upsamples that image along the depth of the
 //!   scene and blends it over the sky and the opaque objects.
+//!
+//! Their light on the rest of the scene: their shadow, a map laid on the sun, and the
+//! light they send back, drawn into the camera's environment map (`pass`) with the
+//! fields below the horizon, in the clouds' mean shadow ([`ground_shade`]), from which
+//! Bevy lights every surface. The ground beneath a layer the camera flies above takes the
+//! light of the bases the map misses ([`ground_cloud_light`], `render::ground`).
 
 mod pass;
 
@@ -35,6 +41,7 @@ use escadrille_weather::grid::{Plane, Volume};
 
 pub use pass::{GpuCloudPass, GpuCloudShadow};
 
+use super::ground::{GroundAlbedo, GroundLight};
 use super::quality::Quality;
 use crate::flight::bridge::to_bevy;
 use crate::flight::simulation::{Player, RenderOrigin};
@@ -72,13 +79,17 @@ const SHADOW_STEPS: u32 = 24;
 const SHADOW_FOCUS_RADIUS_M: f32 = SHADOW_SPAN_M / SHADOW_SIZE as f32;
 const SHADOW_FORMAT: TextureFormat = TextureFormat::R8Unorm;
 
-/// Light the clouds send to the ground and the aircraft besides the sky's, as a share of
-/// the sun's horizontal irradiance times the cover. ESTIMÉ: under a field of cumulus the
-/// diffuse light is 25 to 35 % of the global irradiance, and nearly neutral, the white
-/// flanks and bases of the clouds adding to the blue sky (art director's review of the
-/// shadows, 2026-11-07); the clear sky alone left the shadows blue as lakes. 0.6 times a
-/// cover of 0.45 gives about a quarter of the sun.
-const AMBIENT_FROM_CLOUDS: f32 = 0.6;
+/// Share of the ground in the clouds' shadow for a cover: about 0.76 of the cover
+/// (`escadrille_weather`, test `a_summer_afternoon_has_scattered_cumulus`). ESTIMÉ. Twin
+/// of `SHADED_PER_COVER` in `shadow.wesl`.
+const SHADED_PER_COVER: f32 = 0.76;
+/// Light the clouds' bases send to the ground besides the sky's, as a share of the sun's
+/// horizontal irradiance times the cover. ESTIMÉ: under a field of cumulus the diffuse
+/// light is 25 to 35 % of the global irradiance, and nearly neutral, the white flanks and
+/// bases of the clouds adding to the blue sky (art director's review of the shadows,
+/// 2026-11-07); the clear sky alone left the shadows blue as lakes. 0.6 times a cover of
+/// 0.45 gives about a quarter of the sun.
+const CLOUD_LIGHT_ON_GROUND: f32 = 0.6;
 /// Optical depth of the clear air at the zenith in visible light, for the sun's irradiance
 /// on the ground. ESTIMÉ: Rayleigh about 0.1, aerosols 0.1 to 0.2 on a summer day.
 const AIR_OPTICAL_DEPTH: f32 = 0.25;
@@ -188,12 +199,14 @@ fn screen_triangle() -> Mesh {
     .with_inserted_indices(Indices::U16(vec![0, 1, 2]))
 }
 
-/// What the cloud pass needs this frame: the uniforms of the density, how the rays march,
-/// and the render origin, whose jump resets the temporal pass.
+/// What the cloud pass needs this frame: the uniforms of the density, how the rays march
+/// from the camera and in the environment map, and the render origin, whose jump resets
+/// the temporal pass.
 #[derive(Resource, Debug, Clone, Copy)]
 pub struct CloudFrame {
     pub uniforms: GpuCloudUniforms,
     pub pass: GpuCloudPass,
+    pub environment: GpuCloudPass,
     pub origin: DVec3,
     pub shadow: GpuCloudShadow,
 }
@@ -351,6 +364,12 @@ pub fn shadow_center(eye: Vec3, forward: Vec3, sun: Quat) -> Vec3 {
     right * snap(wanted.dot(right)) + up * snap(wanted.dot(up)) + to_sun * wanted.dot(to_sun)
 }
 
+/// Share of the ground's sunlight left under a layer of the cover, on average: the
+/// fields seen below the horizon of the environment map.
+pub fn ground_shade(cover: f32) -> f32 {
+    1.0 - SHADED_PER_COVER * cover.clamp(0.0, 1.0)
+}
+
 /// The sun's irradiance on level ground, lux: its illuminance through the clear air, by
 /// its height (`to_sun`, the direction towards it).
 pub fn sun_on_ground(illuminance: f32, to_sun: Vec3) -> f32 {
@@ -361,10 +380,14 @@ pub fn sun_on_ground(illuminance: f32, to_sun: Vec3) -> f32 {
     illuminance * height * (-AIR_OPTICAL_DEPTH / height).exp()
 }
 
-/// The ambient light the clouds add, cd/m²: a Lambertian surface under an even radiance L
-/// receives π L.
-pub fn cloud_ambient(cover: f32, sun_on_ground: f32) -> f32 {
-    AMBIENT_FROM_CLOUDS * cover * sun_on_ground / std::f32::consts::PI
+/// The light of the clouds' bases the ground takes besides the environment map's, cd/m²:
+/// in the share of the layer the eye is above (`altitude`, between its `bottom` and `top`,
+/// m), since the map, seen from the eye, then misses the bases. A Lambertian surface under
+/// an even radiance L receives π L.
+pub fn ground_cloud_light(cover: f32, sun_on_ground: f32, altitude: f32, layer: (f32, f32)) -> f32 {
+    let (bottom, top) = layer;
+    let above = ((altitude - bottom) / (top - bottom).max(1.0)).clamp(0.0, 1.0);
+    above * CLOUD_LIGHT_ON_GROUND * cover * sun_on_ground / std::f32::consts::PI
 }
 
 /// The uniforms of this frame: the clouds carried by the wind for the game's time, around
@@ -381,17 +404,18 @@ fn update_frame(
     origin: Option<Res<RenderOrigin>>,
     frames: Res<FrameCount>,
     quality: Res<Quality>,
-    cameras: Query<(Entity, &Transform), CameraOnly>,
+    ground: Res<GroundAlbedo>,
+    cameras: Query<&Transform, CameraOnly>,
     player: Query<&Transform, PlayerOnly>,
     mut suns: Suns,
     mut commands: Commands,
 ) {
     let camera = cameras.iter().next();
-    let eye = camera.map_or(Vec3::ZERO, |(_, t)| t.translation);
-    let forward = camera.map_or(Vec3::NEG_Z, |(_, t)| *t.forward());
+    let eye = camera.map_or(Vec3::ZERO, |t| t.translation);
+    let forward = camera.map_or(Vec3::NEG_Z, |t| *t.forward());
     let focus = player.iter().next().map_or(eye, |t| t.translation);
     let mut shadow = GpuCloudShadow::default();
-    let mut ambient = 0.0;
+    let mut on_ground = 0.0;
     if let Some((sun, light, mut transform, textured)) = suns.iter_mut().next() {
         let half = 0.5 * SHADOW_SPAN_M;
         let center = shadow_center(eye, forward, transform.rotation);
@@ -414,31 +438,34 @@ fn update_frame(
             to_sun,
             focus,
         };
-        ambient = cloud_ambient(
-            clouds.layer.cover as f32,
-            sun_on_ground(light.illuminance, to_sun),
-        );
+        on_ground = sun_on_ground(light.illuminance, to_sun);
     }
-    if let Some((camera, _)) = camera {
-        commands.entity(camera).insert(AmbientLight {
-            color: Color::WHITE,
-            brightness: ambient,
-            affects_lightmapped_meshes: true,
-        });
-    }
+    let layer = &clouds.layer;
+    let bottom = layer.base_altitude as f32;
+    let top = bottom + layer.thickness.iter().copied().fold(0.0, f64::max) as f32;
+    let cover = layer.cover as f32;
+    commands.insert_resource(GroundLight(Vec3::splat(ground_cloud_light(
+        cover,
+        on_ground,
+        eye.y,
+        (bottom, top),
+    ))));
     let origin = origin.map_or(DVec3::ZERO, |o| to_bevy(o.0));
     let uniforms = clouds.layer.uniforms(time.elapsed_secs_f64(), origin);
-    let (steps, light_steps) = quality.cloud_steps();
+    let pass = |(steps, light_steps)| GpuCloudPass {
+        frame: frames.0,
+        steps,
+        light_steps,
+        divisor: quality.cloud_divisor(),
+        min_step: MIN_STEP_M,
+        max_distance: MAX_DISTANCE_M,
+        ground_albedo: ground.0,
+        ground_shade: ground_shade(cover),
+    };
     commands.insert_resource(CloudFrame {
         uniforms: GpuCloudUniforms::from(&uniforms),
-        pass: GpuCloudPass {
-            frame: frames.0,
-            steps,
-            light_steps,
-            divisor: quality.cloud_divisor(),
-            min_step: MIN_STEP_M,
-            max_distance: MAX_DISTANCE_M,
-        },
+        pass: pass(quality.cloud_steps()),
+        environment: pass(quality.cloud_environment_steps()),
         origin,
         shadow,
     });
@@ -448,7 +475,7 @@ fn clear_sky(
     frame: Option<Res<CloudFrame>>,
     target: Option<Res<CloudTarget>>,
     mut suns: Query<(Entity, &mut Transform), With<DirectionalLightTexture>>,
-    cameras: Query<Entity, (With<Camera3d>, With<AmbientLight>)>,
+    ground: Option<Res<GroundLight>>,
     mut commands: Commands,
 ) {
     if frame.is_some() {
@@ -458,8 +485,8 @@ fn clear_sky(
         transform.scale = Vec3::ONE;
         commands.entity(sun).remove::<DirectionalLightTexture>();
     }
-    for camera in &cameras {
-        commands.entity(camera).remove::<AmbientLight>();
+    if ground.is_some_and(|g| g.0 != Vec3::ZERO) {
+        commands.insert_resource(GroundLight::default());
     }
     if let Some(target) = target {
         commands.entity(target.veil).despawn();
@@ -785,16 +812,30 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     }
 
     #[test]
-    fn the_clouds_add_about_a_quarter_of_the_noon_sun_as_ambient_light() {
+    fn the_fields_below_the_horizon_lose_the_clouds_mean_shadow() {
+        assert_eq!(ground_shade(0.0), 1.0);
+        // A cover of 0.45 shades about a third of the ground; overcast, three quarters.
+        assert!((ground_shade(0.45) - 0.658).abs() < 1e-3);
+        assert!((ground_shade(1.0) - 0.24).abs() < 1e-3);
+        assert_eq!(ground_shade(2.0), ground_shade(1.0));
+    }
+
+    #[test]
+    fn above_the_layer_the_ground_takes_about_a_quarter_of_the_sun_from_the_bases() {
         let noon = Vec3::new(0.0, 58f32.to_radians().sin(), -58f32.to_radians().cos());
         let sun = sun_on_ground(100_000.0, noon);
         // On level ground, the sun's height times what gets through the air: about 75 %
         // at 58°.
         let through = sun / (100_000.0 * noon.y);
         assert!((0.7..0.8).contains(&through), "{through}");
-        let ambient = std::f32::consts::PI * cloud_ambient(0.45, sun);
-        assert!((0.2..0.35).contains(&(ambient / sun)), "{}", ambient / sun);
-        assert_eq!(cloud_ambient(0.0, sun), 0.0);
+        let layer = (1_000.0, 1_700.0);
+        let above = std::f32::consts::PI * ground_cloud_light(0.45, sun, 2_000.0, layer);
+        assert!((0.2..0.35).contains(&(above / sun)), "{}", above / sun);
+        // Under the bases the environment map holds them already; half way, half.
+        assert_eq!(ground_cloud_light(0.45, sun, 500.0, layer), 0.0);
+        let half = ground_cloud_light(0.45, sun, 1_350.0, layer);
+        assert!((half / ground_cloud_light(0.45, sun, 2_000.0, layer) - 0.5).abs() < 1e-3);
+        assert_eq!(ground_cloud_light(0.0, sun, 2_000.0, layer), 0.0);
         assert_eq!(sun_on_ground(100_000.0, Vec3::new(1.0, -0.1, 0.0)), 0.0);
     }
 

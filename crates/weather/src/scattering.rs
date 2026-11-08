@@ -1,5 +1,5 @@
 //! Light scattered by clouds: the lighting model of the cloud shader
-//! (`assets/shaders/clouds/render.wesl`, functions and constants of the same names),
+//! (`assets/shaders/clouds/march.wesl`, functions and constants of the same names),
 //! written here to test its energy against two-stream theory.
 //!
 //! The light of the sun that a cloud sends towards the eye, per unit scattering

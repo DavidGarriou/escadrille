@@ -14,6 +14,7 @@ use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
 use crate::flight::bridge::to_bevy;
 use crate::flight::simulation::ORIGIN_GRID_M;
+use crate::render::ground::{Ground, GroundAlbedo};
 
 /// Side of the fields' texture tile, m.
 pub const TILE_M: f32 = ORIGIN_GRID_M as f32;
@@ -65,6 +66,7 @@ pub fn spawn_plain(
     let fields = images.add(fields_texture(TEXTURE_SIZE, BLOCKS, 1917));
     commands.spawn((
         Name::new("Plain"),
+        Ground,
         Mesh3d(meshes.add(Plane3d::default().mesh().size(GROUND_M, GROUND_M))),
         MeshMaterial3d(materials.add(StandardMaterial {
             base_color_texture: Some(fields),
@@ -73,9 +75,13 @@ pub fn spawn_plain(
             ..default()
         })),
     ));
+    // The atmosphere keeps the Earth's grey albedo for its multiple scattering: the fields'
+    // green turned the haze of the horizon olive. The ground below the horizon of the
+    // environment map, which lights the undersides of the aircraft, takes the fields'.
     commands.spawn(Atmosphere::earth(
         media.add(ScatteringMedium::earth(256, 256)),
     ));
+    commands.insert_resource(GroundAlbedo(field_albedo()));
     let (az, el) = (sun.azimuth_deg.to_radians(), sun.elevation_deg.to_radians());
     let towards_sun = DVec3::new(el.cos() * az.cos(), el.cos() * az.sin(), -el.sin());
     commands.spawn((
@@ -98,6 +104,20 @@ pub fn spawn_plain(
         .build(),
         Transform::default().looking_to(-to_bevy(towards_sun).as_vec3(), Vec3::Y),
     ));
+}
+
+/// Mean albedo of the fields, linear: their colours weighted by their shares (the hedges, a
+/// few texels, aside).
+pub fn field_albedo() -> Vec3 {
+    let (sum, total) =
+        FIELD_COLOURS
+            .iter()
+            .fold((Vec3::ZERO, 0.0), |(sum, total), (colour, share)| {
+                let linear = Color::srgb(colour[0], colour[1], colour[2]).to_linear();
+                let albedo = Vec3::new(linear.red, linear.green, linear.blue);
+                (sum + albedo * *share, total + share)
+            });
+    sum / total
 }
 
 /// SplitMix64: a well-mixed hash, enough for fields.
@@ -227,6 +247,16 @@ pub fn fields_texture(size: usize, blocks: usize, seed: u64) -> Image {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_atmosphere_s_ground_is_as_dark_and_green_as_the_fields() {
+        let albedo = field_albedo();
+        // Fields and meadows: 0.16 to 0.26 (Oke, "Boundary Layer Climates", table 1.1),
+        // the clouds' own ground taking 0.18.
+        let luminance = albedo.dot(Vec3::new(0.2126, 0.7152, 0.0722));
+        assert!((0.14..0.2).contains(&luminance), "{luminance}");
+        assert!(albedo.y > albedo.x && albedo.x > albedo.z, "{albedo}");
+    }
 
     #[test]
     fn the_fields_tile_without_seams() {

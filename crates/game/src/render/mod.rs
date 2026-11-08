@@ -3,6 +3,7 @@
 pub mod clouds;
 pub mod damage;
 pub mod fabric;
+pub mod ground;
 pub mod mipmaps;
 pub mod own_normals;
 pub mod quality;
@@ -17,9 +18,12 @@ impl Plugin for RenderingPlugin {
         app.add_plugins((
             MaterialPlugin::<wires::WireMaterial>::default(),
             MaterialPlugin::<own_normals::OwnNormalsMaterial>::default(),
+            MaterialPlugin::<ground::GroundMaterial>::default(),
             clouds::CloudsPlugin,
         ))
         .init_resource::<quality::Quality>()
+        .init_resource::<ground::GroundAlbedo>()
+        .init_resource::<ground::GroundLight>()
         .add_observer(damage::hide_damage_nodes)
         .add_systems(PreStartup, quality::apply_quality)
         .add_systems(
@@ -30,6 +34,7 @@ impl Plugin for RenderingPlugin {
                 fabric::translucent_fabric,
                 quality::apply_occlusion_quality,
                 own_normals::light_with_own_normals,
+                (ground::light_ground, ground::update_ground_light).chain(),
             ),
         );
     }
