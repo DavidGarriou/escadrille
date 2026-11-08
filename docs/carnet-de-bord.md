@@ -3181,3 +3181,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **basse** : la hauteur d'une tour à l'autre (troisième canal), la dernière image de la poursuite, une bande jaunâtre possible sur les sommets lointains de `cumulus_midi` ;
   - **à surveiller** : la remontée des sommets selon la couverture puissance 8, sur `plafond_bas`.
 - **A** Suite, comme le joueur l'a fixé : le liseré clair le long des silhouettes dans le brouillard.
+
+### Le liseré clair le long des silhouettes dans le brouillard
+
+- **A** Diagnostic par les trois captures que proposait le directeur artistique, vue du pilote à 18 s, au cœur du nuage :
+  - en « ultra » (marche en pleine résolution), le liseré s'amincit à un pixel sans disparaître ;
+  - sans TAA (changement temporaire, annulé ensuite), il reste, en marches d'escalier : ce n'est pas le TAA de Bevy ;
+  - en mesurant les pixels en travers du bord d'attaque, le liseré tombe côté ciel, à la couleur du ciel bleu de l'atmosphère vu à travers un brouillard trop mince : ce n'est pas un reflet sur l'aile.
+- **R** Cause : la passe temporelle des nuages. Elle borne l'historique à la plage des 3×3 texels voisins ; au bord d'une silhouette, ces voisins mêlent des texels arrêtés sur l'avion (brouillard de quelques mètres) et des texels passés par le ciel (brouillard opaque), et la plage devenait si large que l'historique mince fuyait dans les texels du ciel.
+- **⚠** Deux essais dans la composition (écarter les texels discordants, chercher en 4×4) ne changeaient rien : annulés.
+- **A** Correctif dans `temporal.wesl` : la plage ne compte que les voisins arrêtés à la même distance (à 25 % près).
+  - **R** Le liseré disparaît : le brouillard va jusqu'au bord, puis un pixel de transition, puis l'aile. Même « ultra » gardait un pixel bleuté.
+  - **R** Effet plus large que prévu : hors du brouillard, les silhouettes sur fond de nuages traînaient un halo blanchâtre dédoublé (mâts, bords d'aile, mitrailleuse) ; elles sont nettes maintenant.
+  - **R** Coût de la passe temporelle : 0,03 → 0,07 ms. Ailleurs, écarts au niveau du bruit d'une capture à l'autre. `just check` et `just test` passent (437 tests).
+- **A** Confirmation demandée au directeur artistique.
