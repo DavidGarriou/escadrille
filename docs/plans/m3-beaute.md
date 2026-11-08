@@ -82,6 +82,19 @@ Chacun laisse le jeu lançable, avec tests, `just check`, `just test`, captures 
 - **ombres, d'après la revue** : lumière d'ambiance des nuages, carte avancée dans la vue, doublée (48 km), bords fondus et alignée sur ses texels ; scène `cumulus_sous_la_base`. 0,37 à 0,40 ms.
 - **occlusion ambiante** (2026-11-07, d'après la revue des ombres) : SSAO de Bevy sur les caméras d'extérieur, 0,6 ms. Elle assombrit le cockpit et les recoins de près, mais ne donne presque pas de modelé à l'avion vu à 10 m. Matériaux transparents et vernis éclairés avec leurs propres normales (`own_normals`). Le facteur d'ambiance de l'avion à l'ombre est confirmé : 0,28 à 0,36 de la lumière au soleil sur les faces du dessus, mesuré en linéaire. Reste pour le modelé : une ambiance directionnelle (base du nuage au-dessus, sol au soleil en dessous).
 - **lumière des nuages dans la carte d'environnement** (2026-11-08, complément de l'ADR 0009) : la passe `environment.wesl` dessine le ciel, les nuages et les champs dans le cube que Bevy filtre en lumière diffuse et en reflets ; l'`AmbientLight` uniforme disparaît, le sol garde la lumière des bases quand la caméra survole la couche. L'avion à l'ombre a du modelé : 0,27 à 0,31 de la lumière au soleil sur les faces du dessus, 0,30 sur les flancs. 0,09 à 0,13 ms.
+- **traversée du nuage** (2026-11-08, close) : scènes `traversee_nuage` (poursuite) et `traversee_nuage_pilote`, un vol capturé en séquence (champ `sequence` des scènes). Trois défauts vus de l'intérieur sont corrigés :
+  - la marche intègre la tranche avant son premier pas et coupe le dernier où le rayon s'arrête ;
+  - la profondeur de l'œil dans le nuage est une seule valeur par image (pas de ligne à l'horizon, pas de forme qui suive le regard) ;
+  - les surfaces transparentes se voilent elles-mêmes du brouillard.
+
+  Pas de saut à l'entrée ni à la sortie. Approuvée par le directeur artistique.
+- **Restent pour clore l'incrément 1** :
+  - `plafond_bas` ;
+  - les sommets des cumulus en falaises, à arrondir ;
+  - le relief du mur de nuage vu de près ;
+  - le liseré clair des silhouettes dans le brouillard ;
+  - les réserves ouvertes (ombre d'un nuage sur son voisin, bases tranchées, auréole du soleil) ;
+  - l'essai du joueur.
 
 ### 2. Heure du jour
 

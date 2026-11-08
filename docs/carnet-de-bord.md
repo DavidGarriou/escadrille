@@ -2914,7 +2914,7 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   6. Risques à contrôler : le cockpit, que l'ambiance non occultée risque de déboucher ; les ombres lointaines qui « respirent » quand la caméra fait demi-tour.
 - **R** Pour clore l'incrément 1 :
   - `plafond_bas`, avec un profil de stratus et une ambiance revue : à couverture 1 la formule actuelle donne l'ambiance maximale, alors qu'une couche épaisse ne transmet que 10 à 30 %. Il faut aussi baisser `AtmosphereEnvironmentMapLight::intensity` (champ vérifié dans `bevy_light` 0.20.0) selon l'épaisseur optique.
-  - `traversee_nuage` en séquence : pas de saut à l'entrée, la queue s'estompe avant le nez, l'avion s'assombrit en s'enfonçant.
+  - `traversee_nuage` en séquence : pas de saut à l'entrée, la queue s'estompe avant le nez, l'avion s'assombrit en s'enfonçant. *(Critère reformulé le 2026-11-08 par le directeur artistique : ce qui est le plus loin de l'œil, à travers le nuage, s'estompe le premier ; vu de la poursuite, c'est le nez.)*
   - Une courte séquence de `cumulus_sous_la_base`, l'avion franchissant un bord d'ombre.
   - Les réserves ouvertes (ombre d'un nuage sur son voisin, bases trop tranchées, auréole du soleil), reportables avec l'accord du joueur, et l'approbation du joueur sur les scènes.
 - **D** Recommandation du directeur artistique : la SSAO sur la caméra de vol, au meilleur rapport effet/effort, validée sur `cumulus_sous_la_base` et `avion-studio` (surveiller les halos autour de l'avion). En attente de la décision du joueur.
@@ -3106,3 +3106,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **⚠** Ce worktree partageait le dossier `target/` : ses artefacts ont écrasé ceux de la version courante (mêmes empreintes cargo). Cargo a cru celle-ci à jour et n'a pas refait le binaire, qui cherchait encore les assets du worktree supprimé. **A** Artefacts « release » des crates du projet nettoyés, puis reconstruction. Piège noté dans le skill `bevy`.
 - **R** Bruit d'une capture à l'autre, avec le même binaire : 0,8 à 1,2 % des pixels de `cumulus_midi` changent de plus de 8 niveaux. La gigue des nuages suit le compteur d'images de Bevy, qui inclut les images de chargement. Le skill `bevy` annonçait « quelques pixels » : corrigé. L'écart avec `b4efb84` (0,16 %) reste sous ce bruit, donc pas de régression sur les trois scènes de cumulus ni sur `avion-studio`.
 - **A** `just check` et `just test` passent (435 tests).
+- **R** Contre-revue du directeur artistique : **approuvé**. Le point bloquant est levé, à l'œil comme à la mesure : au cœur, le brouillard varie de 1 à 2 niveaux sRGB sur tout le cadre, aussi avec la caméra tournée de 30°.
+  - **Gris neutre au cœur : juste, à garder.** Le beige d'avant venait du défaut : le terme du ciel manquait. Se perdre dans un blanc sans horizon fait partie du pilier 3.
+  - **Vue du pilote** : critères remplis, le cadrage à 40° est gardé.
+  - **Condition pour clore** : une capture du pilote regard droit devant, pour vérifier le voile du pare-brise.
+  - **Reste, hors de la traversée** : un liseré clair bleuté de 1 à 2 px le long des silhouettes sur fond de brouillard (anneau du viseur, bord d'attaque). Ce n'est pas une régression, et trois causes restent à départager : le reflet de Fresnel, l'image des nuages en demi-résolution, la TAA. S'y ajoutent des contours d'un niveau en éventail autour de l'avion, invisibles à contraste normal, à vérifier en qualité « bas ».
+- **A** Capture de contrôle du pilote regard droit devant (lacet 0°, tangage −6°), faite à part, sans changer la scène.
+  - **R** Autour de la ligne de visée, à travers le pare-brise, le brouillard est uniforme : 0,524 ± 0,003 de luminance à 10 s. Pas de disque ni de halo pâle.
+  - **R** Le disque de l'hélice assombrit le brouillard d'environ 6 % (0,518 contre 0,549), comme il assombrit le ciel hors du nuage (5 %). C'est attendu pour du bois vernis presque transparent.
+- **D** Traversée du nuage close : scènes `traversee_nuage` et `traversee_nuage_pilote` approuvées.
+- **?** Suites proposées par le directeur artistique, hors de la traversée :
+  - arrondir les sommets des cumulus, au meilleur rapport effet/effort ;
+  - donner du relief au mur de nuage vu de près ;
+  - le liseré des silhouettes ;
+  - une poursuite longue, pour voir l'avion avalé nez en premier.
