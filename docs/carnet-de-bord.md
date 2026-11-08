@@ -3202,3 +3202,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **?** Points antérieurs qu'il relève, hors de ce correctif :
   - un trait jaune droit à l'horizon de `cumulus_midi`, de 2 à 4 px, à travers les nuages lointains (le bleu 17 niveaux sous le rouge), présent avant et après. Cause probable : la limite de distance de la marche ou le bord du terrain vus à travers les nuages lointains. La scène phare : à traiter vite ;
   - le disque de l'hélice un peu plus clair que le brouillard en poursuite (0660) et en vue du pilote (1080), quand des pales de bois floues devraient l'assombrir. Détail.
+
+### Le trait jaune à l'horizon de `cumulus_midi`
+
+- **Q** Le joueur : « Oui, le trait jaune ».
+- **A** Mesure : un trait de 2 à 4 px à travers les nuages lointains, juste sous l'horizon, un peu incliné (y de 464 à 473 d'un bord à l'autre), plus clair et plus jaune que ses voisins (222, 218, 198 contre 216, 215, 217).
+- **A** Deux essais sur le shader seul :
+  - **R** marche des nuages limitée à 40 km au lieu de 60 : le trait reste à sa place. Ce n'est pas la distance de marche ;
+  - **R** sans perspective aérienne sur les nuages : le trait disparaît.
+- **R** Cause : la transmittance de l'air entre l'œil et les nuages, prise à la fonction de Bevy `sample_transmittance_lut_segment`. Elle divise deux valeurs de la table de transmittance, toutes deux minuscules près de l'horizon de la planète, et change de formule là où le rayon touche le sol. Bornée à 1, elle laissait une bande de nuages lointains sans voile : leur lumière chaude du soleil, sans le bleu de l'air.
+- **A** Transmittance intégrée sur 12 pas le long du segment, à partir de la table de densité de Bevy (`air_transmittance`, `march.wesl`), pour la vue et pour la carte d'environnement. Le terme du sol de la planète garde la fonction de Bevy, pour retrancher exactement ce que Bevy ajoute.
+  - **R** Le trait disparaît : la bande vaut (221, 219, 219), comme ses voisins.
+  - **R** Ailleurs, écarts au niveau du bruit (0,1 à 0,5 niveau en moyenne) ; coût non mesurable, sous la variation d'une capture à l'autre.
+  - **D** Pas de revue du directeur artistique pour ce correctif ponctuel, vérifié sur image et en mesures.
+- **A** `just check` et `just test` passent (437 tests).

@@ -26,7 +26,8 @@ import bevy_pbr::atmosphere::{
     bindings::{atmosphere, lights},
     functions::{
         sample_transmittance_lut, sample_sky_view_lut, direction_world_to_atmosphere,
-        get_view_position,
+        get_view_position, sample_density_lut, get_local_r, ABSORPTION_DENSITY,
+        SCATTERING_DENSITY,
     },
 };
 import super::density::{CloudUniforms, cloud_coarse, cloud_density};
@@ -161,6 +162,26 @@ fn optical_depth_to_sun(position: vec3<f32>, to_sun: vec3<f32>) -> f32 {
         step *= LIGHT_GROWTH;
     }
     return depth * clouds.extinction;
+}
+
+// Steps of the air's transmittance between the eye and the clouds.
+const AIR_STEPS: u32 = 12u;
+
+// Transmittance of the air over `t` metres of a ray from the radius `r` at the cosine `mu`
+// of its zenith angle (atmosphere frame): the extinction of Bevy's atmosphere summed
+// along the segment. Bevy's `sample_transmittance_lut_segment` divides two values of its
+// table, both tiny near the planet's horizon, and switches formula where the ray meets
+// the ground: clamped to 1, the ratio left a band of distant clouds unveiled, a yellow
+// line across the horizon of `cumulus_midi` (art director's review).
+fn air_transmittance(r: f32, mu: f32, t: f32) -> vec3<f32> {
+    let dt = t / f32(AIR_STEPS);
+    var depth = vec3<f32>(0.0);
+    for (var i = 0u; i < AIR_STEPS; i++) {
+        let r_i = get_local_r(r, mu, (f32(i) + 0.5) * dt);
+        depth += (sample_density_lut(r_i, ABSORPTION_DENSITY)
+            + sample_density_lut(r_i, SCATTERING_DENSITY)) * dt;
+    }
+    return exp(-depth);
 }
 
 // Radiance of the sky over a cloud, averaged over its upper half: the zenith and four

@@ -33,7 +33,7 @@ import bevy_pbr::atmosphere::{
     },
 };
 import bevy_pbr::render::utils::sample_cube_dir;
-import super::march::{cloud_pass, jitter, march, sky_radiance};
+import super::march::{air_transmittance, cloud_pass, jitter, march, sky_radiance};
 
 // The atmosphere's view along `direction` (in its own frame, from the eye at
 // `view_position`), with the fields in place of its planet's grey ground.
@@ -81,7 +81,7 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     var color = sky;
     if marched.transmittance < 1.0 {
         let mu_view = dot(direction, view_position / r_view);
-        let air = sample_transmittance_lut_segment(r_view, mu_view, marched.distance);
+        let air = air_transmittance(r_view, mu_view, marched.distance);
         let haze = sky * (1.0 - air);
         color = sky * marched.transmittance + marched.light * air
             + haze * (1.0 - marched.transmittance);

@@ -12,10 +12,9 @@
 import bevy_pbr::atmosphere::{
     bindings::view,
     functions::{sample_aerial_view_lut, uv_to_ray_direction, uv_to_ndc, get_view_position},
-    bruneton_functions::sample_transmittance_lut_segment,
 };
 import bevy_core_pipeline::fullscreen_vertex_shader::FullscreenVertexOutput;
-import super::march::{cloud_pass, jitter, march};
+import super::march::{air_transmittance, cloud_pass, jitter, march};
 
 // The depth of the main pass, binding 13 of `render_sky`'s layout.
 @group(0) @binding(13) var depth_texture: texture_depth_2d;
@@ -59,7 +58,7 @@ fn fragment(in: FullscreenVertexOutput) -> MarchOutput {
     let view_position = get_view_position();
     let r_view = length(view_position);
     let mu_view = dot(direction, view_position / r_view);
-    let air = sample_transmittance_lut_segment(r_view, mu_view, marched.distance);
+    let air = air_transmittance(r_view, mu_view, marched.distance);
     let haze = sample_aerial_view_lut(in.uv, marched.distance);
     let color = marched.light * air + haze * (1.0 - marched.transmittance);
     return MarchOutput(
