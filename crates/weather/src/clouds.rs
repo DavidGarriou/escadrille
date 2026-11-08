@@ -118,6 +118,23 @@ impl CloudTextures {
     pub fn extinction(&self, uniforms: &CloudUniforms, position: Vec3) -> f32 {
         self.density(uniforms, position) * uniforms.extinction
     }
+
+    /// Optical depth of the clouds over `reach` metres from a position along a direction
+    /// (unit), the extinction taken at the middle of steps of `step` metres. It does not
+    /// stop where a cloud ends: it changes smoothly with the position and the direction.
+    pub fn optical_depth(
+        &self,
+        uniforms: &CloudUniforms,
+        from: Vec3,
+        direction: Vec3,
+        reach: f32,
+        step: f32,
+    ) -> f32 {
+        let steps = (reach / step).ceil() as u32;
+        (0..steps)
+            .map(|i| self.extinction(uniforms, from + direction * ((i as f32 + 0.5) * step)) * step)
+            .sum()
+    }
 }
 
 /// Density before the detail noise, height fraction in the layer, and distance up to the

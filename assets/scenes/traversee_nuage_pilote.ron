@@ -1,0 +1,14 @@
+// The flight of traversee_nuage seen from the pilot's eye: the crossing as the player
+// lives it, the world gone but the cowling, the struts and the right wing (art director's
+// review of 2026-11-08: the wing tip, 4 m away, fades before the cowling; no false veil
+// before the windscreen; no jump as the cockpit crosses the edge). Same cloud, same
+// frames.
+Scene(
+    description: "La traversée du cumulus vue du poste : le capot, les mâts et l'aile droite, le mur blanc qui approche, puis le brouillard où le bout d'aile s'efface avant le capot, et la sortie au soleil. Une capture par instant de la séquence.",
+    scenario: "vol-essai",
+    camera: Pilot(yaw: Deg(40.0), pitch: Deg(-5.0)),
+    sun: Some((azimuth: Deg(180.0), elevation: Deg(58.0))),
+    clouds: Some((base: M(700.0), cover: 0.55, cloud_type: 1.0, seed: 63)),
+    sequence: [180, 300, 360, 390, 420, 426, 450, 600, 1170, 1215, 1245],
+    frames: Some(1320),
+)

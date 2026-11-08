@@ -101,6 +101,8 @@ pub struct GpuCloudPass {
     pub ground_albedo: Vec3,
     /// Share of their sunlight the clouds' mean shadow leaves them.
     pub ground_shade: f32,
+    /// How deep the eye is in the clouds, optical depth ([`super::eye_depth`]).
+    pub eye_depth: f32,
 }
 
 /// The temporal shader's `CloudTemporal`. The views are centred on the eye: at 2 000 m,

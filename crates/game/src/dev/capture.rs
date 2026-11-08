@@ -386,7 +386,7 @@ mod tests {
     #[test]
     fn a_sequence_saves_its_earlier_frames_next_to_the_last() {
         let r = CaptureRequest::new("traversee_nuage".into(), None, (640, 360), None).unwrap();
-        assert_eq!(r.sequence.len(), 10);
+        assert_eq!(r.sequence.len(), 11);
         assert_eq!(
             r.sequence[0],
             (

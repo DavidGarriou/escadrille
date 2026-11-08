@@ -205,6 +205,37 @@ fn the_envelope_tells_its_top_and_clouds_lie_within_it() {
 }
 
 #[test]
+fn the_optical_depth_is_none_in_clear_air_and_grows_through_a_cloud() {
+    let uniforms = CloudLayer::default().uniforms(0.0, DVec3::ZERO);
+    let inside = positions(20_000, 30_000.0, 1_400.0)
+        .find(|&p| textures().density(&uniforms, p) > 0.9)
+        .expect("a cloud core");
+    let (reach, step) = (600.0, 10.0);
+    for direction in [Vec3::X, Vec3::NEG_Z, Vec3::new(0.6, 0.8, 0.0)] {
+        let near = textures().optical_depth(&uniforms, inside, direction, reach, step);
+        let far = textures().optical_depth(&uniforms, inside, direction, 2.0 * reach, step);
+        // At least the first step, in the core; more over a longer reach.
+        assert!(
+            near > 0.5 * step * uniforms.extinction,
+            "{direction}: {near}"
+        );
+        assert!(far >= near, "{direction}: {near} then {far}");
+        // A small move changes it a little.
+        let moved = textures().optical_depth(&uniforms, inside + direction, direction, reach, step);
+        assert!(
+            (moved - near).abs() < 0.1 * near + 0.5,
+            "{direction}: {near} then {moved}"
+        );
+    }
+    // Above the layer, upwards: nothing.
+    let above = Vec3::new(inside.x, 2_500.0, inside.z);
+    assert_eq!(
+        textures().optical_depth(&uniforms, above, Vec3::Y, reach, step),
+        0.0
+    );
+}
+
+#[test]
 fn the_wind_carries_the_clouds() {
     let layer = CloudLayer {
         wind: DVec3::new(12.0, 3.0, -5.0),

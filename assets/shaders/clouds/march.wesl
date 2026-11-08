@@ -48,6 +48,9 @@ struct CloudPass {
     // and the share of their sunlight the clouds' mean shadow leaves them.
     ground_albedo: vec3<f32>,
     ground_shade: f32,
+    // How deep the eye is in the clouds: the least optical depth around it, one value for
+    // the frame (`eye_depth` of `clouds.rs`); zero in clear air.
+    eye_depth: f32,
 }
 
 @group(1) @binding(0) var<uniform> clouds: CloudUniforms;
@@ -95,6 +98,10 @@ const OPAQUE: f32 = 0.01;
 // Offset of the second jitter from the first, the golden ratio's fraction: the place of
 // the sample of the stretch before the first look.
 const SECOND_JITTER: f32 = 0.618034;
+// Depth of the eye in the clouds over which every ray, not only those across or down,
+// comes to see the sky back through the eye's side: entering a cloud, the rays looking up
+// change over gradually.
+const EYE_DEPTH_RAMP: f32 = 2.0;
 
 fn henyey_greenstein(cos_theta: f32, g: f32) -> f32 {
     let g2 = g * g;
@@ -133,15 +140,14 @@ fn jitter(pixel: vec2<f32>, frame: u32) -> f32 {
     return fract(52.9829189 * fract(dot(p, vec2<f32>(0.06711056, 0.00583715))));
 }
 
-// Optical depth of the clouds from a point along a direction, towards the sun or back
-// behind the eye: the full density on the first steps, so that the buds of the detail
-// shade one another, the coarse one beyond.
-fn optical_depth_along(position: vec3<f32>, direction: vec3<f32>) -> f32 {
+// Optical depth of the clouds from a point towards the sun: the full density on the first
+// steps, so that the buds of the detail shade one another, the coarse one beyond.
+fn optical_depth_to_sun(position: vec3<f32>, to_sun: vec3<f32>) -> f32 {
     var depth = 0.0;
     var travelled = 0.0;
     var step = LIGHT_STEP;
     for (var i = 0u; i < cloud_pass.light_steps; i++) {
-        let at = position + direction * (travelled + 0.5 * step);
+        let at = position + to_sun * (travelled + 0.5 * step);
         var density = 0.0;
         if i < DETAILED_LIGHT_STEPS {
             density = cloud_density(
@@ -225,15 +231,12 @@ fn march(eye: vec3<f32>, direction: vec3<f32>, far_away: f32, first: f32) -> Mar
     let single_phase = phase(cos_theta);
     // How much the eye's side of a cloud opens on the sky: fully when the eye looks down
     // or across, not at all when it looks up at a base, whose eye's side faces the ground.
-    let flank_weight = saturate(1.0 - 2.0 * direction.y);
-    // An eye inside a cloud looks at no flank: the eye's side of a sample opens on the sky
-    // only beyond the cloud behind the eye (traversee_nuage: from inside, the rays under
-    // the horizon took the sky's blue, those above did not, and a line split the fog).
-    var behind = 0.0;
-    let start = eye + direction * near;
-    if cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, start).z > 0.0 {
-        behind = optical_depth_along(start, -direction);
-    }
+    // From inside a cloud the eye looks at no flank: the eye's side of a sample opens on the
+    // sky only beyond the cloud around the eye, whatever the direction (traversee_nuage:
+    // the rays under the horizon took the sky's blue, those above did not, and a line
+    // split the fog).
+    let inside = saturate(cloud_pass.eye_depth / EYE_DEPTH_RAMP);
+    let flank_weight = mix(saturate(1.0 - 2.0 * direction.y), 1.0, inside);
 
     var transmittance = 1.0;
     var light = vec3<f32>(0.0);
@@ -306,10 +309,12 @@ fn march(eye: vec3<f32>, direction: vec3<f32>, far_away: f32, first: f32) -> Mar
         let sun_through_air = sun * sample_transmittance_lut(r, dot(to_sun, up));
         // Cloud on each side: towards the sun; for the sky, up to the top of the envelope,
         // or back along the eye's ray when the eye looks at a flank, which sees the sky in
-        // front of it (third review: flanks lost the sky's blue); down to the base of the
-        // layer, for the ground; at the density of the sample.
-        let depth_to_sun = optical_depth_along(position, to_sun);
-        let depth_eye = behind - log(max(transmittance, OPAQUE)) + 0.5 * extinction * stretch;
+        // front of it (third review: flanks lost the sky's blue), and beyond the eye
+        // through the cloud around it; down to the base of the layer, for the ground; at
+        // the density of the sample.
+        let depth_to_sun = optical_depth_to_sun(position, to_sun);
+        let depth_eye = cloud_pass.eye_depth - log(max(transmittance, OPAQUE))
+            + 0.5 * extinction * stretch;
         let depth_up = mix(
             extinction * coarse.z,
             min(extinction * coarse.z, depth_eye),

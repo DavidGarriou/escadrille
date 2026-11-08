@@ -3087,3 +3087,22 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **séquence dense** (une image sur deux, en 720p) : pas de saut à l'entrée ni à la sortie, la variation monte et redescend en douceur sur une dizaine d'images ;
   - **régressions** : aucune mesurable sur `cumulus_midi`, `cumulus_contre_jour`, `cumulus_sous_la_base` et `avion-studio` ; coût GPU inchangé.
 - **A** `just check` et `just test` passent (433 tests). Skills `bevy` et `rendu-visuel` et fiche des nuages à jour.
+- **R** Verdict du directeur artistique : **à retravailler, un seul point bloquant**. Les trois critères sont remplis : la ligne horizontale a disparu, les transparents sont voilés comme le reste, l'avion s'assombrit assez pour ce nuage.
+  - **Bloquant** : des formes à bords nets dans le brouillard (une arête en diagonale à 7,5 s, un triangle plus sombre à 19,5 s), qui dépendent de la direction du regard. Elles viennent de la profondeur du nuage derrière l'œil, calculée pixel par pixel en marche arrière : elle projette la forme du nuage derrière soi sur le brouillard devant. Proposition : une seule valeur par image, calculée en Rust.
+  - **Importants, hors de la traversée** : des cumulus en falaises de craie, aux flancs verticaux et aux sommets plats à une même hauteur, sur la dernière image (l'enveloppe sature sur l'intérieur des taches de la carte météo) ; le mur vu à 45 m sans relief ; il manque une vue du pilote, une caméra qui tourne et une poursuite longue.
+  - **Détails** : une image fixe au franchissement du cœur (7,1 s) ; un arc faible du disque d'hélice ; l'avion s'incline d'environ 4° faute de commandes.
+- **D** Critère reformulé par le directeur artistique : ce qui est le plus loin de l'œil, à travers le nuage, s'estompe le premier. Vue de la poursuite, c'est le nez avant la dérive ; vue du pilote, les bouts d'ailes avant le capot. Il remplace « la queue s'estompe avant le nez » de la revue du 2026-11-07.
+- **Q** Le joueur, après une interruption (limite d'utilisation atteinte) : « continue from where you left off ».
+- **A** Correctif bloquant : la profondeur de l'œil dans le nuage (`eye_depth`) est une seule valeur par image, calculée en Rust sur la densité de référence. C'est la plus petite profondeur optique sur les 600 premiers mètres, vers le haut, les quatre horizontales et le soleil. Elle vaut zéro en air libre.
+  - La marche l'ajoute au chemin vers le ciel par le côté de l'œil. Dès 2 de profondeur, tous les rayons, même ceux qui montent, prennent ce chemin, en rampe continue à l'entrée.
+  - Tests : la profondeur optique de référence (`CloudTextures::optical_depth`) ; `eye_depth` est nulle hors du nuage, dépasse 5 au cœur, et varie au plus de 0,72 par mètre à l'entrée (pas de saut).
+- **A** Nouvelle scène `traversee_nuage_pilote` : le même vol vu du poste, regard à 40° à droite. Image 426 (7,1 s, la caméra entre dans le cœur) ajoutée aux deux séquences.
+- **R** Mesures après le correctif :
+  - **écart-type du brouillard** : de 9 à 10·10⁻³ à 3 à 6·10⁻³. Il reste le même avec la caméra tournée de 30° : aucune forme ne suit le cadre ;
+  - **séquence dense** : toujours aucun pic isolé ;
+  - **couleur** : le brouillard au cœur est maintenant gris neutre, et non plus beige ;
+  - **vue du pilote** : les mâts et les câbles de l'aile droite se voilent avant ceux du poste.
+- **⚠** Le dossier `target/` a été vidé pendant l'interruption, et avec lui les captures de référence. **A** Les images « avant » ont été refaites en construisant `b4efb84` dans un worktree temporaire, supprimé ensuite.
+- **⚠** Ce worktree partageait le dossier `target/` : ses artefacts ont écrasé ceux de la version courante (mêmes empreintes cargo). Cargo a cru celle-ci à jour et n'a pas refait le binaire, qui cherchait encore les assets du worktree supprimé. **A** Artefacts « release » des crates du projet nettoyés, puis reconstruction. Piège noté dans le skill `bevy`.
+- **R** Bruit d'une capture à l'autre, avec le même binaire : 0,8 à 1,2 % des pixels de `cumulus_midi` changent de plus de 8 niveaux. La gigue des nuages suit le compteur d'images de Bevy, qui inclut les images de chargement. Le skill `bevy` annonçait « quelques pixels » : corrigé. L'écart avec `b4efb84` (0,16 %) reste sous ce bruit, donc pas de régression sur les trois scènes de cumulus ni sur `avion-studio`.
+- **A** `just check` et `just test` passent (435 tests).

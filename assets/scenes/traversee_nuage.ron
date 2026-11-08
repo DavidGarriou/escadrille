@@ -12,8 +12,9 @@ Scene(
     sun: Some((azimuth: Deg(180.0), elevation: Deg(58.0))),
     clouds: Some((base: M(700.0), cover: 0.55, cloud_type: 1.0, seed: 63)),
     // Approach (3 s), the wall ahead (5 s), the nose in the wisp (6 s), the camera in the
-    // wisp (6.5 s), the aircraft in the core (7 s, 7.5 s), deep inside (10 s), the far
-    // flank (19.5 s), the aircraft out (20.25 s, 20.75 s); the last, in the sun again (22 s).
-    sequence: [180, 300, 360, 390, 420, 450, 600, 1170, 1215, 1245],
+    // wisp (6.5 s), the aircraft in the core (7 s), the camera into the core (7.1 s, the
+    // likeliest moment for a jump), deeper (7.5 s), deep inside (10 s), the far flank
+    // (19.5 s), the aircraft out (20.25 s, 20.75 s); the last, in the sun again (22 s).
+    sequence: [180, 300, 360, 390, 420, 426, 450, 600, 1170, 1215, 1245],
     frames: Some(1320),
 )
