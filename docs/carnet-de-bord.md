@@ -3216,3 +3216,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **R** Ailleurs, écarts au niveau du bruit (0,1 à 0,5 niveau en moyenne) ; coût non mesurable, sous la variation d'une capture à l'autre.
   - **D** Pas de revue du directeur artistique pour ce correctif ponctuel, vérifié sur image et en mesures.
 - **A** `just check` et `just test` passent (437 tests).
+
+### Prochaines étapes
+
+- **Q** Le joueur : « continue, quelles sont les nouvelles étapes ? »
+- **R** Par priorité : la matière des nuages proches et le liseré argenté du contre-jour ; la scène `plafond_bas` ; la couverture par défaut de 0,55 (carte en cellules distinctes) ; les réserves ouvertes (ombre d'un nuage sur son voisin, bases tranchées, auréole du soleil, disque de l'hélice un peu clair) ; l'essai du joueur, manette en main.
+- **A** Diagnostic proposé par le directeur artistique pour la première : `cumulus_contre_jour` et l'approche de la traversée (11 s) en qualité « haut » (marche en demi-résolution) et « ultra » (pleine résolution).
+  - **R** Identiques à 1 ou 2 % près sur la crête, les lobes à l'ombre et le flanc proche : détail fin 4,6 / 1,3 / 2,9·10⁻³ dans les deux cas ; centile 99 de la crête 0,70 dans les deux cas, sans bord plus clair.
+  - **R** Conclusion : ni le « coton » ni l'absence de liseré ne viennent de la résolution. Le détail est dans la densité, l'éclairage l'aplatit (contraste fin de 1,3·10⁻³ sur les lobes à l'ombre). C'est un chantier d'éclairage, qui touche le modèle de référence `escadrille_weather::scattering` et ses tests.
+- **?** Plan proposé, à valider : vue par terme pour voir où le détail se perd, ombrage des bourgeons entre eux et terme « poudre » (Schneider 2015), frange plus douce au bord pour le liseré, tests d'énergie tenus, captures et revue du directeur artistique.
