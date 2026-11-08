@@ -1,7 +1,7 @@
 //! The test flight (plans `m2-vol-essai.md`, `m2-train-sol.md`): `just run` starts it, the
-//! SPAD at rest on the field, over the plain. The reference scenes of a flight
-//! (`assets/scenes`) start from one of its scenarios, with their own camera, sun and
-//! commands.
+//! SPAD at rest on the field, over the plain, under fair-weather cumulus. The reference
+//! scenes of a flight (`assets/scenes`) start from one of its scenarios, with their own
+//! camera, sun, commands and clouds.
 
 use std::path::Path;
 
@@ -42,9 +42,25 @@ const AFTERNOON: Sun = Sun {
     elevation_deg: SUN_ELEVATION_DEG,
 };
 
-/// `just run`: the SPAD at rest on the field.
+/// The clouds of the test flight, until a mission's weather sets them: the field of
+/// cumulus of the scene `cumulus_sous_la_base`, reviewed by the art director, as the
+/// pilot sees it from the field and climbing (base 1 200 m, 700 m thick).
+fn fair_weather() -> Clouds {
+    let mut layer = CloudLayer {
+        base_altitude: 1_200.0,
+        cover: 0.55,
+        cloud_type: 1.0,
+        ..default()
+    };
+    layer.thickness[2] = 700.0;
+    Clouds { layer, seed: 8 }
+}
+
+/// `just run`: the SPAD at rest on the field, under the clouds.
 pub fn spawn_on_the_field(mut scene: Scene) -> Result {
-    spawn_flight(ON_THE_FIELD, &mut scene, AFTERNOON, (0.0, 0.0))
+    spawn_flight(ON_THE_FIELD, &mut scene, AFTERNOON, (0.0, 0.0))?;
+    scene.commands.insert_resource(fair_weather());
+    Ok(())
 }
 
 /// A scene of `assets/scenes`: its scenario, sun, camera and held commands.
