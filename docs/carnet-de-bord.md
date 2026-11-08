@@ -3138,3 +3138,12 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - captures de `cumulus_midi` et `avion-studio` toujours bonnes ;
   - `--scene traversee_nuage` et le vol d'essai lancés 15 s chacun sans erreur, manette détectée. La fenêtre elle-même n'a pas été regardée : pas d'écran virtuel sur cette machine.
   - `just check` et `just test` passent (436 tests).
+- **Q** Le joueur : « Branche locale main-tcd0yw : fait comme avant ».
+- **D** La branche locale `main-tcd0yw` est gardée et tenue identique à `main` à chaque envoi, comme avant.
+- **Q** Le joueur : « Prochain chantier : 1. arrondi des sommets des cumulus, puis 2. liseré clair le long des silhouettes dans le brouillard ».
+- **A** Avant d'écrire du code, Claude mesure d'où viennent les sommets plats et les parois, puis propose un plan à valider : le chantier touche le modèle de densité de référence, son jumeau WGSL et toutes les scènes de nuages.
+- **R** Diagnostic des cumulus en falaises (densité de référence, sans le bruit de détail) :
+  - **les parois** : au bord visible d'un nuage, la colonne est déjà haute de 140 à 230 m en médiane (80 à 350 m du premier au troisième quartile). Le profil d'un cumulus est plein de 6 % à 65 % de sa hauteur ; or le nuage n'apparaît que là où l'enveloppe dépasse l'érosion du bruit de forme (environ 0,35). À toutes les hauteurs sous ce plein, son bord tombe donc au même endroit, et la paroi est verticale ;
+  - **les sommets** : la couverture sature à 1 au cœur des taches de la carte météo (10 à 31 % de la surface nuageuse selon la scène). Le sommet y est partout à l'épaisseur de la couche, et seul le bruit de forme le découpe ;
+  - aucune autre source ne fait varier la hauteur d'un nuage à l'autre.
+- **?** Plan proposé, à valider : profil en dôme, couverture non saturée pour la hauteur, variation du sommet d'un nuage à l'autre ; mêmes changements dans le jumeau WGSL, test de parité, nouveaux tests chiffrés, captures avant/après de toutes les scènes de nuages et revue du directeur artistique.
