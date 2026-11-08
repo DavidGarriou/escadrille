@@ -3026,3 +3026,6 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **Q** Le joueur : « Oui, avancer main » (pousser `main-tcd0yw`, puis faire avancer `main` jusqu'à elle, en avance rapide, sans forcer).
 - **D** Accordé par le joueur : `main` rattrapera `main-tcd0yw`. L'avance est rapide, car `main` n'a aucun commit propre ; elle ne réécrit rien.
 - **⚠** Au moment de la réponse, l'agent SSH ne tient toujours pas de clé : l'envoi attend que le joueur la recharge.
+- **Q** Le joueur : « essaie » (la clé est rechargée).
+- **A** Envoi de `main-tcd0yw` (`28195a5..280919d`), puis avance rapide de `main` sur GitHub (`3a08e80..280919d`, sans forcer) et de `main` en local. **R** Les deux ont réussi : `main` contient désormais tout le travail du projet, et un `git pull` sur `main` le récupère.
+- **D** `main` suit la branche : à chaque envoi, Claude la refait avancer, toujours en avance rapide.
