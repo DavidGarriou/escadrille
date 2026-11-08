@@ -2994,3 +2994,29 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **R** Coût : 0,09 à 0,13 ms en 1440p.
 - **A** Complément à l'ADR 0009 ; skills `rendu-visuel` (`SKILL.md`, `nuages-volumetriques.md`) et `bevy` (§ 9) ; plan du M3. Cinq tests nouveaux. `just check` et `just test` passent (430 tests). Commit local `35e5afe`, non poussé (clé absente).
 - **A** Revue du directeur artistique demandée sur la SSAO et l'ambiance.
+
+### Revue du directeur artistique : SSAO et carte d'environnement
+
+- **R** Verdict « approuvé » pour les deux changements.
+  - **SSAO** : approuvée sous réserve. Pas de halo ni de bruit en vue pilote, et la correction des normales est visible (câbles, hélice vernie). Elle coûte 0,65 ms, la passe la plus chère du post-traitement, pour un effet presque nul en poursuite.
+    - **⚠** Les images de la SSAO seule, dans le dossier temporaire de session, ont disparu : la machine a redémarré le 8 novembre à 13 h 57, et `/tmp` a été vidé. Le directeur artistique n'a donc pas vu les cartes de différence ; il demande à les revoir pour un verdict ferme sur les 21 à 24 %.
+    - **⚠** Trois montages laissés dans le dossier `env/` montraient encore l'état intermédiaire, à l'horizon olive ; il les a écartés.
+  - **Carte d'environnement** : approuvée. Sous la base, l'avion est enfin à l'ombre, plus sombre que les champs au soleil ; le fuselage a du modelé, du dos crème au ventre plus sombre. Sa teinte plus chaude est juste dans son principe : sous un nuage, plus de ciel bleu au-dessus. Aucune régression : ombres au sol, contre-jour, horizon, scènes sans nuages. Garder l'albédo gris pour l'atmosphère était le bon choix.
+- **R** À corriger, par ordre d'impact :
+  1. Le terrain (pavage de Voronoï, répétition tous les 2 km), hors de l'incrément 1 : incréments 3 et 4.
+  2. **La toile crème vire à l'olive à l'ombre**, surtout dans le contre-jour, et un peu plus qu'avant dans `cumulus_midi` : c'est la seule régression visible, légère.
+     - Cause probable : la couleur de la toile dans `livrees.ron`, (0,84 ; 0,76 ; 0,52) en sRGB, étiquetée `E:`. En linéaire, son bleu ne fait que 35 % de son rouge.
+     - Piste : la faire vérifier par l'historien sur des autochromes.
+  3. Ailes plates à l'ombre, sans occlusion entre les plans, et nervures effacées. Piste : une carte d'occlusion cuite dans `art/spad7/build.py`.
+  4. Ombres lointaines encore bleues : il manque des aérosols (Mie) pour un été en Flandre.
+  5. Bases en plaques près de l'horizon, disque d'hélice en dôme gris : réserves déjà connues.
+  6. Comportement en mouvement à vérifier sur une séquence.
+- **R** Pour clore l'incrément 1 :
+  - les scènes `traversee_nuage` et `plafond_bas` ;
+  - les réserves des revues (bases en plaques, bruit intermédiaire, ciel limité au haut de l'enveloppe, auréole du soleil, ombre d'un nuage sur son voisin) ;
+  - la densité dans `Environment` côté jeu ;
+  - une revue finale des quatre scènes de nuages, puis l'accord du joueur.
+  
+  L'olive de la toile et l'occlusion cuite peuvent attendre l'incrément 5.
+- **D** Prochaine amélioration recommandée : faire vérifier par l'historien le ton de la toile vernie, une seule valeur, puis la carte d'occlusion cuite.
+- **⚠** Envoi impossible : l'agent SSH ne tient toujours pas de clé. Trois commits locaux attendent.
