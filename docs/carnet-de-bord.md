@@ -3120,3 +3120,5 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - donner du relief au mur de nuage vu de près ;
   - le liseré des silhouettes ;
   - une poursuite longue, pour voir l'avion avalé nez en premier.
+- **Q** Le joueur : « as-tu poussé du code ? »
+- **R** Oui. Trois commits sont sur GitHub depuis celui de la toile, sur `main` et `main-tcd0yw` (toutes deux à `ad81dc3`) : `b4efb84` (scène de traversée, marche, voile des transparents, champ `sequence`), `aa73462` (profondeur de l'œil par image, vue du pilote) et `ad81dc3` (carnet et plan seulement).
