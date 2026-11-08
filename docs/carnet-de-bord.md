@@ -3154,3 +3154,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **⚠** Le nuage de la traversée a aussi changé (entrée franche à 225 m, sortie à 980 m) : instants des deux séquences recalés.
 - **A** Itérations sur le shader seul, qui se recharge sans recompiler, en captures rapides de trois scènes : v4 (arrondi dès la moitié de la hauteur, sommets plus bas), v6 et v7 (sommet mesuré par rapport au plus fort de la tache, sans plateau). v7 garde les tours du contre-jour et arrondit les sommets ; dans la traversée, le grand nuage vu de près reste une masse raide.
 - **A** Arbitrage demandé au directeur artistique sur les planches v0 à v7, avant de reporter la variante retenue dans le Rust. Rien de cette passe n'est encore commité.
+- **R** Arbitrage du directeur artistique : **v6**.
+  - Seule la tache la plus forte de la carte atteint le haut de la couche, sans plateau, quelle que soit la couverture ; les falaises deviennent des dômes bourgeonnants aux flancs en pente.
+  - v4 plafonnait les sommets (le contre-jour perdait ses tours, et les plateaux revenaient à forte couverture) ; v7 ramenait une ligne de crête presque horizontale.
+  - **Mur continu de la traversée** : c'est la scène. À une couverture de 0,55, l'empreinte des nuages approche le seuil de percolation (50 %) et les taches se soudent en crêtes de plusieurs kilomètres. Couverture à baisser à 0,45.
+  - **Contre-jour sans tours** : épaisseur à monter vers 1 200 m.
+  - **Défauts à corriger au portage** : dénominateur négatif sous une couverture de 0,04, `pow(0, …)` non défini en WGSL, constantes à nommer, test d'été à recaler.
+- **A** v6 reportée dans le modèle de référence et le WGSL, avec les correctifs (dénominateur borné, sortie avant `pow(0, …)`, constantes `SUMMIT_START`, `SUMMIT_POWER`, `SUMMIT_VARIATION`). Test de parité étendu aux couvertures 0,02 et 0 : ni nuage ni NaN.
+  - **⚠** v6 laissait des trous dans un couvert (77 % au lieu de plus de 95 % à couverture 1). **A** Les sommets remontent vers le haut de la couche selon la couverture puissance 8, sous 1 % jusqu'à 0,55.
+  - **A** Test de l'après-midi d'été recalé, avec sa justification : sommets (centile 90) de 600 m à 1,2 km, mesuré 740 m ; moyenne sur les colonnes de 350 à 700 m, mesuré 477 m, un dôme étant en moyenne deux fois moins épais qu'à son sommet ; ciel couvert à 38 %.
+  - **R** Hauteur médiane des parois au bord visible, v0 → v6 : 150 → 140 m (`cumulus_midi`), 250 → 190 m (traversée à 0,55), 150 → 110 m (`cumulus_sous_la_base`). Elle baisse, mais modestement.
+- **A** `cumulus_contre_jour` passe à 1 200 m d'épaisseur : les tours dépassent de nouveau l'horizon.
+- **A** Traversée à une couverture de 0,45, sur un nouveau nuage choisi avec la densité Rust (graine 85, base 600 m). Les premiers essais (graine 195) mettaient le bord du nuage à 200 m du départ : l'approche ne montrait qu'un mur blanc, et la dérive de l'avion vers le nord allongeait la traversée.
+  - Le SPAD survole à 1 000 m des sommets plus bas, puis entre dans une tour qui monte à 1 100 m, par son milieu (nuage plein à 100 m de part et d'autre de la route).
+  - Bord à 725 m (16,3 s), cœur à 760 m, sortie vers 1 175 m (26,5 s), ciel libre ensuite. 13 instants de 3 à 29 s.
+  - **R** Séquence dense : pas de saut, au plus 4,8·10⁻³ par paire d'images à l'entrée ; à la sortie, une rampe jusqu'à 1,3·10⁻².
+- **A** `just check` et `just test` passent. Skill `rendu-visuel`, fiche des nuages et plan du M3 à jour. Revue finale du directeur artistique en cours.

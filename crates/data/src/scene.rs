@@ -169,8 +169,8 @@ mod tests {
         std::fs::create_dir_all(dir.join("scenes")).unwrap();
         let text = std::fs::read_to_string(assets().join("scenes/traversee_nuage.ron")).unwrap();
         for (from, to) in [
-            ("[180, 300,", "[300, 180,"),
-            ("1245]", "1320]"),
+            ("[180, 480,", "[480, 180,"),
+            ("1605]", "1740]"),
             ("[180,", "[0,"),
         ] {
             std::fs::write(dir.join("scenes/bad.ron"), text.replace(from, to)).unwrap();

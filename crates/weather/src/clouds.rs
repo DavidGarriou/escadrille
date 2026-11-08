@@ -5,8 +5,10 @@
 //! - a 2D weather map, carried by the wind, places the clouds one by one and varies their
 //!   type from place to place;
 //! - each type (stratus, stratocumulus, cumulus) has its thickness and its vertical
-//!   profile; the cover of the weather map sets how high each cloud rises in its layer,
-//!   which makes an envelope tall in its middle and low at its edges: a dome;
+//!   profile; how far a point lies into a clump of the weather map sets how high its
+//!   cloud rises, from nothing at the clump's edge: only the map's strongest clump reaches
+//!   the layer's top, and each cloud has its own summit. A cumulus rounds off from half
+//!   its height, so that its envelope narrows upwards: a dome, not a cliff;
 //! - a 3D shape noise (Perlin-Worley) erodes the envelope into billows, and a finer
 //!   detail noise (Worley) erodes their edges: wisps at the bottom, curls above.
 //!
@@ -32,9 +34,29 @@ pub const WEATHER_SIZE: u32 = 512;
 
 /// Height fraction where each type of cloud reaches its full profile, and where it starts
 /// to fall off towards its top: stratus, stratocumulus, cumulus. Cumulus have flat bases
-/// and rounded tops; stratus are a thin, even sheet.
+/// and rounded tops; stratus are a thin, even sheet. A cumulus rounds off from half its
+/// height: full until 65 % (the profile before 2026-11-08), it kept its edge where the
+/// cover ran out at every height below, and stood as a wall (art director's review of
+/// `traversee_nuage`).
 const RISE_END: [f32; 3] = [0.1, 0.15, 0.06];
-const FALL_START: [f32; 3] = [0.4, 0.5, 0.65];
+const FALL_START: [f32; 3] = [0.4, 0.5, 0.5];
+
+/// Summit of a cloud, as a share of its layer: how far a point lies along the cover's
+/// ramp, from SUMMIT_START of it to the weather map's strongest value, to the power
+/// SUMMIT_POWER (steep from the edge, rounded towards the top). Only the strongest clump
+/// of the map reaches the layer's top, whatever the cover. Before 2026-11-08 the summit
+/// was the cover itself, saturated at the ramp's end: every core reached the layer's top,
+/// flat at one height. Variant v6 of the art director's choice; ESTIMÉ.
+const SUMMIT_START: f32 = 0.1;
+const SUMMIT_POWER: f32 = 0.7;
+/// How much lower the summits are where the weather map's type noise leans away from the
+/// layer's type: up to 25 %, from one group of clouds to the next, a few kilometres apart.
+/// ESTIMÉ.
+const SUMMIT_VARIATION: f32 = 0.25;
+/// As the cover nears 1, the summits rise to the layer's top, by the cover to this power:
+/// an overcast is a sheet without gaps. Negligible for scattered clouds (under 1 % below
+/// a cover of 0.55).
+const OVERCAST_POWER: i32 = 8;
 
 /// Height fraction over which the detail noise turns from wisps (at the base) to billows:
 /// a thin band, since the base of a cumulus is flat and sharp.
@@ -80,22 +102,33 @@ impl CloudTextures {
         let weather = self
             .weather
             .sample(Vec2::new(position.x, position.z) * u.weather_inverse_scale + u.weather_offset);
-        let cover = saturate((weather.x - (1.0 - u.cover)) / u.cover_softness);
+        // How far into the cover's ramp: 0 where it starts, 1 where it ends, and the
+        // strongest value of the map at `cover / cover_softness`.
+        let ramp = (weather.x - (1.0 - u.cover)) / u.cover_softness;
+        let strongest = u.cover / u.cover_softness;
+        let rise = saturate((ramp - SUMMIT_START) / (strongest - SUMMIT_START).max(1e-3));
+        if rise <= 0.0 {
+            return Coarse::CLEAR;
+        }
+        let dome = rise.powf(SUMMIT_POWER) * (1.0 - SUMMIT_VARIATION * (1.0 - weather.y));
+        let overcast = u.cover.powi(OVERCAST_POWER);
+        let summit = dome + (1.0 - dome) * overcast;
+        let cover = saturate(ramp);
         let cloud_type = saturate(u.cloud_type + (weather.y - 0.5) * u.type_variation);
         let thickness = blend_types(u.thickness.to_array(), cloud_type);
         let height = (position.y + u.altitude_offset - u.base_altitude) / thickness;
-        if height <= 0.0 || height >= cover {
+        if height <= 0.0 || height >= summit {
             return Coarse::CLEAR;
         }
         let shape = self
             .shape
             .sample(position * u.shape_inverse_scale + u.shape_offset);
-        let envelope = cover * profile(height / cover, cloud_type);
+        let envelope = cover * profile(height / summit, cloud_type);
         let eaten = (1.0 - shape) * u.shape_erosion;
         Coarse {
             density: ((envelope - eaten) / (1.0 - eaten)).max(0.0),
             height,
-            above: (cover - height) * thickness,
+            above: (summit - height) * thickness,
         }
     }
 
@@ -155,7 +188,8 @@ impl Coarse {
 }
 
 /// Vertical profile of a type of cloud (0 stratus, ½ stratocumulus, 1 cumulus) at a
-/// height fraction of its layer: the share of the shape noise kept there.
+/// height fraction of its envelope, from its base to its summit: the share of the shape
+/// noise kept there.
 pub fn profile(height: f32, cloud_type: f32) -> f32 {
     let of_type = |n: usize| {
         smoothstep(0.0, RISE_END[n], height) * (1.0 - smoothstep(FALL_START[n], 1.0, height))

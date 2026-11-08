@@ -386,7 +386,7 @@ mod tests {
     #[test]
     fn a_sequence_saves_its_earlier_frames_next_to_the_last() {
         let r = CaptureRequest::new("traversee_nuage".into(), None, (640, 360), None).unwrap();
-        assert_eq!(r.sequence.len(), 11);
+        assert_eq!(r.sequence.len(), 13);
         assert_eq!(
             r.sequence[0],
             (
@@ -396,10 +396,10 @@ mod tests {
         );
         // A shorter run keeps the frames it reaches.
         let out = Some(PathBuf::from("shots/entry.png"));
-        let short = CaptureRequest::new("traversee_nuage".into(), Some(400), (640, 360), out);
+        let short = CaptureRequest::new("traversee_nuage".into(), Some(900), (640, 360), out);
         let short = short.unwrap();
         assert_eq!(short.sequence.len(), 4);
-        assert_eq!(short.sequence[3].1, Path::new("shots/entry-0390.png"));
+        assert_eq!(short.sequence[3].1, Path::new("shots/entry-0840.png"));
     }
 
     #[test]

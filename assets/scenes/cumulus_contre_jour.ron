@@ -3,5 +3,5 @@ Scene(
     scenario: "vol-2000",
     camera: Chase(yaw: Deg(90.0), pitch: Deg(5.0)),
     sun: Some((azimuth: Deg(180.0), elevation: Deg(9.0))),
-    clouds: Some((base: M(1500.0), cover: 0.45, cloud_type: 1.0, thickness: Some(M(900.0)), seed: 20)),
+    clouds: Some((base: M(1500.0), cover: 0.45, cloud_type: 1.0, thickness: Some(M(1200.0)), seed: 20)),
 )

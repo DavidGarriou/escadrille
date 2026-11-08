@@ -88,9 +88,10 @@ Chacun laisse le jeu lançable, avec tests, `just check`, `just test`, captures 
   - les surfaces transparentes se voilent elles-mêmes du brouillard.
 
   Pas de saut à l'entrée ni à la sortie. Approuvée par le directeur artistique.
+- **cumulus arrondis** (2026-11-08) : sommet propre à chaque nuage, sans plateau au haut de la couche, et profil qui s'arrondit dès la moitié de la hauteur (variante v6 du directeur artistique) ; traversée à une couverture de 0,45 sur une nouvelle tour ; contre-jour à 1 200 m d'épaisseur.
 - **Restent pour clore l'incrément 1** :
   - `plafond_bas` ;
-  - les sommets des cumulus en falaises, à arrondir ;
+  - une variation du sommet d'une tour à l'autre (un troisième canal de la carte, vers 1 km) ; la couverture par défaut de `CloudLayer` (0,55, au seuil où les taches se soudent) ;
   - le relief du mur de nuage vu de près ;
   - le liseré clair des silhouettes dans le brouillard ;
   - les réserves ouvertes (ombre d'un nuage sur son voisin, bases tranchées, auréole du soleil) ;

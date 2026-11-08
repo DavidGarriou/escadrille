@@ -1,20 +1,25 @@
 // The SPAD flies through a cumulus, seen from the chase: one flight, captured at the
 // frames of `sequence` and at the last (art director's criteria of 2026-11-07: no jump on
 // entering, the parts of the aircraft deeper in the cloud fade first, the aircraft darkens
-// as it goes deeper). The seed and the base put the cloud on the path, worked out from
-// `escadrille_weather`'s density along it (2026-11-08): at 1 000 m, 300 m above the base,
-// a wisp from 265 m east of the start, the core from 305 m (6.9 s at 160 km/h), the far
-// flank at 915 m (20.6 s).
+// as it goes deeper). The seed and the base put a cumulus tower on the path, worked out
+// from `escadrille_weather`'s density along it (2026-11-08, domed cumulus): the SPAD
+// flies at 1 000 m over the tops of lower clouds into a tower rising to 1 100 m, through
+// its middle (full cloud 100 m either side of the path, which the hands-off flight
+// drifts off a little); its edge 725 m east of the start (16.3 s at 160 km/h), the core
+// from 760 m (17.1 s), the far flank fading from 1 155 to 1 180 m (26.5 s), clear sky
+// beyond. A cover of 0.45: at 0.55 the clumps of the weather map joined into ridges
+// kilometres long, a wall to the horizon (art director's review).
 Scene(
     description: "Le SPAD traverse un cumulus, vu de la poursuite : l'approche du flanc éclairé, l'entrée par le voile puis le cœur, le brouillard blanc où l'avion s'estompe et s'assombrit, la sortie dans le soleil. Une capture par instant de la séquence.",
     scenario: "vol-essai",
     camera: Chase(yaw: Deg(-15.0), pitch: Deg(4.0)),
     sun: Some((azimuth: Deg(180.0), elevation: Deg(58.0))),
-    clouds: Some((base: M(700.0), cover: 0.55, cloud_type: 1.0, seed: 63)),
-    // Approach (3 s), the wall ahead (5 s), the nose in the wisp (6 s), the camera in the
-    // wisp (6.5 s), the aircraft in the core (7 s), the camera into the core (7.1 s, the
-    // likeliest moment for a jump), deeper (7.5 s), deep inside (10 s), the far flank
-    // (19.5 s), the aircraft out (20.25 s, 20.75 s); the last, in the sun again (22 s).
-    sequence: [180, 300, 360, 390, 420, 426, 450, 600, 1170, 1215, 1245],
-    frames: Some(1320),
+    clouds: Some((base: M(600.0), cover: 0.45, cloud_type: 1.0, seed: 85)),
+    // The tower afar (3 s), nearer over the lower clouds (8 s, 11 s), the wall ahead
+    // (14 s), the nose in the edge (16.3 s), the camera in the wisp (16.6 s), the aircraft
+    // in the core (17 s), the camera into the core (17.2 s, the likeliest moment for a
+    // jump), both inside (18 s), deep inside (21 s), near the far flank (25.5 s), the
+    // aircraft out (26.55 s), the camera out (26.75 s); the last, in the sun again (29 s).
+    sequence: [180, 480, 660, 840, 978, 996, 1020, 1032, 1080, 1260, 1530, 1593, 1605],
+    frames: Some(1740),
 )

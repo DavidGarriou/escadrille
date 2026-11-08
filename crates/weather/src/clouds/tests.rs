@@ -103,9 +103,9 @@ fn profiles_are_zero_at_base_and_top_and_full_between() {
         assert_eq!(profile(1.0, cloud_type), 0.0);
         assert!((profile(0.25, cloud_type) - 1.0).abs() < 1e-6);
     }
-    // Cumulus have flatter bases than stratocumulus, and reach higher.
+    // Cumulus have flatter bases than stratocumulus; they round off from half their height.
     assert!(profile(0.05, 1.0) > profile(0.05, 0.5));
-    assert!(profile(0.7, 1.0) > profile(0.7, 0.5));
+    assert!(profile(0.6, 1.0) < 1.0);
 }
 
 #[test]
@@ -161,10 +161,13 @@ fn densities_are_bounded_and_the_detail_only_erodes() {
 #[test]
 fn a_summer_afternoon_has_scattered_cumulus() {
     // Columns over 30 km: the share of sky with a cloud above, scattered (3 to 4 eighths),
-    // and the mean depth of cloud in the cloudy columns, cumulus humilis to mediocris.
+    // and the depth of cloud in the cloudy columns, cumulus humilis to mediocris: summits
+    // (the deepest tenth of the columns) of 600 m to 1.2 km. A dome is about half as deep
+    // on average over its columns as at its summit: the mean, 350 to 700 m, was 500 to
+    // 850 m when the cumulus stood full to 65 % of their height (before 2026-11-08).
     let layer = CloudLayer::default();
     let uniforms = layer.uniforms(0.0, DVec3::ZERO);
-    let (mut cloudy, mut depth_sum) = (0, 0.0);
+    let mut depths = Vec::new();
     let columns = 4_000;
     for p in positions(columns, 30_000.0, 0.0) {
         let depth = (0..60)
@@ -174,16 +177,72 @@ fn a_summer_afternoon_has_scattered_cumulus() {
             })
             .count();
         if depth > 0 {
-            cloudy += 1;
-            depth_sum += 20.0 * depth as f32;
+            depths.push(20.0 * depth as f32);
         }
     }
-    let share = cloudy as f32 / columns as f32;
-    let depth = depth_sum / cloudy as f32;
+    let share = depths.len() as f32 / columns as f32;
+    let mean = depths.iter().sum::<f32>() / depths.len() as f32;
+    depths.sort_by(f32::total_cmp);
+    let summits = depths[depths.len() * 9 / 10];
     assert!((0.35..0.5).contains(&share), "sky covered: {share}");
+    assert!((350.0..700.0).contains(&mean), "mean cloud depth: {mean} m");
+    assert!((600.0..1_200.0).contains(&summits), "summits: {summits} m");
+}
+
+/// The summer afternoon's layer over 4.5 km, on a grid of 50 m: the height above the base
+/// of the highest cloud (before the detail noise) in each column, every 10 m; `None`
+/// over clear sky.
+fn tops() -> (Vec<Option<f32>>, usize, f32) {
+    let layer = CloudLayer::default();
+    let uniforms = layer.uniforms(0.0, DVec3::ZERO);
+    let (base, thickness) = (layer.base_altitude as f32, layer.thickness[2] as f32);
+    let n = 90;
+    let tops = (0..n * n)
+        .map(|k| {
+            let (x, z) = ((k % n) as f32 * 50.0, (k / n) as f32 * 50.0);
+            (0..(thickness / 10.0) as u32)
+                .rev()
+                .map(|step| 10.0 * step as f32)
+                .find(|h| {
+                    let p = Vec3::new(x, base + h + 5.0, z);
+                    textures().coarse(&uniforms, p).density > 0.0
+                })
+        })
+        .collect();
+    (tops, n, thickness)
+}
+
+#[test]
+fn cumulus_rise_from_their_edges_to_summits_of_their_own() {
+    let (tops, n, thickness) = tops();
+    // The flanks: the top of the cloudy columns beside a clear one, at the visible edge.
+    let mut walls: Vec<f32> = Vec::new();
+    for j in 1..n - 1 {
+        for i in 1..n - 1 {
+            let Some(top) = tops[j * n + i] else { continue };
+            let beside = [
+                j * n + i - 1,
+                j * n + i + 1,
+                (j - 1) * n + i,
+                (j + 1) * n + i,
+            ];
+            if beside.iter().any(|&k| tops[k].is_none()) {
+                walls.push(top);
+            }
+        }
+    }
+    walls.sort_by(f32::total_cmp);
+    let wall = walls[walls.len() / 2] / thickness;
+    // The summits: cores whose cover saturated all reached the layer's top, flat at one
+    // height. Measured with the profile before 2026-11-08: 7.6 % of the cloudy columns
+    // above 90 % of the layer, a median wall of 0.15 of it (on the scenes' layers, 0.21).
+    let cloudy: Vec<f32> = tops.iter().flatten().copied().collect();
+    let high = cloudy.iter().filter(|&&t| t > 0.9 * thickness).count() as f32;
+    let high = high / cloudy.len() as f32;
+    assert!(high < 0.01, "share of columns near the layer's top: {high}");
     assert!(
-        (500.0..850.0).contains(&depth),
-        "mean cloud depth: {depth} m"
+        wall < 0.14,
+        "median wall at the visible edge: {wall} of the layer"
     );
 }
 

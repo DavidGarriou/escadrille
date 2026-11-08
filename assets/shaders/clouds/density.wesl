@@ -37,7 +37,14 @@ struct CloudUniforms {
 // Height fraction where each type (stratus, stratocumulus, cumulus) reaches its full
 // profile, and where it starts to fall off towards its top.
 const CLOUD_RISE_END = vec3<f32>(0.1, 0.15, 0.06);
-const CLOUD_FALL_START = vec3<f32>(0.4, 0.5, 0.65);
+const CLOUD_FALL_START = vec3<f32>(0.4, 0.5, 0.5);
+
+// The summit of a cloud: from where on the cover's ramp it starts, to what power it rises
+// up to the map's strongest value, how much lower it is where the type noise leans away
+// from the layer's type.
+const CLOUD_SUMMIT_START: f32 = 0.1;
+const CLOUD_SUMMIT_POWER: f32 = 0.7;
+const CLOUD_SUMMIT_VARIATION: f32 = 0.25;
 
 // Gain of the final density: the core reaches full density, the edge is sharp.
 const CLOUD_SHARPNESS: f32 = 4.0;
@@ -55,7 +62,7 @@ fn cloud_blend_types(values: vec3<f32>, cloud_type: f32) -> f32 {
     );
 }
 
-// Vertical profile of a type of cloud at a height fraction of its layer.
+// Vertical profile of a type of cloud at a height fraction of its envelope.
 fn cloud_profile(height: f32, cloud_type: f32) -> f32 {
     let rise = vec3<f32>(
         smoothstep(0.0, CLOUD_RISE_END.x, height),
@@ -83,19 +90,36 @@ fn cloud_coarse(
     let w = textureSampleLevel(
         weather, repeat_linear, position.xz * u.weather_inverse_scale + u.weather_offset, 0.0,
     ).rg;
-    let cover = saturate((w.x - (1.0 - u.cover)) / u.cover_softness);
+    // How far into the cover's ramp: 0 where it starts, 1 where it ends, and the strongest
+    // value of the map at cover / cover_softness. No summit, no cloud: and no pow(0, …),
+    // which WGSL leaves undefined.
+    let ramp = (w.x - (1.0 - u.cover)) / u.cover_softness;
+    let strongest = u.cover / u.cover_softness;
+    let rise = saturate(
+        (ramp - CLOUD_SUMMIT_START) / max(strongest - CLOUD_SUMMIT_START, 1e-3),
+    );
+    if rise <= 0.0 {
+        return vec3<f32>(0.0);
+    }
+    let dome = pow(rise, CLOUD_SUMMIT_POWER) * (1.0 - CLOUD_SUMMIT_VARIATION * (1.0 - w.y));
+    // As the cover nears 1, the summits rise to the layer's top (the cover to the 8th): an
+    // overcast is a sheet. Squared three times, not pow, which WGSL leaves undefined at 0.
+    let c2 = u.cover * u.cover;
+    let c4 = c2 * c2;
+    let summit = dome + (1.0 - dome) * c4 * c4;
+    let cover = saturate(ramp);
     let cloud_type = saturate(u.cloud_type + (w.y - 0.5) * u.type_variation);
     let thickness = cloud_blend_types(u.thickness, cloud_type);
     let height = (position.y + u.altitude_offset - u.base_altitude) / thickness;
-    if height <= 0.0 || height >= cover {
+    if height <= 0.0 || height >= summit {
         return vec3<f32>(0.0);
     }
     let s = textureSampleLevel(
         shape, repeat_linear, position * u.shape_inverse_scale + u.shape_offset, 0.0,
     ).r;
-    let envelope = cover * cloud_profile(height / cover, cloud_type);
+    let envelope = cover * cloud_profile(height / summit, cloud_type);
     let eaten = (1.0 - s) * u.shape_erosion;
-    return vec3<f32>(max((envelope - eaten) / (1.0 - eaten), 0.0), height, (cover - height) * thickness);
+    return vec3<f32>(max((envelope - eaten) / (1.0 - eaten), 0.0), height, (summit - height) * thickness);
 }
 
 // Density of the clouds, 0 to 1: the share of the full extinction.

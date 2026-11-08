@@ -17,6 +17,14 @@ Dans un simulateur de 14-18, les nuages sont à la fois le décor principal et u
 - **Profil vertical** par type (stratus, cumulus, cumulonimbus) ; couches distinctes possibles (cirrus en 2D ou en couche fine).
 - Fonction `cloud_density(pos_monde, temps) -> f32` écrite **deux fois** : en WGSL pour le rendu, en Rust pour le jeu. Test de parité obligatoire.
 - **En place** (2026-11-07) : la référence Rust est dans la crate `escadrille_weather` (`crates/weather/src/clouds.rs`), sans Bevy. Elle suit le schéma de *Nubis* : la carte météo place chaque nuage et fixe sa hauteur, le bruit de forme érode son enveloppe. Couper le bruit de forme par la couverture dessinait une grille de nuages identiques, à la période du bruit.
+- **Forme des cumulus** (2026-11-08, variante v6 retenue par le directeur artistique) :
+  - **sommet** : la position du point entre 0,1 de la rampe de couverture et la valeur la plus forte de la carte, à la puissance 0,7, abaissée jusqu'à 25 % par le bruit de type. Seule la tache la plus forte atteint le haut de la couche, et chaque nuage a son sommet. Avant, le sommet était la couverture elle-même, saturée au cœur des taches : tous les cœurs montaient au haut de la couche, plats à une même hauteur ;
+  - **profil** : le cumulus s'arrondit dès la moitié de sa hauteur (avant : plein jusqu'à 65 %, d'où des parois verticales) ;
+  - **couvert** : vers une couverture de 1, les sommets remontent au haut de la couche (couverture puissance 8), pour qu'un couvert reste une nappe sans trou ;
+  - **pièges** : borner le dénominateur (couverture sous 0,04) et sortir avant `pow(0, …)`, que WGSL ne définit pas ; le test de parité couvre ces cas ;
+  - **essai rejeté** : un dôme 1 − h² sur toute la hauteur abaissait les parois sur le banc de mesure, mais vidait le haut des nuages, que l'érosion mangeait : les tours du contre-jour devenaient une mer de nuages. Juger la forme sur image, pas sur la seule mesure des parois ;
+  - **mesure** : hauteur médiane de la colonne au bord visible, de 150-250 m à 110-190 m ; le bord reste raide sur 100 à 200 m ;
+  - **couverture** : à 0,55, l'empreinte des nuages approche le seuil de percolation (50 %) et les taches se soudent en crêtes de plusieurs kilomètres. Pour des cumulus séparés, rester vers 0,45.
 - **Jumeau WGSL** : `assets/shaders/clouds/density.wesl`, en WGSL pur sans import. Textures et échantillonneur y sont des paramètres de fonction : chaque passe les lie où elle veut. Le test `render::clouds::tests::the_gpu_density_is_the_reference` le compile tel quel, le lance sur le GPU sur 65 536 points et compare. Écart au pire de 3,5·10⁻³ sur la RX 7800 XT, dû à l'arrondi des poids du filtrage matériel.
 
 ## Éclairage

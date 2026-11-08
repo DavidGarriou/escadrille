@@ -849,18 +849,19 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
     #[test]
     fn the_eye_is_deep_in_a_cloud_only_inside_it_and_sinks_in_smoothly() {
         // The cumulus of traversee_nuage, on the path east at 1 000 m.
-        let textures = CloudTextures::generate(63);
+        let textures = CloudTextures::generate(85);
         let layer = CloudLayer {
-            base_altitude: 700.0,
+            base_altitude: 600.0,
+            cover: 0.45,
             ..CloudLayer::default()
         };
         let uniforms = layer.uniforms(0.0, DVec3::ZERO);
         let to_sun = Vec3::new(0.0, 0.85, 0.53);
         let at = |east: f32| eye_depth(&textures, &uniforms, Vec3::new(east, 1_000.0, 0.0), to_sun);
         assert_eq!(at(100.0), 0.0);
-        assert!(at(550.0) > 5.0, "core: {}", at(550.0));
+        assert!(at(950.0) > 5.0, "core: {}", at(950.0));
         // Entering, by quarters of a metre: a slope (0.7 per metre at most), no jump.
-        let depths: Vec<f32> = (0..600).map(|i| at(250.0 + 0.25 * i as f32)).collect();
+        let depths: Vec<f32> = (0..600).map(|i| at(700.0 + 0.25 * i as f32)).collect();
         for pair in depths.windows(2) {
             assert!((pair[1] - pair[0]).abs() < 0.25, "{pair:?}");
         }
@@ -990,5 +991,23 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
         // (its sharpness) multiplies that: 1.6e-2 at worst on the reference GPU (RX 7800
         // XT, RADV), 2.8e-5 on average, on 2026-11-07.
         assert!(worst < 0.04 && mean < 2e-4, "worst {worst}, mean {mean}");
+
+        // Where the summit vanishes: a cover so low that the map's strongest value lies
+        // before the summit's start (a denominator under zero, guarded), and no cover at
+        // all. No cloud on either side, and no NaN from the GPU.
+        for cover in [0.02, 0.0] {
+            let uniforms = CloudLayer {
+                cover,
+                ..CloudLayer::default()
+            }
+            .uniforms(0.0, DVec3::ZERO);
+            let gpu = gpu_densities(&textures, &uniforms, &positions[..4_096]);
+            assert!(gpu.iter().all(|d| *d == 0.0), "cover {cover}");
+            assert!(
+                positions[..4_096]
+                    .iter()
+                    .all(|p| textures.density(&uniforms, *p) == 0.0)
+            );
+        }
     }
 }

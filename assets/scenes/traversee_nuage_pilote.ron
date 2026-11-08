@@ -8,7 +8,7 @@ Scene(
     scenario: "vol-essai",
     camera: Pilot(yaw: Deg(40.0), pitch: Deg(-5.0)),
     sun: Some((azimuth: Deg(180.0), elevation: Deg(58.0))),
-    clouds: Some((base: M(700.0), cover: 0.55, cloud_type: 1.0, seed: 63)),
-    sequence: [180, 300, 360, 390, 420, 426, 450, 600, 1170, 1215, 1245],
-    frames: Some(1320),
+    clouds: Some((base: M(600.0), cover: 0.45, cloud_type: 1.0, seed: 85)),
+    sequence: [180, 480, 660, 840, 978, 996, 1020, 1032, 1080, 1260, 1530, 1593, 1605],
+    frames: Some(1740),
 )
