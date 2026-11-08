@@ -3020,3 +3020,9 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   L'olive de la toile et l'occlusion cuite peuvent attendre l'incrément 5.
 - **D** Prochaine amélioration recommandée : faire vérifier par l'historien le ton de la toile vernie, une seule valeur, puis la carte d'occlusion cuite.
 - **⚠** Envoi impossible : l'agent SSH ne tient toujours pas de clé. Trois commits locaux attendent.
+
+### Avance de `main`
+
+- **Q** Le joueur : « Oui, avancer main » (pousser `main-tcd0yw`, puis faire avancer `main` jusqu'à elle, en avance rapide, sans forcer).
+- **D** Accordé par le joueur : `main` rattrapera `main-tcd0yw`. L'avance est rapide, car `main` n'a aucun commit propre ; elle ne réécrit rien.
+- **⚠** Au moment de la réponse, l'agent SSH ne tient toujours pas de clé : l'envoi attend que le joueur la recharge.
