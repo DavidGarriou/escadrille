@@ -3042,3 +3042,10 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **A** Images envoyées au directeur artistique, qui doit lever ou confirmer sa réserve.
 - **R** Blender 5.2.2 est installé : le modèle pourra être reconstruit (`just modele spad7 assets`) si la couleur change.
 - **⚠** Le dépôt local est désormais sur la branche `main`, et non plus sur `main-tcd0yw` : le joueur l'a changée lui-même. Le commit précédent du carnet est donc arrivé sur `main`. **A** `main` est poussée, et `main-tcd0yw` avance jusqu'à elle en avance rapide, sur GitHub et en local : les deux restent identiques. Claude ne change pas de branche sans le demander. La mémoire du projet tient compte de ce cas.
+- **R** Verdict ferme du directeur artistique sur la SSAO : **approuvée**, rayon de 1,5 m et niveau « haut » gardés.
+  - **Intensité** : 0,76 à 0,80 de près, plausible pour des surfaces prises entre les plans.
+  - **Halos** : aucun visible, seulement des liserés d'un pixel aux silhouettes.
+  - **Coût** : 0,6 ms. Le post-traitement reste vers 1,05 ms, sous le budget de 1,5 ms.
+  - **Meilleur effet** : l'ombre de contact sous l'avion au sol ; le poste gagne en densité.
+  - **À surveiller en mouvement** : un léger grain sur le sol lointain (1 à 3 km), dans les ombres des nuages. S'il scintille, estomper la SSAO avec la distance.
+  - **Plus tard**, si le budget se tend : la couper en poursuite au-dessus d'une cinquantaine de mètres ; et cuire une carte d'occlusion pour le modelé de l'avion vu de l'extérieur.
