@@ -2958,3 +2958,39 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   
   Ce que cela règle aussi : les reflets du vernis et du verre montrent les nuages ; au-dessus d'une mer de nuages, leur lumière éclaire le dessous de l'avion (réserve de la revue) ; sous un plafond, la carte montre des bases grises au lieu d'un ciel bleu (prérequis de `plafond_bas`).
 - **D** Option B, plus courte mais jetable : une extension de matériau sur l'avion, qui pondère la lumière d'ambiance par l'hémisphère (pleine en haut, nulle en bas), et un albédo du sol teinté. Elle ne touche que l'avion, et la carte d'environnement reste fausse.
+
+## 2026-11-08
+
+### Le travail invisible sur GitHub
+
+- **Q** Le joueur : « je ne vois rien de ce que tu as poussé sur le dépôt. un git pull de mon côté ne donne rien (dépôt déjà à jour). explique-moi pourquoi et ensuite continue ».
+- **R** Tout le travail du projet est sur la branche `main-tcd0yw`, 243 commits devant `main`. `main` est resté au premier commit (`3a08e80`, 16 octobre), comme le carnet le note depuis le 16 octobre.
+  - Les envois vont vers `origin/main-tcd0yw`. Le dernier, `28195a5` (7 novembre), a bien réussi.
+  - Un `git pull` sur `main` n'a donc rien à récupérer. Dans ce dossier même, les commits sont déjà là, puisque Claude les y fait.
+  - Pour voir le travail : choisir la branche `main-tcd0yw` sur GitHub, ou `git fetch origin` puis `git switch main-tcd0yw` dans un autre clone.
+  - Pour que `main` rattrape la branche : une simple avance rapide, puisque `main` n'a aucun commit propre. Elle est proposée, pas faite.
+- **⚠** L'agent SSH a redémarré le 8 novembre (prise recréée à 13 h 58) et ne tient plus de clé : tout envoi échoue tant que le joueur ne l'a pas rechargée. Les commits de cette séance restent locaux d'ici là.
+
+### M3, incrément 1 : la lumière des nuages dans la carte d'environnement
+
+- **Q** Le joueur : « Plan A, la carte ».
+- **A** Passe de calcul `clouds/environment.wesl`, après `main_opaque_pass_3d`.
+  - Elle écrit dans le cube de la carte d'environnement de la caméra (`GeneratedEnvironmentMapLight`, 128² par face) : le ciel de l'atmosphère et les nuages.
+  - La marche des rayons est sortie de `render.wesl` dans une fonction partagée, `march.wesl`. Dans le cube, elle fait moins de pas (24 à 64 selon le niveau), avec un bruit fixe par texel.
+  - Bevy filtre ce cube au début de l'image suivante.
+- **⚠** Premier essai : le sol de l'atmosphère avait pris l'albédo des champs, comme prévu au plan. Sa multidiffusion a changé le ciel entier, même sans nuages : l'horizon de `vol-essai-poursuite` passait de (178, 190, 185) à (176, 186, 162), olive.
+  - **A** L'albédo de l'atmosphère reste donc le gris de la Terre. La passe retire, sous l'horizon, la planète de Bevy (même formule que `raymarch_atmosphere`) et met les champs à sa place.
+  - Les champs ont l'albédo moyen de leur palette, (0,15 ; 0,17 ; 0,06) en linéaire, sous le soleil atténué par l'ombre moyenne des nuages (1 − 0,76 × couverture) et sous le ciel.
+  - **R** Les scènes sans nuages sont identiques au pixel près.
+- **⚠** Sans l'`AmbientLight` uniforme, les ombres au sol de `cumulus_midi` redevenaient des lacs bleus : (103, 131, 152) puis (77, 107, 125). La carte, vue de la caméra au-dessus des nuages, montre un ciel clair, alors que le sol voit les bases.
+  - **A** Le sol seul (`render/ground.rs`, `shaders/ground.wesl`) garde la lumière des bases, 0,6 × couverture × E_sol / π, dans la part de la couche que la caméra survole.
+  - **R** Les ombres reviennent à (111, 138, 152).
+- **R** L'`AmbientLight` uniforme des nuages a disparu. L'avion à l'ombre de `cumulus_sous_la_base` a du modelé : clair dessus, plus sombre et plus chaud dessous. Mesure en linéaire, entre l'ombre et le soleil :
+  - faces du dessus : 0,27 à 0,31 de la lumière au soleil ;
+  - flancs : 0,30 (contre 0,39 à 0,43 avec l'ambiance uniforme) ;
+  - à l'ombre, le dessus du fuselage reçoit environ 10 % de plus que le dessous.
+
+  Le contre-jour est quasi inchangé.
+- **R** Coût : 0,09 à 0,13 ms en 1440p.
+- **A** Complément à l'ADR 0009 ; skills `rendu-visuel` (`SKILL.md`, `nuages-volumetriques.md`) et `bevy` (§ 9) ; plan du M3. Cinq tests nouveaux. `just check` et `just test` passent (430 tests). Commit local `35e5afe`, non poussé (clé absente).
+- **A** Revue du directeur artistique demandée sur la SSAO et l'ambiance.
