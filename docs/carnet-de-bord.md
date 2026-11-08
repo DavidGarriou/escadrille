@@ -3031,3 +3031,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **?** Proposé, à confirmer par le joueur : que `main` suive la branche à chaque envoi, toujours en avance rapide. L'accord donné vaut pour cet échange seulement.
 - **Q** Le joueur : « Oui, à chaque envoi ».
 - **D** Règle durable : à chaque envoi, Claude pousse `main-tcd0yw`, puis fait avancer `main` jusqu'à elle (`git push origin main-tcd0yw:main`), toujours en avance rapide. Si l'avance rapide est refusée, il s'arrête et demande au lieu de forcer. **A** Règle enregistrée dans la mémoire de Claude pour ce projet.
+
+### Suite : le ton de la toile et la réserve sur la SSAO
+
+- **Q** Le joueur : « continue les activités ».
+- **A** Recommandation du directeur artistique reprise : l'historien recherche la teinte de la toile vernie d'usine de 1916-1917 (sources, confiance, rapport entre bleu et rouge). Il met à jour `docs/recherche/spad7-aspect.md` § 12.1 sans toucher à `livrees.ron`. La couleur du jeu ne changera que si une source le justifie.
+- **A** Images de la SSAO seule refaites (les premières avaient disparu avec le redémarrage) : code actuel, sans puis avec la SSAO.
+  - **R** En vue pilote, la lumière est multipliée par 0,80 sous l'aile haute, par 0,76 sur le mât avant gauche et le flanc du capot, et par 0,97 sur le dessus du fuselage au soleil.
+  - **R** 41 % des pixels de la vue pilote s'assombrissent de plus de 5 %, contre 5,6 % pour `avion-studio` et 3,0 % pour `cumulus_sous_la_base`. Coût : 0,59 à 0,61 ms.
+  - **A** Images envoyées au directeur artistique, qui doit lever ou confirmer sa réserve.
+- **R** Blender 5.2.2 est installé : le modèle pourra être reconstruit (`just modele spad7 assets`) si la couleur change.
