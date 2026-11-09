@@ -49,9 +49,6 @@ struct CloudPass {
     // and the share of their sunlight the clouds' mean shadow leaves them.
     ground_albedo: vec3<f32>,
     ground_shade: f32,
-    // How deep the eye is in the clouds: the least optical depth around it, one value for
-    // the frame (`eye_depth` of `clouds.rs`); zero in clear air.
-    eye_depth: f32,
 }
 
 @group(1) @binding(0) var<uniform> clouds: CloudUniforms;
@@ -102,10 +99,14 @@ const OPAQUE: f32 = 0.01;
 // Offset of the second jitter from the first, the golden ratio's fraction: the place of
 // the sample of the stretch before the first look.
 const SECOND_JITTER: f32 = 0.618034;
-// Depth of the eye in the clouds over which every ray, not only those across or down,
-// comes to see the sky back through the eye's side: entering a cloud, the rays looking up
-// change over gradually.
-const EYE_DEPTH_RAMP: f32 = 2.0;
+// The march towards the sky from a sample (`optical_depth_to_sky`): first step, m, growth
+// of each next one, steps (10, 30, 90, 270 m: 400 m), and how far it leans towards the
+// eye's side, horizontal against vertical (45° when the eye looks across). Twins of
+// `SKY_*` in `escadrille_weather::clouds`.
+const SKY_STEP: f32 = 10.0;
+const SKY_GROWTH: f32 = 3.0;
+const SKY_STEPS: u32 = 4u;
+const SKY_LEAN: f32 = 1.0;
 
 fn henyey_greenstein(cos_theta: f32, g: f32) -> f32 {
     let g2 = g * g;
@@ -187,6 +188,35 @@ fn air_transmittance(r: f32, mu: f32, t: f32) -> vec3<f32> {
     return exp(-depth);
 }
 
+// Optical depth of the clouds from a sample towards the sky: up, leaning towards the eye's
+// side (`toward_eye`, horizontal, as long as the eye's ray is level), which is open for a
+// flank the eye sees; the full density on the first step, the coarse one beyond. Under an
+// overhang or at the foot of a tower the sky is far; on a top or an open flank, near.
+// Taken until 2026-11-09 to the top of the envelope, or back along the eye's ray on a
+// flank, which is nothing at the surface: every sample the eye saw took the whole sky,
+// and the shaded faces of the contre-jour were even (art director's review).
+fn optical_depth_to_sky(position: vec3<f32>, toward_eye: vec3<f32>) -> f32 {
+    let direction = normalize(vec3<f32>(0.0, 1.0, 0.0) + SKY_LEAN * toward_eye);
+    var depth = 0.0;
+    var travelled = 0.0;
+    var step = SKY_STEP;
+    for (var i = 0u; i < SKY_STEPS; i++) {
+        let at = position + direction * (travelled + 0.5 * step);
+        var density = 0.0;
+        if i == 0u {
+            density = cloud_density(
+                clouds, shape_noise, detail_noise, weather_map, cloud_sampler, at,
+            );
+        } else {
+            density = cloud_coarse(clouds, shape_noise, weather_map, cloud_sampler, at).x;
+        }
+        depth += density * step;
+        travelled += step;
+        step *= SKY_GROWTH;
+    }
+    return depth * clouds.extinction;
+}
+
 // Radiance of the sky over a cloud, averaged over its upper half: the zenith and four
 // directions 30° above the horizon, from the sky-view table at the camera's height.
 fn sky_radiance(r: f32) -> vec3<f32> {
@@ -253,14 +283,8 @@ fn march(eye: vec3<f32>, direction: vec3<f32>, far_away: f32, first: f32) -> Mar
     let ground = GROUND_ALBEDO / PI * (sun_on_ground * (1.0 - clouds.cover) + PI * sky);
     let cos_theta = dot(direction, to_sun);
     let single_phase = phase(cos_theta);
-    // How much the eye's side of a cloud opens on the sky: fully when the eye looks down
-    // or across, not at all when it looks up at a base, whose eye's side faces the ground.
-    // From inside a cloud the eye looks at no flank: the eye's side of a sample opens on the
-    // sky only beyond the cloud around the eye, whatever the direction (traversee_nuage:
-    // the rays under the horizon took the sky's blue, those above did not, and a line
-    // split the fog).
-    let inside = saturate(cloud_pass.eye_depth / EYE_DEPTH_RAMP);
-    let flank_weight = mix(saturate(1.0 - 2.0 * direction.y), 1.0, inside);
+    // The eye's side, horizontal: the sky's march leans towards it.
+    let toward_eye = -vec3<f32>(direction.x, 0.0, direction.z);
 
     var transmittance = 1.0;
     var light = vec3<f32>(0.0);
@@ -331,19 +355,12 @@ fn march(eye: vec3<f32>, direction: vec3<f32>, far_away: f32, first: f32) -> Mar
         let r = length(atmosphere_position);
         let up = atmosphere_position / r;
         let sun_through_air = sun * sample_transmittance_lut(r, dot(to_sun, up));
-        // Cloud on each side: towards the sun; for the sky, up to the top of the envelope,
-        // or back along the eye's ray when the eye looks at a flank, which sees the sky in
-        // front of it (third review: flanks lost the sky's blue), and beyond the eye
-        // through the cloud around it; down to the base of the layer, for the ground; at
-        // the density of the sample.
+        // Cloud on each side: towards the sun; for the sky, by a short march up and towards
+        // the eye's side, open on a flank the eye sees (third review: flanks lost the sky's
+        // blue), or up to the top of the envelope at the density of the sample, the nearer;
+        // down to the base of the layer, for the ground, at the density of the sample.
         let depth_to_sun = optical_depth_to_sun(position, to_sun);
-        let depth_eye = cloud_pass.eye_depth - log(max(transmittance, OPAQUE))
-            + 0.5 * extinction * stretch;
-        let depth_up = mix(
-            extinction * coarse.z,
-            min(extinction * coarse.z, depth_eye),
-            flank_weight,
-        );
+        let depth_up = min(extinction * coarse.z, optical_depth_to_sky(position, toward_eye));
         let depth_down = extinction * (position.y - bottom);
         let scattered = sun_through_air * sun_scattering(depth_to_sun, single_phase)
             + ambient_scattering(sky, ground, depth_up, depth_down);

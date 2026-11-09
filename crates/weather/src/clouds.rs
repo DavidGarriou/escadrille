@@ -58,6 +58,15 @@ const SUMMIT_VARIATION: f32 = 0.25;
 /// a cover of 0.55).
 const OVERCAST_POWER: i32 = 8;
 
+/// The march towards the sky from a sample of the clouds ([`CloudTextures::optical_depth_to_sky`]):
+/// first step, m, growth of each next one, steps (10, 30, 90, 270 m: 400 m), and how far it
+/// leans towards the eye's side, horizontal against vertical (45° when the eye looks
+/// across). Twins of `SKY_*` in `march.wesl`.
+pub const SKY_STEP: f32 = 10.0;
+pub const SKY_GROWTH: f32 = 3.0;
+pub const SKY_STEPS: u32 = 4;
+pub const SKY_LEAN: f32 = 1.0;
+
 /// Height fraction over which the detail noise turns from wisps (at the base) to billows:
 /// a thin band, since the base of a cumulus is flat and sharp.
 const WISPS_HEIGHT: f32 = 0.03;
@@ -152,21 +161,32 @@ impl CloudTextures {
         self.density(uniforms, position) * uniforms.extinction
     }
 
-    /// Optical depth of the clouds over `reach` metres from a position along a direction
-    /// (unit), the extinction taken at the middle of steps of `step` metres. It does not
-    /// stop where a cloud ends: it changes smoothly with the position and the direction.
-    pub fn optical_depth(
+    /// Optical depth of the clouds from a sample towards the sky: the reference of
+    /// `optical_depth_to_sky` in `assets/shaders/clouds/march.wesl`. A short march up,
+    /// leaning towards the eye's side (`toward_eye`, horizontal, as long as the eye's ray is
+    /// level), open for a flank the eye sees: the full density on the first step, the
+    /// coarse one beyond. Under an overhang or at the foot of a tower the sky is far; on a
+    /// top or an open flank, near.
+    pub fn optical_depth_to_sky(
         &self,
         uniforms: &CloudUniforms,
-        from: Vec3,
-        direction: Vec3,
-        reach: f32,
-        step: f32,
+        position: Vec3,
+        toward_eye: Vec3,
     ) -> f32 {
-        let steps = (reach / step).ceil() as u32;
-        (0..steps)
-            .map(|i| self.extinction(uniforms, from + direction * ((i as f32 + 0.5) * step)) * step)
-            .sum()
+        let direction = (Vec3::Y + SKY_LEAN * toward_eye).normalize();
+        let (mut depth, mut travelled, mut step) = (0.0, 0.0, SKY_STEP);
+        for i in 0..SKY_STEPS {
+            let at = position + direction * (travelled + 0.5 * step);
+            let density = if i == 0 {
+                self.density(uniforms, at)
+            } else {
+                self.coarse(uniforms, at).density
+            };
+            depth += density * step;
+            travelled += step;
+            step *= SKY_GROWTH;
+        }
+        depth * uniforms.extinction
     }
 }
 

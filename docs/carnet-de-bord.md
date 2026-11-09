@@ -3245,3 +3245,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **Limites acceptées** : un cumulus éclairé de face est plat ; un flanc nord en plein soleil de midi est gris et doux. Notées dans la fiche des nuages.
   - **Le liseré n'est pas encore là** : ce qui fait un liseré, c'est un fil clair sur un corps sombre, et les faces à l'ombre sont trop claires et uniformes.
 - **?** Incrément suivant qu'il propose : la part de ciel par une courte marche vers le haut, penchée vers le côté ouvert, dans `march.wesl` et sa jumelle Rust. Il vise les faces sombres et bleutées du contre-jour et le contraste sous le liseré ; un test (part de ciel au pied d'une tour < à mi-flanc < au sommet) ; environ 3 ou 4 échantillons grossiers de plus. Ensuite, vérifier l'auréole du soleil (aucune autour du disque malgré le bloom). Ne pas toucher à la densité maintenant.
+
+### La part de ciel
+
+- **Q** Le joueur : « Oui, la part de ciel ».
+- **A** La part de ciel d'un échantillon était prise jusqu'au sommet de l'enveloppe, ou le long du rayon de l'œil sur un flanc, chemin nul à la surface : tout point visible recevait le ciel entier. Elle vient maintenant d'une courte marche vers le haut, penchée vers le côté de l'œil (ouvert pour un flanc visible) : 10, 30, 90 puis 270 m, le premier pas sur la densité complète (`optical_depth_to_sky`, `march.wesl`).
+  - Référence Rust `CloudTextures::optical_depth_to_sky` et test : sur le flanc de la tour de la traversée, 21 au pied, 6 à mi-flanc, 0,8 près du sommet.
+  - La profondeur de l'œil par image (2026-11-08) est retirée, avec son calcul en Rust et son test : continue dans toutes les directions, la marche vers le ciel couvre aussi l'intérieur du nuage.
+- **R** Captures :
+  - `cumulus_contre_jour` : les lobes à l'ombre gagnent leurs bourgeons, bords plus clairs et creux plus sombres (luminance 0,290 → 0,266) ; ils deviennent plus chauds que bleutés, la traîne orangée y dominant une fois le ciel retiré ;
+  - au cœur du nuage, brouillard uniforme, un peu plus clair et bleuté (2 niveaux), sans ligne ni forme ;
+  - autres scènes : écarts faibles ;
+  - séquence dense : pas de saut à l'entrée ni à la sortie, des rampes un peu plus marquées ; juste avant la sortie, un éclaircissement régulier (le ciel se rapproche), pas de scintillement.
+  - Coût : quelques centièmes de milliseconde en 1280×720.
+- **A** `just check` et `just test` passent (436 tests : le test de la profondeur de l'œil est parti avec elle). Fiche des nuages à jour. Revue du directeur artistique à venir.

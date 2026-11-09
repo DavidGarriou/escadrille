@@ -99,12 +99,6 @@ const CLOUD_LIGHT_ON_GROUND: f32 = 0.6;
 /// on the ground. ESTIMÉ: Rayleigh about 0.1, aerosols 0.1 to 0.2 on a summer day.
 const AIR_OPTICAL_DEPTH: f32 = 0.25;
 
-/// The eye's depth in the clouds ([`eye_depth`]): reach and step of the looks around it,
-/// m. A big cumulus is a kilometre or two across; 600 m into its core is 54 optical depths,
-/// where the sky no longer gets through.
-const EYE_DEPTH_REACH_M: f32 = 600.0;
-const EYE_DEPTH_STEP_M: f32 = 10.0;
-
 /// The shader of the composite, under `assets/`.
 const COMPOSITE_SHADER: &str = "shaders/clouds/composite.wesl";
 
@@ -392,25 +386,6 @@ pub fn sun_on_ground(illuminance: f32, to_sun: Vec3) -> f32 {
     illuminance * height * (-AIR_OPTICAL_DEPTH / height).exp()
 }
 
-/// How deep the eye is in the clouds: the least optical depth over the first
-/// [`EYE_DEPTH_REACH_M`] around it, looking up, along the four horizontal directions and
-/// towards the sun; zero in clear air. One value for the whole frame, which the march adds
-/// to the depth back along each ray: from inside a cloud, a sample sees the sky through
-/// the eye's side only beyond the cloud around the eye. Taken per pixel, back along each
-/// ray, it drew the shape of the cloud behind the eye on the fog in front, with sharp
-/// edges that turned with the view (art director's review of `traversee_nuage`).
-pub fn eye_depth(
-    textures: &CloudTextures,
-    uniforms: &CloudUniforms,
-    eye: Vec3,
-    to_sun: Vec3,
-) -> f32 {
-    [Vec3::Y, Vec3::X, Vec3::NEG_X, Vec3::Z, Vec3::NEG_Z, to_sun]
-        .into_iter()
-        .map(|d| textures.optical_depth(uniforms, eye, d, EYE_DEPTH_REACH_M, EYE_DEPTH_STEP_M))
-        .fold(f32::INFINITY, f32::min)
-}
-
 /// The light of the clouds' bases the ground takes besides the environment map's, cd/m²:
 /// in the share of the layer the eye is above (`altitude`, between its `bottom` and `top`,
 /// m), since the map, seen from the eye, then misses the bases. A Lambertian surface under
@@ -426,11 +401,10 @@ pub fn ground_cloud_light(cover: f32, sun_on_ground: f32, altitude: f32, layer: 
 /// map's span (a light texture spans the light's local −1 to 1).
 #[expect(
     clippy::too_many_arguments,
-    reason = "the clouds, their density and clocks, and the three bodies the shadow map follows"
+    reason = "the clouds, their clocks, and the three bodies the shadow map follows"
 )]
 fn update_frame(
     clouds: Res<Clouds>,
-    density: Option<Res<CloudDensity>>,
     target: Res<CloudTarget>,
     time: Res<Time>,
     origin: Option<Res<RenderOrigin>>,
@@ -448,7 +422,6 @@ fn update_frame(
     let focus = player.iter().next().map_or(eye, |t| t.translation);
     let mut shadow = GpuCloudShadow::default();
     let mut on_ground = 0.0;
-    let mut to_sun = Vec3::Y;
     if let Some((sun, light, mut transform, textured)) = suns.iter_mut().next() {
         let half = 0.5 * SHADOW_SPAN_M;
         let center = shadow_center(eye, forward, transform.rotation);
@@ -460,7 +433,7 @@ fn update_frame(
                 tiled: true,
             });
         }
-        to_sun = transform.rotation * Vec3::Z;
+        let to_sun = transform.rotation * Vec3::Z;
         shadow = GpuCloudShadow {
             center,
             half_span: half,
@@ -485,7 +458,6 @@ fn update_frame(
     ))));
     let origin = origin.map_or(DVec3::ZERO, |o| to_bevy(o.0));
     let uniforms = clouds.layer.uniforms(time.elapsed_secs_f64(), origin);
-    let eye_depth = density.map_or(0.0, |d| eye_depth(&d.0, &uniforms, eye, to_sun));
     let pass = |(steps, light_steps)| GpuCloudPass {
         frame: frames.0,
         steps,
@@ -495,7 +467,6 @@ fn update_frame(
         max_distance: MAX_DISTANCE_M,
         ground_albedo: ground.0,
         ground_shade: ground_shade(cover),
-        eye_depth,
     };
     commands.insert_resource(CloudFrame {
         uniforms: GpuCloudUniforms::from(&uniforms),
@@ -844,27 +815,6 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
             (ahead - wanted).length() < texel,
             "{ahead} against {wanted}"
         );
-    }
-
-    #[test]
-    fn the_eye_is_deep_in_a_cloud_only_inside_it_and_sinks_in_smoothly() {
-        // The cumulus of traversee_nuage, on the path east at 1 000 m.
-        let textures = CloudTextures::generate(85);
-        let layer = CloudLayer {
-            base_altitude: 600.0,
-            cover: 0.45,
-            ..CloudLayer::default()
-        };
-        let uniforms = layer.uniforms(0.0, DVec3::ZERO);
-        let to_sun = Vec3::new(0.0, 0.85, 0.53);
-        let at = |east: f32| eye_depth(&textures, &uniforms, Vec3::new(east, 1_000.0, 0.0), to_sun);
-        assert_eq!(at(100.0), 0.0);
-        assert!(at(950.0) > 5.0, "core: {}", at(950.0));
-        // Entering, by quarters of a metre: a slope (0.7 per metre at most), no jump.
-        let depths: Vec<f32> = (0..600).map(|i| at(700.0 + 0.25 * i as f32)).collect();
-        for pair in depths.windows(2) {
-            assert!((pair[1] - pair[0]).abs() < 0.25, "{pair:?}");
-        }
     }
 
     #[test]

@@ -264,32 +264,35 @@ fn the_envelope_tells_its_top_and_clouds_lie_within_it() {
 }
 
 #[test]
-fn the_optical_depth_is_none_in_clear_air_and_grows_through_a_cloud() {
-    let uniforms = CloudLayer::default().uniforms(0.0, DVec3::ZERO);
-    let inside = positions(20_000, 30_000.0, 1_400.0)
-        .find(|&p| textures().density(&uniforms, p) > 0.9)
-        .expect("a cloud core");
-    let (reach, step) = (600.0, 10.0);
-    for direction in [Vec3::X, Vec3::NEG_Z, Vec3::new(0.6, 0.8, 0.0)] {
-        let near = textures().optical_depth(&uniforms, inside, direction, reach, step);
-        let far = textures().optical_depth(&uniforms, inside, direction, 2.0 * reach, step);
-        // At least the first step, in the core; more over a longer reach.
-        assert!(
-            near > 0.5 * step * uniforms.extinction,
-            "{direction}: {near}"
-        );
-        assert!(far >= near, "{direction}: {near} then {far}");
-        // A small move changes it a little.
-        let moved = textures().optical_depth(&uniforms, inside + direction, direction, reach, step);
-        assert!(
-            (moved - near).abs() < 0.1 * near + 0.5,
-            "{direction}: {near} then {moved}"
-        );
-    }
-    // Above the layer, upwards: nothing.
-    let above = Vec3::new(inside.x, 2_500.0, inside.z);
+fn the_sky_is_farther_at_the_foot_of_a_tower_than_at_its_top() {
+    // The tower of traversee_nuage, seen from the west: on its flank, the first dense
+    // sample east of the eye at each height.
+    let textures = CloudTextures::generate(85);
+    let layer = CloudLayer {
+        base_altitude: 600.0,
+        cover: 0.45,
+        ..CloudLayer::default()
+    };
+    let uniforms = layer.uniforms(0.0, DVec3::ZERO);
+    let toward_eye = Vec3::NEG_X;
+    let sky = |height: f32| {
+        let x = (0..400)
+            .map(|i| 200.0 + 5.0 * i as f32)
+            .find(|&x| textures.density(&uniforms, Vec3::new(x, height, 0.0)) > 0.5)
+            .expect("the flank");
+        textures.optical_depth_to_sky(&uniforms, Vec3::new(x, height, 0.0), toward_eye)
+    };
+    // 21, 6 and 0.8 on 2026-11-09: under the cloud above, the sky is far; on the top, near.
+    let (foot, middle, top) = (sky(660.0), sky(870.0), sky(1_080.0));
+    assert!(
+        foot > 2.0 * middle && middle > 2.0 * top,
+        "{foot} {middle} {top}"
+    );
+    assert!(top < 2.0 && foot > 10.0, "{foot} {middle} {top}");
+    // Above the layer, nothing.
+    let above = Vec3::new(1_000.0, 2_500.0, 0.0);
     assert_eq!(
-        textures().optical_depth(&uniforms, above, Vec3::Y, reach, step),
+        textures.optical_depth_to_sky(&uniforms, above, toward_eye),
         0.0
     );
 }
