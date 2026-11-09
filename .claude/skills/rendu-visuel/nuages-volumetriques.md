@@ -41,6 +41,8 @@ Dans un simulateur de 14-18, les nuages sont à la fois le décor principal et u
 - **Ce que la vue par terme a montré** (2026-11-08) : la traîne de diffusion et le ciel, presque uniformes, font l'essentiel de la lumière d'une face à l'ombre ou d'un flanc vu de près ; d'où l'aspect « coton ». Le relief vient du terme rapide et de la diffusion simple.
   - **Limite de calibration** : contre les tests d'énergie (deux flux, τ de 5 à 100, ciel, sommet/base), seul le réglage actuel passe ; le rapport bourgeon éclairé / à l'ombre plafonne vers 2,1, même avec une troisième composante.
   - **Essais écartés** : une troisième composante (e^−τ/8) ; la « poudre » de Schneider (dômes plus gris et moins détaillés) ; une frange de densité adoucie pour le liseré (rien de plus, bords émoussés).
+  - **Limites physiques acceptées** (directeur artistique) : un cumulus éclairé de face, le soleil dans le dos, est plat ; un flanc nord en plein soleil de midi, où la traîne fait 87 % de la lumière, est gris et doux. Ne pas chercher à les creuser.
+  - **Levier suivant** : la part de ciel. Elle est prise jusqu'au sommet de l'enveloppe ou le long du rayon de l'œil sur les flancs, si bien que tout point visible reçoit le ciel entier ; les faces à l'ombre du contre-jour en sont uniformes, et le liseré s'y noie. Piste : une courte marche vers le haut, penchée vers le côté ouvert, les premiers pas sur la densité complète.
 
 Repères visés, d'après le directeur artistique : un cumulus au soleil est l'objet le plus lumineux du ciel, 2 à 4 fois plus que le ciel voisin ; sa base et ses creux sont 3 à 5 fois plus sombres que ses sommets ; son bord passe du clair à l'opaque en une dizaine de mètres (d'où le gain de 4 sur la densité finale).
 
