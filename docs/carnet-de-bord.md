@@ -3259,3 +3259,6 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - séquence dense : pas de saut à l'entrée ni à la sortie, des rampes un peu plus marquées ; juste avant la sortie, un éclaircissement régulier (le ciel se rapproche), pas de scintillement.
   - Coût : quelques centièmes de milliseconde en 1280×720.
 - **A** `just check` et `just test` passent (436 tests : le test de la profondeur de l'œil est parti avec elle). Fiche des nuages à jour. Revue du directeur artistique à venir.
+- **A** Auréole du soleil vérifiée, comme le demandait le directeur artistique : profil de luminance du ciel autour du soleil sur `cumulus_contre_jour` (1440p).
+  - **R** Le disque (`SunDisk::EARTH`, intensité physique) sature sur 6 px ; le bloom (`Bloom::NATURAL`) s'étend sur environ 20 px ; au-delà, le ciel ne gagne que 6 % à 3° du soleil (0,461 → 0,490). L'auréole de Mie de `ScatteringMedium::earth` est très faible.
+  - **?** La renforcer demanderait plus d'aérosols dans l'atmosphère, ce qui change aussi la couleur du ciel et la brume partout : proposé comme chantier séparé (atmosphère), soumis au directeur artistique.
