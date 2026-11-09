@@ -1,5 +1,5 @@
 Scene(
-    description: "Des tours de cumulus face au soleil bas de l'après-midi, vues de la poursuite dans la couche : liseré argenté des bords près du soleil, faces sombres et bleutées tournées vers la caméra.",
+    description: "Des tours de cumulus face au soleil bas de l'après-midi, vues de la poursuite dans la couche : liseré argenté des bords près du soleil, faces à l'ombre tournées vers la caméra, d'un gris chaud (le soleil bas traverse la tour en orangé).",
     scenario: "vol-2000",
     camera: Chase(yaw: Deg(90.0), pitch: Deg(5.0)),
     sun: Some((azimuth: Deg(180.0), elevation: Deg(9.0))),

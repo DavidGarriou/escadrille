@@ -166,17 +166,19 @@ impl CloudTextures {
     /// leaning towards the eye's side (`toward_eye`, horizontal, as long as the eye's ray is
     /// level), open for a flank the eye sees: the full density on the first step, the
     /// coarse one beyond. Under an overhang or at the foot of a tower the sky is far; on a
-    /// top or an open flank, near.
+    /// top or an open flank, near. Each step is read at `offset` of its length: the
+    /// shader's jitter, 0.5 for the middles.
     pub fn optical_depth_to_sky(
         &self,
         uniforms: &CloudUniforms,
         position: Vec3,
         toward_eye: Vec3,
+        offset: f32,
     ) -> f32 {
         let direction = (Vec3::Y + SKY_LEAN * toward_eye).normalize();
         let (mut depth, mut travelled, mut step) = (0.0, 0.0, SKY_STEP);
         for i in 0..SKY_STEPS {
-            let at = position + direction * (travelled + 0.5 * step);
+            let at = position + direction * (travelled + offset * step);
             let density = if i == 0 {
                 self.density(uniforms, at)
             } else {

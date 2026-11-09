@@ -280,7 +280,7 @@ fn the_sky_is_farther_at_the_foot_of_a_tower_than_at_its_top() {
             .map(|i| 200.0 + 5.0 * i as f32)
             .find(|&x| textures.density(&uniforms, Vec3::new(x, height, 0.0)) > 0.5)
             .expect("the flank");
-        textures.optical_depth_to_sky(&uniforms, Vec3::new(x, height, 0.0), toward_eye)
+        textures.optical_depth_to_sky(&uniforms, Vec3::new(x, height, 0.0), toward_eye, 0.5)
     };
     // 21, 6 and 0.8 on 2026-11-09: under the cloud above, the sky is far; on the top, near.
     let (foot, middle, top) = (sky(660.0), sky(870.0), sky(1_080.0));
@@ -292,7 +292,7 @@ fn the_sky_is_farther_at_the_foot_of_a_tower_than_at_its_top() {
     // Above the layer, nothing.
     let above = Vec3::new(1_000.0, 2_500.0, 0.0);
     assert_eq!(
-        textures.optical_depth_to_sky(&uniforms, above, toward_eye),
+        textures.optical_depth_to_sky(&uniforms, above, toward_eye, 0.5),
         0.0
     );
 }

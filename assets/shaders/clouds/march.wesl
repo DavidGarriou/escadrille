@@ -192,16 +192,19 @@ fn air_transmittance(r: f32, mu: f32, t: f32) -> vec3<f32> {
 // side (`toward_eye`, horizontal, as long as the eye's ray is level), which is open for a
 // flank the eye sees; the full density on the first step, the coarse one beyond. Under an
 // overhang or at the foot of a tower the sky is far; on a top or an open flank, near.
+// Each step is read at `offset` of its length, the frame's jitter, which the temporal pass
+// averages over the step: read at their middles, the steps printed the cells of the noise
+// on the shaded faces, round pale blots all of one size (art director's review).
 // Taken until 2026-11-09 to the top of the envelope, or back along the eye's ray on a
 // flank, which is nothing at the surface: every sample the eye saw took the whole sky,
 // and the shaded faces of the contre-jour were even (art director's review).
-fn optical_depth_to_sky(position: vec3<f32>, toward_eye: vec3<f32>) -> f32 {
+fn optical_depth_to_sky(position: vec3<f32>, toward_eye: vec3<f32>, offset: f32) -> f32 {
     let direction = normalize(vec3<f32>(0.0, 1.0, 0.0) + SKY_LEAN * toward_eye);
     var depth = 0.0;
     var travelled = 0.0;
     var step = SKY_STEP;
     for (var i = 0u; i < SKY_STEPS; i++) {
-        let at = position + direction * (travelled + 0.5 * step);
+        let at = position + direction * (travelled + offset * step);
         var density = 0.0;
         if i == 0u {
             density = cloud_density(
@@ -283,8 +286,10 @@ fn march(eye: vec3<f32>, direction: vec3<f32>, far_away: f32, first: f32) -> Mar
     let ground = GROUND_ALBEDO / PI * (sun_on_ground * (1.0 - clouds.cover) + PI * sky);
     let cos_theta = dot(direction, to_sun);
     let single_phase = phase(cos_theta);
-    // The eye's side, horizontal: the sky's march leans towards it.
+    // The eye's side, horizontal: the sky's march leans towards it; its steps are read at a
+    // second jitter.
     let toward_eye = -vec3<f32>(direction.x, 0.0, direction.z);
+    let sky_offset = fract(first + SECOND_JITTER);
 
     var transmittance = 1.0;
     var light = vec3<f32>(0.0);
@@ -360,7 +365,10 @@ fn march(eye: vec3<f32>, direction: vec3<f32>, far_away: f32, first: f32) -> Mar
         // blue), or up to the top of the envelope at the density of the sample, the nearer;
         // down to the base of the layer, for the ground, at the density of the sample.
         let depth_to_sun = optical_depth_to_sun(position, to_sun);
-        let depth_up = min(extinction * coarse.z, optical_depth_to_sky(position, toward_eye));
+        let depth_up = min(
+            extinction * coarse.z,
+            optical_depth_to_sky(position, toward_eye, sky_offset),
+        );
         let depth_down = extinction * (position.y - bottom);
         let scattered = sun_through_air * sun_scattering(depth_to_sun, single_phase)
             + ambient_scattering(sky, ground, depth_up, depth_down);
