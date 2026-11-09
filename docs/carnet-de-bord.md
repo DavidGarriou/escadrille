@@ -3225,3 +3225,19 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **R** Identiques à 1 ou 2 % près sur la crête, les lobes à l'ombre et le flanc proche : détail fin 4,6 / 1,3 / 2,9·10⁻³ dans les deux cas ; centile 99 de la crête 0,70 dans les deux cas, sans bord plus clair.
   - **R** Conclusion : ni le « coton » ni l'absence de liseré ne viennent de la résolution. Le détail est dans la densité, l'éclairage l'aplatit (contraste fin de 1,3·10⁻³ sur les lobes à l'ombre). C'est un chantier d'éclairage, qui touche le modèle de référence `escadrille_weather::scattering` et ses tests.
 - **?** Plan proposé, à valider : vue par terme pour voir où le détail se perd, ombrage des bourgeons entre eux et terme « poudre » (Schneider 2015), frange plus douce au bord pour le liseré, tests d'énergie tenus, captures et revue du directeur artistique.
+
+## 2026-11-09
+
+### Chantier d'éclairage des nuages
+
+- **Q** Le joueur : « Oui, l'éclairage », et « je veux accéder à cette discussion avec l'appli claude sur mon téléphone, comment faire ? »
+- **R** Le Remote Control est déjà actif pour cette session : dans l'application Claude du téléphone, sur le même compte, partie Code, la session « Simulation WWI ». L'ordinateur doit rester allumé, l'application de bureau ouverte.
+- **⚠** La machine a redémarré : dossier temporaire vidé (images de la veille perdues, refaites), agent SSH sans clé.
+- **A** Vue terme par terme (diffusion simple, rapide, traîne, ciel, sol) sur `cumulus_contre_jour`, `cumulus_midi` et l'approche de la traversée.
+  - **R** Les lobes à l'ombre du contre-jour sont faits de la traîne (orange, 0,165) et du ciel (bleu, 0,152), presque uniformes. Le flanc proche de la traversée, de la traîne pour 0,66 sur 0,755. Le relief des dômes vient du terme rapide. Le liseré existe dans la diffusion simple, noyé par la traîne et le ciel.
+- **A** Balayage des constantes de diffusion multiple contre les tests d'énergie.
+  - **R** Seul le réglage actuel passe ; le rapport bourgeon éclairé / à l'ombre plafonne vers 2,1, même avec une troisième composante.
+- **A** Essais sur le shader, en captures :
+  - **R retenu** : un troisième pas détaillé vers le soleil (densité complète jusqu'à 104 m au lieu de 32). Bords éclairés de la crête du contre-jour 1,45 → 1,63 fois le ciel voisin, plus de relief ; flanc de la traversée un peu plus modelé ; cœur du nuage un peu plus sombre. Coût d'environ 0,05 ms (0,91 contre 0,86 ms, dans le bruit) ;
+  - **R écartés** : la troisième composante (aucune différence visible), la « poudre » de Schneider (dômes plus gris, moins détaillés), la frange de densité adoucie (rien de plus, bords émoussés).
+- **A** `just check` et `just test` passent (437 tests). Fiche des nuages à jour. Revue du directeur artistique en cours.

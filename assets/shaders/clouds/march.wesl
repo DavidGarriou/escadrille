@@ -76,10 +76,13 @@ const GROUND_ALBEDO: f32 = 0.18;
 // the buds shade one another; each next one is longer by LIGHT_GROWTH (6 steps: 2.9 km,
 // the width of a tower crossed by a low sun; at 900 m, the dark side of a tower against a
 // sun at 9° kept three times the light two-stream theory lets through).
-// The first DETAILED_LIGHT_STEPS look at the full density, the others at the coarse one.
+// The first DETAILED_LIGHT_STEPS look at the full density, the others at the coarse one:
+// three, 104 m, so that buds of a few tens of metres shade one another (2026-11-08: the
+// sunlit edges of the contre-jour's crest brightened from 1.45 to 1.63 times the sky
+// beside them; with two, 32 m, the light beyond saw only the smooth envelope).
 const LIGHT_STEP: f32 = 8.0;
 const LIGHT_GROWTH: f32 = 3.0;
-const DETAILED_LIGHT_STEPS: u32 = 2u;
+const DETAILED_LIGHT_STEPS: u32 = 3u;
 // Each step of the march is this share of the distance from the eye, between the
 // shortest step and MAX_STEP.
 const STEP_SHARE: f32 = 0.02;
