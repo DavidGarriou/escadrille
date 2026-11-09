@@ -94,7 +94,7 @@ Chacun laisse le jeu lançable, avec tests, `just check`, `just test`, captures 
   - une variation du sommet d'une tour à l'autre (un troisième canal de la carte, vers 1 km) ; la couverture par défaut de `CloudLayer` (0,55, au seuil où les taches se soudent) ;
   - le relief du mur de nuage vu de près ;
   - le liseré clair des silhouettes dans le brouillard ;
-  - les réserves ouvertes (ombre d'un nuage sur son voisin, bases tranchées, auréole du soleil) ;
+  - les réserves ouvertes (ombre d'un nuage sur son voisin, bases tranchées) ; l'auréole du soleil et le liseré trop doux passent au chantier d'atmosphère (`m3-atmosphere.md`, proposé le 2026-11-09) ;
   - l'essai du joueur.
 
 ### 2. Heure du jour

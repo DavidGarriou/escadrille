@@ -3280,3 +3280,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **R** Le bruit d'une image à l'autre ne change que de ±3 % ; les différences amplifiées ne montrent que le déplacement des bords, aucun grouillement sur les faces à l'ombre.
   - **⚠** Les premiers virages, commandes non tirées du trim (gaz 1,0, manche tiré), cabraient l'avion vers le ciel vide : refaits à partir du trim de `vol-2000` (gaz 0,6, manche −0,06).
 - **A** `just check` et `just test` passent (436 tests). Fiche des nuages à jour (gigue en mouvement, liseré doux et piste du lobe avant).
+
+### Le chantier d'atmosphère : étude et plan
+
+- **Q** Le joueur choisit le chantier suivant : « L'atmosphère » (l'auréole du soleil et le lobe avant étroit des nuages).
+- **A** Étude de l'atmosphère de Bevy 0.20 (`bevy_light`, `bevy_pbr`) et de notre phase des nuages.
+  - **R** Bevy 0.20 inverse diffusion et absorption des aérosols dans `ScatteringMedium::earth` : 3,996e-6 m⁻¹ d'absorption et 0,444e-6 de diffusion, quand Bevy 0.16 (valeurs de Hillaire 2020) avait l'inverse. Vérifié dans les sources des deux versions (docs.rs pour la 0.16). Nos aérosols absorbent 90 % au lieu de diffuser 90 %.
+  - **R** La phase des aérosols de Bevy (Henyey-Greenstein, g = 0,8) est trop étalée pour une auréole. Sa table de phase résout environ 0,6° près du soleil. La perspective aérienne s'arrête à 32 km, le sol va jusqu'à 100 km.
+- **A** Lecture de Jendersie et d'Eon (« An Approximate Mie Scattering Function for Fog and Cloud Rendering », SIGGRAPH 2023 Talks) : mélange de Henyey-Greenstein et de Draine, paramètres en fonction du diamètre des gouttelettes (5 à 50 µm).
+  - **R** À 20 µm, la moitié de l'énergie part dans un pic d'environ 0,2° (g ≈ 0,995). Remplacer toute notre phase par ce mélange diviserait la diffusion simple vers l'arrière par 6 et celle à 90° par 25 : il faudrait recaler la diffusion multiple.
+  - **⚠** L'outil de lecture du web a enregistré de lui-même les deux PDF de l'article (et un troisième fichier) dans le dossier de la session, hors du dépôt, sans que je t'aie demandé l'autorisation de les télécharger. Rien n'est entré dans le dépôt.
+- **A** Prototype (non commité) : aérosols remis dans le bon sens, densité ×1, ×10, ×25, sur `cumulus_contre_jour`, `cumulus_lisere`, `cumulus_midi` et `vol-essai-poursuite`.
+  - **R** La correction seule change peu : ciel à 1° du soleil 0,495 → 0,541. À ×10 (environ 65 km de visibilité au sol), l'auréole est nette, le ciel plus pâle mais encore bleu. À ×25 (environ 30 km), le ciel blanchit, la plaine se voile fort et un trait clair apparaît à l'horizon (fin de la perspective aérienne à 32 km). Même à ×25, le ciel à 1° du soleil n'est que 1,27 fois celui à 10° : il faut aussi une phase plus pointue.
+- **A** Plan rédigé : `docs/plans/m3-atmosphere.md` (milieu maison, brume de 1917 réglable par scène, auréole par une phase plus pointue des aérosols, lobe avant des nuages, revue de toutes les scènes d'extérieur). Lien depuis `m3-beaute.md`.
+- **?** Décisions demandées au joueur : la brume par défaut (recommandé : visibilité de 40 à 60 km), la phase des nuages (recommandé : un pic étroit ajouté à la phase actuelle), signaler l'inversion à Bevy (recommandé : oui).
