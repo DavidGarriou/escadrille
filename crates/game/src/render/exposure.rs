@@ -27,6 +27,7 @@ use bevy::render::view::ColorGrading;
 
 use crate::camera::DAYLIGHT_EV100;
 use crate::dev::capture::CaptureRequest;
+use crate::render::glare::SunSeen;
 use crate::world::sky::{Sky, towards};
 
 /// Full daylight, lux: above it, the base stays at [`DAYLIGHT_EV100`] (`ESTIMÉ`: the
@@ -40,14 +41,23 @@ pub const DUSK_SHOWN: f32 = 0.3;
 /// The most the night darkens the look, stops (`ESTIMÉ`, to set with the night).
 pub const NIGHT_DARKENING_EV: f32 = 5.0;
 
+/// The air mass towards a sun `elevation_deg` high: Kasten and Young's formula ("Revised
+/// optical air mass tables and approximation formula", Applied Optics 28, 1989), true to
+/// the horizon, where 1 / sin h, which ignores the Earth's curve, overstates it (19 instead
+/// of 15 at 3°).
+pub fn air_mass(elevation_deg: f32) -> f32 {
+    let h = elevation_deg.max(0.0);
+    1.0 / (h.to_radians().sin() + 0.50572 * (h + 6.07995).powf(-1.6364))
+}
+
 /// The sun's illuminance on a surface facing it, lux, at `elevation_deg` above the
-/// horizon: the IES model of a clear sky, 127.5 klux × e^(−0.21 / sin h).
+/// horizon: the IES model of a clear sky, 127.5 klux × e^(−0.21 m), m the air mass
+/// ([`air_mass`]).
 pub fn direct_normal_lux(elevation_deg: f32) -> f32 {
     if elevation_deg <= 0.0 {
         return 0.0;
     }
-    let s = elevation_deg.to_radians().sin();
-    127_500.0 * (-0.21 / s).exp()
+    127_500.0 * (-0.21 * air_mass(elevation_deg)).exp()
 }
 
 /// Clear-sky daylight on level ground, lux, the sun at `elevation_deg`. Above the horizon,
@@ -83,9 +93,9 @@ pub fn metered_ev100(ground_lux: f32) -> f32 {
 /// The look's exposure offset, stops (negative: darker), under `ground_lux`, the sun at
 /// `elevation_deg` and `angle_deg` from the line of sight: the dusk the eye does not make
 /// up for, and the sun's glare.
-pub fn look_ev(ground_lux: f32, elevation_deg: f32, angle_deg: f32) -> f32 {
+pub fn look_ev(ground_lux: f32, elevation_deg: f32, angle_deg: f32, seen: f32) -> f32 {
     (DUSK_SHOWN * below_daylight(ground_lux)).max(-NIGHT_DARKENING_EV)
-        - glare_ev(elevation_deg, angle_deg)
+        - glare_ev(elevation_deg, angle_deg, seen)
 }
 
 /// Reflectance of a mean scene, the photographer's grey card.
@@ -93,18 +103,37 @@ const MEAN_REFLECTANCE: f32 = 0.18;
 /// The most the glare closes the eye, stops (`ESTIMÉ`).
 pub const GLARE_MAX_EV: f32 = 2.0;
 
+/// The age of the pilot's eye, years, and its pigmentation (0 very dark, 0.5 brown, 1 blue),
+/// for the glare (`ESTIMÉ`: a young pilot, brown eyes).
+pub const PILOT_AGE: f32 = 25.0;
+pub const EYE_PIGMENTATION: f32 = 0.5;
+/// The narrowest angle of the glare equation, degrees.
+pub const GLARE_NEAREST_DEG: f32 = 0.1;
+
+/// Veiling luminance per lux at the eye, cd/m², at `angle_deg` from the glare's source: the
+/// CIE's general disability glare equation (CIE 146:2002, after Vos), from 0.1° to 100°,
+/// L / E = 10/θ³ + (5/θ² + 0.1 p/θ)(1 + (A/62.5)⁴) + 0.0025 p. From 1° to 30°, close to
+/// Stiles and Holladay's 10/θ²; nearer, it goes on rising, where theirs stops at 1°.
+pub fn veil_per_lux(angle_deg: f32) -> f32 {
+    let theta = angle_deg.max(GLARE_NEAREST_DEG);
+    let age = 1.0 + (PILOT_AGE / 62.5).powi(4);
+    10.0 / theta.powi(3)
+        + (5.0 / theta.powi(2) + 0.1 * EYE_PIGMENTATION / theta) * age
+        + 0.0025 * EYE_PIGMENTATION
+}
+
 /// How far the sun's glare closes the eye, stops, the sun at `elevation_deg` and
-/// `angle_deg` from the line of sight. The veiling luminance of the Stiles–Holladay
-/// formula of disability glare (CIE 146:2002), L = 10 E / θ² cd/m², E the sun's
-/// illuminance at the eye, lux, θ in degrees (from 1°, and within the field of view),
-/// adds to the luminance the eye adapts to: a grey card under the day's light.
-pub fn glare_ev(elevation_deg: f32, angle_deg: f32) -> f32 {
-    let sun = direct_normal_lux(elevation_deg);
+/// `angle_deg` from the line of sight: the veiling luminance ([`veil_per_lux`]) of the sun's
+/// illuminance at the eye adds to the luminance the eye adapts to, a grey card under the
+/// day's light.
+/// Only the part of the sun that shows, `seen` (0 to 1), counts.
+pub fn glare_ev(elevation_deg: f32, angle_deg: f32, seen: f32) -> f32 {
+    let sun = direct_normal_lux(elevation_deg) * seen;
     // Out of the field of view, no glare.
     if sun <= 0.0 || angle_deg >= 90.0 {
         return 0.0;
     }
-    let veil = 10.0 * sun / angle_deg.max(1.0).powi(2);
+    let veil = sun * veil_per_lux(angle_deg);
     let scene = MEAN_REFLECTANCE * ground_illuminance_lux(elevation_deg) / PI;
     (1.0 + veil / scene).log2().min(GLARE_MAX_EV)
 }
@@ -143,6 +172,7 @@ const CAPTURE_SPEED: f32 = 20.0;
 /// light that has a disc.
 pub fn follow_daylight(
     sky: Option<Res<Sky>>,
+    seen: Option<Res<SunSeen>>,
     suns: Query<&GlobalTransform, (With<DirectionalLight>, With<SunDisk>)>,
     mut cameras: Query<(&GlobalTransform, &mut Exposure, &mut ColorGrading), With<FollowsDaylight>>,
 ) {
@@ -171,7 +201,8 @@ pub fn follow_daylight(
             exposure.ev100 = base;
         }
         let angle = camera.forward().dot(to_sun).clamp(-1.0, 1.0).acos();
-        let look = look_ev(ground_lux, elevation, angle.to_degrees());
+        let seen = seen.as_deref().copied().unwrap_or_default().0;
+        let look = look_ev(ground_lux, elevation, angle.to_degrees(), seen);
         if grading.global.exposure != look {
             grading.global.exposure = look;
         }
@@ -226,7 +257,7 @@ mod tests {
         for h in [9.0, 40.0, 58.0, 90.0] {
             let lux = ground_illuminance_lux(h);
             assert_eq!(metered_ev100(lux), DAYLIGHT_EV100, "{h}°");
-            assert!(look_ev(lux, h, 180.0).abs() < 0.01, "{h}°");
+            assert!(look_ev(lux, h, 180.0, 1.0).abs() < 0.01, "{h}°");
         }
     }
 
@@ -250,23 +281,25 @@ mod tests {
         // At sunset, the light is 3.6 stops below full daylight: the look shows 1.1.
         let sunset = ground_illuminance_lux(0.0);
         assert!((metered_ev100(sunset) - (DAYLIGHT_EV100 - 3.64)).abs() < 0.05);
-        assert!((look_ev(sunset, 0.0, 180.0) + 1.09).abs() < 0.05);
+        assert!((look_ev(sunset, 0.0, 180.0, 1.0) + 1.09).abs() < 0.05);
         // Deep in the night, the base stops at starlight and the look at its floor.
         assert_eq!(at(-30.0), at(-40.0));
         let night = ground_illuminance_lux(-30.0);
-        assert_eq!(look_ev(night, -30.0, 180.0), -NIGHT_DARKENING_EV);
+        assert_eq!(look_ev(night, -30.0, 180.0, 1.0), -NIGHT_DARKENING_EV);
     }
 
     #[test]
     fn the_sun_in_the_eye_closes_it_and_behind_it_does_not() {
         // The contre-jour: a sun 9° high, 16° from the line of sight.
-        let facing = glare_ev(9.0, 16.0);
+        let facing = glare_ev(9.0, 16.0, 1.0);
         assert!((1.0..GLARE_MAX_EV + 1e-6).contains(&facing), "{facing}");
         // Further from the line of sight, less; the sun behind, nothing to speak of.
-        assert!(glare_ev(9.0, 30.0) < facing);
-        assert!(glare_ev(40.0, 120.0) < 0.05);
+        assert!(glare_ev(9.0, 30.0, 1.0) < facing);
+        assert!(glare_ev(40.0, 120.0, 1.0) < 0.05);
         // Looking straight at it, the bound; set, no glare.
-        assert_eq!(glare_ev(9.0, 0.0), GLARE_MAX_EV);
-        assert_eq!(glare_ev(-2.0, 5.0), 0.0);
+        assert_eq!(glare_ev(9.0, 0.0, 1.0), GLARE_MAX_EV);
+        assert_eq!(glare_ev(-2.0, 5.0, 1.0), 0.0);
+        // Hidden, it closes nothing.
+        assert_eq!(glare_ev(9.0, 16.0, 0.0), 0.0);
     }
 }

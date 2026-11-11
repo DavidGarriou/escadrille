@@ -1,6 +1,7 @@
-// The sun's glare veil (`crates/game/src/render/glare.rs`): L = 10 E / θ² cd/m² over the
-// whole frame (Stiles–Holladay), added to it, pre-exposed as Bevy's lights are, gone when
-// an object or the clouds hide the sun.
+// The sun's glare veil (`crates/game/src/render/glare.rs`): the CIE's general disability
+// glare equation over the whole frame (`exposure::veil_per_lux`, the same in Rust), added
+// to it, pre-exposed as Bevy's lights are, gone as far as an object or the clouds hide the
+// sun.
 
 import bevy_pbr::render::mesh_view_bindings::view;
 import bevy_pbr::render::mesh_view_bindings as view_bindings;
@@ -21,14 +22,21 @@ struct CloudFog {
 
 // Direction towards the sun, Bevy axes (xyz).
 @group(constants::MATERIAL_BIND_GROUP) @binding(0) var<uniform> to_sun: vec4<f32>;
-// 10 × the sun's illuminance at the eye (rgb), the nearest angle in degrees (a).
-@group(constants::MATERIAL_BIND_GROUP) @binding(1) var<uniform> veil: vec4<f32>;
+// The sun's illuminance at the eye, lux (rgb).
+@group(constants::MATERIAL_BIND_GROUP) @binding(1) var<uniform> sun_light: vec4<f32>;
 // Light (rgb) and transmittance (a) of the clouds.
 @group(constants::MATERIAL_BIND_GROUP) @binding(2) var cloud_light: texture_2d<f32>;
 @group(constants::MATERIAL_BIND_GROUP) @binding(3) var<storage, read> cloud_fog: CloudFog;
+// 1 + (A/62.5)⁴, the eye's pigmentation, the nearest angle in degrees.
+@group(constants::MATERIAL_BIND_GROUP) @binding(4) var<uniform> eye: vec4<f32>;
+// How much of the sun shows, written at the first pixel for the exposure to read back.
+@group(constants::MATERIAL_BIND_GROUP) @binding(5) var<storage, read_write> seen_out: f32;
 
-// The sun's angular radius, rad: the five points of its disc tested for an object.
+// The sun's angular radius, rad, and the points of its disc tested for an object: a
+// sunflower spiral, even over its area.
 const SUN_RADIUS: f32 = 0.00465;
+const DISC_POINTS: i32 = 16;
+const GOLDEN_ANGLE: f32 = 2.39996323;
 
 @vertex
 fn vertex(vertex: Vertex) -> Varyings {
@@ -68,17 +76,17 @@ fn sun_seen() -> f32 {
     }
     let side = normalize(cross(sun, vec3<f32>(0.0, 1.0, 0.0001)));
     let up = cross(side, sun);
-    let offsets = array<vec3<f32>, 5>(
-        vec3<f32>(0.0), side, -side, up, -up,
-    );
     var clear = 0.0;
-    for (var i = 0; i < 5; i++) {
-        let p = screen_point(normalize(sun + offsets[i] * SUN_RADIUS));
+    for (var i = 0; i < DISC_POINTS; i++) {
+        let r = SUN_RADIUS * sqrt((f32(i) + 0.5) / f32(DISC_POINTS));
+        let a = f32(i) * GOLDEN_ANGLE;
+        let p = screen_point(normalize(sun + (side * cos(a) + up * sin(a)) * r));
         var depth = 0.0;
         @if(DEPTH_PREPASS)
         depth = textureLoad(view_bindings::depth_prepass_texture, vec2<i32>(p.xy), 0);
-        clear += select(0.0, 0.2, depth <= 0.0);
+        clear += select(0.0, 1.0, depth <= 0.0);
     }
+    clear /= f32(DISC_POINTS);
     var through = 1.0;
     if cloud_fog.divisor > 0.0 {
         let last = vec2<i32>(textureDimensions(cloud_light)) - 1;
@@ -92,11 +100,23 @@ fn sun_seen() -> f32 {
     return clear * through;
 }
 
+// Veiling luminance per lux at the eye, cd/m², at `theta` degrees: the CIE's equation.
+fn veil_per_lux(angle: f32) -> f32 {
+    let theta = max(angle, eye.z);
+    let p = eye.y;
+    return 10.0 / (theta * theta * theta)
+        + (5.0 / (theta * theta) + 0.1 * p / theta) * eye.x
+        + 0.0025 * p;
+}
+
 @fragment
 fn fragment(in: Varyings) -> @location(0) vec4<f32> {
     let direction = pixel_direction(in.position.xy);
     let angle = degrees(acos(clamp(dot(direction, normalize(to_sun.xyz)), -1.0, 1.0)));
-    let theta = max(angle, veil.a);
-    let luminance = veil.rgb / (theta * theta) * sun_seen();
+    let seen = sun_seen();
+    if all(vec2<i32>(in.position.xy) == vec2<i32>(view.viewport.xy)) {
+        seen_out = seen;
+    }
+    let luminance = sun_light.rgb * veil_per_lux(angle) * seen;
     return vec4<f32>(luminance * view.exposure, 0.0);
 }

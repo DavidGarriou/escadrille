@@ -47,6 +47,7 @@ impl Plugin for WorldPlugin {
                     maquette::spawn.run_if(capture_scene_is(maquette::SCENE)),
                     studio::spawn.run_if(capture_scene_is(studio::SCENE)),
                     studio::spawn_contre_jour.run_if(capture_scene_is(studio::SCENE_CONTRE_JOUR)),
+                    studio::spawn_in_the_sun.run_if(capture_scene_is(studio::SCENE_IN_THE_SUN)),
                     degats::spawn.run_if(capture_scene_is(degats::SCENE)),
                     degats::spawn_close.run_if(capture_scene_is(degats::SCENE_CLOSE)),
                     vol_essai::spawn_scene_file.run_if(resource_exists::<FlightScene>),

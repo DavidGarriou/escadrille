@@ -21,6 +21,7 @@ pub const CODE_SCENES: &[&str] = &[
     super::maquette::SCENE,
     super::studio::SCENE,
     super::studio::SCENE_CONTRE_JOUR,
+    super::studio::SCENE_IN_THE_SUN,
     super::degats::SCENE,
     super::degats::SCENE_CLOSE,
 ];

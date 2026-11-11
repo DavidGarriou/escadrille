@@ -24,6 +24,7 @@ use crate::flight::bridge::{model_transform, render_transform, to_bevy};
 
 pub const SCENE: &str = "avion-studio";
 pub const SCENE_CONTRE_JOUR: &str = "contre_jour_toile";
+pub const SCENE_IN_THE_SUN: &str = "avion_dans_le_soleil";
 
 const AIRCRAFT: &str = "spad7";
 
@@ -159,16 +160,50 @@ pub fn spawn_at_rest(
     Ok(model)
 }
 
-/// `contre_jour_toile` (skill `rendu-visuel`): the SPAD flying level over a man standing
-/// on the grass, the sun 9° beyond it: its fabric glows with the light it lets through,
-/// the ribs, spars and painted marks dark across it.
+/// `contre_jour_toile` (skill `rendu-visuel`): the SPAD flying over a man standing on the
+/// grass, the sun behind its wing: the fabric glows with the light it lets through, the
+/// ribs, spars and painted marks dark across it. Hidden by the wing, the sun leaves no
+/// glare veil (art director's review of 2026-11-11: with the sun 9° beyond the aircraft,
+/// the veil drowned it; that view is now `avion_dans_le_soleil`).
 pub fn spawn_contre_jour(
+    commands: Commands,
+    asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<StandardMaterial>>,
+    media: ResMut<Assets<ScatteringMedium>>,
+    hold: ResMut<CaptureHold>,
+) -> Result {
+    let sun = sun_direction(CONTRE_JOUR_SUN.0, CONTRE_JOUR_SUN.1);
+    spawn_overhead(commands, asset_server, meshes, materials, media, hold, sun)
+}
+
+/// The sun behind the wing of `contre_jour_toile`: azimuth and elevation, degrees.
+const CONTRE_JOUR_SUN: (f64, f64) = (9.0, 45.0);
+
+/// `avion_dans_le_soleil`: the same SPAD, the sun 9° beyond it, 50° high: the aircraft
+/// lost in the sun's glare veil, the attack from the sun that the pilots feared.
+pub fn spawn_in_the_sun(
+    commands: Commands,
+    asset_server: Res<AssetServer>,
+    meshes: ResMut<Assets<Mesh>>,
+    materials: ResMut<Assets<StandardMaterial>>,
+    media: ResMut<Assets<ScatteringMedium>>,
+    hold: ResMut<CaptureHold>,
+) -> Result {
+    let sun = sun_direction(0.0, 50.0);
+    spawn_overhead(commands, asset_server, meshes, materials, media, hold, sun)
+}
+
+/// The SPAD flying over a man standing on the grass, seen from below, with the sun at
+/// `towards_sun`.
+fn spawn_overhead(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut media: ResMut<Assets<ScatteringMedium>>,
     mut hold: ResMut<CaptureHold>,
+    towards_sun: DVec3,
 ) -> Result {
     let cg = centre_of_gravity()?;
     // Heading north-east, banked 10° to the right, 13 m up and 15 m north of the man:
@@ -186,13 +221,13 @@ pub fn spawn_contre_jour(
     commands
         .entity(model)
         .observe(super::maquette::turn_the_propeller);
-    // Seen 41° high to the north; the sun to the north too, 50° high.
+    // Seen 41° high to the north.
     spawn_outdoors(
         &mut commands,
         &mut meshes,
         &mut materials,
         &mut media,
-        sun_direction(0.0, 50.0),
+        towards_sun,
     );
     let eye = Vec3::Y * EYE_HEIGHT_M as f32;
     commands.spawn(outdoor_camera(
