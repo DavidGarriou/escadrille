@@ -3316,3 +3316,5 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Captures de toutes les scènes d'extérieur avec la nouvelle atmosphère, pour la revue du directeur artistique (en cours : la traversée, le vol d'essai et le studio restent).
   - **R** Cumulus : auréole serrée autour du soleil ; crête blanche sous le soleil de `cumulus_lisere` ; sol voilé de gris clair vers le soleil bas (diffusion avant de la brume) ; à midi et sous la base, un horizon plus brumeux, rien d'autre.
   - **R** Les scènes `terrain-*` n'avaient pas de capture précédente dans `target/captures` : pas d'image « avant ». Leur horizon est plus pâle et doux, sans trait.
+- **A** Captures terminées (15 scènes) : traversée et studio presque inchangés, sol lointain un peu plus voilé ; `contre_jour_toile` gagne une auréole autour du soleil. Revue demandée au directeur artistique, avec les planches avant/après.
+- **A** `just check` et `just test` passent (443 tests).
