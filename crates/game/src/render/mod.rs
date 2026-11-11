@@ -2,6 +2,7 @@
 
 pub mod clouds;
 pub mod damage;
+pub mod exposure;
 pub mod fabric;
 pub mod ground;
 pub mod mipmaps;
@@ -20,6 +21,7 @@ impl Plugin for RenderingPlugin {
             MaterialPlugin::<own_normals::OwnNormalsMaterial>::default(),
             MaterialPlugin::<ground::GroundMaterial>::default(),
             clouds::CloudsPlugin,
+            bevy::post_process::auto_exposure::AutoExposurePlugin,
         ))
         .init_resource::<quality::Quality>()
         .init_resource::<ground::GroundAlbedo>()
@@ -35,6 +37,7 @@ impl Plugin for RenderingPlugin {
                 quality::apply_occlusion_quality,
                 own_normals::light_with_own_normals,
                 (ground::light_ground, ground::update_ground_light).chain(),
+                (exposure::adapt_to_the_frame, exposure::follow_daylight),
             ),
         );
     }
