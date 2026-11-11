@@ -82,3 +82,4 @@
   - **Trait à l'horizon des scènes au sol** : pas d'artefact. Le ciel s'éclaircit régulièrement jusqu'à l'horizon ; depuis 2 m, tout le sol au-delà de 3 km tient en quelques pixels, l'herbe proche restant presque intacte.
   - **Bosse grise à l'horizon de `cumulus_sous_la_base`** : le disque de l'hélice, vu de l'arrière au-dessus de l'aile, qui se détache maintenant sur l'horizon voilé (réserve connue de l'hélice un peu pâle).
   - **Brume selon la mission** (20 à 50 km), fumée du front en couche locale, albédo des aérosols (la fumée absorbe) : à arrêter sur sources, avec l'historien.
+- **2026-11-11, brume de l'historien** (choix du joueur : « Suivre l'historien ») : 30 km par défaut, dans la couche de mélange (sommet à la base des cumulus, ou 1 500 m), air libre au-dessus ; atmosphère en marche de rayons par pixel, pour le trait cyan de l'horizon (0,5 ms). Revue du directeur artistique à suivre.
