@@ -9,6 +9,7 @@ pub mod airfoil;
 pub mod assist;
 pub mod essais;
 pub mod frames;
+pub mod legal_time;
 pub mod livery;
 pub mod masses;
 pub mod mockup;

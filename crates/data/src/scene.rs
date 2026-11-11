@@ -57,6 +57,18 @@ pub struct CloudsSpec {
     pub seed: u32,
 }
 
+/// A date and a time of day, in the French legal time of the war, summer time included
+/// (`docs/recherche/heure-legale-1917.md`).
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+pub struct TimeSpec {
+    pub year: i32,
+    pub month: u32,
+    pub day: u32,
+    pub hour: u32,
+    #[serde(default)]
+    pub minute: u32,
+}
+
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename = "Scene")]
 pub struct SceneFile {
@@ -68,9 +80,13 @@ pub struct SceneFile {
     /// The commands held, instead of the scenario's own.
     #[serde(default)]
     pub controls: Option<ControlsSpec>,
-    /// The plain's afternoon sun when left out.
+    /// The plain's afternoon sun when left out, the sun of `time` when given; a sun given
+    /// here sets its place in the sky whatever the time.
     #[serde(default)]
     pub sun: Option<SunSpec>,
+    /// When the scene happens: the sun, the moon, the haze of the hour.
+    #[serde(default)]
+    pub time: Option<TimeSpec>,
     /// Frames rendered before the capture, unless the command line says otherwise.
     #[serde(default)]
     pub frames: Option<u32>,
@@ -115,12 +131,20 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<SceneFile, DataError> {
             .last()
             .is_none_or(|&f| scene.frames.is_none_or(|n| f < n));
     let visibility = scene.visibility.is_none_or(|v| v.si() > 0.0);
-    if !(commands && sun && clouds && sequence && visibility && scene.frames != Some(0)) {
+    let time = scene.time.is_none_or(|t| {
+        (1..=12).contains(&t.month)
+            && (1..=31).contains(&t.day)
+            && t.hour < 24
+            && t.minute < 60
+            && crate::legal_time::is_unambiguous(t)
+    });
+    if !(commands && sun && clouds && sequence && visibility && time && scene.frames != Some(0)) {
         return Err(DataError::Invalid {
             origin: path.display().to_string(),
             message: "commands from −1 to 1 and throttle from 0 to 1, sun from −90° to 90°, \
                       clouds above sea level with cover and type from 0 to 1, a visibility above \
-                      zero, at least one frame, a sequence of increasing frames before the last"
+                      zero, a legal time of day read once on the clocks, at least one frame, a sequence of \
+                      increasing frames before the last"
                 .to_owned(),
         });
     }

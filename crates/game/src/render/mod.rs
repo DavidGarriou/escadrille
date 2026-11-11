@@ -6,6 +6,7 @@ pub mod exposure;
 pub mod fabric;
 pub mod ground;
 pub mod mipmaps;
+pub mod night;
 pub mod own_normals;
 pub mod quality;
 pub mod wires;
@@ -20,6 +21,8 @@ impl Plugin for RenderingPlugin {
             MaterialPlugin::<wires::WireMaterial>::default(),
             MaterialPlugin::<own_normals::OwnNormalsMaterial>::default(),
             MaterialPlugin::<ground::GroundMaterial>::default(),
+            MaterialPlugin::<night::MoonMaterial>::default(),
+            MaterialPlugin::<night::StarsMaterial>::default(),
             clouds::CloudsPlugin,
             bevy::post_process::auto_exposure::AutoExposurePlugin,
         ))
@@ -37,7 +40,9 @@ impl Plugin for RenderingPlugin {
                 quality::apply_occlusion_quality,
                 own_normals::light_with_own_normals,
                 (ground::light_ground, ground::update_ground_light).chain(),
-                (exposure::adapt_to_the_frame, exposure::follow_daylight),
+                (night::spawn_night_sky, night::place_night_sky).chain(),
+                (exposure::adapt_to_the_frame, exposure::follow_daylight)
+                    .after(crate::world::sky::light_the_sky),
             ),
         );
     }

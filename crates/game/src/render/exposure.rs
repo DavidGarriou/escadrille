@@ -27,6 +27,7 @@ use bevy::render::view::ColorGrading;
 
 use crate::camera::DAYLIGHT_EV100;
 use crate::dev::capture::CaptureRequest;
+use crate::world::sky::{Sky, towards};
 
 /// Full daylight, lux: above it, the base stays at [`DAYLIGHT_EV100`] (`ESTIMÉ`: the
 /// light of a sun about 8° high in a clear sky).
@@ -66,24 +67,24 @@ pub fn ground_illuminance_lux(elevation_deg: f32) -> f32 {
 /// Fall of the twilight, decades of lux per degree: 800 to 3.4 lux over 6°.
 const TWILIGHT_DECADES_PER_DEG: f32 = 0.395;
 
-/// Stops of light below full daylight, the sun at `elevation_deg`: 0 by day, negative at
-/// dusk and at night.
-fn below_daylight(elevation_deg: f32) -> f32 {
-    (ground_illuminance_lux(elevation_deg).max(STARLIGHT_LUX) / FULL_DAYLIGHT_LUX)
+/// Stops of light below full daylight, under `ground_lux` on level ground: 0 by day,
+/// negative at dusk and at night.
+fn below_daylight(ground_lux: f32) -> f32 {
+    (ground_lux.max(STARLIGHT_LUX) / FULL_DAYLIGHT_LUX)
         .log2()
         .min(0.0)
 }
 
-/// The base exposure for a sun at `elevation_deg`, EV100.
-pub fn metered_ev100(elevation_deg: f32) -> f32 {
-    DAYLIGHT_EV100 + below_daylight(elevation_deg)
+/// The base exposure under `ground_lux` on level ground, EV100.
+pub fn metered_ev100(ground_lux: f32) -> f32 {
+    DAYLIGHT_EV100 + below_daylight(ground_lux)
 }
 
-/// The look's exposure offset, stops (negative: darker), the sun at `elevation_deg` and
-/// `angle_deg` from the line of sight: the dusk the eye does not make up for, and the
-/// sun's glare.
-pub fn look_ev(elevation_deg: f32, angle_deg: f32) -> f32 {
-    (DUSK_SHOWN * below_daylight(elevation_deg)).max(-NIGHT_DARKENING_EV)
+/// The look's exposure offset, stops (negative: darker), under `ground_lux`, the sun at
+/// `elevation_deg` and `angle_deg` from the line of sight: the dusk the eye does not make
+/// up for, and the sun's glare.
+pub fn look_ev(ground_lux: f32, elevation_deg: f32, angle_deg: f32) -> f32 {
+    (DUSK_SHOWN * below_daylight(ground_lux)).max(-NIGHT_DARKENING_EV)
         - glare_ev(elevation_deg, angle_deg)
 }
 
@@ -133,24 +134,40 @@ const SPEED_BRIGHTEN: f32 = 3.0;
 const SPEED_DARKEN: f32 = 1.0;
 const CAPTURE_SPEED: f32 = 20.0;
 
-/// The base and the look of every daylight camera, from the sun's height and its glare.
+/// The base and the look of every daylight camera, from the sun's height, the moon's light
+/// and the sun's glare. Without a sky's clock (the scenes built in code), the sun is the
+/// light that has a disc.
 pub fn follow_daylight(
+    sky: Option<Res<Sky>>,
     suns: Query<&GlobalTransform, (With<DirectionalLight>, With<SunDisk>)>,
     mut cameras: Query<(&GlobalTransform, &mut Exposure, &mut ColorGrading), With<FollowsDaylight>>,
 ) {
-    let Some(sun) = suns.iter().next() else {
-        return;
+    let (to_sun, ground_lux) = match sky {
+        Some(sky) => {
+            let moon = sky.moon.map_or(0.0, |m| {
+                (sky.moonlight_lux() * m.sky.elevation_deg.to_radians().sin().max(0.0)) as f32
+            });
+            let sun = ground_illuminance_lux(sky.sun.elevation_deg as f32);
+            (towards(sky.sun), sun + moon)
+        }
+        None => {
+            let Some(sun) = suns.iter().next() else {
+                return;
+            };
+            // The light shines along its forward axis: the sun lies behind it.
+            let to_sun = *sun.back();
+            let elevation = to_sun.y.clamp(-1.0, 1.0).asin().to_degrees();
+            (to_sun, ground_illuminance_lux(elevation))
+        }
     };
-    // The light shines along its forward axis: the sun lies behind it.
-    let to_sun = sun.back();
     let elevation = to_sun.y.clamp(-1.0, 1.0).asin().to_degrees();
-    let base = metered_ev100(elevation);
+    let base = metered_ev100(ground_lux);
     for (camera, mut exposure, mut grading) in &mut cameras {
         if exposure.ev100 != base {
             exposure.ev100 = base;
         }
-        let angle = camera.forward().dot(*to_sun).clamp(-1.0, 1.0).acos();
-        let look = look_ev(elevation, angle.to_degrees());
+        let angle = camera.forward().dot(to_sun).clamp(-1.0, 1.0).acos();
+        let look = look_ev(ground_lux, elevation, angle.to_degrees());
         if grading.global.exposure != look {
             grading.global.exposure = look;
         }
@@ -201,8 +218,9 @@ mod tests {
     fn full_daylight_keeps_its_exposure() {
         // The plain's afternoon, the high noon of the cumulus, the sun of the contre-jour.
         for h in [9.0, 40.0, 58.0, 90.0] {
-            assert_eq!(metered_ev100(h), DAYLIGHT_EV100, "{h}°");
-            assert!(look_ev(h, 180.0).abs() < 0.01, "{h}°");
+            let lux = ground_illuminance_lux(h);
+            assert_eq!(metered_ev100(lux), DAYLIGHT_EV100, "{h}°");
+            assert!(look_ev(lux, h, 180.0).abs() < 0.01, "{h}°");
         }
     }
 
@@ -220,19 +238,17 @@ mod tests {
 
     #[test]
     fn dusk_opens_the_base_and_darkens_the_look() {
-        let heights = [8.0, 4.0, 0.0, -3.0, -6.0];
-        let base: Vec<f32> = heights.iter().map(|h| metered_ev100(*h)).collect();
+        let at = |h: f32| metered_ev100(ground_illuminance_lux(h));
+        let base: Vec<f32> = [8.0, 4.0, 0.0, -3.0, -6.0].iter().map(|h| at(*h)).collect();
         assert!(base.windows(2).all(|w| w[0] > w[1]), "{base:?}");
         // At sunset, the light is 3.6 stops below full daylight: the look shows 1.1.
-        assert!((metered_ev100(0.0) - (DAYLIGHT_EV100 - 3.64)).abs() < 0.05);
-        assert!(
-            (look_ev(0.0, 180.0) + 1.09).abs() < 0.05,
-            "{}",
-            look_ev(0.0, 180.0)
-        );
+        let sunset = ground_illuminance_lux(0.0);
+        assert!((metered_ev100(sunset) - (DAYLIGHT_EV100 - 3.64)).abs() < 0.05);
+        assert!((look_ev(sunset, 0.0, 180.0) + 1.09).abs() < 0.05);
         // Deep in the night, the base stops at starlight and the look at its floor.
-        assert_eq!(metered_ev100(-30.0), metered_ev100(-40.0));
-        assert_eq!(look_ev(-30.0, 180.0), -NIGHT_DARKENING_EV);
+        assert_eq!(at(-30.0), at(-40.0));
+        let night = ground_illuminance_lux(-30.0);
+        assert_eq!(look_ev(night, -30.0, 180.0), -NIGHT_DARKENING_EV);
     }
 
     #[test]

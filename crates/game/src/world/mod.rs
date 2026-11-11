@@ -13,6 +13,7 @@ pub mod maquette;
 pub mod meadow;
 pub mod plain;
 pub mod scenes;
+pub mod sky;
 pub mod studio;
 pub mod vol_essai;
 
@@ -55,6 +56,7 @@ impl Plugin for WorldPlugin {
                         .after(FlightSet::Place)
                         .run_if(resource_changed::<RenderOrigin>),
                     meadow::fade_tufts.after(FlightSet::Place),
+                    sky::light_the_sky,
                 ),
             )
             .add_systems(OnEnter(AppState::LaboManette), scenes::spawn_ui_camera);

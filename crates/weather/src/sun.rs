@@ -95,6 +95,19 @@ pub fn ephemeris(julian_day: f64) -> SunEphemeris {
     }
 }
 
+/// Local mean sidereal time, degrees: the turn of the stars over `longitude_deg` at
+/// `julian_day` (Meeus, chapter 12, without the tiny terms in T²).
+pub fn local_sidereal_deg(julian_day: f64, longitude_deg: f64) -> f64 {
+    (280.460_618_37 + 360.985_647_366_29 * (julian_day - 2_451_545.0) + longitude_deg)
+        .rem_euclid(360.0)
+}
+
+/// Local apparent solar time at `place`, hours: noon when the sun crosses the meridian.
+pub fn solar_hour(when: Utc, place: Place) -> f64 {
+    let sun = ephemeris(when.julian_day());
+    (when.hour + (sun.equation_of_time_min + 4.0 * place.longitude_deg) / 60.0).rem_euclid(24.0)
+}
+
 /// Refraction of the air at a true elevation, degrees: the NOAA calculator's fit of the
 /// standard atmosphere (Bennett's formula near the horizon), nothing above 85°.
 pub fn refraction_deg(elevation_deg: f64) -> f64 {
@@ -148,10 +161,10 @@ pub fn position(when: Utc, place: Place) -> SunPosition {
 mod tests {
     use super::*;
 
-    /// Ypres, the plan's default place.
+    /// Ypres, the cloth hall (`docs/recherche/heure-legale-1917.md` § 6.1).
     const YPRES: Place = Place {
-        latitude_deg: 50.85,
-        longitude_deg: 2.89,
+        latitude_deg: 50.851,
+        longitude_deg: 2.885,
     };
 
     /// The UT of the sun's highest point on a day at `place`, by search, hours.
@@ -299,6 +312,75 @@ mod tests {
         assert!((morning.azimuth_deg - 90.0).abs() < 8.0, "{morning:?}");
         assert!((evening.azimuth_deg - 270.0).abs() < 8.0, "{evening:?}");
         assert!(morning.elevation_deg.abs() < 5.0 && evening.elevation_deg.abs() < 5.0);
+    }
+
+    #[test]
+    fn the_stars_turn_once_a_sidereal_day_and_noon_is_solar_noon() {
+        // Meeus, example 12.a: 1987 April 10, 0h UT, θ0 = 197.693195° at Greenwich.
+        let jd = Utc {
+            year: 1987,
+            month: 4,
+            day: 10,
+            hour: 0.0,
+        }
+        .julian_day();
+        assert!((local_sidereal_deg(jd, 0.0) - 197.693_195).abs() < 0.001);
+        // The sun at its highest when the solar time is noon.
+        let (hour, _) = noon(1917, 7, 31, YPRES);
+        let when = Utc {
+            year: 1917,
+            month: 7,
+            day: 31,
+            hour,
+        };
+        assert!((solar_hour(when, YPRES) - 12.0).abs() < 1.5 / 60.0);
+    }
+
+    #[test]
+    fn the_sun_stands_where_the_naval_observatory_puts_it() {
+        // US Naval Observatory, `docs/recherche/heure-legale-1917.md` § 7: heights without
+        // refraction, which the service gives apart.
+        let true_height = |p: SunPosition| p.elevation_deg - refraction_deg(p.elevation_deg);
+        for (month, day, hour, height, azimuth) in [
+            (9, 1, 14.0, 39.6, 224.2),
+            (10, 20, 14.0, 21.1, 219.0),
+            (7, 31, 14.5, 45.3, 237.8),
+            (7, 31, 15.0, 41.1, 245.7),
+        ] {
+            let p = position(
+                Utc {
+                    year: 1917,
+                    month,
+                    day,
+                    hour,
+                },
+                YPRES,
+            );
+            assert!(
+                (true_height(p) - height).abs() < 0.1,
+                "{month}-{day}: {p:?}"
+            );
+            assert!(
+                (p.azimuth_deg - azimuth).abs() < 0.1,
+                "{month}-{day}: {p:?}"
+            );
+        }
+        // Meridian transits: the hour within a minute and a half, the height within 0.05°.
+        for (month, day, transit_utc, height) in [
+            (6, 21, 11.0 + 50.0 / 60.0, 62.60),
+            (7, 31, 11.0 + 55.0 / 60.0, 57.51),
+            (10, 20, 11.0 + 33.0 / 60.0, 28.92),
+        ] {
+            let (hour, sun) = noon(1917, month, day, YPRES);
+            assert!(
+                (hour - transit_utc).abs() < 1.5 / 60.0,
+                "{month}-{day}: {hour}"
+            );
+            assert!(
+                (true_height(sun) - height).abs() < 0.05,
+                "{month}-{day}: {sun:?}"
+            );
+        }
     }
 
     #[test]

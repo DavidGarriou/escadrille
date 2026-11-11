@@ -5,7 +5,7 @@
 //! (Meeus, chapter 12), with the parallax of its nearness; the lit fraction from its
 //! elongation from the sun (Meeus, chapter 48).
 
-use crate::sun::{Place, SunPosition, Utc, ephemeris, refraction_deg};
+use crate::sun::{Place, SunPosition, Utc, ephemeris, local_sidereal_deg, refraction_deg};
 
 /// The moon seen from a place: where it stands, and the lit fraction of its disc.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -52,8 +52,7 @@ pub fn position(when: Utc, place: Place) -> MoonPosition {
     let right_ascension = (l.sin() * obliquity.cos() - b.tan() * obliquity.sin()).atan2(l.cos());
     let declination = (b.sin() * obliquity.cos() + b.cos() * obliquity.sin() * l.sin()).asin();
     // Local sidereal time, then the hour angle.
-    let sidereal = (280.460_618_37 + 360.985_647_366_29 * (jd - 2_451_545.0) + place.longitude_deg)
-        .rem_euclid(360.0);
+    let sidereal = local_sidereal_deg(jd, place.longitude_deg);
     let hour_angle = (sidereal.to_radians() - right_ascension).rem_euclid(std::f64::consts::TAU);
     let lat = place.latitude_deg.to_radians();
     let elevation =
