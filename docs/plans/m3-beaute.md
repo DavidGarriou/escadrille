@@ -99,6 +99,8 @@ Chacun laisse le jeu lançable, avec tests, `just check`, `just test`, captures 
 
 ### 2. Heure du jour
 
+Plan détaillé : `m3-heure-du-jour.md` (proposé le 2026-11-11).
+
 - **Soleil calculé** à partir de la date, de l'heure et de la latitude des Flandres : algorithme astronomique en Rust, avec un test sur des éphémérides publiées.
 - **Exposition** : caméra physique dont l'EV suit la luminosité, de l'aube à midi, ou exposition automatique de Bevy si elle convient (à vérifier).
 - **Ciel nocturne simple** : la lune et quelques étoiles, sans plus ; la vraie nuit viendra avec les dirigeables.

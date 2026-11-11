@@ -27,7 +27,7 @@ Sûr :
 
 **Conclusions (2026-10-20, validées par le joueur)** :
 - **L2/R2 = tout-ou-rien.** Ce sont des boutons. Les gaz restent incrémentaux ; L2/R2 servent à des actions discrètes.
-- **Vibrations : aucune ressentie**, quel que soit le bouton du labo. La cause n'est pas établie (moteurs absents sur ce modèle, pilote `xpad`, ou chaîne gilrs ; diagnostic possible avec `fftest` du paquet `linuxconsoletools`). En attendant, le jeu **ne compte jamais sur la vibration** : c'est un retour optionnel, doublé par le son et l'image.
+- **Vibrations : aucune ressentie**, quel que soit le bouton du labo (essai du 2026-10-20). **Contesté par le joueur le 2026-11-11 : la SN30 Pro peut vibrer, correction à faire** (`docs/gdd/retours.md`, « Remarques pour plus tard »). La cause n'est pas établie (moteurs absents sur ce modèle, pilote `xpad`, ou chaîne gilrs ; diagnostic possible avec `fftest` du paquet `linuxconsoletools`). En attendant, le jeu **ne compte jamais sur la vibration** : c'est un retour optionnel, doublé par le son et l'image.
 - **B physique = `South`** (confirmé) : le mapping par position fonctionne comme prévu.
 
 Conséquences :

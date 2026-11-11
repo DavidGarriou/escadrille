@@ -3349,3 +3349,11 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Sommet de la brume vu de 2 000 m par ciel clair : pas de bandes avec 8 échantillons (écart d'une ligne à l'autre inférieur à 0,3 niveau). Nouvelle scène de référence `brume_sommet` : la nappe pâle qui noie l'horizon sous un ciel bleu.
 - **A** Herbe « trop saturée » à l'horizon au sol : vérifié, juste. À 2 m de hauteur, seul le premier pixel sous l'horizon est au-delà de 3 km, et il est déjà grisé ; les suivants sont à moins de 1,6 km.
 - **A** Le bord du sommet de la brume (100 m) est étalé sur environ deux pas de la table du milieu (195 m) : noté dans le code. La lumière qui éclaire la brume est bien atténuée par la brume elle-même (tables de Bevy calculées sur le milieu).
+
+### Remarque sur la manette, et le chantier « Heure du jour »
+
+- **Q** Le joueur : « Ajouter dans les remarques pour plus tard : la manette SN30 pro peut vibrer : correction à faire. Note le, puis lance le chantier "Heure du jour" ».
+- **A** Remarque notée dans `docs/gdd/retours.md` (nouvelle section « Remarques pour plus tard ») : le M0 avait conclu « aucune vibration ressentie » (2026-10-20) ; à reprendre (chaîne gilrs, pilote `xpad`, `fftest`, labo manette), puis corriger la vision, le skill et les retours. Renvoi ajouté dans le skill `manette`.
+- **A** Étude pour « Heure du jour » : le soleil est fixé par scène (azimut et hauteur) ; l'exposition est fixe (EV100 = 13) ; l'atmosphère de Bevy atténue et colore déjà le soleil bas ; Bevy 0.20 fournit une exposition automatique (`AutoExposurePlugin`, histogramme, courbe de compensation), non activée ; la plaine n'a pas encore de position géographique.
+- **A** Plan rédigé : `docs/plans/m3-heure-du-jour.md` (soleil calculé, exposition qui suit la lumière, brume du matin, nuit simple, scènes `aube_terrain`, couchant, nuit de lune). Lien depuis `m3-beaute.md`.
+- **?** Décisions demandées au joueur : l'exposition (recommandé : base physique et adaptation de l'œil bornée à ±1,5 EV), l'heure du jeu (recommandé : heure légale française de 1917), les étoiles (recommandé : procédurales), la brume selon l'heure (recommandé : dans cet incrément).

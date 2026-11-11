@@ -41,3 +41,7 @@ Version : plan `docs/plans/m2-train-sol.md` réalisé, `just run` au sol (commit
 |---|---|---|
 | Vol de dix minutes à la manette, critère de fin du M2 | « Considère que le vol de 10 mn s'est bien passé » | Critère tenu sur décision du joueur ; M2 clos. Pas de retour détaillé : décollage, posé, aides au sol, centrage et préréglages restent sans avis chiffré |
 | Décollage et posés | « le décollage et le posés se sont bien déroulés » | Rien à corriger. Restent sans avis : les aides au sol par préréglage, le centrage du 2026-10-31 |
+
+## Remarques pour plus tard
+
+- **2026-11-11 — Vibrations de la SN30 Pro** : le joueur signale que la manette peut vibrer. **Correction à faire** : le M0 avait conclu « aucune vibration ressentie » (essai du 2026-10-20, ci-dessus), et le jeu ne s'appuie pas sur la vibration (`docs/vision.md`, question 5 ; skill `manette`). À reprendre avec le chantier des retours de la manette : vérifier la chaîne (gilrs, pilote `xpad`, `fftest`), refaire le test du labo manette, puis corriger la vision, le skill et ce fichier.
