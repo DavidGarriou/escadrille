@@ -267,7 +267,7 @@ fn spawn_outdoors(
         })),
     ));
     commands.spawn(Atmosphere::earth(
-        media.add(atmosphere::medium(atmosphere::SUMMER_VISIBILITY_M)),
+        media.add(atmosphere::medium(atmosphere::Haze::default())),
     ));
     commands.spawn((
         Name::new("Sun"),

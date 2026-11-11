@@ -5,7 +5,7 @@ use bevy::anti_alias::taa::TemporalAntiAliasing;
 use bevy::camera::Exposure;
 use bevy::core_pipeline::tonemapping::Tonemapping;
 use bevy::light::AtmosphereEnvironmentMapLight;
-use bevy::pbr::{AtmosphereSettings, ScreenSpaceAmbientOcclusion};
+use bevy::pbr::{AtmosphereMode, AtmosphereSettings, ScreenSpaceAmbientOcclusion};
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
 
@@ -96,12 +96,17 @@ pub fn outdoor_camera(transform: Transform, fov_deg: f32, ev100: f32) -> impl Bu
             ..default()
         }),
         transform,
-        // The haze over the whole plain: to 32 km only, Bevy's default, the ground beyond
-        // stayed as clear as at 32 km and drew a bright line at the horizon. Its 32 slices,
-        // 3 km apart, are kept: twice as many cost 0.16 ms and changed the near ground by
-        // 1 to 2 % (cumulus_midi, 2026-11-11).
+        // The sky and the haze over the ground, marched for each pixel (2026-11-11). With
+        // Bevy's tables, the ground's transmittance came from `sample_transmittance_lut_segment`,
+        // which switches formula at the angle of the curved planet's horizon: the flat plain
+        // goes on beyond it (at 56 km from 1 000 m), and a thin cyan line lay across it under
+        // the haze of 30 km. Eight samples a ray: 0.5 ms in 1440p; Bevy's 16 cost 0.9 ms
+        // for a smooth difference of 1 to 3 % in the sky. The aerial view's table, out of
+        // use when marching, keeps the plain's reach (32 km by default).
         AtmosphereSettings {
             aerial_view_lut_max_distance: AERIAL_VIEW_M,
+            rendering_method: AtmosphereMode::Raymarched,
+            sky_max_samples: 8,
             ..default()
         },
         AtmosphereEnvironmentMapLight::default(),

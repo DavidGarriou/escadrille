@@ -3330,3 +3330,13 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - Documents à récupérer (§ 7.1) et demandes à des organismes (§ 7.2), non reportées dans `demandes.md` : à décider avec le joueur.
 - **A** Essai à 30 km (copies temporaires des scènes, retirées) : midi change à peine ; sol du contre-jour et du vol d'essai plus voilé ; **un mince trait cyan à l'horizon du vol d'essai** (1 000 m), absent à 50 km, probablement la jonction de la plaine plate de 200 km avec la Terre courbe de Bevy.
 - **?** Décision demandée au joueur : garder 50 km par défaut, ou suivre l'historien (30 km, avec la brume resserrée vers le bas et le trait de l'horizon corrigé).
+
+### La brume de l'historien
+
+- **Q** Le joueur choisit de suivre l'historien : « Suivre l'historien » (30 km par défaut, brume resserrée vers le bas, trait de l'horizon corrigé).
+- **A** Visibilité par défaut 30 km (`ESTIMÉ`, fiche § 5.2 ; environ 23 km en portée optique de l'OMM).
+- **A** La brume tient dans la couche de mélange de l'après-midi : homogène jusqu'à son sommet, puis un air libre au dixième de sa densité, sur 2 km d'échelle (`ESTIMÉ`). Sommet : la base des cumulus quand la scène en a (les cumulus de beau temps naissent au sommet de la couche de mélange), 1 500 m sous un ciel clair (fiche : 1 à 2 km). Remplace l'exponentielle de 1,2 km de Hillaire, qui blanchissait tout le ciel à 30 km. Tests : brume homogène sous le sommet, moins d'un dixième 500 m au-dessus.
+  - **R** Ciel bleu au-dessus des nuages, midi presque inchangé, sol sous les nuages plus voilé et plus chaud.
+- **A** Le trait cyan de l'horizon, revenu à 1 000 m : il ne bouge ni avec la taille de la plaine (200 ou 600 km) ni avec la portée de la perspective aérienne (100 ou 300 km), et disparaît avec une plaine de 20 km. Cause : pour le sol, Bevy prend la transmittance de `sample_transmittance_lut_segment`, qui change de formule à l'angle de l'horizon de la Terre courbe (−1,0° vu de 1 000 m) ; notre plaine plate s'étend au-delà (à 56 km), et la couleur du sol y perce la brume. C'est la fonction qui avait déjà fait le trait jaune de nos nuages.
+  - **D** Mode de rendu de l'atmosphère par marche de rayons pour chaque pixel (`AtmosphereMode::Raymarched`), 8 échantillons par rayon : plus de trait (pic de 0,17 niveau contre 1,08) ; 0,5 ms en 1440p (16 échantillons, le défaut de Bevy : 0,9 ms, pour 1 à 3 % d'écart lisse dans le ciel).
+  - Piste écartée pour l'instant : courber le sol avec la Terre (à revoir avec le relief réel).

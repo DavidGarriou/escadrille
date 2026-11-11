@@ -55,8 +55,7 @@ pub struct Sun {
     pub elevation_deg: f64,
 }
 
-/// The plain: ground, sun, and the atmosphere with the haze of `visibility_m` at the
-/// ground ([`atmosphere::medium`]).
+/// The plain: ground, sun, and the atmosphere with its `haze` ([`atmosphere::medium`]).
 pub fn spawn_plain(
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
@@ -64,7 +63,7 @@ pub fn spawn_plain(
     images: &mut Assets<Image>,
     media: &mut Assets<ScatteringMedium>,
     sun: Sun,
-    visibility_m: f32,
+    haze: atmosphere::Haze,
 ) {
     let fields = images.add(fields_texture(TEXTURE_SIZE, BLOCKS, 1917));
     commands.spawn((
@@ -81,9 +80,7 @@ pub fn spawn_plain(
     // The atmosphere keeps the Earth's grey albedo for its multiple scattering: the fields'
     // green turned the haze of the horizon olive. The ground below the horizon of the
     // environment map, which lights the undersides of the aircraft, takes the fields'.
-    commands.spawn(Atmosphere::earth(
-        media.add(atmosphere::medium(visibility_m)),
-    ));
+    commands.spawn(Atmosphere::earth(media.add(atmosphere::medium(haze))));
     commands.insert_resource(GroundAlbedo(field_albedo()));
     let (az, el) = (sun.azimuth_deg.to_radians(), sun.elevation_deg.to_radians());
     let towards_sun = DVec3::new(el.cos() * az.cos(), el.cos() * az.sin(), -el.sin());

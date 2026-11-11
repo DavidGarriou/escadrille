@@ -19,9 +19,8 @@ use bevy::prelude::*;
 
 /// Thickness of `Atmosphere::earth`, m.
 pub const ATMOSPHERE_HEIGHT_M: f32 = 100_000.0;
-/// Scale heights of the air and of the aerosols, m (Hillaire 2020).
+/// Scale height of the air, m (Hillaire 2020).
 pub const AIR_SCALE_HEIGHT_M: f32 = 8_000.0;
-pub const AEROSOL_SCALE_HEIGHT_M: f32 = 1_200.0;
 /// Scattering of the air at sea level, red, green and blue, m⁻¹ (Hillaire 2020).
 pub const AIR_SCATTERING: Vec3 = Vec3::new(5.802e-6, 13.558e-6, 33.100e-6);
 /// The aerosols of Hillaire 2020 at sea level, m⁻¹: scattering and absorption, a single
@@ -35,9 +34,49 @@ pub const KOSCHMIEDER: f32 = 3.912;
 /// a step over the atmosphere, and the phase within 0.3° of the sun.
 pub const RESOLUTION: u32 = 512;
 
-/// Visibility at the ground on a fine summer day of 1917, m, until the research note
-/// gives it (`ESTIMÉ`: plan `m3-atmosphere.md`, decision 1, 40 to 60 km).
-pub const SUMMER_VISIBILITY_M: f32 = 50_000.0;
+/// Visibility at the ground on a fine summer day of 1917 in Flanders, m (`ESTIMÉ`,
+/// `docs/recherche/brume-ete-1917.md` § 5.2): no measure of the time, a deduction from the
+/// summer means of the coal era in Britain, the pilots' accounts and the sea air of
+/// Flanders; 25 to 40 km by scene, 50 to 60 km on a very clear day. In Koschmieder's
+/// convention ([`KOSCHMIEDER`]): about 23 km of meteorological optical range (WMO, 5 %).
+pub const SUMMER_VISIBILITY_M: f32 = 30_000.0;
+
+/// The haze lies in the afternoon's mixed layer, under the fighters, with a clear blue sky
+/// above (`docs/recherche/brume-ete-1917.md`, trait 2): even up to its top, then thin free
+/// air. With Hillaire's exponential of 1.2 km, the haze of 30 km whitened the whole sky.
+/// - the layer's top, m, on a summer afternoon without cumulus (`ESTIMÉ`, 1 to 2 km, § 5.2);
+///   under fair-weather cumulus, their base, at the top of the mixed layer ([`Haze`]);
+/// - the depth over which the haze ends at the top, m (`ESTIMÉ`);
+/// - the free air above: its share of the haze at the ground, and its scale height, m
+///   (`ESTIMÉ`: a tenth, the sky above the haze being much clearer).
+pub const HAZE_TOP_M: f32 = 1_500.0;
+pub const HAZE_EDGE_M: f32 = 100.0;
+pub const FREE_AIR_SHARE: f32 = 0.1;
+pub const FREE_AIR_SCALE_HEIGHT_M: f32 = 2_000.0;
+
+/// The haze of a scene: visibility at the ground and top of its layer, m.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Haze {
+    pub visibility_m: f32,
+    pub top_m: f32,
+}
+
+impl Default for Haze {
+    /// A fine summer afternoon of 1917.
+    fn default() -> Self {
+        Self {
+            visibility_m: SUMMER_VISIBILITY_M,
+            top_m: HAZE_TOP_M,
+        }
+    }
+}
+
+/// Density of the aerosols at `altitude_m`, 1 at the ground, under a layer topped at `top_m`.
+pub fn haze_density(altitude_m: f32, top_m: f32) -> f32 {
+    let layer = 1.0 / (1.0 + ((altitude_m - top_m) / HAZE_EDGE_M).exp());
+    let free = (-altitude_m / FREE_AIR_SCALE_HEIGHT_M).exp();
+    (1.0 - FREE_AIR_SHARE) * layer + FREE_AIR_SHARE * free
+}
 
 /// Phase of the aerosols, two Henyey-Greenstein lobes: a narrow peak, its share, and the
 /// body, their mean cosine kept at Hillaire's 0.8. Bevy's single lobe (g = 0.8) spread the
@@ -46,9 +85,10 @@ pub const SUMMER_VISIBILITY_M: f32 = 50_000.0;
 /// ("Sunshape distributions for terrestrial solar simulations", Solar Energy 74, 2003;
 /// formulas as in Tonatiuh's `SunshapeBuie.cpp`) falls as θ^γ beyond the sun's disc, with
 /// γ = −2.3 for a circumsolar ratio of 0.05. Fitted to it from 0.5 to 2.5° (within 7 %),
-/// thin single scattering, a ground observer under [`SUMMER_VISIBILITY_M`] and a sun 30°
-/// high (`ESTIMÉ`: the ratio of 0.05 for that haze). Beyond 30° from the sun, the sky is
-/// as with one lobe.
+/// thin single scattering, a ground observer under a haze of 50 km and a sun 30° high
+/// (`ESTIMÉ`: the ratio of 0.05 for that haze). Under the haze of 30 km in its layer, 2.3
+/// times thicker, the same phase gives Buie's hazier sky, a ratio of 0.1 (γ = −2.5).
+/// Beyond 30° from the sun, the sky is as with one lobe.
 pub const AEROSOL_PEAK_G: f32 = 0.991;
 pub const AEROSOL_PEAK_SHARE: f32 = 0.33;
 pub const AEROSOL_BODY_G: f32 = 0.706;
@@ -72,9 +112,10 @@ pub fn aerosol_factor(visibility_m: f32) -> f32 {
     (aerosols / (CLEAR_AEROSOL_SCATTERING + CLEAR_AEROSOL_ABSORPTION)).max(0.0)
 }
 
-/// Bevy's Earth medium, fixed, with the aerosols of `visibility_m` at the ground.
-pub fn medium(visibility_m: f32) -> ScatteringMedium {
-    let factor = aerosol_factor(visibility_m);
+/// Bevy's Earth medium, fixed, with the aerosols of `haze`.
+pub fn medium(haze: Haze) -> ScatteringMedium {
+    let factor = aerosol_factor(haze.visibility_m);
+    let top = haze.top_m;
     ScatteringMedium::new(
         RESOLUTION,
         RESOLUTION,
@@ -90,9 +131,9 @@ pub fn medium(visibility_m: f32) -> ScatteringMedium {
             ScatteringTerm {
                 absorption: Vec3::splat(CLEAR_AEROSOL_ABSORPTION * factor),
                 scattering: Vec3::splat(CLEAR_AEROSOL_SCATTERING * factor),
-                falloff: Falloff::Exponential {
-                    scale: AEROSOL_SCALE_HEIGHT_M / ATMOSPHERE_HEIGHT_M,
-                },
+                falloff: Falloff::from_curve(FunctionCurve::new(Interval::UNIT, move |p| {
+                    haze_density((1.0 - p) * ATMOSPHERE_HEIGHT_M, top)
+                })),
                 phase: PhaseFunction::from_curve(FunctionCurve::new(
                     Interval::EVERYWHERE,
                     aerosol_phase,
@@ -127,12 +168,15 @@ mod tests {
 
     #[test]
     fn the_haze_gives_the_visibility_asked() {
-        for visibility in [20_000.0, SUMMER_VISIBILITY_M, 100_000.0] {
-            let m = medium(visibility);
+        for visibility_m in [20_000.0, SUMMER_VISIBILITY_M, 100_000.0] {
+            let m = medium(Haze {
+                visibility_m,
+                ..default()
+            });
             let seen = KOSCHMIEDER / ground_extinction(&m);
             assert!(
-                (seen / visibility - 1.0).abs() < 1e-3,
-                "{visibility}: {seen}"
+                (seen / visibility_m - 1.0).abs() < 1e-3,
+                "{visibility_m}: {seen}"
             );
         }
         // Clearer than the air alone allows, no aerosols at all.
@@ -141,24 +185,35 @@ mod tests {
 
     #[test]
     fn the_aerosols_scatter_nine_tenths_of_what_they_meet() {
-        let m = medium(SUMMER_VISIBILITY_M);
+        let m = medium(Haze::default());
         let aerosols = &m.terms[1];
         let albedo = aerosols.scattering.x / (aerosols.scattering.x + aerosols.absorption.x);
         assert!((albedo - 0.9).abs() < 1e-3, "{albedo}");
     }
 
     #[test]
-    fn air_and_haze_thin_out_over_their_scale_heights() {
-        let m = medium(SUMMER_VISIBILITY_M);
+    fn the_air_thins_out_over_its_scale_height() {
+        let m = medium(Haze::default());
         // At a scale height above the ground, the density has fallen by e.
-        for (term, height) in [
-            (&m.terms[0], AIR_SCALE_HEIGHT_M),
-            (&m.terms[1], AEROSOL_SCALE_HEIGHT_M),
-        ] {
-            let p = 1.0 - height / ATMOSPHERE_HEIGHT_M;
-            let ratio = term.falloff.sample(p) / term.falloff.sample(1.0);
-            assert!((ratio - (-1.0f32).exp()).abs() < 2e-3, "{height}: {ratio}");
-        }
+        let p = 1.0 - AIR_SCALE_HEIGHT_M / ATMOSPHERE_HEIGHT_M;
+        let ratio = m.terms[0].falloff.sample(p) / m.terms[0].falloff.sample(1.0);
+        assert!((ratio - (-1.0f32).exp()).abs() < 2e-3, "{ratio}");
+    }
+
+    #[test]
+    fn the_haze_is_even_under_its_top_and_thin_above() {
+        let top = HAZE_TOP_M;
+        assert!((haze_density(0.0, top) - 1.0).abs() < 1e-3);
+        assert!(haze_density(0.5 * top, top) > 0.95);
+        assert!((0.4..0.6).contains(&haze_density(top, top)));
+        // Half a kilometre above the top, a fighter is out of it.
+        assert!(haze_density(top + 500.0, top) < 0.1);
+        assert!(haze_density(5_000.0, top) < 0.01);
+        // The medium follows it, at the ground and at the top.
+        let m = medium(Haze::default());
+        let at = |h: f32| m.terms[1].falloff.sample(1.0 - h / ATMOSPHERE_HEIGHT_M);
+        assert!((at(0.0) - 1.0).abs() < 1e-3);
+        assert!((at(top) - haze_density(top, top)).abs() < 1e-3);
     }
 
     #[test]
@@ -196,7 +251,7 @@ mod tests {
 
     #[test]
     fn the_tables_are_square() {
-        let m = medium(SUMMER_VISIBILITY_M);
+        let m = medium(Haze::default());
         assert_eq!(m.falloff_resolution, m.phase_resolution);
     }
 }

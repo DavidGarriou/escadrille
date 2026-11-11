@@ -15,7 +15,7 @@ use escadrille_data::scene::{CameraSpec, load_scene};
 use escadrille_fdm::aircraft::PilotControls;
 use escadrille_weather::clouds::CloudLayer;
 
-use super::atmosphere::SUMMER_VISIBILITY_M;
+use super::atmosphere::{HAZE_TOP_M, Haze, SUMMER_VISIBILITY_M};
 use super::meadow::spawn_meadow;
 use super::plain::{SUN_AZIMUTH_DEG, SUN_ELEVATION_DEG, Sun, spawn_plain};
 use crate::ASSETS_DIR;
@@ -60,15 +60,21 @@ fn fair_weather() -> Clouds {
 
 /// `just run`: the SPAD at rest on the field, under the clouds.
 pub fn spawn_on_the_field(mut scene: Scene) -> Result {
-    spawn_flight(
-        ON_THE_FIELD,
-        &mut scene,
-        AFTERNOON,
-        SUMMER_VISIBILITY_M,
-        (0.0, 0.0),
-    )?;
-    scene.commands.insert_resource(fair_weather());
+    let clouds = fair_weather();
+    let haze = haze_under(SUMMER_VISIBILITY_M, Some(&clouds.layer));
+    spawn_flight(ON_THE_FIELD, &mut scene, AFTERNOON, haze, (0.0, 0.0))?;
+    scene.commands.insert_resource(clouds);
     Ok(())
+}
+
+/// The haze of `visibility_m` at the ground, in a layer up to the base of the clouds (fair-
+/// weather cumulus form at the top of the afternoon's mixed layer), or to [`HAZE_TOP_M`]
+/// under a clear sky.
+fn haze_under(visibility_m: f32, clouds: Option<&CloudLayer>) -> Haze {
+    Haze {
+        visibility_m,
+        top_m: clouds.map_or(HAZE_TOP_M, |c| c.base_altitude as f32),
+    }
 }
 
 /// A scene of `assets/scenes`, captured or flown: its scenario, sun, camera, clouds, haze
@@ -85,10 +91,26 @@ pub fn spawn_scene_file(mut scene: Scene, name: Res<FlightScene>) -> Result {
         CameraSpec::Pilot { yaw, pitch } => (View::Pilot, yaw, pitch),
     };
     let look = (yaw.si() as f32, pitch.si() as f32);
+    let clouds = file.clouds.map(|c| {
+        let mut layer = CloudLayer {
+            base_altitude: c.base.si(),
+            cover: c.cover,
+            cloud_type: c.cloud_type,
+            ..default()
+        };
+        if let Some(thickness) = c.thickness {
+            layer.thickness[2] = thickness.si();
+        }
+        Clouds {
+            layer,
+            seed: c.seed,
+        }
+    });
     let visibility = file
         .visibility
         .map_or(SUMMER_VISIBILITY_M, |v| v.si() as f32);
-    spawn_flight(&file.scenario, &mut scene, sun, visibility, look)?;
+    let haze = haze_under(visibility, clouds.as_ref().map(|c| &c.layer));
+    spawn_flight(&file.scenario, &mut scene, sun, haze, look)?;
     scene.commands.insert_resource(view);
     if let Some(c) = file.controls {
         let held = PilotControls {
@@ -100,31 +122,13 @@ pub fn spawn_scene_file(mut scene: Scene, name: Res<FlightScene>) -> Result {
         scene.commands.insert_resource(StartCommands(held));
         scene.commands.insert_resource(PilotInput::holding(held));
     }
-    if let Some(c) = file.clouds {
-        let mut layer = CloudLayer {
-            base_altitude: c.base.si(),
-            cover: c.cover,
-            cloud_type: c.cloud_type,
-            ..default()
-        };
-        if let Some(thickness) = c.thickness {
-            layer.thickness[2] = thickness.si();
-        }
-        scene.commands.insert_resource(Clouds {
-            layer,
-            seed: c.seed,
-        });
+    if let Some(clouds) = clouds {
+        scene.commands.insert_resource(clouds);
     }
     Ok(())
 }
 
-fn spawn_flight(
-    name: &str,
-    scene: &mut Scene,
-    sun: Sun,
-    visibility_m: f32,
-    look: (f32, f32),
-) -> Result {
+fn spawn_flight(name: &str, scene: &mut Scene, sun: Sun, haze: Haze, look: (f32, f32)) -> Result {
     let Scene {
         commands,
         asset_server,
@@ -134,15 +138,7 @@ fn spawn_flight(
         media,
         hold,
     } = scene;
-    spawn_plain(
-        commands,
-        meshes,
-        materials,
-        images,
-        media,
-        sun,
-        visibility_m,
-    );
+    spawn_plain(commands, meshes, materials, images, media, sun, haze);
     spawn_meadow(commands, meshes, materials, images);
     let (aircraft, cg) = spawn_scenario(name, commands, asset_server, hold)?;
     // The pilot's eye of the 3D model's file (its node cam_pilot_eye).
