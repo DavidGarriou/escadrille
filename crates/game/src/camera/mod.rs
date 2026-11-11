@@ -10,6 +10,7 @@ use bevy::pbr::{AtmosphereMode, AtmosphereSettings, ScreenSpaceAmbientOcclusion}
 use bevy::render::view::ColorGrading;
 
 use crate::render::exposure::FollowsDaylight;
+use crate::render::night_vision::NightVision;
 use bevy::post_process::bloom::Bloom;
 use bevy::prelude::*;
 
@@ -117,6 +118,7 @@ pub fn outdoor_camera(transform: Transform, fov_deg: f32, ev100: f32) -> impl Bu
         Exposure { ev100 },
         ColorGrading::default(),
         FollowsDaylight::default(),
+        NightVision::default(),
         // Chosen on the studio's captures (2026-10-27): ACES saturates the varnished
         // linen towards orange, AgX washes it out at this exposure.
         Tonemapping::TonyMcMapface,

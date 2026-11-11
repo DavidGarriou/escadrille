@@ -25,8 +25,14 @@ use crate::world::sky::{MAGNITUDE_ZERO_LUX, Sky, towards};
 const MOON_SHADER: &str = "shaders/night/moon.wesl";
 const STARS_SHADER: &str = "shaders/night/stars.wesl";
 
-/// How far the moon and the stars are drawn, m: beyond the clouds of a scene.
-pub const SKY_DISTANCE_M: f32 = 60_000.0;
+/// How far the moon and the stars are drawn, m: beyond the top of the atmosphere in every
+/// direction above the horizon (1 130 km away along the horizon), so that Bevy's march of
+/// the air in front of them, which stops at its top, is the sky's own: they add to the sky
+/// and the air dims them, never darker than the sky. At 60 km, at dusk, the air in front
+/// of them lay in the Earth's shadow, the sky's light coming from higher up, and the stars
+/// were dark points (`crepuscule_cumulus`, 2026-11-11). Bevy's culling ignores the far
+/// plane.
+pub const SKY_DISTANCE_M: f32 = 2_000_000.0;
 /// The moon's angular radius, degrees (its mean, 15.5′).
 pub const MOON_ANGULAR_RADIUS_DEG: f32 = 0.259;
 /// Colour of the moon's surface, linear (`ESTIMÉ`: a warm grey).
@@ -255,6 +261,20 @@ pub fn place_night_sky(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_night_sky_lies_beyond_the_air() {
+        // The top of the atmosphere seen along the horizon from the ground, the planet's
+        // radius that of `Atmosphere::earth`.
+        let earth = bevy::light::Atmosphere::earth(Handle::default());
+        let (bottom, top) = (earth.inner_radius, earth.outer_radius);
+        assert!((top - bottom - crate::world::atmosphere::ATMOSPHERE_HEIGHT_M).abs() < 1.0);
+        let along_the_horizon = (top * top - bottom * bottom).sqrt();
+        assert!(
+            SKY_DISTANCE_M > 1.5 * along_the_horizon,
+            "{along_the_horizon}"
+        );
+    }
 
     #[test]
     fn the_pole_star_stands_at_the_latitude_due_north() {

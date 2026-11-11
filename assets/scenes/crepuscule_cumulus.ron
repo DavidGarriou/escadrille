@@ -1,0 +1,12 @@
+// Dusk over the cumulus (plan `m3-heure-du-jour.md`, night vision): the layer and the view
+// of `couchant_cumulus`, an hour later, at 20 h 50 legal summer time on 15 August 1917, the
+// sun 6.4° below the horizon, the end of civil twilight. Checks the passage from the
+// cones to the rods: the bright afterglow keeps its colours, the clouds in the dusk lose
+// theirs.
+Scene(
+    description: "La fin du crépuscule civil au-dessus des cumulus, à 2 000 m : le soleil à 6° sous l'horizon, la lueur du couchant encore colorée à l'ouest-nord-ouest, les dômes des nuages qui pâlissent vers le gris bleuté de la vision de nuit.",
+    scenario: "vol-2000",
+    camera: Chase(yaw: Deg(190.0), pitch: Deg(2.0)),
+    time: Some((year: 1917, month: 8, day: 15, hour: 20, minute: 50)),
+    clouds: Some((base: M(1000.0), cover: 0.45, cloud_type: 1.0, thickness: Some(M(700.0)), seed: 3)),
+)

@@ -28,6 +28,7 @@ use bevy::render::view::ColorGrading;
 use crate::camera::DAYLIGHT_EV100;
 use crate::dev::capture::CaptureRequest;
 use crate::render::glare::SunSeen;
+use crate::render::night_vision::NightVision;
 use crate::world::sky::{Sky, towards};
 
 /// Full daylight, lux: above it, the base stays at [`DAYLIGHT_EV100`] (`ESTIMÉ`: the
@@ -98,7 +99,7 @@ pub fn look_ev(ground_lux: f32, pupil_ev: f32) -> f32 {
 }
 
 /// Reflectance of a mean scene, the photographer's grey card.
-const MEAN_REFLECTANCE: f32 = 0.18;
+pub const MEAN_REFLECTANCE: f32 = 0.18;
 /// The most the glare closes the eye, stops (`ESTIMÉ`).
 pub const GLARE_MAX_EV: f32 = 2.0;
 
@@ -208,6 +209,7 @@ pub fn follow_daylight(
         &mut Exposure,
         &mut ColorGrading,
         &mut FollowsDaylight,
+        Option<&mut NightVision>,
     )>,
 ) {
     let (to_sun, ground_lux) = match sky {
@@ -230,7 +232,8 @@ pub fn follow_daylight(
     };
     let elevation = to_sun.y.clamp(-1.0, 1.0).asin().to_degrees();
     let base = metered_ev100(ground_lux);
-    for (camera, mut exposure, mut grading, mut eye) in &mut cameras {
+    let night = NightVision::under(ground_lux, base);
+    for (camera, mut exposure, mut grading, mut eye, vision) in &mut cameras {
         if exposure.ev100 != base {
             exposure.ev100 = base;
         }
@@ -247,6 +250,11 @@ pub fn follow_daylight(
         let look = look_ev(ground_lux, pupil);
         if grading.global.exposure != look {
             grading.global.exposure = look;
+        }
+        if let Some(mut vision) = vision
+            && *vision != night
+        {
+            *vision = night;
         }
     }
 }

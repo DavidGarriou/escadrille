@@ -8,6 +8,7 @@ pub mod glare;
 pub mod ground;
 pub mod mipmaps;
 pub mod night;
+pub mod night_vision;
 pub mod own_normals;
 pub mod quality;
 pub mod wires;
@@ -25,6 +26,9 @@ impl Plugin for RenderingPlugin {
             MaterialPlugin::<night::MoonMaterial>::default(),
             MaterialPlugin::<night::StarsMaterial>::default(),
             MaterialPlugin::<glare::GlareVeil>::default(),
+            bevy::core_pipeline::fullscreen_material::FullscreenMaterialPlugin::<
+                night_vision::NightVision,
+            >::default(),
             clouds::CloudsPlugin,
             bevy::post_process::auto_exposure::AutoExposurePlugin,
         ))

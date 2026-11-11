@@ -3400,3 +3400,18 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Captures de référence des 20 scènes refaites avec le code commité (`contre_jour_toile` 3,4 ms, `avion_dans_le_soleil` 3,4 ms, `couchant_cumulus` 4,9 ms de GPU en 1440p).
 - **R** Au joueur : voile d'éblouissement fait et clos, anneau du disque et rythme de la pupille corrigés ; restent la vision de nuit et la matière de la toile.
 - **?** Prochain chantier à choisir par le joueur : la vision de nuit ou la matière toile.
+
+### Vision de nuit
+
+- **Q** Le joueur : « La vision de nuit » (réserve 2 du directeur artistique sur « Heure du jour » : la nuit se lisait comme un jour sous-exposé).
+- **A** Passe plein écran avant le tonemapping (`render/night_vision.rs`, `shaders/night_vision.wesl`), sur le `FullscreenMaterial` de Bevy 0.20, pixel par pixel en lumière linéaire. **D** Modèle :
+  - part des cônes selon le système mésopique de la CIE (CIE 191:2010 : bâtonnets seuls sous 0,005 cd/m², cônes seuls au-dessus de 5), tirée d'une carte grise sous l'éclairement du sol ; pleine lune environ 0,13, fin du crépuscule civil environ 0,5, plein jour 1 ;
+  - un pixel assez lumineux pour les cônes garde sa couleur (le feu d'un dirigeable, les instruments éclairés : `ESTIMÉ`) ;
+  - luminance des bâtonnets par la formule de Larson, Rushmeier et Piatko (1997), normalisée sur le blanc du jour : les gris gardent leur clarté (l'exposition, réglée sur des gris, tient), les rouges s'assombrissent, les bleus s'éclaircissent (Purkinje) ;
+  - les bâtonnets vus en gris froid, le blanc d'un corps noir à 10 000 K (`ESTIMÉ`, à juger sur image).
+  - Les articles de Jensen et al. (2000) et de Kirk et O'Brien (2011) sont des PDF, non téléchargés : la CIE et Larson suffisent, et les coefficients sont vérifiés par leurs bornes (m = 0 à 0,005 cd/m², 1 à 5 ; rapport scotopique du blanc du jour de 2,57, contre environ 2,5 dans les tables d'éclairage).
+- **A** Nouvelle scène `crepuscule_cumulus` (15 août 1917, 20 h 50, soleil à 6,4° sous l'horizon) : les cumulus du couchant une heure plus tard.
+- **⚠** Elle a montré un défaut ancien : les étoiles faisaient des points sombres sur le ciel du crépuscule. Dessinées opaques à 60 km, elles recevaient la marche de l'atmosphère jusqu'à 60 km, dans l'ombre de la Terre, alors que la lumière du ciel vient de plus haut. **D** Lune et étoiles à 2 000 km, au-delà du sommet de l'atmosphère (1 130 km le long de l'horizon) : la marche de Bevy s'arrête au sommet, comme pour le ciel voisin ; elles s'ajoutent donc au ciel, atténuées par l'air. Un mélange additif, essayé d'abord, aurait perdu l'extinction par l'air et la brume ; il a été abandonné.
+- **R** Captures : `nuit_lune` devient gris froid (moyenne RVB 34/36/38 → 34/36/42, dominante brune remplacée par le bleu froid, la dérive tricolore en gris), `crepuscule_cumulus` à peine plus pâle dans les nuages, lueur du couchant intacte, plus de points sombres. Les 21 autres scènes sont inchangées (au plus une vingtaine de pixels de bruit). Coût de la passe : 0,03 à 0,05 ms en 1440p.
+- **A** `just check` et `just test` passent (483 tests). Skills `rendu-visuel` (vision de nuit, ciel au-delà de l'atmosphère, scène) et `bevy` (`FullscreenMaterial`, culling sans plan lointain).
+- **?** Revue du directeur artistique en cours ; verdict à consigner.
