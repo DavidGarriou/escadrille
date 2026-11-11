@@ -15,7 +15,7 @@ use escadrille_data::scene::{CameraSpec, load_scene};
 use escadrille_fdm::aircraft::PilotControls;
 use escadrille_weather::clouds::CloudLayer;
 
-use super::atmosphere::{HAZE_TOP_M, Haze, SUMMER_VISIBILITY_M};
+use super::atmosphere::{HAZE_TOP_M, Haze, SUMMER_VISIBILITY_M, haze_of_the_day};
 use super::meadow::spawn_meadow;
 use super::plain::{SUN_AZIMUTH_DEG, SUN_ELEVATION_DEG, Sun, spawn_plain};
 use crate::ASSETS_DIR;
@@ -61,21 +61,26 @@ fn fair_weather() -> Clouds {
 /// `just run`: the SPAD at rest on the field, under the clouds.
 pub fn spawn_on_the_field(mut scene: Scene) -> Result {
     let clouds = fair_weather();
-    let haze = haze_under(SUMMER_VISIBILITY_M, Some(&clouds.layer));
+    let haze = haze_under(
+        AFTERNOON_SOLAR_HOUR,
+        SUMMER_VISIBILITY_M,
+        Some(&clouds.layer),
+    );
     spawn_flight(ON_THE_FIELD, &mut scene, AFTERNOON, haze, (0.0, 0.0))?;
     scene.commands.insert_resource(clouds);
     Ok(())
 }
 
-/// The haze of `visibility_m` at the ground, in a layer up to the base of the clouds (fair-
-/// weather cumulus form at the top of the afternoon's mixed layer), or to [`HAZE_TOP_M`]
-/// under a clear sky.
-fn haze_under(visibility_m: f32, clouds: Option<&CloudLayer>) -> Haze {
-    Haze {
-        visibility_m,
-        top_m: clouds.map_or(HAZE_TOP_M, |c| c.base_altitude as f32),
-    }
+/// The haze at `solar_hour` with `visibility_m` by day, its afternoon layer up to the base
+/// of the clouds (fair-weather cumulus form at the top of the afternoon's mixed layer), or
+/// to [`HAZE_TOP_M`] under a clear sky.
+fn haze_under(solar_hour: f32, visibility_m: f32, clouds: Option<&CloudLayer>) -> Haze {
+    let top = clouds.map_or(HAZE_TOP_M, |c| c.base_altitude as f32);
+    haze_of_the_day(solar_hour, visibility_m, top)
 }
+
+/// The local solar time of the test flight's afternoon, hours.
+const AFTERNOON_SOLAR_HOUR: f32 = 15.0;
 
 /// A scene of `assets/scenes`, captured or flown: its scenario, sun, camera, clouds, haze
 /// and held commands. Flown, the levers start where the scene holds them, then follow the
@@ -109,7 +114,11 @@ pub fn spawn_scene_file(mut scene: Scene, name: Res<FlightScene>) -> Result {
     let visibility = file
         .visibility
         .map_or(SUMMER_VISIBILITY_M, |v| v.si() as f32);
-    let haze = haze_under(visibility, clouds.as_ref().map(|c| &c.layer));
+    let haze = haze_under(
+        AFTERNOON_SOLAR_HOUR,
+        visibility,
+        clouds.as_ref().map(|c| &c.layer),
+    );
     spawn_flight(&file.scenario, &mut scene, sun, haze, look)?;
     scene.commands.insert_resource(view);
     if let Some(c) = file.controls {

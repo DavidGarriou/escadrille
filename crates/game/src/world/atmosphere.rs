@@ -55,9 +55,19 @@ pub const HAZE_EDGE_M: f32 = 100.0;
 pub const FREE_AIR_SHARE: f32 = 0.1;
 pub const FREE_AIR_SCALE_HEIGHT_M: f32 = 2_000.0;
 
-/// The haze of a scene: visibility at the ground and top of its layer, m.
+/// The haze of a scene: visibility at the ground and top of its layer, m, and the morning
+/// mist under it.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Haze {
+    pub visibility_m: f32,
+    pub top_m: f32,
+    pub mist: Option<Mist>,
+}
+
+/// The morning mist on the ground: visibility within it and its top, m. It adds to the
+/// haze of the day, which goes on above it.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Mist {
     pub visibility_m: f32,
     pub top_m: f32,
 }
@@ -68,13 +78,62 @@ impl Default for Haze {
         Self {
             visibility_m: SUMMER_VISIBILITY_M,
             top_m: HAZE_TOP_M,
+            mist: None,
         }
     }
 }
 
+/// The day of the haze (`docs/recherche/brume-ete-1917.md` § 6; the hours are local solar
+/// time, the figures `ESTIMÉ`):
+/// - before [`MIST_LIFTS`], a mist on the ground (confidence B for the thing, D for its
+///   figures: 0.5 to 5 km within it, a few tens of metres thick). The medium's table steps
+///   195 m: [`MIST_TOP_M`] is the thinnest layer it roughly draws;
+/// - it lifts over the next two hours (8 to 10 h, legal summer time);
+/// - the mixed layer then grows from [`MORNING_TOP_M`] to its afternoon top, reached at
+///   [`LAYER_GROWN`], and stays there into the evening.
+pub const MIST_LIFTS: f32 = 7.0;
+pub const MIST_GONE: f32 = 9.0;
+pub const MIST_VISIBILITY_M: f32 = 4_000.0;
+pub const MIST_TOP_M: f32 = 150.0;
+/// The mist ends sharply under the night's inversion: the depth of its edge, m.
+pub const MIST_EDGE_M: f32 = 40.0;
+pub const MORNING_TOP_M: f32 = 300.0;
+pub const LAYER_GROWN: f32 = 13.0;
+
+/// The haze at `solar_hour`, with `visibility_m` by day and its afternoon top at
+/// `afternoon_top_m` (the base of the cumulus, or [`HAZE_TOP_M`]).
+pub fn haze_of_the_day(solar_hour: f32, visibility_m: f32, afternoon_top_m: f32) -> Haze {
+    let h = solar_hour.rem_euclid(24.0);
+    let growth = ((h - MIST_GONE) / (LAYER_GROWN - MIST_GONE)).clamp(0.0, 1.0);
+    let top_m = MORNING_TOP_M + (afternoon_top_m - MORNING_TOP_M).max(0.0) * growth;
+    let lifted = ((h - MIST_LIFTS) / (MIST_GONE - MIST_LIFTS)).clamp(0.0, 1.0);
+    // Through the lifting, the mist's extinction falls to the day's, as a log of the
+    // visibility.
+    let mist = (lifted < 1.0).then(|| Mist {
+        visibility_m: MIST_VISIBILITY_M * (visibility_m / MIST_VISIBILITY_M).powf(lifted),
+        top_m: MIST_TOP_M,
+    });
+    Haze {
+        visibility_m,
+        top_m: top_m.min(afternoon_top_m),
+        mist,
+    }
+}
+
+/// Extinction of the aerosols at the ground for `visibility_m`, green light, m⁻¹: what the
+/// air's own does not give.
+fn aerosol_extinction(visibility_m: f32) -> f32 {
+    (KOSCHMIEDER / visibility_m - AIR_SCATTERING.y).max(0.0)
+}
+
+/// A layer's edge at its top: 1 below, 0 above, over `edge_m`.
+fn layer_edge(altitude_m: f32, top_m: f32, edge_m: f32) -> f32 {
+    1.0 / (1.0 + ((altitude_m - top_m) / edge_m).exp())
+}
+
 /// Density of the aerosols at `altitude_m`, 1 at the ground, under a layer topped at `top_m`.
 pub fn haze_density(altitude_m: f32, top_m: f32) -> f32 {
-    let layer = 1.0 / (1.0 + ((altitude_m - top_m) / HAZE_EDGE_M).exp());
+    let layer = layer_edge(altitude_m, top_m, HAZE_EDGE_M) / layer_edge(0.0, top_m, HAZE_EDGE_M);
     let free = (-altitude_m / FREE_AIR_SCALE_HEIGHT_M).exp();
     (1.0 - FREE_AIR_SHARE) * layer + FREE_AIR_SHARE * free
 }
@@ -115,8 +174,13 @@ pub fn aerosol_factor(visibility_m: f32) -> f32 {
 
 /// Bevy's Earth medium, fixed, with the aerosols of `haze`.
 pub fn medium(haze: Haze) -> ScatteringMedium {
-    let factor = aerosol_factor(haze.visibility_m);
+    let ground_visibility = haze.mist.map_or(haze.visibility_m, |m| m.visibility_m);
+    let factor = aerosol_factor(ground_visibility);
     let top = haze.top_m;
+    // The day's haze and the mist's extinction beyond it, as shares of the ground's.
+    let ground = aerosol_extinction(ground_visibility).max(f32::MIN_POSITIVE);
+    let day_share = aerosol_extinction(haze.visibility_m) / ground;
+    let mist = haze.mist.map(|m| (1.0 - day_share, m.top_m));
     ScatteringMedium::new(
         RESOLUTION,
         RESOLUTION,
@@ -133,7 +197,12 @@ pub fn medium(haze: Haze) -> ScatteringMedium {
                 absorption: Vec3::splat(CLEAR_AEROSOL_ABSORPTION * factor),
                 scattering: Vec3::splat(CLEAR_AEROSOL_SCATTERING * factor),
                 falloff: Falloff::from_curve(FunctionCurve::new(Interval::UNIT, move |p| {
-                    haze_density((1.0 - p) * ATMOSPHERE_HEIGHT_M, top)
+                    let altitude = (1.0 - p) * ATMOSPHERE_HEIGHT_M;
+                    let day = day_share * haze_density(altitude, top);
+                    day + mist.map_or(0.0, |(share, mist_top)| {
+                        share * layer_edge(altitude, mist_top, MIST_EDGE_M)
+                            / layer_edge(0.0, mist_top, MIST_EDGE_M)
+                    })
                 })),
                 phase: PhaseFunction::from_curve(FunctionCurve::new(
                     Interval::EVERYWHERE,
@@ -182,6 +251,45 @@ mod tests {
         }
         // Clearer than the air alone allows, no aerosols at all.
         assert_eq!(aerosol_factor(1e6), 0.0);
+    }
+
+    #[test]
+    fn the_morning_mist_lies_on_the_ground_and_lifts() {
+        let dawn = haze_of_the_day(5.0, SUMMER_VISIBILITY_M, HAZE_TOP_M);
+        let mist = dawn.mist.expect("a mist at dawn");
+        assert_eq!(mist.visibility_m, MIST_VISIBILITY_M);
+        // The ground sees the mist's visibility; above it, the day's haze goes on.
+        let m = medium(dawn);
+        assert!((KOSCHMIEDER / ground_extinction(&m) / MIST_VISIBILITY_M - 1.0).abs() < 1e-3);
+        let at = |h: f32| m.terms[1].falloff.sample(1.0 - h / ATMOSPHERE_HEIGHT_M);
+        let day_share =
+            aerosol_extinction(SUMMER_VISIBILITY_M) / aerosol_extinction(MIST_VISIBILITY_M);
+        let day = day_share * haze_density(600.0, MORNING_TOP_M);
+        assert!(
+            (at(600.0) / day - 1.0).abs() < 0.2,
+            "{} against {day}",
+            at(600.0)
+        );
+        // Half lifted at 8 h, gone at 9 h; the layer grown by the afternoon.
+        let lifting = haze_of_the_day(8.0, SUMMER_VISIBILITY_M, HAZE_TOP_M)
+            .mist
+            .unwrap();
+        assert!(
+            lifting.visibility_m > MIST_VISIBILITY_M && lifting.visibility_m < SUMMER_VISIBILITY_M
+        );
+        assert_eq!(
+            haze_of_the_day(9.5, SUMMER_VISIBILITY_M, HAZE_TOP_M).mist,
+            None
+        );
+        assert_eq!(
+            haze_of_the_day(15.0, SUMMER_VISIBILITY_M, HAZE_TOP_M),
+            Haze::default()
+        );
+        // Under cumulus, the top stops at their base.
+        assert_eq!(
+            haze_of_the_day(15.0, SUMMER_VISIBILITY_M, 1_000.0).top_m,
+            1_000.0
+        );
     }
 
     #[test]

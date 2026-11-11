@@ -1,5 +1,5 @@
 //! Weather for Panache blanc: the cloud density field and the noise textures it is built
-//! from.
+//! from, and the sky's clock: where the sun and the moon stand.
 //!
 //! Like `escadrille_fdm`, this crate never depends on Bevy or any other engine. The
 //! density it computes is the reference of the cloud shader (`assets/shaders/clouds/`),
@@ -14,6 +14,7 @@
 
 pub mod clouds;
 pub mod grid;
+pub mod moon;
 pub mod noise;
 pub mod scattering;
 pub mod sun;
