@@ -1,6 +1,6 @@
 # Plan — M3, atmosphère : brume, auréole du soleil et liseré des nuages
 
-- Statut : **proposé** le 2026-11-09, à valider par le joueur.
+- Statut : **validé** par le joueur le 2026-11-11 (« Oui, recommandées ») : brume modérée, pic étroit ajouté à la phase des nuages, signalement à Bevy. Le signalement est sans objet : l'inversion est déjà corrigée en amont (bevyengine/bevy#26143, fusionné le 2026-10-26, après la 0.20.1).
 - Demande du joueur (2026-11-09) : « L'atmosphère », après la clôture de la passe « part de ciel » des nuages (`docs/plans/m3-beaute.md`, incrément 1).
 - Le chantier regroupe deux réserves du directeur artistique, qui jouent dans les mêmes degrés autour du soleil et se règlent ensemble :
   - l'auréole du soleil, presque absente ;

@@ -23,6 +23,9 @@ pub const CHASE_LAG_S: f32 = 0.3;
 /// Vertical fields of view, degrees.
 pub const CHASE_FOV_DEG: f32 = 50.0;
 pub const PILOT_FOV_DEG: f32 = 60.0;
+/// Reach of the aerial perspective over the ground, m: half the side of the plain
+/// (`world::plain::GROUND_M`).
+pub const AERIAL_VIEW_M: f32 = 100_000.0;
 /// Free look in the cockpit: yaw either way, pitch down and up, rad.
 pub const PILOT_LOOK_YAW: f32 = 150.0 * std::f32::consts::PI / 180.0;
 pub const PILOT_LOOK_DOWN: f32 = 30.0 * std::f32::consts::PI / 180.0;
@@ -93,7 +96,14 @@ pub fn outdoor_camera(transform: Transform, fov_deg: f32, ev100: f32) -> impl Bu
             ..default()
         }),
         transform,
-        AtmosphereSettings::default(),
+        // The haze over the whole plain: to 32 km only, Bevy's default, the ground beyond
+        // stayed as clear as at 32 km and drew a bright line at the horizon. Its 32 slices,
+        // 3 km apart, are kept: twice as many cost 0.16 ms and changed the near ground by
+        // 1 to 2 % (cumulus_midi, 2026-11-11).
+        AtmosphereSettings {
+            aerial_view_lut_max_distance: AERIAL_VIEW_M,
+            ..default()
+        },
         AtmosphereEnvironmentMapLight::default(),
         Exposure { ev100 },
         // Chosen on the studio's captures (2026-10-27): ACES saturates the varnished

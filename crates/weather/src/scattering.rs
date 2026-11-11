@@ -30,6 +30,19 @@ use std::f32::consts::PI;
 pub const FORWARD_G: f32 = 0.8;
 pub const BACKWARD_G: f32 = -0.3;
 pub const FORWARD_WEIGHT: f32 = 0.7;
+/// The droplets' narrow forward peak, which makes the rim of a cloud blaze when the sun is
+/// just behind it, and its share, taken from the two lobes. Jendersie and d'Eon ("An
+/// Approximate Mie Scattering Function for Fog and Cloud Rendering", SIGGRAPH 2023 Talks)
+/// fit Mie scattering by water droplets of diameter d (5 to 50 µm) with a
+/// Henyey-Greenstein peak of g = e^(−0.0990567 / (d − 1.67154)) and a Draine body of share
+/// w_D = e^(−0.599085 / (d − 0.641583) − 0.665888). For d = 15 µm (`ESTIMÉ`: fair-weather
+/// cumulus, droplets of 10 to 20 µm), g = 0.9926 and the peak holds 1 − w_D = 0.51 of the
+/// light. The peak, 0.3° wide, is narrower than the sun's disc (0.53°): broadened by it,
+/// g = 0.99. The two lobes stand for the Draine body; scaled by half, they take 0.4 % of
+/// the light of the lit domes of `cumulus_midi` and 1.5 % of those of `cumulus_contre_jour`
+/// (2026-11-11).
+pub const PEAK_G: f32 = 0.99;
+pub const PEAK_WEIGHT: f32 = 0.5;
 
 /// Asymmetry of the phase function of cloud droplets (Mie, droplets of about 10 µm in
 /// visible light).
@@ -56,7 +69,8 @@ pub fn henyey_greenstein(cos_theta: f32, g: f32) -> f32 {
 pub fn phase(cos_theta: f32) -> f32 {
     let backward = henyey_greenstein(cos_theta, BACKWARD_G);
     let forward = henyey_greenstein(cos_theta, FORWARD_G);
-    backward * (1.0 - FORWARD_WEIGHT) + forward * FORWARD_WEIGHT
+    let lobes = backward * (1.0 - FORWARD_WEIGHT) + forward * FORWARD_WEIGHT;
+    lobes * (1.0 - PEAK_WEIGHT) + henyey_greenstein(cos_theta, PEAK_G) * PEAK_WEIGHT
 }
 
 /// Level of the light of the sky and the ground scattered by a cloud, each from its half
@@ -210,12 +224,32 @@ mod tests {
 
     #[test]
     fn the_phase_function_integrates_to_one() {
-        // ∫ p dΩ = 2π ∫ p(μ) dμ over μ from −1 to 1, by the midpoint rule.
-        let n = 20_000;
+        // ∫ p dΩ = 2π ∫ p(μ) dμ over μ from −1 to 1, by the midpoint rule, fine enough for
+        // the narrow peak (0.3°, 1 − μ ≈ 1.4e-5).
+        let n = 2_000_000;
         let sum: f32 = (0..n)
             .map(|i| phase(-1.0 + (i as f32 + 0.5) * 2.0 / n as f32) * 2.0 / n as f32)
             .sum();
         assert!((2.0 * PI * sum - 1.0).abs() < 1e-3, "{}", 2.0 * PI * sum);
+    }
+
+    #[test]
+    fn the_peak_is_jendersie_and_d_eon_s_for_cumulus_droplets() {
+        let d: f32 = 15.0;
+        let g = (-0.0990567 / (d - 1.67154)).exp();
+        let share = 1.0 - (-0.599085 / (d - 0.641583) - 0.665888).exp();
+        assert!(g > PEAK_G && g - PEAK_G < 0.005, "{g}");
+        assert!((share - PEAK_WEIGHT).abs() < 0.02, "{share}");
+        // Within 2° of the sun, the peak outshines the two lobes more than ten times; at 20°,
+        // it adds less than a tenth.
+        let lobes = |deg: f32| {
+            let c = deg.to_radians().cos();
+            henyey_greenstein(c, BACKWARD_G) * (1.0 - FORWARD_WEIGHT)
+                + henyey_greenstein(c, FORWARD_G) * FORWARD_WEIGHT
+        };
+        let peak = |deg: f32| henyey_greenstein(deg.to_radians().cos(), PEAK_G);
+        assert!(peak(2.0) > 10.0 * lobes(2.0));
+        assert!(peak(20.0) < 0.1 * lobes(20.0));
     }
 
     #[test]

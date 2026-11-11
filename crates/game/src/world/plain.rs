@@ -12,6 +12,7 @@ use bevy::math::{Affine2, DVec3};
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
+use super::atmosphere;
 use crate::flight::bridge::to_bevy;
 use crate::flight::simulation::ORIGIN_GRID_M;
 use crate::render::ground::{Ground, GroundAlbedo};
@@ -54,7 +55,8 @@ pub struct Sun {
     pub elevation_deg: f64,
 }
 
-/// The plain: ground, atmosphere and sun.
+/// The plain: ground, sun, and the atmosphere with the haze of `visibility_m` at the
+/// ground ([`atmosphere::medium`]).
 pub fn spawn_plain(
     commands: &mut Commands,
     meshes: &mut Assets<Mesh>,
@@ -62,6 +64,7 @@ pub fn spawn_plain(
     images: &mut Assets<Image>,
     media: &mut Assets<ScatteringMedium>,
     sun: Sun,
+    visibility_m: f32,
 ) {
     let fields = images.add(fields_texture(TEXTURE_SIZE, BLOCKS, 1917));
     commands.spawn((
@@ -79,7 +82,7 @@ pub fn spawn_plain(
     // green turned the haze of the horizon olive. The ground below the horizon of the
     // environment map, which lights the undersides of the aircraft, takes the fields'.
     commands.spawn(Atmosphere::earth(
-        media.add(ScatteringMedium::earth(256, 256)),
+        media.add(atmosphere::medium(visibility_m)),
     ));
     commands.insert_resource(GroundAlbedo(field_albedo()));
     let (az, el) = (sun.azimuth_deg.to_radians(), sun.elevation_deg.to_radians());

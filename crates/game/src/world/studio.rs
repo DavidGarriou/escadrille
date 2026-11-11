@@ -16,6 +16,7 @@ use bevy::prelude::*;
 use escadrille_data::aircraft::{Loading, load_aircraft};
 use escadrille_data::mockup::load_mockup;
 
+use super::atmosphere;
 use crate::ASSETS_DIR;
 use crate::camera::{PILOT_FOV_DEG, outdoor_camera};
 use crate::dev::capture::CaptureHold;
@@ -266,7 +267,7 @@ fn spawn_outdoors(
         })),
     ));
     commands.spawn(Atmosphere::earth(
-        media.add(ScatteringMedium::earth(256, 256)),
+        media.add(atmosphere::medium(atmosphere::SUMMER_VISIBILITY_M)),
     ));
     commands.spawn((
         Name::new("Sun"),

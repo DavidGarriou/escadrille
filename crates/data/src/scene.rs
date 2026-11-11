@@ -81,6 +81,10 @@ pub struct SceneFile {
     /// A clear sky when left out.
     #[serde(default)]
     pub clouds: Option<CloudsSpec>,
+    /// Visibility at the ground: how far a dark object shows through the haze (Koschmieder,
+    /// a contrast of 2 %). The summer haze of the game when left out.
+    #[serde(default)]
+    pub visibility: Option<Length>,
 }
 
 fn directory(assets: &Path) -> std::path::PathBuf {
@@ -110,12 +114,13 @@ pub fn load_scene(assets: &Path, name: &str) -> Result<SceneFile, DataError> {
             .sequence
             .last()
             .is_none_or(|&f| scene.frames.is_none_or(|n| f < n));
-    if !(commands && sun && clouds && sequence && scene.frames != Some(0)) {
+    let visibility = scene.visibility.is_none_or(|v| v.si() > 0.0);
+    if !(commands && sun && clouds && sequence && visibility && scene.frames != Some(0)) {
         return Err(DataError::Invalid {
             origin: path.display().to_string(),
             message: "commands from −1 to 1 and throttle from 0 to 1, sun from −90° to 90°, \
-                      clouds above sea level with cover and type from 0 to 1, at least one frame, \
-                      a sequence of increasing frames before the last"
+                      clouds above sea level with cover and type from 0 to 1, a visibility above \
+                      zero, at least one frame, a sequence of increasing frames before the last"
                 .to_owned(),
         });
     }

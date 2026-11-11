@@ -58,10 +58,13 @@ struct CloudPass {
 @group(1) @binding(4) var weather_map: texture_2d<f32>;
 @group(1) @binding(5) var cloud_sampler: sampler;
 
-// Phase function: forward lobe, backward lobe, and the weight of the forward one.
+// Phase function: forward lobe, backward lobe, and the weight of the forward one; the
+// droplets' narrow forward peak and its share (`escadrille_weather::scattering`).
 const FORWARD_G: f32 = 0.8;
 const BACKWARD_G: f32 = -0.3;
 const FORWARD_WEIGHT: f32 = 0.7;
+const PEAK_G: f32 = 0.99;
+const PEAK_WEIGHT: f32 = 0.5;
 // Multiple scattering, ambient light, ground: `escadrille_weather::scattering`.
 const SURFACE_LEVEL: f32 = 1.8;
 const SURFACE_DEPTH: f32 = 1.0;
@@ -116,7 +119,8 @@ fn henyey_greenstein(cos_theta: f32, g: f32) -> f32 {
 fn phase(cos_theta: f32) -> f32 {
     let backward = henyey_greenstein(cos_theta, BACKWARD_G);
     let forward = henyey_greenstein(cos_theta, FORWARD_G);
-    return backward * (1.0 - FORWARD_WEIGHT) + forward * FORWARD_WEIGHT;
+    let lobes = backward * (1.0 - FORWARD_WEIGHT) + forward * FORWARD_WEIGHT;
+    return lobes * (1.0 - PEAK_WEIGHT) + henyey_greenstein(cos_theta, PEAK_G) * PEAK_WEIGHT;
 }
 
 fn multiple(depth: f32) -> f32 {

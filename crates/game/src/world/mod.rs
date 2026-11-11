@@ -7,6 +7,7 @@
 //! Outside captures, the game starts the test flight, on the field (`vol_essai`), or the
 //! scene `--scene` names (`scenes::FlightScene`).
 
+pub mod atmosphere;
 pub mod degats;
 pub mod maquette;
 pub mod meadow;

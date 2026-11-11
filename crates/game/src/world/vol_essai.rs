@@ -15,6 +15,7 @@ use escadrille_data::scene::{CameraSpec, load_scene};
 use escadrille_fdm::aircraft::PilotControls;
 use escadrille_weather::clouds::CloudLayer;
 
+use super::atmosphere::SUMMER_VISIBILITY_M;
 use super::meadow::spawn_meadow;
 use super::plain::{SUN_AZIMUTH_DEG, SUN_ELEVATION_DEG, Sun, spawn_plain};
 use crate::ASSETS_DIR;
@@ -59,13 +60,19 @@ fn fair_weather() -> Clouds {
 
 /// `just run`: the SPAD at rest on the field, under the clouds.
 pub fn spawn_on_the_field(mut scene: Scene) -> Result {
-    spawn_flight(ON_THE_FIELD, &mut scene, AFTERNOON, (0.0, 0.0))?;
+    spawn_flight(
+        ON_THE_FIELD,
+        &mut scene,
+        AFTERNOON,
+        SUMMER_VISIBILITY_M,
+        (0.0, 0.0),
+    )?;
     scene.commands.insert_resource(fair_weather());
     Ok(())
 }
 
-/// A scene of `assets/scenes`, captured or flown: its scenario, sun, camera, clouds and
-/// held commands. Flown, the levers start where the scene holds them, then follow the
+/// A scene of `assets/scenes`, captured or flown: its scenario, sun, camera, clouds, haze
+/// and held commands. Flown, the levers start where the scene holds them, then follow the
 /// gamepad.
 pub fn spawn_scene_file(mut scene: Scene, name: Res<FlightScene>) -> Result {
     let file = load_scene(Path::new(ASSETS_DIR), &name.0)?;
@@ -78,7 +85,10 @@ pub fn spawn_scene_file(mut scene: Scene, name: Res<FlightScene>) -> Result {
         CameraSpec::Pilot { yaw, pitch } => (View::Pilot, yaw, pitch),
     };
     let look = (yaw.si() as f32, pitch.si() as f32);
-    spawn_flight(&file.scenario, &mut scene, sun, look)?;
+    let visibility = file
+        .visibility
+        .map_or(SUMMER_VISIBILITY_M, |v| v.si() as f32);
+    spawn_flight(&file.scenario, &mut scene, sun, visibility, look)?;
     scene.commands.insert_resource(view);
     if let Some(c) = file.controls {
         let held = PilotControls {
@@ -108,7 +118,13 @@ pub fn spawn_scene_file(mut scene: Scene, name: Res<FlightScene>) -> Result {
     Ok(())
 }
 
-fn spawn_flight(name: &str, scene: &mut Scene, sun: Sun, look: (f32, f32)) -> Result {
+fn spawn_flight(
+    name: &str,
+    scene: &mut Scene,
+    sun: Sun,
+    visibility_m: f32,
+    look: (f32, f32),
+) -> Result {
     let Scene {
         commands,
         asset_server,
@@ -118,7 +134,15 @@ fn spawn_flight(name: &str, scene: &mut Scene, sun: Sun, look: (f32, f32)) -> Re
         media,
         hold,
     } = scene;
-    spawn_plain(commands, meshes, materials, images, media, sun);
+    spawn_plain(
+        commands,
+        meshes,
+        materials,
+        images,
+        media,
+        sun,
+        visibility_m,
+    );
     spawn_meadow(commands, meshes, materials, images);
     let (aircraft, cg) = spawn_scenario(name, commands, asset_server, hold)?;
     // The pilot's eye of the 3D model's file (its node cam_pilot_eye).

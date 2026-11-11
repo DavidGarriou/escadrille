@@ -3294,3 +3294,22 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **R** La correction seule change peu : ciel à 1° du soleil 0,495 → 0,541. À ×10 (environ 65 km de visibilité au sol), l'auréole est nette, le ciel plus pâle mais encore bleu. À ×25 (environ 30 km), le ciel blanchit, la plaine se voile fort et un trait clair apparaît à l'horizon (fin de la perspective aérienne à 32 km). Même à ×25, le ciel à 1° du soleil n'est que 1,27 fois celui à 10° : il faut aussi une phase plus pointue.
 - **A** Plan rédigé : `docs/plans/m3-atmosphere.md` (milieu maison, brume de 1917 réglable par scène, auréole par une phase plus pointue des aérosols, lobe avant des nuages, revue de toutes les scènes d'extérieur). Lien depuis `m3-beaute.md`.
 - **?** Décisions demandées au joueur : la brume par défaut (recommandé : visibilité de 40 à 60 km), la phase des nuages (recommandé : un pic étroit ajouté à la phase actuelle), signaler l'inversion à Bevy (recommandé : oui).
+
+## 2026-11-11
+
+### Le chantier d'atmosphère
+
+- **Q** Le joueur valide le plan avec les trois options recommandées : « Oui, recommandées » (brume modérée, pic étroit ajouté à la phase des nuages, signalement à Bevy).
+- **⚠** La session a été coupée pendant le lancement des recherches ; le dossier temporaire a été vidé (images et scripts de mesure refaits). L'historien, interrompu, a été relancé.
+- **A** Recherche du correctif côté Bevy, avant de rédiger un signalement.
+  - **R** Déjà corrigé en amont : bevyengine/bevy#26143, « Fix Earth atmosphere scale heights and Mie coefficients », fusionné le 2026-10-26. Il corrige l'inversion des aérosols, mais aussi les hauteurs d'échelle (13,3 et 2 km au lieu de 8 et 1,2, écrites pour une atmosphère de 60 km quand elle en fait 100) et l'indexation de la table de diffusion quand ses deux résolutions diffèrent. Bevy 0.20.1 (2026-10-28) ne le contient pas (vérifié dans ses sources). **Aucun signalement à faire.**
+  - **⚠** En interrogeant crates.io, j'ai mis l'adresse e-mail du joueur dans l'en-tête User-Agent de la requête, alors qu'elle ne doit pas partir vers un service tiers sans son accord. Erreur de ma part, signalée au joueur ; à ne pas refaire.
+- **A** Milieu maison `crates/game/src/world/atmosphere.rs`, appelé par la plaine et le studio : les valeurs corrigées de Bevy, des tables de 512 (égales), et la densité des aérosols tirée de la visibilité au sol (loi de Koschmieder). Champ `visibility` des scènes (unité `Km` ajoutée aux longueurs), 50 km par défaut (`ESTIMÉ`). Perspective aérienne étendue à 100 km.
+  - **R** Tests : visibilité obtenue, albédo des aérosols 0,9, hauteurs d'échelle, tables carrées.
+  - **R** Le ciel à 1° du soleil passe de 0,496 à 0,639 ; le haut du ciel bleuit (couche d'air plus mince) ; la brume voile le sol vu d'en haut et monte jusqu'à l'horizon, sans trait.
+  - **R** 64 tranches de perspective aérienne coûtaient 0,16 ms de plus pour 1 à 2 % de différence sur le sol proche : gardé 32.
+- **A** Profil de l'auréole : la recherche web de l'agent n'a rien donné ; les PDF n'ont pas été téléchargés. Les formules de Buie, Monger et Dey (2003) ont été lues dans le code source libre de Tonatiuh (`SunshapeBuie.cpp`) : φ(θ) = e^κ θ^γ au-delà du disque, γ = −2,3 pour un rapport circumsolaire de 0,05.
+- **A** Phase des aérosols à deux lobes, ajustée sur cette pente (pic g = 0,991 pour un tiers, corps g = 0,706, cosinus moyen 0,8 gardé).
+  - **R** Profil du ciel au contre-jour, de 1 à 10° du soleil : 0,884, 0,732, 0,594, 0,494, 0,431 (avant : 0,639 à 0,466). Le soleil s'entoure d'un halo blanc serré, au lieu d'un large voile. Au-delà de 30°, le ciel ne change pas.
+- **A** Pic avant des nuages (Jendersie et d'Eon, gouttelettes de 15 µm `ESTIMÉ`) : g = 0,99 et la moitié de la lumière, dans `march.wesl` et `escadrille_weather::scattering`. Balayage du poids de 0 à 0,5.
+  - **R** Le bourgeon juste sous le soleil de `cumulus_lisere` prend un bord blanc net. Les dômes éclairés perdent 0,4 % à midi, 1,5 % au contre-jour. Les 36 tests de la météo passent (tests d'énergie compris). Le liseré se lit contre le corps du nuage plus que contre le ciel : l'auréole éclaire aussi le ciel derrière le bord, et le tonemapping écrase les deux près du blanc.

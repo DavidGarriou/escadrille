@@ -26,6 +26,7 @@ pub const US_GALLON: f64 = 3.785_411_784;
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
 pub enum Length {
     M(f64),
+    Km(f64),
     Cm(f64),
     Mm(f64),
     Ft(f64),
@@ -39,6 +40,7 @@ impl Length {
     pub fn si(self) -> f64 {
         match self {
             Self::M(v) => v,
+            Self::Km(v) => v * 1000.0,
             Self::Cm(v) => v * 0.01,
             Self::Mm(v) => v * 0.001,
             Self::Ft(v) => v * FOOT,
@@ -209,6 +211,7 @@ mod tests {
         assert!(close(Length::Ft(10_000.0).si(), 3_048.0));
         assert!(close(Length::FtIn(25.0, 8.0).si(), 7.8232));
         assert!(close(Length::Mm(120.0).si(), 0.12));
+        assert!(close(Length::Km(50.0).si(), 50_000.0));
         assert!(close(Area::Ft2(100.0).si(), 9.290_304));
         assert!(close(Mass::Lb(1_000.0).si(), 453.592_37));
         assert!(close(Speed::Kmh(180.0).si(), 50.0));
