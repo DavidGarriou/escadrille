@@ -68,9 +68,15 @@
 
 ## Avancement
 
-- **2026-11-11** : étapes 1 à 4 faites, scènes capturées, revue du directeur artistique en cours.
+- **2026-11-11** : étapes 1 à 5 faites, **approuvées par le directeur artistique**.
   - **Soleil calculé** (`escadrille_weather::sun`, NOAA d'après Meeus) et **heure légale** (`escadrille_data::legal_time`, fiche de l'historien `heure-legale-1917.md`) ; ressource `Sky` ; le vol d'essai le 1er septembre 1917 à 15 h.
   - **Exposition** : base, adaptation de Bevy, rendu (crépuscule, éblouissement). Écart à la décision 1 : la base reste fixe en plein jour, et l'éblouissement passe par l'étalonnage, après la mesure ; mesures dans le skill `rendu-visuel`.
   - **Brume selon l'heure** : brume du matin jusqu'à 7 h solaire, levée à 9 h ; couche de mélange qui monte jusqu'à 13 h.
   - **Nuit** : lune et sa phase, étoiles procédurales, une seule lumière d'astre (la lune en pleine nuit). Lumière ambiante uniforme de Bevy retirée.
   - **Scènes** : `aube_terrain`, `couchant_cumulus`, `nuit_lune`.
+- **Revue** : approuvé ; la structure de valeurs du contre-jour est rendue, l'adaptation à mi-chemin est le bon choix, `couchant_cumulus` est « sans doute la plus belle image du projet ». Réserves, par ordre d'impact :
+  1. **Voile d'éblouissement** : la formule de Stiles et Holladay donne aussi un voile laiteux autour du soleil ; seule la fermeture de l'œil est appliquée, d'où le ciel ardoise de `contre_jour_toile`. Ajouter ce voile à l'image, en 1/θ² autour du soleil ; il servira aussi l'attaque depuis le soleil. À défaut, plafonner l'éblouissement vers 0,7 EV.
+  2. **Vision de nuit** : la nuit se lit comme un jour sous-exposé ; ajouter la vision mésopique puis scotopique au tonemapping (désaturation, décalage vers le bleu de Purkinje), d'après Kirk et O'Brien (2011) ou Jensen et al. (2000).
+  3. **Brume du matin** : illisible sur une plaine vide ; elle se lira sur des objets à distances étagées (avions alignés, hangars, peupliers), quand les assets existeront.
+  4. À surveiller : une dominante brune des faces à l'ombre quand l'œil se ferme.
+  5. À vérifier : le soleil à 3° du couchant peut-être trop blanc (écrêté par le tonemapping ?).
