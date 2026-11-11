@@ -1,0 +1,11 @@
+// Sunset over the cumulus (plan `m3-heure-du-jour.md`): the layer of `cumulus_midi` on
+// 15 August 1917 at 19 h 45 legal summer time, the sun 3° high in the west-north-west,
+// the camera turned back towards it. Checks the clouds and the haze in a grazing light,
+// the exposure that opens at dusk, and the sun's glare.
+Scene(
+    description: "Le couchant sur un champ de cumulus, à 2 000 m : le soleil à 3° à l'ouest-nord-ouest, dans le cadre, les dômes éclairés de biais et roussis, les bases déjà dans l'ombre, la brume dorée vers le soleil.",
+    scenario: "vol-2000",
+    camera: Chase(yaw: Deg(190.0), pitch: Deg(2.0)),
+    time: Some((year: 1917, month: 8, day: 15, hour: 19, minute: 45)),
+    clouds: Some((base: M(1000.0), cover: 0.45, cloud_type: 1.0, thickness: Some(M(700.0)), seed: 3)),
+)

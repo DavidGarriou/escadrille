@@ -1,0 +1,10 @@
+// Dawn on the field (skill `rendu-visuel`, plan `m3-heure-du-jour.md`): a July morning of
+// 1917, 5 h 30 legal summer time, the sun just risen in the east-north-east, 5° high, in
+// the frame. The morning mist lies on the ground (local solar time before 7 h); the
+// exposure opens for the low light. One SPAD for the aircraft lined up on the grass.
+Scene(
+    description: "L'aube sur le terrain : le soleil rasant à l'est-nord-est, à 5° dans le cadre, la brume du matin couchée sur l'herbe, les ombres longues vers la caméra, le SPAD au repos.",
+    scenario: "terrain",
+    camera: Chase(yaw: Deg(0.0), pitch: Deg(0.0)),
+    time: Some((year: 1917, month: 7, day: 10, hour: 5, minute: 30)),
+)

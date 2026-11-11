@@ -28,7 +28,11 @@ pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
+        // No uniform ambient light: the sky lights the scene through the atmosphere's
+        // environment map. Bevy's default, 80 cd/m², was a percent or two of a sunlit
+        // scene, but lit the moonlit night as a day under its open exposure (2026-11-11).
         app.insert_resource(ClearColor(scenes::SKY_COLOR))
+            .insert_resource(GlobalAmbientLight::NONE)
             .add_systems(
                 OnEnter(AppState::Vol),
                 (

@@ -1,0 +1,11 @@
+// A moonlit night (plan `m3-heure-du-jour.md`, the simple night): the night of 2 to
+// 3 August 1917, the moon full, at 0 h 30 legal summer time, high in the south. The
+// moon takes the star's light: the cumulus of `cumulus_midi` are moonlit. Checks the
+// moon's disc and light, the stars, and an exposure that keeps the night dark.
+Scene(
+    description: "Une nuit de pleine lune, à 2 000 m : la lune haute au sud, son disque et sa lumière froide sur les dômes des cumulus, les étoiles au-dessus, la plaine sombre, une nuit qui reste une nuit.",
+    scenario: "vol-2000",
+    camera: Chase(yaw: Deg(90.0), pitch: Deg(12.0)),
+    time: Some((year: 1917, month: 8, day: 3, hour: 0, minute: 30)),
+    clouds: Some((base: M(1000.0), cover: 0.45, cloud_type: 1.0, thickness: Some(M(700.0)), seed: 3)),
+)
