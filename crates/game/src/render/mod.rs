@@ -4,6 +4,7 @@ pub mod clouds;
 pub mod damage;
 pub mod exposure;
 pub mod fabric;
+pub mod glare;
 pub mod ground;
 pub mod mipmaps;
 pub mod night;
@@ -23,6 +24,7 @@ impl Plugin for RenderingPlugin {
             MaterialPlugin::<ground::GroundMaterial>::default(),
             MaterialPlugin::<night::MoonMaterial>::default(),
             MaterialPlugin::<night::StarsMaterial>::default(),
+            MaterialPlugin::<glare::GlareVeil>::default(),
             clouds::CloudsPlugin,
             bevy::post_process::auto_exposure::AutoExposurePlugin,
         ))
@@ -41,6 +43,7 @@ impl Plugin for RenderingPlugin {
                 own_normals::light_with_own_normals,
                 (ground::light_ground, ground::update_ground_light).chain(),
                 (night::spawn_night_sky, night::place_night_sky).chain(),
+                (glare::spawn_glare, glare::follow_the_sun).chain(),
                 (exposure::adapt_to_the_frame, exposure::follow_daylight)
                     .after(crate::world::sky::light_the_sky),
             ),

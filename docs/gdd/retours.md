@@ -45,3 +45,5 @@ Version : plan `docs/plans/m2-train-sol.md` réalisé, `just run` au sol (commit
 ## Remarques pour plus tard
 
 - **2026-11-11 — Vibrations de la SN30 Pro** : le joueur signale que la manette peut vibrer. **Correction à faire** : le M0 avait conclu « aucune vibration ressentie » (essai du 2026-10-20, ci-dessus), et le jeu ne s'appuie pas sur la vibration (`docs/vision.md`, question 5 ; skill `manette`). À reprendre avec le chantier des retours de la manette : vérifier la chaîne (gilrs, pilote `xpad`, `fftest`), refaire le test du labo manette, puis corriger la vision, le skill et ce fichier.
+- **2026-11-11 — Cockpit détaillé** : le joueur demande un poste de pilotage détaillé. À reprendre avec la finition du SPAD (incrément 5 du M3, `docs/plans/m3-beaute.md`) : instruments, bois, cuir, huile, profondeur de champ (scène `cockpit_detail` du skill `rendu-visuel`).
+- **2026-11-11 — Face avant du moteur** : la face du moteur, derrière l'hélice, n'est pas réaliste pour l'instant ; à détailler (capot, radiateur et calandre de l'Hispano-Suiza du SPAD, à sourcer avec l'historien). Même incrément.
