@@ -3,11 +3,12 @@
 // above the crest. Checks the bright rim that forward scattering lights along the edges
 // near the sun, which the composition of `cumulus_contre_jour` (sun 6 to 10° from the
 // edges) does not show (art director's review of 2026-11-09): without this scene, a
-// regression of the rim would go unnoticed.
+// regression of the rim would go unnoticed. The very clear day of `cumulus_contre_jour`.
 Scene(
     description: "Le soleil juste derrière le bord d'une tour de cumulus, vu de la poursuite dans la couche de `cumulus_contre_jour` : un liseré clair le long de la crête près du soleil, qui s'éteint loin de lui ; doré plutôt qu'argenté, le soleil n'étant qu'à 9°.",
     scenario: "vol-2000",
     camera: Chase(yaw: Deg(78.0), pitch: Deg(5.0)),
     sun: Some((azimuth: Deg(156.0), elevation: Deg(9.0))),
     clouds: Some((base: M(1500.0), cover: 0.45, cloud_type: 1.0, thickness: Some(M(1200.0)), seed: 20)),
+    visibility: Some(Km(50.0)),
 )

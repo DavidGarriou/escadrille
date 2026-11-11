@@ -1,7 +1,12 @@
+// A very clear day, 50 km of visibility (`docs/recherche/brume-ete-1917.md` § 5.1: 50 to
+// 60 km after a front, wind from the north-west): under the default haze of 30 km, its top
+// at the cumulus base, the ground towards the low sun became a milky sheet in which the
+// bases drowned (art director's review of 2026-11-11).
 Scene(
     description: "Des tours de cumulus face au soleil bas de l'après-midi, vues de la poursuite dans la couche : bords clairs des crêtes, faces à l'ombre tournées vers la caméra, d'un gris chaud (le soleil bas traverse la tour en orangé).",
     scenario: "vol-2000",
     camera: Chase(yaw: Deg(90.0), pitch: Deg(5.0)),
     sun: Some((azimuth: Deg(180.0), elevation: Deg(9.0))),
     clouds: Some((base: M(1500.0), cover: 0.45, cloud_type: 1.0, thickness: Some(M(1200.0)), seed: 20)),
+    visibility: Some(Km(50.0)),
 )

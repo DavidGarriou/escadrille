@@ -1,0 +1,10 @@
+// The top of the summer haze seen from above (plan `m3-atmosphere.md`, art director's
+// review of 2026-11-11): the SPAD at 2 000 m under a clear sky, 500 m over the top of the
+// mixed layer (`world::atmosphere::HAZE_TOP_M`), the default haze of 30 km below. Checks
+// the haze's horizon, the pale sheet under a blue sky that the pilots describe, and that
+// the marched sky draws no bands at the layer's top.
+Scene(
+    description: "Le SPAD à 2 000 m par ciel clair, 500 m au-dessus du sommet de la brume d'été : la nappe pâle qui noie l'horizon sous un ciel bleu, le sol voilé sous l'avion, sans bande au sommet de la couche.",
+    scenario: "vol-2000",
+    camera: Chase(yaw: Deg(-30.0), pitch: Deg(-2.0)),
+)

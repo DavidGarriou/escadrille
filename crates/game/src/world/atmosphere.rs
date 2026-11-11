@@ -46,7 +46,8 @@ pub const SUMMER_VISIBILITY_M: f32 = 30_000.0;
 /// air. With Hillaire's exponential of 1.2 km, the haze of 30 km whitened the whole sky.
 /// - the layer's top, m, on a summer afternoon without cumulus (`ESTIMÉ`, 1 to 2 km, § 5.2);
 ///   under fair-weather cumulus, their base, at the top of the mixed layer ([`Haze`]);
-/// - the depth over which the haze ends at the top, m (`ESTIMÉ`);
+/// - the depth over which the haze ends at the top, m (`ESTIMÉ`); the medium's table, a
+///   step every 195 m ([`RESOLUTION`]), spreads it over about two steps;
 /// - the free air above: its share of the haze at the ground, and its scale height, m
 ///   (`ESTIMÉ`: a tenth, the sky above the haze being much clearer).
 pub const HAZE_TOP_M: f32 = 1_500.0;
