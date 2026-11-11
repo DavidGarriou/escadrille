@@ -23,8 +23,8 @@ const MESOPIC_B: f32 = 0.3334;
 const LOG10_OF_2: f32 = 0.30103;
 // Scotopic over photopic luminance of daylight's white (`DAYLIGHT_SCOTOPIC_RATIO`).
 const DAYLIGHT_SCOTOPIC_RATIO: f32 = 2.5729;
-// The rods' grey, as seen: xy of a black body at 10 000 K (`NIGHT_WHITE`).
-const NIGHT_WHITE: vec2<f32> = vec2(0.2807, 0.2883);
+// The rods' grey, as seen: xy of a black body at 15 000 K (`NIGHT_WHITE`).
+const NIGHT_WHITE: vec2<f32> = vec2(0.2637, 0.2672);
 
 // Linear Rec. 709 to CIE XYZ, and back (columns).
 const RGB_TO_XYZ: mat3x3<f32> = mat3x3<f32>(

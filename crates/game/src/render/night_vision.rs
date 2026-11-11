@@ -13,7 +13,7 @@
 //!   formula (`scotopic_ratio`), scaled so that daylight's white keeps its luminance: a
 //!   grey stays as bright, and the exposure, set on greys, still holds;
 //! - **the rods' colour**: none, but seen as a cold grey, the white of a body at
-//!   10 000 K (`ESTIMÉ`, judged on image).
+//!   15 000 K (`ESTIMÉ`, judged on the dusk's contact sheet of 2026-11-11).
 //!
 //! By day the pass leaves the frame as it is. The functions the pass needs only on the GPU
 //! are here for the tests, as the shader's reference (`seen`).
@@ -76,11 +76,12 @@ const XYZ_TO_RGB: Mat3 = Mat3::from_cols_array(&[
 /// lighting tables give about 2.5).
 pub const DAYLIGHT_SCOTOPIC_RATIO: f32 = 2.5729;
 
-/// The rods' grey, as seen, CIE 1931 xy: the white of a black body at 10 000 K (Kim et
-/// al.'s fit of the Planckian locus; `ESTIMÉ`: a cold grey, not a violet, to judge on
-/// image).
+/// The rods' grey, as seen, CIE 1931 xy: the white of a black body at 15 000 K (Kim et
+/// al.'s fit of the Planckian locus; `ESTIMÉ`, judged with the art director on the dusk's
+/// contact sheet of 2026-11-11: at 10 000 K, the 13 % of cones under a full moon, in its
+/// warm light, left the clouds a neutral grey; at 15 000 K, a slate grey, not a violet).
 #[cfg(test)]
-const NIGHT_WHITE: Vec2 = Vec2::new(0.2807, 0.2883);
+const NIGHT_WHITE: Vec2 = Vec2::new(0.2637, 0.2672);
 
 /// Scotopic over photopic luminance of a colour given in CIE XYZ: Larson, Rushmeier and
 /// Piatko's fit, V = Y [1.33 (1 + (Y + Z) / X) − 1.68] ("A visibility matching tone
