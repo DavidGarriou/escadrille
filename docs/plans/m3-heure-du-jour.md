@@ -1,6 +1,6 @@
 # Plan — M3, heure du jour : soleil calculé, exposition, brume du matin, nuit simple
 
-- Statut : **proposé** le 2026-11-11, à valider par le joueur.
+- Statut : **validé** par le joueur le 2026-11-11 (« Oui, recommandées »), avec les quatre options recommandées.
 - Demande du joueur (2026-11-11) : « lance le chantier "Heure du jour" ». C'est l'incrément 2 du plan `m3-beaute.md`.
 - Ce que l'incrément doit apporter, d'après `m3-beaute.md` et les revues du chantier d'atmosphère :
   - le soleil à sa place pour une date et une heure de 1917 ;
@@ -65,3 +65,12 @@
 - **L'exposition dans les captures** : l'adaptation dépend du temps ; les captures doivent la laisser converger, sinon elles ne seraient plus comparables d'une fois à l'autre.
 - **Toutes les scènes changent** : l'exposition touche chaque image, celles déjà approuvées comprises.
 - **La nuit** : la lune et son clair de lune demandent une seconde lumière directionnelle ; Bevy dessine un disque pour chaque lumière qui a un `SunDisk`, à vérifier pour la lune.
+
+## Avancement
+
+- **2026-11-11** : étapes 1 à 4 faites, scènes capturées, revue du directeur artistique en cours.
+  - **Soleil calculé** (`escadrille_weather::sun`, NOAA d'après Meeus) et **heure légale** (`escadrille_data::legal_time`, fiche de l'historien `heure-legale-1917.md`) ; ressource `Sky` ; le vol d'essai le 1er septembre 1917 à 15 h.
+  - **Exposition** : base, adaptation de Bevy, rendu (crépuscule, éblouissement). Écart à la décision 1 : la base reste fixe en plein jour, et l'éblouissement passe par l'étalonnage, après la mesure ; mesures dans le skill `rendu-visuel`.
+  - **Brume selon l'heure** : brume du matin jusqu'à 7 h solaire, levée à 9 h ; couche de mélange qui monte jusqu'à 13 h.
+  - **Nuit** : lune et sa phase, étoiles procédurales, une seule lumière d'astre (la lune en pleine nuit). Lumière ambiante uniforme de Bevy retirée.
+  - **Scènes** : `aube_terrain`, `couchant_cumulus`, `nuit_lune`.

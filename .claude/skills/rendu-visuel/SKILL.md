@@ -40,7 +40,14 @@ Les scènes d'un vol sont des fichiers `assets/scenes/<nom>.ron` (scénario, cam
 
 ## Chaîne de rendu
 
-- **HDR** et soleil en unités physiques (lux) ; exposition automatique ou caméra physique ; bloom discret.
+- **HDR** et soleil en unités physiques (lux) ; bloom discret.
+- **Exposition qui suit la lumière** (`render/exposure.rs`, 2026-11-11), en trois parts, dans l'ordre où l'image les rencontre :
+  - **base** (l'`Exposure` de la caméra) : EV100 13 en plein jour (au-dessus de 10 klux au sol), qui suit l'éclairement au crépuscule et la nuit (clair de lune compris, plancher à la lumière des étoiles), pour garder l'image dans la plage mesurée ;
+  - **adaptation** (exposition automatique de Bevy, `AutoExposurePlugin`) : la moyenne du cadre ramenée à une valeur neutre calée sur les scènes approuvées, à ±1,5 EV près ; histogramme large (±8 EV) borné par la courbe de compensation ;
+  - **rendu** (le `ColorGrading` de la caméra, appliqué après la mesure, que l'adaptation ne défait donc pas) : un crépuscule plus sombre qu'un midi (30 % de la chute de lumière, au plus −5 EV la nuit) et l'éblouissement du soleil dans le regard (formule de Stiles et Holladay, CIE 146:2002, au plus 2 EV).
+  - Mesures qui ont mené là : une base suivant l'éclairement toute la journée ouvrait le contre-jour de 2,6 EV ; la moyenne du cadre ouvrait aussi le contre-jour (cadre surtout fait de faces à l'ombre) ; un éblouissement mis dans la base était défait par l'adaptation.
+- **Pas de lumière ambiante uniforme** (`GlobalAmbientLight::NONE`) : le ciel éclaire par la carte d'environnement de l'atmosphère. Celle de Bevy (80 cd/m² par défaut) éclairait la nuit comme le jour.
+- **Ciel de l'heure** (`world/sky.rs`) : soleil et lune d'une date et d'une heure de 1917 sur Ypres (`escadrille_weather::sun`, `moon`), heure légale française (`escadrille_data::legal_time`, fiche `heure-legale-1917.md`). Une seule lumière d'astre : le soleil le jour et au crépuscule, la lune en pleine nuit (soleil sous −12°), pour que les nuages, qui prennent la première lumière, soient éclairés par la lune. La nuit (`render/night.rs`) : la lune avec sa phase, 5 000 étoiles procédurales mises en place par le temps sidéral.
 - **Tonemapping** : TonyMcMapface, choisi le 2026-10-27 sur les captures d'`avion-studio` (soleil `RAW_SUNLIGHT`, atmosphère, `ev100` 13). ACES sature la toile vernie vers l'orange ; AgX la délave à cette exposition.
 - **Anticrénelage** : TAA. Les **câbles et haubans** sont plus fins qu'un pixel : technique « phone-wire AA », faite le 2026-10-27 (`crates/game/src/render/wires.rs`, `assets/shaders/wire_aa.wesl`).
   - Le shader de sommets élargit chaque câble à au moins 1,5 pixel à l'écran, le long des normales du tube.

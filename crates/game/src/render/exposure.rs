@@ -5,8 +5,8 @@
 //!    ([`DAYLIGHT_EV100`], chosen on `avion-studio`), following the light down at dusk
 //!    and at night, so that the frame stays within the range the adaptation reads.
 //! 2. **Adaptation** (Bevy's auto exposure, [`adapt_to_the_frame`]): the frame's mean
-//!    luminance brought back to the neutral of the approved reference scenes, within
-//!    [`ADAPTATION_EV`] either way: the eye adapts to what it looks at.
+//!    luminance brought part of the way back to the neutral of the approved reference
+//!    scenes, within [`ADAPTATION_EV`] either way: the eye adapts to what it looks at.
 //! 3. **Look** ([`look_ev`], the camera's `ColorGrading`, applied after the adaptation
 //!    reads the frame, so it does not undo it): a dusk darker than a noon, and the sun's
 //!    glare in the eye.
@@ -116,6 +116,10 @@ pub struct FollowsDaylight;
 /// The eye's adaptation, EV either way around the base (art director's review of
 /// 2026-11-11).
 pub const ADAPTATION_EV: f32 = 1.5;
+/// Share of the way back to the neutral the adaptation goes (`ESTIMÉ`): the eye does not
+/// make up for all of it, a bright scene stays bright. Brought fully back, a frame of
+/// white cloud turned grey, as snow on a photograph (`traversee_nuage`, 2026-11-11).
+pub const ADAPTATION_SHARE: f32 = 0.5;
 
 /// The span of the histogram either way around the neutral, EV: wide, so that the bright
 /// sky round the sun weighs with its true value.
@@ -175,7 +179,8 @@ pub fn follow_daylight(
 }
 
 /// The eye's adaptation on each new daylight camera: the correction brings the frame's
-/// mean luminance back to [`NEUTRAL_LOG_LUMINANCE`], within [`ADAPTATION_EV`].
+/// mean luminance [`ADAPTATION_SHARE`] of the way back to [`NEUTRAL_LOG_LUMINANCE`],
+/// within [`ADAPTATION_EV`].
 pub fn adapt_to_the_frame(
     mut commands: Commands,
     cameras: Query<Entity, Added<FollowsDaylight>>,
@@ -184,14 +189,15 @@ pub fn adapt_to_the_frame(
 ) {
     for camera in &cameras {
         let neutral = NEUTRAL_LOG_LUMINANCE;
-        // The correction is the curve minus the frame's mean: flat within the bound, it
-        // brings the mean back to the neutral; beyond, it follows the mean, the correction
-        // staying at the bound.
+        // The correction is the curve minus the frame's mean: a share of the way back to
+        // the neutral, k (n − m), up to the bound, reached at the bound over k; beyond, the
+        // curve follows the mean, the correction staying at the bound.
         let (low, high) = (neutral - METERED_EV, neutral + METERED_EV);
+        let reach = ADAPTATION_EV / ADAPTATION_SHARE;
         let curve = AutoExposureCompensationCurve::from_curve(LinearSpline::new([
             vec2(low, low + ADAPTATION_EV),
-            vec2(neutral - ADAPTATION_EV, neutral),
-            vec2(neutral + ADAPTATION_EV, neutral),
+            vec2(neutral - reach, neutral - reach + ADAPTATION_EV),
+            vec2(neutral + reach, neutral + reach - ADAPTATION_EV),
             vec2(high, high - ADAPTATION_EV),
         ]))
         .expect("an increasing curve");
