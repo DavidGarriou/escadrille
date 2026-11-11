@@ -70,3 +70,15 @@
 - **Tout le jeu change de lumière** : la brume voile le sol, éclaircit l'horizon et réchauffe le soleil bas. Chaque scène d'extérieur est à revoir, celles qui sont déjà approuvées comprises.
 - **Calage de la diffusion multiple** des nuages : avec l'option A de la décision 2, il ne devrait pas bouger. Les tests d'énergie le vérifient.
 - **Sources** : la visibilité de 1917 et le profil de l'auréole demandent des sources. Faute de mieux, les valeurs sont `ESTIMÉ`, avec leur justification.
+
+## Avancement
+
+- **2026-11-11 : étapes 1 à 5 faites, approuvées par le directeur artistique.**
+  - Milieu maison aux valeurs corrigées de Bevy ; brume de 50 km par défaut, réglable par scène (`visibility`) ; perspective aérienne à 100 km ; auréole calée sur Buie (θ^−2,3) ; pic avant des gouttelettes dans la phase des nuages. Tests verts, 15 scènes capturées.
+  - Verdict : la physique est juste ; le soleil se lit enfin comme un soleil ; la brume de 50 km donne l'échelle de la plaine ; pas de régression en vol ni au studio.
+- **Réserves et suites** :
+  - **Exposition** (réserve principale) : le contre-jour a perdu du relief, la crête et l'auréole tombant ensemble sur l'épaule du tonemapping. Essai à −1 et −2 EV : à −1 EV, le bord sous le soleil (0,93 à 0,99) se détache du ciel de l'auréole (0,62 à 0,89) et domine le corps (0,41 à 0,47), le relief des lobes revient ; à −2 EV, l'image est trop sombre. Remède : une exposition qui suit la lumière, bornée (le directeur artistique propose ±1,5 EV), avec l'incrément 2 du M3 (« Heure du jour », exposition) ; ne pas changer de tonemapper avant.
+  - **Zénith** : jugé « lavande ». Mesure : la teinte n'a bougé que de 2 à 8° vers le bleu (212 → 215° à midi, 208 → 216° au contre-jour), un peu plus sombre et moins saturée à midi. L'ozone est celui de Hillaire, inchangé ; le décalage vient de la couche d'air ramenée à 8 km. Gardé tel quel.
+  - **Trait à l'horizon des scènes au sol** : pas d'artefact. Le ciel s'éclaircit régulièrement jusqu'à l'horizon ; depuis 2 m, tout le sol au-delà de 3 km tient en quelques pixels, l'herbe proche restant presque intacte.
+  - **Bosse grise à l'horizon de `cumulus_sous_la_base`** : le disque de l'hélice, vu de l'arrière au-dessus de l'aile, qui se détache maintenant sur l'horizon voilé (réserve connue de l'hélice un peu pâle).
+  - **Brume selon la mission** (20 à 50 km), fumée du front en couche locale, albédo des aérosols (la fumée absorbe) : à arrêter sur sources, avec l'historien.

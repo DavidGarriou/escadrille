@@ -3318,3 +3318,9 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
   - **R** Les scènes `terrain-*` n'avaient pas de capture précédente dans `target/captures` : pas d'image « avant ». Leur horizon est plus pâle et doux, sans trait.
 - **A** Captures terminées (15 scènes) : traversée et studio presque inchangés, sol lointain un peu plus voilé ; `contre_jour_toile` gagne une auréole autour du soleil. Revue demandée au directeur artistique, avec les planches avant/après.
 - **A** `just check` et `just test` passent (443 tests).
+- **R** Verdict du directeur artistique : **approuvé**. La physique est juste ; le soleil se lit enfin comme un soleil (auréole) ; la brume de 50 km est le bon niveau par défaut et donne l'échelle de la plaine ; le liseré naît là où il doit ; pas de régression en vol ni au studio. Réserves : le contre-jour a perdu relief et chaleur (exposition), zénith « lavande », un trait à l'horizon au sol, une bosse grise sous la base, la brume selon la mission.
+- **A** Essai d'exposition à −1 et −2 EV (surcharge temporaire, retirée) sur `cumulus_contre_jour`, `cumulus_lisere` et `cumulus_midi`.
+  - **R** À −1 EV, le bord sous le soleil (0,93 à 0,99) se détache du ciel de l'auréole (0,62 à 0,89) et domine le corps du nuage (0,41 à 0,47) ; le relief revient. À −2 EV, trop sombre. Remède : une exposition qui suit la lumière, avec l'incrément « Heure du jour ».
+- **A** Zénith mesuré : la teinte n'a bougé que de 2 à 8° vers le bleu, pas vers le violet ; ciel un peu plus sombre et moins saturé à midi. Ozone de Hillaire inchangé : le décalage vient de la couche d'air corrigée. **D** Gardé tel quel.
+- **A** Horizon des scènes au sol : le ciel s'éclaircit régulièrement jusqu'à l'horizon, sans bande ; pas d'artefact. Bosse grise de `cumulus_sous_la_base` : le disque de l'hélice, vu au-dessus de l'aile, qui se détache sur l'horizon voilé.
+- Plan `m3-atmosphere.md` : section d'avancement ajoutée.
