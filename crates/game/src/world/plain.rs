@@ -7,7 +7,7 @@
 use bevy::asset::RenderAssetUsages;
 use bevy::image::{ImageAddressMode, ImageFilterMode, ImageSampler, ImageSamplerDescriptor};
 use bevy::light::atmosphere::ScatteringMedium;
-use bevy::light::{Atmosphere, CascadeShadowConfigBuilder, SunDisk, light_consts::lux};
+use bevy::light::{Atmosphere, CascadeShadowConfigBuilder, light_consts::lux};
 use bevy::math::{Affine2, DVec3};
 use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
@@ -91,7 +91,7 @@ pub fn spawn_plain(
             shadow_maps_enabled: true,
             ..default()
         },
-        SunDisk::EARTH,
+        super::sky::SUN_DISC,
         // The aircraft in the first cascade from the chase view, its shadow on the ground
         // within the last when it flies low.
         CascadeShadowConfigBuilder {

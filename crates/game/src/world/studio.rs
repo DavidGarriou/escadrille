@@ -10,7 +10,7 @@
 use std::path::Path;
 
 use bevy::light::atmosphere::ScatteringMedium;
-use bevy::light::{Atmosphere, CascadeShadowConfigBuilder, SunDisk, light_consts::lux};
+use bevy::light::{Atmosphere, CascadeShadowConfigBuilder, light_consts::lux};
 use bevy::math::{DQuat, DVec3, EulerRot};
 use bevy::prelude::*;
 use escadrille_data::aircraft::{Loading, load_aircraft};
@@ -311,7 +311,7 @@ fn spawn_outdoors(
             shadow_maps_enabled: true,
             ..default()
         },
-        SunDisk::EARTH,
+        super::sky::SUN_DISC,
         // The first cascade over the aircraft's length.
         CascadeShadowConfigBuilder {
             num_cascades: 2,

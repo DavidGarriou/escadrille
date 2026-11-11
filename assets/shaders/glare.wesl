@@ -37,6 +37,8 @@ struct CloudFog {
 const SUN_RADIUS: f32 = 0.00465;
 const DISC_POINTS: i32 = 16;
 const GOLDEN_ANGLE: f32 = 2.39996323;
+// The frame is half floats, up to 65 504: room left for what else adds there.
+const HALF_FLOAT_ROOM: f32 = 30000.0;
 
 @vertex
 fn vertex(vertex: Vertex) -> Varyings {
@@ -118,5 +120,6 @@ fn fragment(in: Varyings) -> @location(0) vec4<f32> {
         seen_out = seen;
     }
     let luminance = sun_light.rgb * veil_per_lux(angle) * seen;
-    return vec4<f32>(luminance * view.exposure, 0.0);
+    // Within the largest half float of the frame: the disc's core is white anyway.
+    return vec4<f32>(min(luminance * view.exposure, vec3<f32>(HALF_FLOAT_ROOM)), 0.0);
 }

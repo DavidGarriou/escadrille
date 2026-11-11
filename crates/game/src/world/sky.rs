@@ -24,6 +24,17 @@ pub const YPRES: Place = Place {
 /// end of nautical twilight, the sky's glow from the sun has fallen to the moon's.
 pub const NIGHT_SUN_DEG: f64 = -12.0;
 
+/// The sun's disc as drawn: its size, and a hundredth of its brightness. At its own, about
+/// 2·10⁹ cd/m², the disc passed the largest half float of the frame (65 504) once exposed
+/// in daylight, and its edge came out as a darker ring, 5 levels deep; at a tenth, still 3
+/// (2026-11-11). At a hundredth it stays thousands of times the white once exposed, noon or
+/// sunset, so the tonemapping keeps it white; the light, the glare veil and the clouds take
+/// the sun's illuminance elsewhere.
+pub const SUN_DISC: SunDisk = SunDisk {
+    angular_size: SunDisk::EARTH.angular_size,
+    intensity: 0.01,
+};
+
 /// Illuminance of a star of magnitude 0 outside the atmosphere, lux (`ESTIMÉ`: the common
 /// figure, which gives the sun its 127 klux).
 pub const MAGNITUDE_ZERO_LUX: f64 = 2.54e-6;
@@ -115,7 +126,7 @@ pub fn light_the_sky(
     };
     let (body, illuminance, disc) = match sky.moon {
         Some(moon) if sky.is_night() => (moon.sky, sky.moonlight_lux() as f32, 0.0),
-        _ => (sky.sun, lux::RAW_SUNLIGHT, SunDisk::EARTH.intensity),
+        _ => (sky.sun, lux::RAW_SUNLIGHT, SUN_DISC.intensity),
     };
     let rotation = Transform::default()
         .looking_to(-towards(body), Vec3::Y)

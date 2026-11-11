@@ -90,12 +90,11 @@ pub fn metered_ev100(ground_lux: f32) -> f32 {
     DAYLIGHT_EV100 + below_daylight(ground_lux)
 }
 
-/// The look's exposure offset, stops (negative: darker), under `ground_lux`, the sun at
-/// `elevation_deg` and `angle_deg` from the line of sight: the dusk the eye does not make
-/// up for, and the sun's glare.
-pub fn look_ev(ground_lux: f32, elevation_deg: f32, angle_deg: f32, seen: f32) -> f32 {
-    (DUSK_SHOWN * below_daylight(ground_lux)).max(-NIGHT_DARKENING_EV)
-        - glare_ev(elevation_deg, angle_deg, seen)
+/// The look's exposure offset, stops (negative: darker), under `ground_lux`, the pupil
+/// closed by `pupil_ev` ([`glare_ev`], through [`pupil_step`]): the dusk the eye does not
+/// make up for, and the sun's glare.
+pub fn look_ev(ground_lux: f32, pupil_ev: f32) -> f32 {
+    (DUSK_SHOWN * below_daylight(ground_lux)).max(-NIGHT_DARKENING_EV) - pupil_ev
 }
 
 /// Reflectance of a mean scene, the photographer's grey card.
@@ -138,9 +137,37 @@ pub fn glare_ev(elevation_deg: f32, angle_deg: f32, seen: f32) -> f32 {
     (1.0 + veil / scene).log2().min(GLARE_MAX_EV)
 }
 
-/// A camera whose exposure follows the daylight and adapts to its frame.
+/// A camera whose exposure follows the daylight and adapts to its frame, and how far the
+/// sun's glare has closed its eye, stops.
 #[derive(Component, Debug, Clone, Copy, Default)]
-pub struct FollowsDaylight;
+pub struct FollowsDaylight {
+    pub pupil_ev: f32,
+}
+
+/// The pupil's time constants, s: it closes on the sun's glare in a third of a second and
+/// opens again over seconds (`ESTIMÉ`, after the pupil's light reflex), so that struts and
+/// wires sweeping across the sun do not make the exposure pump (art director's review of
+/// 2026-11-11). The glare veil itself is optical, and instant.
+pub const PUPIL_CLOSING_S: f32 = 0.3;
+pub const PUPIL_OPENING_S: f32 = 4.0;
+
+/// The pupil's time constant in captures, s: a still, the pupil there at once. Over the
+/// loading, before the aircraft hides the sun, it would close, then take seconds to open
+/// (`contre_jour_toile` came out 0.7 stop dark).
+const CAPTURE_PUPIL_S: f32 = 0.02;
+
+/// The pupil's closing after `dt_s`, from `pupil_ev` towards `glare_ev`; in captures
+/// (`still`), at once.
+pub fn pupil_step(pupil_ev: f32, glare_ev: f32, dt_s: f32, still: bool) -> f32 {
+    let tau = if still {
+        CAPTURE_PUPIL_S
+    } else if glare_ev > pupil_ev {
+        PUPIL_CLOSING_S
+    } else {
+        PUPIL_OPENING_S
+    };
+    pupil_ev + (glare_ev - pupil_ev) * (1.0 - (-dt_s / tau).exp())
+}
 
 /// The eye's adaptation, EV either way around the base (art director's review of
 /// 2026-11-11).
@@ -171,10 +198,17 @@ const CAPTURE_SPEED: f32 = 20.0;
 /// and the sun's glare. Without a sky's clock (the scenes built in code), the sun is the
 /// light that has a disc.
 pub fn follow_daylight(
+    time: Res<Time>,
+    capture: Option<Res<CaptureRequest>>,
     sky: Option<Res<Sky>>,
     seen: Option<Res<SunSeen>>,
     suns: Query<&GlobalTransform, (With<DirectionalLight>, With<SunDisk>)>,
-    mut cameras: Query<(&GlobalTransform, &mut Exposure, &mut ColorGrading), With<FollowsDaylight>>,
+    mut cameras: Query<(
+        &GlobalTransform,
+        &mut Exposure,
+        &mut ColorGrading,
+        &mut FollowsDaylight,
+    )>,
 ) {
     let (to_sun, ground_lux) = match sky {
         Some(sky) => {
@@ -196,13 +230,21 @@ pub fn follow_daylight(
     };
     let elevation = to_sun.y.clamp(-1.0, 1.0).asin().to_degrees();
     let base = metered_ev100(ground_lux);
-    for (camera, mut exposure, mut grading) in &mut cameras {
+    for (camera, mut exposure, mut grading, mut eye) in &mut cameras {
         if exposure.ev100 != base {
             exposure.ev100 = base;
         }
         let angle = camera.forward().dot(to_sun).clamp(-1.0, 1.0).acos();
-        let seen = seen.as_deref().copied().unwrap_or_default().0;
-        let look = look_ev(ground_lux, elevation, angle.to_degrees(), seen);
+        // Until the first read back, a few frames in, the sun counts as hidden: closed on a
+        // sun it does not know, the pupil would take seconds to open again (a capture of
+        // `contre_jour_toile`, its sun behind the wing, came out 0.9 stop dark).
+        let seen = seen.as_deref().map_or(0.0, |s| s.0);
+        let glare = glare_ev(elevation, angle.to_degrees(), seen);
+        let pupil = pupil_step(eye.pupil_ev, glare, time.delta_secs(), capture.is_some());
+        if eye.pupil_ev != pupil {
+            eye.pupil_ev = pupil;
+        }
+        let look = look_ev(ground_lux, pupil);
         if grading.global.exposure != look {
             grading.global.exposure = look;
         }
@@ -257,7 +299,7 @@ mod tests {
         for h in [9.0, 40.0, 58.0, 90.0] {
             let lux = ground_illuminance_lux(h);
             assert_eq!(metered_ev100(lux), DAYLIGHT_EV100, "{h}°");
-            assert!(look_ev(lux, h, 180.0, 1.0).abs() < 0.01, "{h}°");
+            assert_eq!(look_ev(lux, glare_ev(h, 180.0, 1.0)), 0.0, "{h}°");
         }
     }
 
@@ -281,11 +323,11 @@ mod tests {
         // At sunset, the light is 3.6 stops below full daylight: the look shows 1.1.
         let sunset = ground_illuminance_lux(0.0);
         assert!((metered_ev100(sunset) - (DAYLIGHT_EV100 - 3.64)).abs() < 0.05);
-        assert!((look_ev(sunset, 0.0, 180.0, 1.0) + 1.09).abs() < 0.05);
+        assert!((look_ev(sunset, 0.0) + 1.09).abs() < 0.05);
         // Deep in the night, the base stops at starlight and the look at its floor.
         assert_eq!(at(-30.0), at(-40.0));
         let night = ground_illuminance_lux(-30.0);
-        assert_eq!(look_ev(night, -30.0, 180.0, 1.0), -NIGHT_DARKENING_EV);
+        assert_eq!(look_ev(night, 0.0), -NIGHT_DARKENING_EV);
     }
 
     #[test]
@@ -301,5 +343,27 @@ mod tests {
         assert_eq!(glare_ev(-2.0, 5.0, 1.0), 0.0);
         // Hidden, it closes nothing.
         assert_eq!(glare_ev(9.0, 16.0, 0.0), 0.0);
+    }
+
+    #[test]
+    fn the_pupil_closes_fast_and_opens_slowly() {
+        // A third of a second after the sun comes into view, two thirds closed; a third
+        // of a second after it goes, still nearly all of it.
+        let closed = pupil_step(0.0, 1.5, PUPIL_CLOSING_S, false);
+        assert!((closed / 1.5 - (1.0 - (-1.0f32).exp())).abs() < 1e-5);
+        let opening = pupil_step(1.5, 0.0, PUPIL_CLOSING_S, false);
+        assert!(opening > 1.35, "{opening}");
+        // Converged within a second of a capture's frames.
+        let mut pupil = 0.0;
+        for _ in 0..60 {
+            pupil = pupil_step(pupil, 1.5, 1.0 / 60.0, false);
+        }
+        assert!((pupil - 1.5).abs() < 0.1, "{pupil}");
+        // In a capture, within a sixth of a second both ways.
+        let mut still = 1.5;
+        for _ in 0..10 {
+            still = pupil_step(still, 0.0, 1.0 / 60.0, true);
+        }
+        assert!(still < 0.001, "{still}");
     }
 }

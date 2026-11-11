@@ -116,7 +116,7 @@ pub fn outdoor_camera(transform: Transform, fov_deg: f32, ev100: f32) -> impl Bu
         AtmosphereEnvironmentMapLight::default(),
         Exposure { ev100 },
         ColorGrading::default(),
-        FollowsDaylight,
+        FollowsDaylight::default(),
         // Chosen on the studio's captures (2026-10-27): ACES saturates the varnished
         // linen towards orange, AgX washes it out at this exposure.
         Tonemapping::TonyMcMapface,
