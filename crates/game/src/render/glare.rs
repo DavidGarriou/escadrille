@@ -12,6 +12,7 @@
 
 use bevy::asset::RenderAssetUsages;
 use bevy::camera::visibility::NoFrustumCulling;
+use bevy::ecs::system::SystemParam;
 use bevy::light::{NotShadowCaster, NotShadowReceiver, SunDisk};
 use bevy::mesh::{Indices, MeshVertexBufferLayoutRef, PrimitiveTopology};
 use bevy::pbr::{MaterialPipeline, MaterialPipelineKey};
@@ -127,16 +128,20 @@ fn screen_triangle() -> Mesh {
     .with_inserted_indices(Indices::U16(vec![0, 1, 2]))
 }
 
+/// Where the sun is read: the sky's clock, or the light that has a disc.
+#[derive(SystemParam)]
+pub struct SunSource<'w, 's> {
+    sky: Option<Res<'w, Sky>>,
+    suns: Query<'w, 's, &'static GlobalTransform, (With<DirectionalLight>, With<SunDisk>)>,
+}
+
 /// The sun now: towards it, and its height, degrees. From the sky's clock when the scene
 /// has one (none at night: the light is the moon's), else from the light that has a disc
 /// (the scenes built in code).
-fn the_sun(
-    sky: Option<&Sky>,
-    suns: &Query<&GlobalTransform, (With<DirectionalLight>, With<SunDisk>)>,
-) -> Option<(Vec3, f32)> {
-    match sky {
+fn the_sun(source: &SunSource) -> Option<(Vec3, f32)> {
+    match source.sky.as_deref() {
         Some(sky) => Some((towards(sky.sun), sky.sun.elevation_deg as f32)),
-        None => suns.iter().next().map(|sun| {
+        None => source.suns.iter().next().map(|sun| {
             // The light shines along its forward axis: the sun lies behind it.
             let to_sun = *sun.back();
             (to_sun, to_sun.y.clamp(-1.0, 1.0).asin().to_degrees())
@@ -153,8 +158,7 @@ fn veil_of((to_sun, elevation): (Vec3, f32)) -> (Vec4, Vec4) {
 /// The veil, once the scene has a camera that follows the daylight.
 pub fn spawn_glare(
     mut commands: Commands,
-    sky: Option<Res<Sky>>,
-    suns: Query<&GlobalTransform, (With<DirectionalLight>, With<SunDisk>)>,
+    source: SunSource,
     fog: Option<Res<CloudFog>>,
     cameras: Query<(), With<FollowsDaylight>>,
     existing: Query<(), With<Glare>>,
@@ -167,7 +171,7 @@ pub fn spawn_glare(
     if cameras.is_empty() || !existing.is_empty() {
         return;
     }
-    let Some(sun) = the_sun(sky.as_deref(), &suns) else {
+    let Some(sun) = the_sun(&source) else {
         return;
     };
     let (to_sun, veil) = veil_of(sun);
@@ -190,12 +194,11 @@ pub fn spawn_glare(
 
 /// The veil follows the sun.
 pub fn follow_the_sun(
-    sky: Option<Res<Sky>>,
-    suns: Query<&GlobalTransform, (With<DirectionalLight>, With<SunDisk>)>,
+    source: SunSource,
     glares: Query<&MeshMaterial3d<GlareVeil>, With<Glare>>,
     mut materials: ResMut<Assets<GlareVeil>>,
 ) {
-    let Some(sun) = the_sun(sky.as_deref(), &suns) else {
+    let Some(sun) = the_sun(&source) else {
         return;
     };
     let (to_sun, veil) = veil_of(sun);
