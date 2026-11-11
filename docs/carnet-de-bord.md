@@ -3422,3 +3422,17 @@ Légende : **Q** question · **R** réponse · **A** action · **D** décision �
 - **A** Ombre de la Terre essayée dans la marche des nuages (`calculate_visible_sun_ratio` de Bevy) : aucune image ne change, à un niveau près, de −6,4° à −18°. À la hauteur des cumulus, le rayon rasant traverse plus de 1 000 km d'air et de brume, sa transmittance est déjà presque nulle. **D** Retirée de cette passe, notée pour le chantier du relais, où un soleil présent toute la nuit la rendra nécessaire (nuages hauts surtout). **⚠** J'ai d'abord avancé un coût de 0,1 ms : c'était du bruit ; la même passe varie de 0,79 à 1,05 ms d'une capture à l'autre.
 - **R** Restent, notés au plan `m3-heure-du-jour.md` : le relais du soleil à la lune et le ciel nocturne de base (chantier à part, avec un plan) ; les valeurs de la nuit tassées ; plus tard, la perte de finesse, les étoiles brillantes au crépuscule, un liseré dans le ciel vers −10°, le damier du terrain, les cocardes la nuit en préréglage fun.
 - **A** Captures de référence refaites (`nuit_lune`, `crepuscule_cumulus` à 15 000 K) ; scènes temporaires de la planche retirées.
+
+### Plan du relais soleil-lune et du ciel nocturne
+
+- **Q** Le joueur : « Oui, le plan » (préparer le plan du relais soleil-lune et du ciel nocturne).
+- **A** Essai, le soleil gardé comme lumière la nuit, le 15 août 1917 (retiré ensuite) : à −12,4°, le crépuscule continue sans saut ; à −18°, il reste une lueur coupée par un liseré net en biseau ; à −25°, le soleil ne compte plus. Le fond du ciel de nuit vient de la lumière intégrée de nos étoiles ; rien n'éclaire les nuages ni le sol.
+- **A** Bevy 0.20 additionne jusqu'à 10 lumières directionnelles dans le ciel, la perspective aérienne et les surfaces ; nos nuages et leur carte d'ombre ne prennent que la première. La lumière ambiante globale de Bevy est en cd/m².
+- **A** Plan `docs/plans/m3-relais-nuit.md` (proposé) :
+  - deux astres, le soleil à toute heure et la lune quand elle est levée ;
+  - les nuages éclairés par l'astre dominant, avec l'ombre de la Terre ;
+  - un ciel nocturne de base, environ 2·10⁻⁴ cd/m², dans le ciel et dans l'éclairage ;
+  - l'enquête sur le liseré du ciel ;
+  - un outil de planche (`--time`, `just planche`) ;
+  - des scènes `nuit_sans_lune` et un lever de lune.
+- **?** Quatre décisions demandées au joueur : la lumière des nuages (astre dominant), le ciel nocturne (physique, partout), l'outil de planche, et les valeurs de la nuit dans un chantier suivant.
